@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>مؤسسة طاء الرائدة للمقاولات العامة | Taa Al-Raeda General Contracting</title>
+<meta name="description" content="مؤسسة طاء الرائدة للمقاولات العامة — أعمال العظم والتشطيبات للفلل والمباني السكنية في المملكة العربية السعودية. Taa Al-Raeda General Contracting Est. — structural and finishing works in Saudi Arabia.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #1d2533; --red: #c62026; --ink: #1d2533; --muted: #5b6474;
+    --bg: #ffffff; --soft: #f5f6f8; --line: #e3e6eb;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; font-family: "IBM Plex Sans Arabic", system-ui, sans-serif; color: var(--ink); background: var(--bg); line-height: 1.75; font-size: 17px; }
+  a { color: inherit; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
+
+  header { background: var(--navy); color: #fff; position: relative; }
+  header::after { content: ""; position: absolute; inset: auto 0 0 auto; width: 34%; height: 6px; background: var(--red); }
+  .bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 0; }
+  .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+  .mark { width: 46px; height: 46px; border-radius: 10px; background: var(--red); display: grid; place-items: center; font-weight: 700; font-size: 26px; color: #fff; }
+  .brand b { display: block; font-size: 17px; font-weight: 600; line-height: 1.3; }
+  .brand small { display: block; font-size: 12px; opacity: .75; direction: ltr; text-align: right; }
+  nav a { color: #fff; opacity: .85; text-decoration: none; font-size: 15px; margin-inline-start: 18px; }
+  nav a:hover { opacity: 1; }
+  .hero { padding: 56px 0 72px; }
+  .hero h1 { font-size: clamp(30px, 5vw, 46px); line-height: 1.3; margin: 0 0 14px; font-weight: 700; }
+  .hero p { font-size: 19px; max-width: 640px; opacity: .9; margin: 0 0 28px; }
+  .btn { display: inline-block; background: var(--red); color: #fff; text-decoration: none; padding: 12px 22px; border-radius: 10px; font-weight: 600; }
+  .btn.ghost { background: transparent; border: 1.5px solid rgba(255,255,255,.5); margin-inline-start: 10px; }
+
+  section { padding: 64px 0; }
+  section.soft { background: var(--soft); }
+  h2 { font-size: 28px; margin: 0 0 8px; }
+  .lead { color: var(--muted); margin: 0 0 32px; max-width: 680px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 24px; }
+  .card h3 { margin: 0 0 8px; font-size: 20px; }
+  .card h3::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 2px; background: var(--red); margin-inline-end: 10px; vertical-align: middle; }
+  .card p { margin: 0; color: var(--muted); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .chip { background: var(--soft); border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; font-size: 14px; }
+  ol.steps { counter-reset: s; list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; }
+  ol.steps li { counter-increment: s; background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px 18px 20px; display: flex; gap: 16px; align-items: flex-start; }
+  ol.steps li::before { content: counter(s); flex: none; width: 34px; height: 34px; border-radius: 50%; background: var(--navy); color: #fff; display: grid; place-items: center; font-weight: 700; }
+  ol.steps b { display: block; }
+  ol.steps span { color: var(--muted); }
+
+  .contact { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
+  .contact .card a { font-weight: 600; text-decoration: none; direction: ltr; display: inline-block; }
+
+  .en { direction: ltr; text-align: left; }
+  .en .card h3::before { margin-inline-end: 10px; }
+
+  footer { background: var(--navy); color: #fff; padding: 28px 0; font-size: 14px; }
+  footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; opacity: .85; }
+
+  @media (max-width: 640px) {
+    nav { display: none; }
+    .btn.ghost { margin: 10px 0 0; }
+    section { padding: 48px 0; }
+    body { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap bar">
+    <a class="brand" href="#">
+      <span class="mark">ط</span>
+      <span><b>مؤسسة طاء الرائدة للمقاولات العامة</b><small>Taa Al-Raeda General Contracting Est.</small></span>
+    </a>
+    <nav>
+      <a href="#services">الخدمات</a>
+      <a href="#method">طريقة العمل</a>
+      <a href="#contact">التواصل</a>
+      <a href="#en">English</a>
+    </nav>
+  </div>
+  <div class="wrap hero">
+    <h1>أساس متين لبيتكم القادم<br>ولمسة أخيرة تليق به</h1>
+    <p>مقاول عام لأعمال العظم والتشطيبات للفلل والمباني السكنية في المملكة العربية السعودية، نعمل حسب المخططات المعتمدة وتحت رقابة الاستشاري، ونوثّق كل مرحلة قبل الانتقال لما بعدها.</p>
+    <a class="btn" href="https://wa.me/966573763445">تواصل عبر واتساب</a>
+    <a class="btn ghost" href="tel:+966573763445">اتصال: 0573763445</a>
+  </div>
+</header>
+
+<section id="services">
+  <div class="wrap">
+    <h2>خدماتنا</h2>
+    <p class="lead">ينفّذ المقاول المشروع كاملاً أو المراحل التي يختارها العميل، بالمصنعية فقط أو شاملاً المواد.</p>
+    <div class="grid">
+      <div class="card">
+        <h3>أعمال العظم</h3>
+        <p>الحفر وتجهيز الأرض، والقواعد والرقاب والميدات، والأعمدة والأسقف الخرسانية، ومباني البلوك، والسور، مع سباكة وكهرباء العظم.</p>
+        <div class="chips"><span class="chip">خرسانة مسلحة</span><span class="chip">بلوك معزول</span><span class="chip">سور وبوابة</span></div>
+      </div>
+      <div class="card">
+        <h3>التشطيبات</h3>
+        <p>يختار العميل البنود التي يحتاجها، وكل بند مسعّر بوحدة واضحة (المتر المربع أو النقطة).</p>
+        <div class="chips"><span class="chip">كهرباء</span><span class="chip">سباكة</span><span class="chip">لياسة</span><span class="chip">بلاط داخلي وخارجي</span><span class="chip">دهانات</span><span class="chip">أسقف جبس</span><span class="chip">عزل</span></div>
+      </div>
+      <div class="card">
+        <h3>الأعمال الإضافية</h3>
+        <p>أي عمل خارج العقد يُسعَّر ويُعتمد كتابياً من العميل قبل تنفيذه، ويُضاف لجدول الدفعات بشكل مستقل.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="method" class="soft">
+  <div class="wrap">
+    <h2>طريقة العمل</h2>
+    <p class="lead">خطوات ثابتة في كل مشروع، يتابعها العميل من جواله.</p>
+    <ol class="steps">
+      <li><div><b>عرض سعر مبني على المخططات</b><span>السعر نتيجة مباشرة للتصميم الإنشائي والمعماري المعتمد، مع نطاق واضح لما هو مشمول وما هو غير مشمول.</span></div></li>
+      <li><div><b>عقد وجدول دفعات مرتبط بالإنجاز</b><span>كل دفعة مرتبطة بمرحلة محددة، مثل اعتماد الحديد والشدة قبل كل صبة.</span></div></li>
+      <li><div><b>رقابة مستقلة لصالح المالك</b><span>لا تُصب أي خرسانة قبل اعتماد الاستشاري ومفتش التأمين للحديد والشدة.</span></div></li>
+      <li><div><b>فحص وتوثيق كل مرحلة</b><span>قوائم فحص للجودة وصور لكل بند قبل استلامه، وتقارير يومية من الموقع.</span></div></li>
+      <li><div><b>تسليم وضمان</b><span>محضر تسليم، ومعالجة ملاحظات الضمان خلال أسبوع من بلاغ العميل.</span></div></li>
+    </ol>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="wrap">
+    <h2>التواصل</h2>
+    <p class="lead">لطلب عرض سعر أرسل المخططات عبر واتساب.</p>
+    <div class="contact">
+      <div class="card"><h3>الهاتف وواتساب</h3><a href="tel:+966573763445">+966 57 376 3445</a></div>
+      <div class="card"><h3>واتساب</h3><a href="https://wa.me/966573763445">wa.me/966573763445</a></div>
+      <div class="card"><h3>نطاق العمل</h3><p>المملكة العربية السعودية</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="en" class="soft en">
+  <div class="wrap">
+    <h2>Taa Al-Raeda General Contracting Est.</h2>
+    <p class="lead">A general contractor for structural and finishing works on villas and residential buildings in Saudi Arabia. We build to the approved drawings, under the consultant's supervision, and document every stage before moving on.</p>
+    <div class="grid">
+      <div class="card"><h3>Structural works</h3><p>Excavation, footings, ground beams, columns and concrete slabs, blockwork and boundary walls, including embedded plumbing and electrical works.</p></div>
+      <div class="card"><h3>Finishing works</h3><p>Electrical, plumbing, plaster, interior and exterior tiling, painting, gypsum ceilings and insulation — each priced per clear unit.</p></div>
+      <div class="card"><h3>Contact</h3><p>Phone / WhatsApp: <a href="tel:+966573763445">+966 57 376 3445</a></p></div>
+    </div>
+  </div>
+</section>
+
+<section id="privacy">
+  <div class="wrap">
+    <h2>الخصوصية والتواصل عبر واتساب</h2>
+    <p class="lead" style="margin-bottom:12px">تستخدم المؤسسة واتساب للتواصل مع عملائها وفريق العمل بخصوص مشاريعهم: تحديثات الأعمال، والاستلام، والدفعات، والملاحظات. تُستخدم البيانات المرسلة (الاسم، رقم الجوال، صور الأعمال) لتنفيذ المشروع ومتابعته فقط، ولا تُباع أو تُشارك مع أي جهة لأغراض تسويقية. يمكن لأي شخص طلب إيقاف الرسائل في أي وقت بالرد على الرسالة أو التواصل على الرقم أعلاه.</p>
+    <p class="lead en" style="margin:0">We use WhatsApp to communicate with our clients and team about their projects (work updates, handovers, payments and notes). Data shared with us (name, mobile number, site photos) is used only to deliver and follow up the project and is never sold or shared for marketing. Anyone can ask to stop messages at any time by replying or contacting the number above.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 مؤسسة طاء الرائدة للمقاولات العامة</span>
+    <span style="direction:ltr">Taa Al-Raeda General Contracting Est. · +966 57 376 3445</span>
+  </div>
+</footer>
+
+</body>
+</html>
