@@ -173,7 +173,7 @@ async function upload(key, file) {
   busy++; summary();
   try {
     const blob = await shrink(file), type = blob.type || file.type || "application/octet-stream";
-    const r = await fetch(`${API}/upload?t=${encodeURIComponent(T)}`, { method: "POST", headers: { "content-type": type }, body: blob });
+    const r = await fetch(`${API}/upload`, { method: "POST", headers: { "content-type": type, "x-form-token": T }, body: blob });
     const j = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(j.error || "تعذّر رفع الملف");
     (V[key] = V[key] || []).push(j.ref);
@@ -188,7 +188,8 @@ $("#send").addEventListener("click", async () => {
     const [r, j] = await call({ op: "submit", v: V });
     if (!r.ok) { err.textContent = j.error || "تعذّر الإرسال"; err.style.display = "block"; scrollTo(0, 0); summary(); return; }
     $("#bar").hidden = true;
-    $("#app").innerHTML = `<div class="done"><div class="tick">✓</div><h2>تم الإرسال</h2>${j.msg ? `<p>${esc(j.msg)}</p>` : ""}<a href="${BOT}">الرجوع للواتساب</a></div>`;
+    // pending: the bot parked the form and asks for a WhatsApp confirmation from the person's own number
+    $("#app").innerHTML = `<div class="done"><div class="tick">${j.pending ? "🔐" : "✓"}</div><h2>${j.pending ? "بانتظار تأكيدك في واتساب" : "تم الإرسال"}</h2>${j.msg ? `<p>${esc(j.msg)}</p>` : ""}<a href="${BOT}">${j.pending ? "افتح واتساب للتأكيد" : "الرجوع للواتساب"}</a></div>`;
   } catch (e) { err.textContent = "تعذّر الاتصال — حاول مرة أخرى"; err.style.display = "block"; summary(); }
 });
 load(true);
