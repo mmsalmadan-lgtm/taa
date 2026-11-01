@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>نموذج الطلب — مؤسسة طاء الرائدة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --navy:#1d2533; --red:#c62026; --ink:#1d2533; --muted:#6b7280; --line:#e3e6eb; --bg:#f4f5f7; --card:#fff; --ok:#1a7f37; --soft:#fbeaea; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { margin:0; background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans Arabic",system-ui,sans-serif; font-size:16px; }
+  header { background:var(--navy); color:#fff; padding:16px 16px 14px; border-bottom:4px solid var(--red); }
+  header .co { font-size:13px; opacity:.8; }
+  header h1 { margin:4px 0 2px; font-size:21px; font-weight:700; }
+  header .who { font-size:14px; opacity:.9; }
+  main { padding:12px 12px 120px; max-width:640px; margin:0 auto; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; margin-bottom:10px; overflow:hidden; }
+  .card > .hd { padding:12px 14px; font-weight:600; display:flex; align-items:center; justify-content:space-between; cursor:pointer; user-select:none; }
+  .card > .hd .cnt { background:var(--red); color:#fff; border-radius:20px; font-size:12px; padding:1px 9px; min-width:22px; text-align:center; }
+  .card > .hd .chev { color:var(--muted); font-size:14px; transition:transform .15s; }
+  .card.open > .hd .chev { transform:rotate(180deg); }
+  .card > .bd { display:none; border-top:1px solid var(--line); }
+  .card.open > .bd { display:block; }
+  .row { display:flex; align-items:center; gap:10px; padding:10px 14px; border-bottom:1px solid var(--line); }
+  .row:last-child { border-bottom:0; }
+  .row .nm { flex:1; font-size:15px; line-height:1.35; }
+  .row .nm small { display:block; color:var(--muted); font-size:12px; }
+  .row.on { background:#fff7f7; }
+  .qty { display:flex; align-items:center; border:1px solid var(--line); border-radius:10px; overflow:hidden; background:#fff; }
+  .qty button { width:36px; height:40px; border:0; background:#f2f3f5; font-size:20px; color:var(--navy); }
+  .qty input { width:64px; height:40px; border:0; text-align:center; font:inherit; font-size:17px; font-weight:600; direction:ltr; }
+  .note { width:100%; margin:0 14px 10px; width:calc(100% - 28px); padding:9px 10px; border:1px solid var(--line); border-radius:9px; font:inherit; font-size:14px; }
+  label.lb { display:block; font-weight:600; margin:2px 2px 8px; }
+  .box { padding:14px; }
+  select, input[type=date], input[type=text], input[type=number], textarea { width:100%; padding:11px 12px; border:1px solid var(--line); border-radius:10px; font:inherit; font-size:16px; background:#fff; color:var(--ink); }
+  textarea { min-height:70px; resize:vertical; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
+  .chip { border:1px solid var(--line); background:#fff; border-radius:20px; padding:8px 14px; font:inherit; font-size:14px; color:var(--ink); }
+  .chip.sel { background:var(--navy); color:#fff; border-color:var(--navy); }
+  .other { display:grid; grid-template-columns:1fr 90px; gap:8px; padding:10px 14px; border-bottom:1px solid var(--line); }
+  .add { margin:10px 14px 12px; border:1px dashed var(--muted); background:none; border-radius:10px; padding:9px; width:calc(100% - 28px); font:inherit; color:var(--navy); }
+  .bar { position:fixed; inset:auto 0 0 0; background:#fff; border-top:1px solid var(--line); padding:10px 12px calc(10px + env(safe-area-inset-bottom)); }
+  .bar .sum { font-size:13px; color:var(--muted); margin:0 2px 6px; max-width:640px; margin-inline:auto; }
+  .bar button { display:block; width:100%; max-width:640px; margin:0 auto; border:0; border-radius:12px; padding:14px; font:inherit; font-size:17px; font-weight:700; background:var(--red); color:#fff; }
+  .bar button:disabled { background:#d9a3a5; }
+  .err { background:var(--soft); color:var(--red); border-radius:10px; padding:10px 12px; margin:0 0 10px; font-size:14px; display:none; }
+  .done { text-align:center; padding:40px 18px; }
+  .done .tick { width:72px; height:72px; border-radius:50%; background:var(--ok); color:#fff; font-size:40px; line-height:72px; margin:0 auto 14px; }
+  .done h2 { margin:0 0 8px; }
+  .done p { color:var(--muted); margin:0 0 18px; }
+  .done a { display:inline-block; background:var(--navy); color:#fff; text-decoration:none; border-radius:12px; padding:12px 22px; font-weight:600; }
+  .msg { text-align:center; padding:48px 18px; color:var(--muted); }
+  .search { margin-bottom:10px; }
+</style>
+</head>
+<body>
+<header><div class="co">مؤسسة طاء الرائدة للمقاولات العامة</div><h1 id="title">نموذج الطلب</h1><div class="who" id="who"></div></header>
+<main id="app"><div class="msg">جاري التحميل…</div></main>
+<div class="bar" id="bar" hidden><div class="sum" id="sum"></div><button id="send" disabled>إرسال الطلب</button></div>
+<script>
+const API = "https://zkbwrgulnsycqqfbwkee.supabase.co/functions/v1/bird-webhook/form";
+const BOT = "https://wa.me/966551313729";
+const T = decodeURIComponent((location.hash || "").slice(1));
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const fmt = (n) => (Math.round(n * 1000) / 1000).toString();
+let D = null, K = null, qty = {}, notes = {}, others = [], date = "", days = 1;
+
+function addDays(iso, n) { const d = new Date(iso + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
+function fail(t) { $("#app").innerHTML = `<div class="msg">${esc(t)}<br><br><a href="${BOT}" style="color:#1d2533">الرجوع للواتساب</a></div>`; $("#bar").hidden = true; }
+
+async function load() {
+  if (!T) return fail("الرابط غير مكتمل — افتح النموذج من البوت.");
+  try {
+    const r = await fetch(API + "?t=" + encodeURIComponent(T)); const j = await r.json();
+    if (!r.ok) return fail(j.error || "تعذّر فتح النموذج");
+    D = j; if (!D.contracts.length) return fail("لا يوجد مشروع مرتبط برقمك.");
+    K = D.contracts[0]; date = D.kind === "eq" ? addDays(D.today, 1) : addDays(D.today, 2);
+    $("#title").textContent = D.title; $("#who").textContent = D.name; document.title = D.title + " — طاء الرائدة";
+    render();
+  } catch (e) { fail("تعذّر الاتصال — تأكد من الإنترنت وأعد فتح الرابط."); }
+}
+
+function lines() {
+  const out = [];
+  for (const c of K.cats) for (const it of c.items) if (+qty[it.id] > 0) out.push({ id: it.id, qty: +qty[it.id], note: notes[it.id] || "", name: it.name, unit: D.kind === "eq" ? "" : it.unit });
+  for (const o of others) if (o.name && +o.qty > 0) out.push({ id: "other", name: o.name, unit: o.unit || "", qty: +o.qty });
+  return out;
+}
+
+function render() {
+  const eq = D.kind === "eq";
+  const proj = D.contracts.length > 1 ? `<div class="card open"><div class="box"><label class="lb">المشروع</label><select id="proj">${D.contracts.map((c) => `<option value="${esc(c.id)}"${c.id === K.id ? " selected" : ""}>${esc(c.project)}${c.trade ? " — " + esc(c.trade) : ""}</option>`).join("")}</select></div></div>`
+    : `<div class="card open"><div class="box"><label class="lb" style="margin:0">المشروع: <span style="font-weight:500">${esc(K.project)}</span></label></div></div>`;
+  const cats = K.cats.map((c, i) => {
+    const n = c.items.filter((it) => +qty[it.id] > 0).length;
+    return `<div class="card${i === 0 || n ? " open" : ""}" data-cat="${esc(c.id)}"><div class="hd"><span>${esc(c.name)}</span><span>${n ? `<span class="cnt">${n}</span> ` : ""}<span class="chev">▾</span></span></div><div class="bd">${c.items.map((it) => {
+      const v = qty[it.id] || "";
+      return `<div class="row${+v > 0 ? " on" : ""}"><div class="nm">${esc(it.name)}<small>${eq ? "العدد" : esc(it.unit)}</small></div><div class="qty"><button type="button" data-d="-1" data-id="${esc(it.id)}">−</button><input inputmode="decimal" data-id="${esc(it.id)}" value="${esc(v)}" placeholder="0"><button type="button" data-d="1" data-id="${esc(it.id)}">+</button></div></div>${it.ask && +v > 0 ? `<input class="note" data-note="${esc(it.id)}" value="${esc(notes[it.id] || "")}" placeholder="${esc(it.ask)}">` : ""}`;
+    }).join("")}</div></div>`;
+  }).join("");
+  const oth = `<div class="card${others.length ? " open" : ""}"><div class="hd"><span>${eq ? "معدة أخرى" : "مادة أخرى غير موجودة"}</span><span class="chev">▾</span></div><div class="bd">${others.map((o, i) => `<div class="other"><input type="text" data-oth="${i}" data-f="name" value="${esc(o.name)}" placeholder="${eq ? "اسم المعدة" : "اسم المادة"}"><input type="text" inputmode="decimal" data-oth="${i}" data-f="qty" value="${esc(o.qty)}" placeholder="الكمية">${eq ? "" : `<input type="text" data-oth="${i}" data-f="unit" value="${esc(o.unit)}" placeholder="الوحدة (كيس، حبة، م³…)" style="grid-column:1/-1">`}</div>`).join("")}<button type="button" class="add" id="addo">+ إضافة ${eq ? "معدة" : "مادة"}</button></div></div>`;
+  const chips = (eq ? [[0, "اليوم"], [1, "بكرة"], [2, "بعد يومين"], [7, "بعد أسبوع"]] : [[0, "اليوم"], [1, "بكرة"], [2, "بعد يومين"], [3, "بعد 3 أيام"], [7, "بعد أسبوع"]])
+    .map(([n, t]) => `<button type="button" class="chip${date === addDays(D.today, n) ? " sel" : ""}" data-day="${n}">${t}</button>`).join("");
+  const when = `<div class="card open"><div class="box"><label class="lb">${eq ? "متى تبدأ في الموقع؟" : "متى تحتاجها في الموقع؟"}</label><div class="chips">${chips}</div><input type="date" id="date" value="${date}" min="${D.today}">${eq ? `<label class="lb" style="margin-top:12px">المدة (أيام)</label><input type="number" id="days" min="1" max="365" value="${days}" inputmode="numeric">` : ""}</div></div>`;
+  const note = `<div class="card open"><div class="box"><label class="lb">ملاحظة (اختياري)</label><textarea id="note" placeholder="مثال: للسقف الأول، التوريد صباحاً">${esc($("#note") ? $("#note").value : "")}</textarea></div></div>`;
+  $("#app").innerHTML = `<div class="err" id="err"></div>${proj}${cats}${oth}${when}${note}`;
+  $("#bar").hidden = false; summary();
+}
+
+function summary() {
+  const ls = lines();
+  $("#sum").textContent = ls.length ? ls.map((l) => `${l.name} ${fmt(l.qty)}`).join("، ") : "اختر الكميات من القائمة";
+  $("#send").disabled = !ls.length; $("#send").textContent = ls.length ? `إرسال الطلب (${ls.length} ${ls.length === 1 ? "بند" : "بنود"})` : "إرسال الطلب";
+}
+
+document.addEventListener("click", (e) => {
+  const t = e.target.closest("button, .hd"); if (!t) return;
+  if (t.classList.contains("hd")) { t.parentElement.classList.toggle("open"); return; }
+  if (t.dataset.d) { const id = t.dataset.id, v = Math.max(0, (+qty[id] || 0) + +t.dataset.d); qty[id] = v ? fmt(v) : ""; keepOpen(render); return; }
+  if (t.dataset.day !== undefined) { date = addDays(D.today, +t.dataset.day); keepOpen(render); return; }
+  if (t.id === "addo") { others.push({ name: "", unit: "", qty: "" }); keepOpen(render); return; }
+});
+function keepOpen(fn) { const open = [...document.querySelectorAll(".card.open[data-cat]")].map((c) => c.dataset.cat), y = scrollY; fn(); document.querySelectorAll(".card[data-cat]").forEach((c) => { if (open.includes(c.dataset.cat)) c.classList.add("open"); }); scrollTo(0, y); }
+document.addEventListener("input", (e) => {
+  const t = e.target;
+  if (t.dataset.id) { qty[t.dataset.id] = t.value.replace(/[٠-٩]/g, (d) => "٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(",", "."); const row = t.closest(".row"); row.classList.toggle("on", +qty[t.dataset.id] > 0); summary(); }
+  else if (t.dataset.note) notes[t.dataset.note] = t.value;
+  else if (t.dataset.oth !== undefined) { others[+t.dataset.oth][t.dataset.f] = t.dataset.f === "qty" ? t.value.replace(/[٠-٩]/g, (d) => "٠١٢٣٤٥٦٧٨٩".indexOf(d)) : t.value; summary(); }
+  else if (t.id === "date") date = t.value;
+  else if (t.id === "days") days = t.value;
+});
+document.addEventListener("change", (e) => {
+  if (e.target.id === "proj") { K = D.contracts.find((c) => c.id === e.target.value); qty = {}; notes = {}; render(); }
+  if (e.target.dataset && e.target.dataset.id) keepOpen(render); // show the note field for items that ask for one
+});
+
+$("#send").addEventListener("click", async () => {
+  const ls = lines(); if (!ls.length) return;
+  const err = $("#err"), btn = $("#send"); err.style.display = "none"; btn.disabled = true; btn.textContent = "جاري الإرسال…";
+  try {
+    const r = await fetch(API, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ t: T, cid: K.id, lines: ls.map(({ id, qty, note, name, unit }) => ({ id, qty, note, name, unit })), date, days: +days, note: $("#note").value }) });
+    const j = await r.json();
+    if (!r.ok) { err.textContent = j.error || "تعذّر الإرسال"; err.style.display = "block"; scrollTo(0, 0); summary(); return; }
+    $("#bar").hidden = true;
+    $("#app").innerHTML = `<div class="done"><div class="tick">✓</div><h2>تم إرسال الطلب</h2><p>وصل لمهندس الموقع، ويصلك إشعار بكل خطوة على الواتساب.<br>رقم الطلب: ${esc((j.ids || []).map((x) => x.toUpperCase()).join("، "))}</p><a href="${BOT}">الرجوع للواتساب</a></div>`;
+  } catch (e) { err.textContent = "تعذّر الاتصال — حاول مرة أخرى"; err.style.display = "block"; summary(); }
+});
+load();
+</script>
+</body>
+</html>
