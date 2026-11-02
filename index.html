@@ -74,6 +74,11 @@
   .ft-ico svg { width: 20px; height: 20px; fill: none; stroke: #fff; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
   .ltr { direction: ltr; unicode-bidi: isolate; }
   .ft-links a { opacity: .85; text-decoration: none; }
+  @media (min-width: 860px) {
+    .ft-grid { display: grid; grid-template-columns: 1.3fr .8fr 1.2fr; gap: 48px; align-items: start; }
+    .ft-grid h4 { margin-top: 0; }
+    .ft-col + .ft-col { padding-inline-start: 36px; border-inline-start: 1px solid rgba(255,255,255,.12); }
+  }
   .ft-bottom { border-top: 1px solid rgba(255,255,255,.15); margin-top: 32px; padding-top: 16px; font-size: 13px; opacity: .7; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
 
   @media (max-width: 640px) {
@@ -180,6 +185,8 @@
 
 <footer>
   <div class="wrap">
+    <div class="ft-grid">
+    <div class="ft-col">
     <p class="ft-name">مؤسسة طاء الرائدة للمقاولات العامة</p>
     <a class="ft-cr" href="https://qr.saudibusiness.gov.sa/viewcr?nCrNumber=KW+GlTMvFlPN5T3lu9RGoQ==" target="_blank" rel="noopener" title="التحقق من السجل التجاري">
       <img class="ft-badge" src="cr-logo.png" alt="السجل التجاري" width="56" height="57">
@@ -193,14 +200,18 @@
       <dl><div><dt>الرقم الضريبي</dt><dd class="ltr">311156654900003</dd></div></dl>
     </div>
     <a class="ft-verify" href="https://qr.saudibusiness.gov.sa/viewcr?nCrNumber=KW+GlTMvFlPN5T3lu9RGoQ==" target="_blank" rel="noopener">التحقق من السجل في المركز السعودي للأعمال</a>
+    </div>
 
+    <div class="ft-col">
     <h4>روابط مهمة</h4>
     <ul class="ft-list ft-links">
       <li><a href="#services">خدماتنا</a></li>
       <li><a href="#method">طريقة العمل</a></li>
       <li><a href="#privacy">الخصوصية والتواصل عبر واتساب</a></li>
     </ul>
+    </div>
 
+    <div class="ft-col">
     <h4>تواصل معنا</h4>
     <ul class="ft-list">
       <li><a href="https://wa.me/966506880230"><span class="ft-ico"><svg viewBox="0 0 24 24"><path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z"/><path d="M9 8.5c0 3.5 2.7 6.5 6.5 6.5l1-1.5-2-1-1 1c-1.2-.5-2.5-1.8-3-3l1-1-1-2z"/></svg></span><span class="ltr">+966506880230</span></a></li>
@@ -209,6 +220,8 @@
       <li><a href="https://taaa.sa"><span class="ft-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg></span><span class="ltr">taaa.sa</span></a></li>
       <li><span><span class="ft-ico"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></span><span>3371 شارع إبراهيم الشاطبي، حي المنتزة، سيهات 32452</span></span></li>
     </ul>
+    </div>
+    </div>
 
     <div class="ft-bottom">
       <span>© 2026 مؤسسة طاء الرائدة للمقاولات العامة. جميع الحقوق محفوظة.</span>
