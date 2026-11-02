@@ -50,6 +50,30 @@
   .muted { color: var(--muted); }
   .skel { height: 120px; border-radius: 12px; background: linear-gradient(90deg, #ECEEEA, #F6F7F4, #ECEEEA); margin-bottom: 18px; }
   footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 16px 28px; }
+  .tabs { display: flex; gap: 6px; padding: 12px 16px 0; }
+  .tab { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+  .tab.on { background: var(--brand); color: #fff; border-color: var(--brand); }
+  .btn2 { background: #fff; color: var(--ink); border: 1px solid #D3D7D1; }
+  .btn-sm { padding: 6px 12px; min-height: 36px; font-size: 13px; }
+  dialog { border: 0; border-radius: 14px; padding: 0; width: min(720px, 96vw); max-height: 92vh; }
+  dialog::backdrop { background: rgba(18,49,47,.45); }
+  .dlg { padding: 20px; overflow: auto; max-height: 92vh; }
+  .dlg h3 { margin: 0 0 12px; font-size: 18px; }
+  .fg { margin: 14px 0 4px; font-weight: 700; color: var(--brand); font-size: 14px; }
+  .f { margin-bottom: 12px; }
+  .f label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+  .f input[type=text], .f input[type=number], .f input[type=tel], .f select { width: 100%; font-family: inherit; font-size: 15px; padding: 10px 12px; border: 1px solid #D3D7D1; border-radius: 8px; background: #fff; }
+  .f .hint { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .multi { display: flex; flex-wrap: wrap; gap: 6px; }
+  .multi label { display: inline-flex; align-items: center; gap: 6px; border: 1px solid #D3D7D1; border-radius: 999px; padding: 6px 12px; color: var(--ink); font-size: 14px; margin: 0; cursor: pointer; }
+  .multi input:checked + span { font-weight: 700; color: var(--brand); }
+  tr.click { cursor: pointer; } tr.click:hover td { background: #F7F8F5; }
+  .items td:first-child { width: 40%; min-width: 160px; }
+  .items td { padding: 4px; border: 0; } .items input { width: 100%; font-family: inherit; font-size: 14px; padding: 8px; border: 1px solid #D3D7D1; border-radius: 6px; }
+  .items input:disabled { background: #F1F2EF; color: var(--muted); }
+  .bar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-start; margin-top: 16px; }
+  .res { margin-top: 12px; padding: 10px 12px; border-radius: 8px; font-size: 14px; display: none; }
+  .res.ok { display: block; background: var(--ok-bg); color: var(--ok); } .res.warn { display: block; background: var(--warn-bg); color: var(--warn); } .res.bad { display: block; background: var(--bad-bg); color: var(--bad); }
 </style>
 </head>
 <body>
@@ -57,8 +81,10 @@
   <div><h1 id="who">لوحة المتابعة</h1><div class="sub" id="roles">مؤسسة طاء الرائدة للمقاولات العامة</div></div>
   <div class="chips"><span class="chip mode" id="mode" hidden></span><span class="sub" id="at"></span><button type="button" id="reload" hidden>تحديث</button></div>
 </div></header>
+<nav class="wrap tabs" id="tabs" hidden><button type="button" class="tab on" data-v="mon">المتابعة</button><button type="button" class="tab" data-v="data">البيانات</button></nav>
 <main class="wrap" id="main"><div class="skel"></div><div class="skel"></div></main>
-<footer>للمتابعة فقط — كل إجراء (اعتماد، رفض، صرف) يتم من البوت في واتساب. الرابط شخصي، لا تحوّله لأحد.</footer>
+<dialog id="dlg"><div class="dlg" id="dlgBody"></div></dialog>
+<footer>الاعتماد والرفض والصرف من البوت في واتساب. تعديل الأشخاص والمشاريع والعقود وبيانات الدفع يُنفَّذ بعد ضغط «تأكيد» في واتساب. الرابط شخصي، لا تحوّله لأحد.</footer>
 <script>
 const API = "https://zkbwrgulnsycqqfbwkee.supabase.co/functions/v1/bird-webhook/dash";
 const token = decodeURIComponent((location.hash || "").slice(1));
@@ -116,9 +142,108 @@ async function load() {
     render(j);
   } catch (e) { fail("تعذّر الاتصال", "تحقق من الإنترنت ثم اضغط تحديث."); $("reload").hidden = false; }
 }
-$("reload").addEventListener("click", load);
-load();
-setInterval(() => { if (document.visibilityState === "visible") load(); }, 120000);
+let view = "mon", REG = null;
+async function api(body) {
+  const r = await fetch(API, { method: "POST", headers: { "x-form-token": token, "content-type": "application/json" }, body: JSON.stringify(body) });
+  return { status: r.status, j: await r.json().catch(() => ({})) };
+}
+async function loadReg() {
+  const { status, j } = await api({ op: "reg" });
+  REG = status === 200 ? j.ents : [];
+  $("tabs").hidden = !REG.length;
+}
+function renderData() {
+  const main = $("main"); main.replaceChildren();
+  for (const e of REG) {
+    const sec = el("section"), head = el("div", "head"), h = el("h2", "", e.title);
+    h.append(el("span", "count", "  (" + e.rows.length + ")")); head.append(h);
+    if (e.canAdd) { const b = el("button", "btn-sm", "+ إضافة"); b.type = "button"; b.onclick = () => openForm(e, null); head.append(b); }
+    sec.append(head);
+    if (e.confirm) sec.append(el("div", "note", "اضغط على أي سطر لتعديله. الحفظ يرسل لك زر «تأكيد» في واتساب، ولا يُنفَّذ قبله.")); else if (e.rows.length) sec.append(el("div", "note", "اضغط على أي سطر لتعديله."));
+    if (!e.rows.length) sec.append(el("div", "empty", "لا توجد سجلات بعد"));
+    else {
+      const wrap = el("div", "tbl"), t = el("table"), tr = el("tr");
+      for (const c of e.cols) tr.append(el("th", "", c)); tr.append(el("th", "", ""));
+      const th = el("thead"); th.append(tr); t.append(th); const tb = el("tbody");
+      for (const r of e.rows) {
+        const row = el("tr"); for (const c of r.cells) row.append(cell(c));
+        const td = el("td"); if (r.edit) { const b = el("button", "btn2 btn-sm", "تعديل"); b.type = "button"; b.onclick = (ev) => { ev.stopPropagation(); openForm(e, r); }; td.append(b); row.classList.add("click"); row.onclick = () => openForm(e, r); }
+        row.append(td); tb.append(row);
+      }
+      t.append(tb); wrap.append(t); sec.append(wrap);
+    }
+    main.append(sec);
+  }
+}
+function input(type, val) { const i = el("input"); i.type = type; i.value = val ?? ""; return i; }
+function openForm(e, r) {
+  const data = r ? JSON.parse(JSON.stringify(r.data)) : {};
+  const body = $("dlgBody"); body.replaceChildren();
+  body.append(el("h3", "", (r ? "تعديل — " : "إضافة — ") + e.title));
+  const get = {}; let group = "";
+  for (const f of e.fields) {
+    if (f.group && f.group !== group) { group = f.group; body.append(el("div", "fg", group)); }
+    const box = el("div", "f"), lab = el("label", "", f.label + (f.required ? " *" : "")); box.append(lab);
+    const v = data[f.key];
+    if (f.type === "text" || f.type === "phone" || f.type === "number") {
+      const i = input(f.type === "number" ? "text" : f.type === "phone" ? "tel" : "text", v);
+      if (f.type === "number") i.inputMode = "decimal";
+      if (f.key === "name" && e.key === "projects" && r) i.disabled = true;
+      if (f.key === "project" && r) i.disabled = true;
+      box.append(i); get[f.key] = () => i.value;
+    } else if (f.type === "select") {
+      const sel = el("select"); for (const o of f.options || []) { const op = el("option", "", o.t); op.value = o.v; sel.append(op); }
+      if (v !== undefined && v !== null) sel.value = v; else if (f.options && f.options[0]) sel.value = f.options[0].v;
+      if (f.key === "project" && r) { if (![...sel.options].some((o) => o.value === v)) { const op = el("option", "", v); op.value = v; sel.append(op); sel.value = v; } sel.disabled = true; }
+      box.append(sel); get[f.key] = () => sel.value;
+    } else if (f.type === "multi") {
+      const wrap = el("div", "multi"), chosen = new Set(v || []);
+      for (const o of f.options || []) { const l = el("label"), c = input("checkbox"); c.value = o.v; c.checked = chosen.has(o.v); l.append(c, el("span", "", o.t)); wrap.append(l); }
+      if (!(f.options || []).length) wrap.append(el("span", "muted", "لا يوجد أحد بهذا الدور بعد — أضفه من «الأشخاص والأدوار»"));
+      box.append(wrap); get[f.key] = () => [...wrap.querySelectorAll("input:checked")].map((x) => x.value);
+    } else if (f.type === "bool") {
+      const l = el("label", "multi"), c = input("checkbox"); c.checked = !!v; lab.textContent = ""; const w = el("label"); w.append(c, el("span", "", f.label)); l.append(w); box.append(l); get[f.key] = () => c.checked;
+    } else if (f.type === "items") {
+      const t = el("table", "items"), hd = el("tr"); for (const c of ["البند", "الوحدة", "الكمية", "السعر", ""]) hd.append(el("th", "", c)); t.append(hd);
+      const add = (it) => {
+        const tr = el("tr"); tr.dataset.id = it.id || "";
+        const n = input("text", it.name), u = input("text", it.unit || "م²"), q = input("text", it.qty), p = input("text", it.rate);
+        q.inputMode = p.inputMode = "decimal"; if (it.locked) { p.disabled = true; p.title = "دخل في مستخلص"; }
+        const del = el("button", "btn2 btn-sm", "حذف"); del.type = "button"; if (it.locked) del.disabled = true; del.onclick = () => tr.remove();
+        for (const x of [n, u, q, p]) { const td = el("td"); td.append(x); tr.append(td); } const td = el("td"); td.append(del); tr.append(td);
+        tr._v = () => ({ id: tr.dataset.id || undefined, name: n.value, unit: u.value, qty: q.value, rate: p.value }); t.append(tr);
+      };
+      for (const it of v || []) add(it); if (!(v || []).length) add({});
+      const more = el("button", "btn2 btn-sm", "+ بند"); more.type = "button"; more.onclick = () => add({});
+      const w = el("div", "tbl"); w.append(t); box.append(w, more);
+      get[f.key] = () => [...t.querySelectorAll("tr")].filter((x) => x._v).map((x) => x._v());
+    }
+    if (f.hint) box.append(el("div", "hint", f.hint));
+    body.append(box);
+  }
+  const res = el("div", "res"), bar = el("div", "bar"), save = el("button", "", "حفظ"), close = el("button", "btn2", "إغلاق");
+  save.type = close.type = "button"; bar.append(save, close); body.append(res, bar);
+  close.onclick = () => $("dlg").close();
+  save.onclick = async () => {
+    const out = {}; for (const k in get) out[k] = get[k]();
+    save.disabled = true; res.className = "res"; res.textContent = "";
+    try {
+      const { status, j } = await api({ op: "save", ent: e.key, id: r ? r.id : "", data: out });
+      if (status === 200) { res.className = "res ok"; res.textContent = j.msg || "تم الحفظ ✅"; await loadReg(); renderData(); setTimeout(() => $("dlg").close(), 900); }
+      else if (status === 202) { res.className = "res warn"; res.textContent = (j.msg || "") + " — افتح واتساب واضغط «تأكيد»."; }
+      else { res.className = "res bad"; res.textContent = j.error || "تعذّر الحفظ"; }
+    } catch { res.className = "res bad"; res.textContent = "تعذّر الاتصال"; }
+    save.disabled = false;
+  };
+  $("dlg").showModal();
+}
+for (const b of document.querySelectorAll(".tab")) b.addEventListener("click", async () => {
+  view = b.dataset.v; for (const x of document.querySelectorAll(".tab")) x.classList.toggle("on", x === b);
+  if (view === "data") { await loadReg(); renderData(); } else load();
+});
+$("reload").addEventListener("click", async () => { if (view === "data") { await loadReg(); renderData(); } else load(); });
+load().then(() => token && loadReg()).catch(() => {});
+setInterval(() => { if (document.visibilityState === "visible" && view === "mon" && !$("dlg").open) load(); }, 120000);
 </script>
 </body>
 </html>
