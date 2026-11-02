@@ -57,8 +57,22 @@
   .en { direction: ltr; text-align: left; }
   .en .card h3::before { margin-inline-end: 10px; }
 
-  footer { background: var(--navy); color: #fff; padding: 28px 0; font-size: 14px; }
-  footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; opacity: .85; }
+  footer { background: #1f2122; color: #fff; padding: 44px 0 22px; font-size: 15px; }
+  .ft-name { font-size: 22px; font-weight: 700; margin: 0 0 18px; }
+  .ft-cr { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; text-decoration: none; }
+  .ft-badge { width: 64px; height: 64px; border-radius: 10px; background: #0f6b4f; display: grid; place-items: center; flex: none; box-shadow: 0 0 0 1px rgba(255,255,255,.12); }
+  .ft-cr dl { margin: 0; display: flex; gap: 26px; flex-wrap: wrap; }
+  .ft-cr dt { opacity: .75; font-size: 14px; }
+  .ft-cr dd { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: .5px; }
+  .ft-verify { display: inline-block; margin-top: 10px; font-size: 13px; opacity: .75; text-decoration: underline; }
+  footer h4 { font-size: 20px; margin: 34px 0 14px; }
+  .ft-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+  .ft-list a, .ft-list span { display: flex; align-items: center; gap: 14px; text-decoration: none; }
+  .ft-ico { width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,.7); display: grid; place-items: center; flex: none; }
+  .ft-ico svg { width: 20px; height: 20px; fill: none; stroke: #fff; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .ltr { direction: ltr; unicode-bidi: isolate; }
+  .ft-links a { opacity: .85; text-decoration: none; }
+  .ft-bottom { border-top: 1px solid rgba(255,255,255,.15); margin-top: 32px; padding-top: 16px; font-size: 13px; opacity: .7; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
 
   @media (max-width: 640px) {
     nav { display: none; }
@@ -164,8 +178,36 @@
 
 <footer>
   <div class="wrap">
-    <span>© 2026 مؤسسة طاء الرائدة للمقاولات العامة · الرقم الوطني الموحد 7027449532</span>
-    <span style="direction:ltr">Taa Al Raeda General Contracting Establishment · +966 50 688 0230</span>
+    <p class="ft-name">مؤسسة طاء الرائدة للمقاولات العامة</p>
+    <a class="ft-cr" href="https://qr.saudibusiness.gov.sa/viewcr?nCrNumber=KW+GlTMvFlPN5T3lu9RGoQ==" target="_blank" rel="noopener" title="التحقق من السجل التجاري">
+      <span class="ft-badge"><svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="M9 14l2 2 4-4"/></svg></span>
+      <dl>
+        <div><dt>السجل التجاري</dt><dd class="ltr">2053120305</dd></div>
+        <div><dt>الرقم الوطني الموحد</dt><dd class="ltr">7027449532</dd></div>
+      </dl>
+    </a>
+    <a class="ft-verify" href="https://qr.saudibusiness.gov.sa/viewcr?nCrNumber=KW+GlTMvFlPN5T3lu9RGoQ==" target="_blank" rel="noopener">التحقق من السجل في المركز السعودي للأعمال</a>
+
+    <h4>روابط مهمة</h4>
+    <ul class="ft-list ft-links">
+      <li><a href="#services">خدماتنا</a></li>
+      <li><a href="#method">طريقة العمل</a></li>
+      <li><a href="#privacy">الخصوصية والتواصل عبر واتساب</a></li>
+    </ul>
+
+    <h4>تواصل معنا</h4>
+    <ul class="ft-list">
+      <li><a href="https://wa.me/966506880230"><span class="ft-ico"><svg viewBox="0 0 24 24"><path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z"/><path d="M9 8.5c0 3.5 2.7 6.5 6.5 6.5l1-1.5-2-1-1 1c-1.2-.5-2.5-1.8-3-3l1-1-1-2z"/></svg></span><span class="ltr">+966506880230</span></a></li>
+      <li><a href="tel:+966506880230"><span class="ft-ico"><svg viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18.5h2"/></svg></span><span class="ltr">+966506880230</span></a></li>
+      <li><a href="mailto:ali@taaa.sa"><span class="ft-ico"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 6l8.5 7 8.5-7"/></svg></span><span class="ltr">ali@taaa.sa</span></a></li>
+      <li><a href="https://taaa.sa"><span class="ft-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg></span><span class="ltr">taaa.sa</span></a></li>
+      <li><span><span class="ft-ico"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></span><span>3371 شارع إبراهيم الشاطبي، حي المنتزة، سيهات 32452</span></span></li>
+    </ul>
+
+    <div class="ft-bottom">
+      <span>© 2026 مؤسسة طاء الرائدة للمقاولات العامة. جميع الحقوق محفوظة.</span>
+      <span class="ltr">Taa Alraidah For General Contracting Est. · CR 2053120305</span>
+    </div>
   </div>
 </footer>
 
