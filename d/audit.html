@@ -23,6 +23,7 @@
   var doc = {
     onSnapshot: function (ok, err) { cbs.push({ ok: ok, err: err }); pull(); setInterval(function () { if (document.visibilityState === "visible") pull(); }, 60000); return function () {}; },
     set: function (data) {
+      if (/[?&]ro=1/.test(location.search)) return Promise.resolve(); // the dashboard's hidden copy only reads
       return post({ op: "audit_save", state: data.state, base: base }).then(function (x) {
         if (x.status === 200) { base = x.j.at; last = x.j.at; tell("saved"); return; }
         if (x.status === 409) { last = null; setTimeout(pull, 300); }
