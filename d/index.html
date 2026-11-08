@@ -358,15 +358,23 @@ function home(m) {
   if (W.length) { const wb = el("div", "waiting"); wb.append(el("b", "", "بانتظارك:")); for (const [t, n, f] of W) { const b = el("button", "wchip"); b.type = "button"; b.append(el("span", "", t), el("span", "cnt", String(n))); b.onclick = f; wb.append(b); } m.append(wb); }
   const coll = A.contracts ? A.received / A.contracts : 0;
   const neg = A.FC && A.FC.min < 0;
-  m.append(kpiStrip([
-    { label: "المستحق لدى العملاء", value: fmt(A.toCollect), f: "in", sub: "محصّل " + pct(coll), flag: A.overdue ? ["bad", "متأخر " + fmt(A.overdue)] : null },
-    { label: "الالتزامات", value: fmt(A.owe), f: "out", flag: A.owe > A.cash ? ["bad", "أكبر من النقد"] : null },
-    { label: "الرصيد النقدي اليوم", value: A.cashDone ? fmt(A.cash) : "—", f: "cash", flag: A.cashDone ? null : ["warn", "لم يُدخل"] },
-    { label: "الضريبة المستحقة", value: fmt(A.vat), f: "out", flag: A.vat && !A.vatIn ? ["warn", "تحتاج تأكيد"] : null },
-    { label: "ربح المشاريع المتوقع", value: A.unkN === A.nP && A.nP ? "—" : fmt(A.projProfit), f: "in", sub: A.unkN ? A.unkN + " غير محسوبة" : "" },
-    neg ? { label: "أكبر عجز قادم", value: acc(A.FC.min), neg: true, f: "cash", sub: "يوم " + A.FC.minD }
-      : { label: A.fund < 0 ? "العجز المتوقع" : "الفائض المتوقع", value: acc(A.fund), neg: A.fund < 0, f: "cash" },
-  ]));
+  // one strip: the audit's figures + the bot's actual ones (cash, spending, obligations), no repeats
+  const BK = [...(sec("fin") ? sec("fin").kpis : []), ...(sec("money") ? sec("money").kpis : [])];
+  const bk = (l) => BK.find((k) => k.label === l);
+  const K = [];
+  K.push({ label: "المستحق لدى العملاء", value: fmt(A.toCollect), f: "in", sub: "محصّل " + pct(coll) + " من العقود", flag: A.overdue ? ["bad", "متأخر " + fmt(A.overdue)] : null });
+  const kc = bk("المحصّل"); if (kc) K.push({ ...kc, f: "in", tone: "" });
+  const ke = bk("المصروف حتى الآن"); if (ke) K.push({ ...ke, f: "out", tone: "" });
+  K.push({ label: "الالتزامات", value: fmt(A.owe), f: "out", sub: "خلال 3 أشهر " + fmt(A.pay3), flag: A.owe > A.cash ? ["bad", "أكبر من النقد"] : null });
+  const kn = bk("النقد المتاح"); K.push(kn ? { ...kn, f: "cash", tone: "" } : { label: "الرصيد النقدي اليوم", value: A.cashDone ? fmt(A.cash) : "—", f: "cash", sub: A.over ? "مصاريف ثابتة " + fmt(A.over) + " شهرياً" : "", flag: A.cashDone ? null : ["warn", "لم يُدخل"] });
+  const k30 = bk("صُرف آخر 30 يوماً"); if (k30) K.push({ ...k30, f: "out", tone: "" });
+  const ks = bk("مستحق لمقاولي الباطن"); if (ks && parseFloat(String(ks.value).replace(/,/g, "")) > 0) K.push({ ...ks, f: "out" });
+  const kp = bk("مشتريات بانتظار المدير المالي"); if (kp && +kp.value > 0) K.push({ ...kp, f: "out" });
+  K.push({ label: "الضريبة المستحقة", value: fmt(A.vat), f: "out", flag: A.vat && !A.vatIn ? ["warn", "تحتاج تأكيد"] : null });
+  K.push({ label: "ربح المشاريع المتوقع", value: A.unkN === A.nP && A.nP ? "—" : fmt(A.projProfit), f: "in", sub: A.unkN ? A.unkN + " مشاريع غير محسوبة" : "" });
+  K.push(neg ? { label: "أكبر عجز قادم", value: acc(A.FC.min), neg: true, f: "cash", sub: "يوم " + A.FC.minD }
+    : { label: A.fund < 0 ? "العجز المتوقع" : "الفائض المتوقع", value: acc(A.fund), neg: A.fund < 0, f: "cash" });
+  m.append(kpiStrip(K));
   // الرصيد المتوقع: the audit's own weekly chart
   if (A.FC) {
     const box = el("div", "box fcbox");
