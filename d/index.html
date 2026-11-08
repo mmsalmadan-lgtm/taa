@@ -84,6 +84,7 @@ button.card{cursor:pointer}button.card:hover{border-color:var(--ui-2)}
 /* record page */
 .back{align-self:flex-start;border:0;background:none;color:var(--ui);font-weight:600;padding:0}
 .sub-tabs{display:flex;gap:0;border-bottom:1px solid var(--line);background:var(--surface);border-radius:8px 8px 0 0;overflow-x:auto}
+.mtabs{border:1px solid var(--line);border-radius:8px}
 .sub-tabs button{border:0;background:none;padding:10px 14px;border-bottom:2px solid transparent;color:var(--ink);white-space:nowrap}
 .sub-tabs button[aria-current="true"]{border-bottom-color:var(--ui-2);font-weight:600;color:var(--ui)}
 .panel{background:var(--surface);border:1px solid var(--line);border-top:0;border-radius:0 0 8px 8px;padding:14px;display:flex;flex-direction:column;gap:12px}
@@ -127,7 +128,7 @@ iframe.audit{display:block;width:100%;height:calc(100dvh - 110px);border:0;backg
 .waiting b{font-size:14px;font-weight:600}
 .wchip{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--field);background:var(--surface);color:var(--ink);border-radius:4px;padding:4px 6px 4px 12px;font-size:13px}
 .wchip .cnt{background:var(--crit);color:#fff;border-radius:11px;min-width:22px;height:22px;display:grid;place-items:center;font-size:12px;font-weight:700;padding:0 6px}
-.neg{color:var(--neg)!important}.rcv{color:var(--acc9)!important}.pay{color:var(--out)!important}.eng{color:var(--eng9)!important}
+.neg{color:var(--neg)!important}.wv{color:var(--warn)!important}.rcv{color:var(--acc9)!important}.pay{color:var(--out)!important}.eng{color:var(--eng9)!important}
 .mix{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--track)}.mix i{display:block;height:100%}
 .legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted)}.legend span{display:inline-flex;align-items:center;gap:6px}.legend i,.dot{width:10px;height:10px;border-radius:3px;display:inline-block;flex:none}
 .elab{display:inline-flex;align-items:center;gap:6px}
@@ -202,9 +203,7 @@ const pct = (f) => Math.round((f || 0) * 100) + "%";
 const TABS = [
   { v: "home", t: "الرئيسية", fam: "var(--ui)" },
   { v: "proj", t: "المشاريع", fam: "var(--acc6)" },
-  { v: "subs", t: "مقاولو الباطن", ids: ["subk", "subrec", "certs"], fam: "var(--acc6)", f: "acc" },
-  { v: "sups", t: "الموردون", ids: ["sups"], fam: "var(--acc6)", f: "acc" },
-  { v: "money", t: "المالية", ids: ["claims"], fam: "var(--acc6)", f: "acc" },
+  { v: "money", t: "المالية والمحاسبة", ids: ["receipts", "claims", "custody", "purchases", "subk", "subrec", "certs", "sups"], fam: "var(--acc6)", f: "acc" },
   { v: "site", t: "الموقع", ids: ["reqs", "pours", "units"], fam: "var(--eng6)", f: "eng" },
   { v: "sales", t: "المبيعات", ids: ["changes", "leads"], fam: "var(--ui)" },
   { v: "rat", t: "Rent a Tool", ids: ["rat"], fam: "var(--ui)" },
@@ -237,7 +236,7 @@ function kpiStrip(list) {
     const v = el("div", "v" + (k.neg ? " neg" : ""), sar(k.value));
     b.append(el("div", "l", k.label), v); if (k.sub) b.append(el("div", "s", sar(k.sub)));
     if (k.flag) b.append(el("span", "flag " + k.flag[0], k.flag[1]));
-    else if (k.tone === "warn" || k.tone === "bad") b.append(el("span", "flag " + k.tone, k.tone === "bad" ? "متأخر" : "يحتاج متابعة"));
+    else if (k.tone === "warn" || k.tone === "bad") b.append(el("span", "flag " + k.tone, k.tone === "bad" ? "يحتاج إجراء" : "يحتاج متابعة"));
     g.append(b);
   }
   return g;
@@ -262,7 +261,8 @@ function cards(s, f) {
     for (; i < r.length; i++) {
       if (r[i] && typeof r[i] === "object" && r[i].tone !== undefined && i === r.length - 1) { tags.append(pill(r[i], s.table.cols[i])); continue; }
       if (!txt(r[i])) continue;
-      kv.append(el("span", "", s.table.cols[i]), el("b", "", txt(r[i])));
+      const tn = r[i] && typeof r[i] === "object" ? r[i].tone : "";
+      kv.append(el("span", "", s.table.cols[i]), el("b", tn === "bad" || /^[−-]\d/.test(txt(r[i])) ? "neg" : tn === "warn" ? "wv" : "", txt(r[i])));
     }
     c.append(kv); if (tags.children.length) c.append(tags);
     g.append(c);
@@ -278,7 +278,7 @@ function page(icon, title, sub, fam) {
 function renderTabs() {
   const row = $("tabRow"); row.replaceChildren();
   for (const T of TABS) {
-    let show = T.v === "home" || (T.v === "proj" ? !!(D.projects && D.projects.length) : T.v === "audit" ? !!D.projects : T.v === "money" ? !!(sec("claims") || AUD) : T.v === "data" ? !!(REG && REG.length) : (T.ids || []).some((x) => sec(x)));
+    let show = T.v === "home" || (T.v === "proj" ? !!(D.projects && D.projects.length) : T.v === "audit" ? !!D.projects : T.v === "money" ? !!(AUD || MTABS.some((x) => x.ids.some((i) => sec(i)))) : T.v === "data" ? !!(REG && REG.length) : (T.ids || []).some((x) => sec(x)));
     if (!show) continue;
     const b = el("button", "tab"); b.type = "button"; b.style.setProperty("--fam", T.fam);
     b.append(el("i"), el("span", "", T.t));
@@ -288,7 +288,30 @@ function renderTabs() {
   }
   $("tabs").hidden = false;
 }
-function go(v) { view = v; rec = null; draw(); window.scrollTo(0, 0); }
+function go(v) { if (v === "subs" || v === "sups") { MT = v; v = "money"; } view = v; rec = null; draw(); window.scrollTo(0, 0); }
+// «المالية والمحاسبة»: one place for everything money — each part in its own sub-tab
+const MTABS = [
+  { k: "rcv", t: "التحصيل", ids: ["receipts", "claims"] },
+  { k: "cus", t: "عهدات العملاء", ids: ["custody"] },
+  { k: "pur", t: "المشتريات", ids: ["purchases"] },
+  { k: "subs", t: "مقاولو الباطن", ids: ["subk", "subrec", "certs"] },
+  { k: "sups", t: "الموردون", ids: ["sups"] },
+  { k: "prof", t: "الربحية", ids: [], prof: true },
+];
+let MT = "rcv";
+function moneyView(m) {
+  const T = TABS.find((x) => x.v === "money");
+  m.append(page("م", "المالية والمحاسبة", null, T.fam));
+  const avail = MTABS.filter((x) => (x.prof ? !!AUD : x.ids.some((i) => sec(i))));
+  if (!avail.length) return;
+  if (!avail.some((x) => x.k === MT)) MT = avail[0].k;
+  const st = el("div", "sub-tabs mtabs");
+  for (const x of avail) { const b = el("button", "", x.t); b.type = "button"; b.setAttribute("aria-current", String(MT === x.k)); b.onclick = () => { MT = x.k; draw(); }; st.append(b); }
+  m.append(st);
+  const cur = avail.find((x) => x.k === MT);
+  if (cur.prof) return profitCards(m);
+  for (const id of cur.ids) { const s = sec(id); if (!s) continue; m.append(secHead(s.title, s.table ? s.table.rows.length : undefined, s.note), ...cards(s, "acc")); }
+}
 
 function draw() {
   renderTabs();
@@ -297,7 +320,7 @@ function draw() {
   if (view === "home") return home(m);
   if (view === "audit") return auditView(m);
   if (view === "more") return morePage(m);
-  if (view === "money") { const T = TABS.find((x) => x.v === "money"); m.append(page("م", "المالية", null, T.fam)); profitCards(m); const s = sec("claims"); if (s) m.append(secHead(s.title, s.table.rows.length, s.note), ...cards(s, "acc")); return; }
+  if (view === "money") return moneyView(m);
   if (view === "proj") return rec ? record(m) : projects(m);
   if (view === "data") return renderData(m);
   const T = TABS.find((x) => x.v === view);
@@ -351,7 +374,7 @@ function home(m) {
   const W = [];
   const bw = sec("wait"); if (bw && bw.table.rows.length) W.push(["بانتظارك في البوت", bw.table.rows.length, () => more("wait")]);
   if (A.unkN) W.push(["مشروع ربحه غير معروف", A.unkN, () => go("proj")]);
-  if (A.lossN + A.weakN) W.push(["مشروع ربحه أقل من 10%", A.lossN + A.weakN, () => go("money")]);
+  if (A.lossN + A.weakN) W.push(["مشروع ربحه أقل من 10%", A.lossN + A.weakN, () => { MT = "prof"; go("money"); }]);
   if (A.lateN) W.push(["دفعة متأخرة لدى عميل", A.lateN, () => go("proj")]);
   if (A.advN) W.push(["مقاول صُرف له أكثر من المعتمد", A.advN, () => go("subs")]);
   if (!A.hasOpen) W.push(["المطابقة لم تُشغّل", 1, () => go("audit")]); else if (Math.abs(A.recDiff) > A.tol) W.push(["الرصيد النقدي غير مطابق", 1, () => go("audit")]);
@@ -400,7 +423,7 @@ function home(m) {
     const box = el("div", "box"); const h = el("div", "fch2"); h.append(el("b", "", "صحة المشاريع"), el("span", "small muted", pct(coll) + " محصّل من العقود")); box.append(h);
     const bar = el("div", "bar big"), i = el("i"); i.style.width = Math.min(100, coll * 100) + "%"; bar.append(i); box.append(bar);
     const hc = el("div", "hcounts");
-    for (const [n, t, cls, f] of [[A.goodN, "سليم", "good", "proj"], [A.weakN, "ربح ضعيف", "warn", "money"], [A.lossN, "خاسر", "bad", "money"], [A.unkN, "غير معروف", "mute", "proj"]]) { const b = el("button", "hc " + cls); b.type = "button"; b.append(el("b", "", String(n)), el("span", "", t)); b.onclick = () => go(f); hc.append(b); }
+    for (const [n, t, cls, f] of [[A.goodN, "سليم", "good", "proj"], [A.weakN, "ربح ضعيف", "warn", "money"], [A.lossN, "خاسر", "bad", "money"], [A.unkN, "غير معروف", "mute", "proj"]]) { const b = el("button", "hc " + cls); b.type = "button"; b.append(el("b", "", String(n)), el("span", "", t)); b.onclick = () => { if (f === "money") MT = "prof"; go(f); }; hc.append(b); }
     box.append(hc);
     const b = el("button", "lnk", "أكبر المبالغ عند العملاء ←"); b.type = "button"; b.onclick = () => more("coll"); box.append(b);
     g2.append(box);
