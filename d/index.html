@@ -299,6 +299,27 @@ const MTABS = [
   { k: "prof", t: "الربحية", ids: [], prof: true },
 ];
 let MT = "rcv";
+// المستحق الآن: installments whose stage is reached and not yet collected, per project (from the audit data)
+function dueBlock(m) {
+  const L = (D.projects || []).filter((p) => p.x.dueNow > 0.5).sort((a, b) => b.x.dueNow - a.x.dueNow);
+  const tot = L.reduce((t, p) => t + p.x.dueNow, 0);
+  m.append(secHead("المستحق الآن عند العملاء", L.length, "دفعات وصلت مرحلتها ولم تُحصّل بعد — اضغط على المشروع لتفاصيل دفعاته"));
+  if (!L.length) { m.append(el("div", "empty", "لا يوجد مستحق الآن")); return; }
+  m.append(kpiStrip([{ label: "إجمالي المستحق الآن", value: fmt(tot), f: "in", sub: L.length + " مشاريع", tone: "warn" },
+    ...(AUD && AUD.overdue ? [{ label: "منه متأخر", value: fmt(AUD.overdue), f: "in", flag: ["bad", "متأخر"] }] : [])]));
+  const g = el("div", "grid fam-acc");
+  for (const p of L) {
+    const c = el("button", "card warn"); c.type = "button"; c.onclick = () => { view = "proj"; rec = p.id; recTab = "inst"; draw(); window.scrollTo(0, 0); };
+    c.append(el("div", "t", p.name)); if (p.client) c.append(el("div", "st", p.client));
+    const kv = el("div", "kv");
+    kv.append(el("span", "", "المستحق الآن"), el("b", "wv", fmt(p.x.dueNow)), el("span", "", "المحصّل"), el("b", "rcv", fmt(p.x.collected) + " (" + pct(p.x.pct) + ")"));
+    c.append(kv);
+    const due = p.contracts.flatMap((k) => k.inst.filter((i) => i.due && i.amt - i.got > 0.5).map((i) => (i.name.split("—")[0].trim().length > 28 ? i.name.split("—")[0].trim().slice(0, 26) + "…" : i.name.split("—")[0].trim()) + " " + fmt(i.amt - i.got)));
+    if (due.length) { const tags = el("div", "tags"); for (const d of due.slice(0, 3)) tags.append(el("span", "pill warn", d)); if (due.length > 3) tags.append(el("span", "pill", "+" + (due.length - 3))); c.append(tags); }
+    g.append(c);
+  }
+  m.append(g);
+}
 function moneyView(m) {
   const T = TABS.find((x) => x.v === "money");
   m.append(page("م", "المالية والمحاسبة", null, T.fam));
@@ -310,6 +331,7 @@ function moneyView(m) {
   m.append(st);
   const cur = avail.find((x) => x.k === MT);
   if (cur.prof) return profitCards(m);
+  if (cur.k === "rcv") dueBlock(m);
   for (const id of cur.ids) { const s = sec(id); if (!s) continue; m.append(secHead(s.title, s.table ? s.table.rows.length : undefined, s.note), ...cards(s, "acc")); }
 }
 
