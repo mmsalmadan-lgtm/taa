@@ -102,6 +102,8 @@ button.card{cursor:pointer}button.card:hover{border-color:var(--ui-2)}
 .msg h1{font-size:20px;margin:0 0 8px}.muted{color:var(--muted)}.small{font-size:13px}
 .login{display:inline-block;margin:14px 0 6px;background:#1F7A4D;color:#fff;text-decoration:none;font-weight:700;font-size:16px;padding:12px 22px;border-radius:6px}
 .skel{height:110px;border-radius:8px;background:linear-gradient(90deg,var(--line),var(--surface),var(--line))}
+main.full{max-width:none;padding:0;gap:0}main.full~footer{display:none}
+iframe.audit{display:block;width:100%;height:calc(100dvh - 110px);border:0;background:var(--bg)}
 footer{text-align:center;color:var(--muted);font-size:12px;padding:0 16px 28px}
 /* data editor dialog */
 .pbtn{border:1px solid var(--ui);background:var(--ui);color:#fff;border-radius:4px;padding:7px 14px;font-weight:600}
@@ -155,10 +157,8 @@ const pct = (f) => Math.round((f || 0) * 100) + "%";
 // app tabs: which sections live where, and their colour family
 const TABS = [
   { v: "home", t: "الرئيسية", fam: "var(--ui)" },
-  { v: "proj", t: "المشاريع", fam: "var(--acc6)" },
-  { v: "subs", t: "مقاولو الباطن", ids: ["subk", "subrec", "certs"], fam: "var(--acc6)", f: "acc" },
-  { v: "sups", t: "الموردون", ids: ["sups"], fam: "var(--acc6)", f: "acc" },
-  { v: "money", t: "المالية", ids: ["claims", "profit"], fam: "var(--acc6)", f: "acc" },
+  { v: "audit", t: "التدقيق المالي", fam: "var(--acc6)" },
+  { v: "subs", t: "المستخلصات", ids: ["subk", "certs", "subrec", "claims"], fam: "var(--acc6)", f: "acc" },
   { v: "site", t: "الموقع", ids: ["reqs", "pours", "units"], fam: "var(--eng6)", f: "eng" },
   { v: "sales", t: "المبيعات", ids: ["changes", "leads"], fam: "var(--ui)" },
   { v: "rat", t: "Rent a Tool", ids: ["rat"], fam: "var(--ui)" },
@@ -229,7 +229,7 @@ function page(icon, title, sub, fam) {
 function renderTabs() {
   const row = $("tabRow"); row.replaceChildren();
   for (const T of TABS) {
-    let show = T.v === "home" || (T.v === "proj" ? !!(D.projects && D.projects.length) : T.v === "data" ? !!(REG && REG.length) : (T.ids || []).some((x) => sec(x)));
+    let show = T.v === "home" || (T.v === "audit" ? !!D.projects : T.v === "data" ? !!(REG && REG.length) : (T.ids || []).some((x) => sec(x)));
     if (!show) continue;
     const b = el("button", "tab"); b.type = "button"; b.style.setProperty("--fam", T.fam);
     b.append(el("i"), el("span", "", T.t));
@@ -243,22 +243,31 @@ function go(v) { view = v; rec = null; draw(); window.scrollTo(0, 0); }
 
 function draw() {
   renderTabs();
-  const m = $("main"); m.replaceChildren();
+  const m = $("main"); m.replaceChildren(); m.classList.remove("full");
+  if (view !== "audit" && auditDirty) { auditDirty = false; load(true); return; }
   if (view === "home") return home(m);
-  if (view === "proj") return rec ? record(m) : projects(m);
+  if (view === "audit") return auditView(m);
   if (view === "data") return renderData(m);
   const T = TABS.find((x) => x.v === view);
   m.append(page(T.t.slice(0, 1), T.t, null, T.fam));
   for (const id of T.ids) { const s = sec(id); if (!s) continue; m.append(secHead(s.title, s.table ? s.table.rows.length : undefined, s.note), ...cards(s, T.f)); }
 }
 
+// «تدقيق طاء» — the same app, its data kept by the bot; it runs in a frame and saves through the dashboard link
+let AF = null, auditDirty = false;
+window.addEventListener("message", (e) => { if (e.source === (AF && AF.contentWindow) && e.data && e.data.taa === "saved") auditDirty = true; });
+function auditView(m) {
+  m.classList.add("full");
+  if (!AF) { AF = el("iframe", "audit"); AF.title = "التدقيق المالي"; AF.src = "audit.html#" + encodeURIComponent(token); }
+  m.append(AF);
+}
 function home(m) {
   m.append(page("ط", "مرحباً " + D.name.replace(/^المهندس\s+/, ""), D.roles.join(" · ")));
   const ks = [...(sec("fin") ? sec("fin").kpis : []), ...(sec("money") ? sec("money").kpis.filter((k) => k.label !== "مطالبات عند العملاء") : [])];
   if (ks.length) m.append(kpiStrip(ks.map((k) => ({ ...k, f: KF[k.label] || "" }))));
   // alerts that need someone today
   const al = [];
-  for (const p of D.projects || []) if (p.x.dueNow > 0.5) al.push({ t: "مستحق عند العميل — " + p.name, x: "دفعات استحقت ولم تُحصّل", a: fmt(p.x.dueNow), v: p.x.dueNow, go: () => { view = "proj"; rec = p.id; recTab = "inst"; draw(); } });
+  for (const p of D.projects || []) if (p.x.dueNow > 0.5) al.push({ t: "مستحق عند العميل — " + p.name, x: "دفعات استحقت ولم تُحصّل", a: fmt(p.x.dueNow), v: p.x.dueNow, go: () => go("audit") });
   al.sort((a, b) => b.v - a.v);
   const rr = sec("subrec");
   const subAl = rr ? rr.table.rows.filter((r) => r[3] && r[3].tone === "bad").map((r) => ({ t: "دفعات باطن أكثر من قيود — " + r[0], x: "راجع المستخلصات مع المحاسب", a: txt(r[3]), bad: true, go: () => go("subs") })) : [];
@@ -469,7 +478,7 @@ function openForm(e, r) {
 
 $("reload").addEventListener("click", async () => { if (view === "data") await loadReg(); load(true); });
 load().then(() => token && loadReg().then(() => D && renderTabs())).catch(() => {});
-setInterval(() => { if (document.visibilityState === "visible" && view !== "data" && !$("dlg").open) load(true); }, 120000);
+setInterval(() => { if (document.visibilityState === "visible" && view !== "data" && view !== "audit" && !$("dlg").open) load(true); }, 120000);
 </script>
 </body>
 </html>
