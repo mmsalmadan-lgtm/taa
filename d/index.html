@@ -102,6 +102,25 @@ button.card{cursor:pointer}button.card:hover{border-color:var(--ui-2)}
 .msg h1{font-size:20px;margin:0 0 8px}.muted{color:var(--muted)}.small{font-size:13px}
 .login{display:inline-block;margin:14px 0 6px;background:#1F7A4D;color:#fff;text-decoration:none;font-weight:700;font-size:16px;padding:12px 22px;border-radius:6px}
 .skel{height:110px;border-radius:8px;background:linear-gradient(90deg,var(--line),var(--surface),var(--line))}
+.back{align-self:flex-start;border:0;background:none;color:var(--ui);font:inherit;font-size:14px;padding:0;cursor:pointer}
+.fcbox{display:flex;flex-direction:column;gap:6px}.fch2{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}.fch2>b:first-child{font-size:15px}
+.links{display:flex;gap:6px 18px;flex-wrap:wrap}
+.lnk{border:0;background:none;color:var(--ui);font:inherit;font-size:13.5px;padding:6px 0;cursor:pointer;text-align:right}
+.al1{display:grid;grid-template-columns:4px minmax(0,1fr) auto;gap:10px;align-items:center;width:100%;padding:9px 8px;margin-top:6px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);text-align:right;font:inherit;font-size:13.5px;cursor:pointer}
+.al1 i{align-self:stretch;border-radius:2px;background:var(--warn)}.al1.bad i{background:var(--crit)}.al1 span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.al1 b{white-space:nowrap}
+.alx{border-inline-start:4px solid var(--warn);display:flex;flex-direction:column;gap:6px}.alx.bad{border-inline-start-color:var(--crit)}
+.fc-tip{position:absolute;top:-4px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:3px 8px;font-size:12px;box-shadow:0 2px 6px rgb(0 0 0/.12);pointer-events:none;white-space:nowrap;display:flex;flex-direction:column;gap:2px;line-height:1.5;direction:rtl;z-index:3}.fc-tip[hidden]{display:none}.fc-tip .tt-h{color:var(--muted);font-size:11px}.fc-tip small{color:var(--muted)}
+.wc{display:grid;grid-template-columns:52px minmax(0,1fr);grid-template-rows:180px auto;column-gap:6px;margin-top:4px}
+.wc-y{position:relative;font-size:10.5px;color:var(--muted);text-align:right}.wc-y span{position:absolute;right:0;transform:translateY(-50%);white-space:nowrap;font-variant-numeric:tabular-nums}
+.wc-plot{position:relative;touch-action:pan-y}
+.wc-g{position:absolute;left:0;right:0;height:0;border-top:1px solid var(--line)}.wc-g.z{border-top-color:var(--muted)}
+.wc-cols{position:absolute;inset:0;display:flex}.wk{flex:1;position:relative;min-width:0}
+.wk i{position:absolute;left:50%;transform:translateX(-50%);width:min(70%,22px);background:color-mix(in srgb,var(--acc6) 75%,var(--surface));border-radius:4px 4px 0 0}
+.wk.neg i{background:var(--crit);border-radius:0 0 4px 4px}.wk.on i{filter:brightness(1.12);outline:2px solid var(--surface)}
+.wk-l{position:absolute;z-index:2;left:50%;transform:translate(-50%,calc(-100% - 3px));font-size:10.5px;font-weight:700;color:var(--ink);white-space:nowrap;background:var(--surface);padding:0 3px;border-radius:3px}
+.wk-l.b{transform:translate(-50%,3px)}.wc-x{position:relative;height:18px;font-size:11px;color:var(--muted);grid-column:2}.wc-x span{position:absolute;transform:translateX(-50%);top:3px;white-space:nowrap}
+.fcbox .sm{font-size:12px}.fcbox .muted{color:var(--muted)}
+@media (max-width:520px){.wc{grid-template-columns:44px minmax(0,1fr);grid-template-rows:160px auto}}
 main.full{max-width:none;padding:0;gap:0}main.full~footer{display:none}
 iframe.audit{display:block;width:100%;height:calc(100dvh - 110px);border:0;background:var(--bg)}
 .waiting{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
@@ -264,7 +283,7 @@ function renderTabs() {
     const b = el("button", "tab"); b.type = "button"; b.style.setProperty("--fam", T.fam);
     b.append(el("i"), el("span", "", T.t));
     if (T.v === "home") { const w = sec("wait"); if (w && w.table.rows.length) b.append(el("span", "n", String(w.table.rows.length))); }
-    if (view === T.v) b.setAttribute("aria-current", "page");
+    if (view === T.v || (view === "more" && T.v === "home")) b.setAttribute("aria-current", "page");
     b.onclick = () => go(T.v); row.append(b);
   }
   $("tabs").hidden = false;
@@ -277,6 +296,7 @@ function draw() {
   if (view !== "audit" && auditDirty) { auditDirty = false; load(true); refreshAud(); return; }
   if (view === "home") return home(m);
   if (view === "audit") return auditView(m);
+  if (view === "more") return morePage(m);
   if (view === "money") { const T = TABS.find((x) => x.v === "money"); m.append(page("م", "المالية", null, T.fam)); profitCards(m); const s = sec("claims"); if (s) m.append(secHead(s.title, s.table.rows.length, s.note), ...cards(s, "acc")); return; }
   if (view === "proj") return rec ? record(m) : projects(m);
   if (view === "data") return renderData(m);
@@ -299,6 +319,7 @@ const SNIP = `(()=>{const M=model();
  return JSON.stringify({toCollect:M.toCollect,contracts:M.contracts,received:M.received,overdue:M.overdue,owe:M.owe,pay3:M.pay3,cash:M.cash,cashDone:!!M.done.cash,vat:M.vat,vatIn:M.vatIn,projProfit:M.projProfit,unkN,lossN,weakN,goodN,lateN,nP:M.PL.length,advN:M.advList.length,
   fund:M.fund,fIn:M.fIn,fCost:M.fCost,fPay:M.fPay,unkF:M.unkF.length,nsF:M.nsF.length,fShort:M.fShort.slice(0,6).map(o=>({name:o.x.p.name,prog:o.x.c.prog,coll:o.x.c.contract?o.x.c.received/o.x.c.contract:0,d:o.d})),
   B:Object.keys(M.B).map(k=>k+" "+Math.round(M.B[k].r*100)+"%").join("، "),over:M.over,hasOpen:M.hasOpen,recDiff:M.recDiff,tol:M.tol,
+  chart:F?fcChart(F):"",wk:F&&F.wk?F.wk.map(w=>({r:dm(w.s)+" – "+dm(w.e),mn:w.mn,md:AR_D[addD(w.md).getDay()]+" "+dm(w.md),end:w.end})):[],
   FC:F?{min:F.min,minD:dm(F.minD),first:F.Wn.length?F.Wn[0].a:null,negDays:F.negDays,end:F.end,nW:F.Wn.length,win}:null,
   F:M.F.filter(f=>f.s!=="good").map(f=>({s:f.s,t:f.t,d:f.d,amt:f.amt,noAmt:!!f.noAmt,go:f.go})),groups,
   P:Object.fromEntries(M.PL.map(x=>[x.p.name,{profit:x.c.profit,margin:x.c.margin,total:x.c.total,prog:x.c.prog,unknown:!!x.c.unknown,contract:x.c.contract,late:x.c.late,net:x.c.net}]))});})()`;
@@ -310,68 +331,110 @@ function refreshAud() {
   let n = 0;
   const t = setInterval(() => {
     n++; let ready = false;
-    try { const w = HF.contentWindow; ready = w && w.eval && w.eval("typeof S!=='undefined'&&S.proj&&S.proj.length>0&&document.getElementById('save').textContent!=='جارٍ الاتصال…'"); if (ready) { AUD = JSON.parse(w.eval(SNIP)); clearInterval(t); if (view === "home" || view === "proj" || view === "money") draw(); } } catch (e) {}
+    try { const w = HF.contentWindow; ready = w && w.eval && w.eval("typeof S!=='undefined'&&S.proj&&S.proj.length>0&&document.getElementById('save').textContent!=='جارٍ الاتصال…'"); if (ready) { AUD = JSON.parse(w.eval(SNIP)); clearInterval(t); if (view === "home" || view === "proj" || view === "money" || view === "more") draw(); } } catch (e) {}
     if (n > 80) clearInterval(t);
   }, 250);
 }
 const acc = (v) => (v < 0 ? "(" + fmt(-v) + ")" : fmt(v));
 let showAllF = false;
+let MORE = null;
+const more = (k) => { view = "more"; MORE = k; rec = null; draw(); window.scrollTo(0, 0); };
+function backHome(m, title, sub) {
+  const b = el("button", "back", "→ الرئيسية"); b.type = "button"; b.onclick = () => go("home");
+  m.append(b, page("ط", title, sub, "var(--acc6)"));
+}
+// The home page is a short overview; every block opens its own page for the detail.
 function home(m) {
   if (!AUD) return homeBasic(m);
   const A = AUD;
   m.append(page("ط", "مرحباً " + D.name.replace(/^المهندس\s+/, ""), D.roles.join(" · ")));
-  // بانتظارك: the audit's items + the bot's own queue
   const W = [];
-  if (A.unkN) W.push(["مشروع ربحه غير معروف", A.unkN, "proj"]);
-  if (A.lossN + A.weakN) W.push(["مشروع ربحه أقل من 10%", A.lossN + A.weakN, "proj"]);
-  if (A.lateN) W.push(["دفعة متأخرة لدى عميل", A.lateN, "proj"]);
-  if (A.advN) W.push(["مقاول صُرف له أكثر من المعتمد", A.advN, "subs"]);
-  if (!A.hasOpen) W.push(["المطابقة لم تُشغّل", 1, "audit"]); else if (Math.abs(A.recDiff) > A.tol) W.push(["الرصيد النقدي غير مطابق", 1, "audit"]);
-  const bw = sec("wait"); if (bw && bw.table.rows.length) W.unshift(["بانتظارك في البوت", bw.table.rows.length, "wait"]);
-  const wb = el("div", "waiting"); wb.append(el("b", "", "بانتظارك:"));
-  if (!W.length) wb.append(el("span", "muted", "لا شيء معلّق"));
-  for (const [t, n, g] of W) { const b = el("button", "wchip"); b.type = "button"; b.append(el("span", "", t), el("span", "cnt", String(n))); b.onclick = () => (g === "wait" ? document.getElementById("waitBox")?.scrollIntoView({ behavior: "smooth" }) : go(g)); wb.append(b); }
-  m.append(wb);
+  const bw = sec("wait"); if (bw && bw.table.rows.length) W.push(["بانتظارك في البوت", bw.table.rows.length, () => more("wait")]);
+  if (A.unkN) W.push(["مشروع ربحه غير معروف", A.unkN, () => go("proj")]);
+  if (A.lossN + A.weakN) W.push(["مشروع ربحه أقل من 10%", A.lossN + A.weakN, () => go("money")]);
+  if (A.lateN) W.push(["دفعة متأخرة لدى عميل", A.lateN, () => go("proj")]);
+  if (A.advN) W.push(["مقاول صُرف له أكثر من المعتمد", A.advN, () => go("subs")]);
+  if (!A.hasOpen) W.push(["المطابقة لم تُشغّل", 1, () => go("audit")]); else if (Math.abs(A.recDiff) > A.tol) W.push(["الرصيد النقدي غير مطابق", 1, () => go("audit")]);
+  if (W.length) { const wb = el("div", "waiting"); wb.append(el("b", "", "بانتظارك:")); for (const [t, n, f] of W) { const b = el("button", "wchip"); b.type = "button"; b.append(el("span", "", t), el("span", "cnt", String(n))); b.onclick = f; wb.append(b); } m.append(wb); }
   const coll = A.contracts ? A.received / A.contracts : 0;
+  const neg = A.FC && A.FC.min < 0;
   m.append(kpiStrip([
-    { label: "المستحق لدى العملاء", value: fmt(A.toCollect), f: "in", sub: "محصّل " + pct(coll) + " من " + fmt(A.contracts), flag: A.overdue ? ["bad", "منها متأخر " + fmt(A.overdue)] : null },
-    { label: "الالتزامات", value: fmt(A.owe), f: "out", sub: "خلال 3 أشهر " + fmt(A.pay3), flag: A.owe > A.cash ? ["bad", "أكبر من النقد"] : null },
+    { label: "المستحق لدى العملاء", value: fmt(A.toCollect), f: "in", sub: "محصّل " + pct(coll), flag: A.overdue ? ["bad", "متأخر " + fmt(A.overdue)] : null },
+    { label: "الالتزامات", value: fmt(A.owe), f: "out", flag: A.owe > A.cash ? ["bad", "أكبر من النقد"] : null },
     { label: "الرصيد النقدي اليوم", value: A.cashDone ? fmt(A.cash) : "—", f: "cash", flag: A.cashDone ? null : ["warn", "لم يُدخل"] },
-    { label: "الضريبة المستحقة", value: fmt(A.vat), f: "out", sub: A.vatIn ? "المخرجات − المدخلات − المدفوع" : "بدون خصم ضريبة المدخلات", flag: A.vat && !A.vatIn ? ["warn", "تحتاج تأكيد"] : null },
-    { label: "ربح المشاريع المتوقع", value: A.unkN === A.nP && A.nP ? "—" : fmt(A.projProfit), f: "in", sub: A.unkN ? A.unkN + " مشاريع غير محسوبة" : "", flag: A.contracts && !A.unkN && A.projProfit / (A.contracts / 1.15) < 0.10 ? ["warn", "أقل من 10%"] : null },
-    A.FC && A.FC.min < 0 ? { label: "أكبر عجز قادم", value: acc(A.FC.min), neg: true, f: "cash", sub: "يوم " + A.FC.minD + " · أول عجز " + (A.FC.first === 0 ? "اليوم" : "بعد " + A.FC.first + " أيام"), flag: ["bad", "عجز"] }
-      : { label: A.fund < 0 ? "العجز المتوقع" : "الفائض المتوقع", value: acc(A.fund), neg: A.fund < 0, f: "cash", sub: "لإكمال المشاريع الحالية", flag: A.fund < 0 ? ["bad", "عجز"] : null },
-    { label: "المصاريف الثابتة شهريًا", value: A.over ? fmt(A.over) : "—", f: "out", sub: A.over ? "سنويًا " + fmt(A.over * 12) : "", flag: A.over ? null : ["warn", "لم تُدخل"] },
-    { label: "المطابقة النقدية", value: A.hasOpen ? acc(A.recDiff) : "—", f: "cash", flag: !A.hasOpen ? ["warn", "لم تُشغَّل"] : Math.abs(A.recDiff) > A.tol ? ["bad", "غير مطابق"] : null },
+    { label: "الضريبة المستحقة", value: fmt(A.vat), f: "out", flag: A.vat && !A.vatIn ? ["warn", "تحتاج تأكيد"] : null },
+    { label: "ربح المشاريع المتوقع", value: A.unkN === A.nP && A.nP ? "—" : fmt(A.projProfit), f: "in", sub: A.unkN ? A.unkN + " غير محسوبة" : "" },
+    neg ? { label: "أكبر عجز قادم", value: acc(A.FC.min), neg: true, f: "cash", sub: "يوم " + A.FC.minD }
+      : { label: A.fund < 0 ? "العجز المتوقع" : "الفائض المتوقع", value: acc(A.fund), neg: A.fund < 0, f: "cash" },
   ]));
-  // الرصيد المتوقع يوم بيوم + كيف تتفادى العجز
+  // الرصيد المتوقع: the audit's own weekly chart
   if (A.FC) {
-    const F = A.FC, neg = F.min < 0, W0 = F.win[0];
-    m.append(secHead("الرصيد المتوقع يوم بيوم", undefined, "من النقد اليوم: التحصيل حسب مراحل الدفعات، وتكلفة الإكمال حسب مراحل التنفيذ" + (A.over ? "، والمصاريف الثابتة " + fmt(A.over) + " شهريًا" : "") + ". بدون الضريبة."));
-    m.append(kpiStrip(neg ? [
-      { label: "أول عجز", value: W0.a === 0 ? "اليوم" : "بعد " + W0.a + (W0.a === 1 ? " يوم" : W0.a <= 10 ? " أيام" : " يومًا"), neg: true, f: "cash", sub: (W0.a === W0.b ? W0.ra : W0.ra + "–" + W0.rb) + " · أكبره (" + fmt(-W0.min) + ")" },
-      { label: "أكبر عجز", value: "(" + fmt(-F.min) + ")", neg: true, f: "cash", sub: "يوم " + F.minD },
-      { label: "فترات العجز", value: String(F.nW), f: "cash", sub: F.negDays + (F.negDays <= 10 ? " أيام" : " يومًا") + " · بنهاية المشاريع " + fmt(F.end) }]
-      : [{ label: "لا عجز متوقع", value: "✓", f: "in" }, { label: "أقل رصيد", value: fmt(F.min), f: "cash", sub: "يوم " + F.minD }, { label: "بنهاية المشاريع", value: fmt(F.end), f: "in" }]));
-    if (neg) {
-      const box = el("div", "box adv"); box.append(el("div", "adv-h", "كيف تتفادى العجز"));
-      for (const w of F.win) {
-        const b = el("details", "adv-w"); if (w === F.win[0]) b.open = true; b.append(el("summary", "adv-t", "عجز (" + fmt(-w.min) + ") " + (w.a === w.b ? "يوم " + w.ra : "من " + w.ra + " إلى " + w.rb)));
-        const ol = el("ol");
-        const li = (title, rows) => { const l = el("li"); l.append(el("b", "", title)); for (const [a, bb, cls, small] of rows) { const r = el("div", "adv-i"); const s1 = el("span", "", a); if (small) s1.append(el("small", "", small)); r.append(s1, el("b", cls, bb)); l.append(r); } ol.append(l); };
-        if (w.stage.length) li("قدّم المراحل اللي تفتح دفعات قريبة، عشان تستحق قبل " + w.ra + ":", w.stage.map((e) => [e.nm + ": " + e.trig, fmt(e.g), "rcv", "متوقعة حاليًا " + e.d]));
-        if (w.slow.length) li("أخّر شراء المواد غير العاجلة في مشاريع دفعتها القادمة بعيدة:", w.slow.map((o) => [o.k, fmt(o.v), "pay", o.n === null ? "لا دفعة متوقعة" : "دفعته القادمة " + o.n]));
-        if (w.deferSum > 0) li("اتفق مع الموردين على تأجيل المستحق لما بعد " + w.rb + ":", w.defer.map((e) => [e.w, fmt(e.g), "pay"]));
-        if (w.left > 0) li("إذا ما كفى: تمويل مؤقت حوالي " + fmt(w.left) + " من " + w.ra + " إلى " + w.rb1 + ".", []);
-        if (w.dueSum > 0) { const l = el("li", "info", "التوقع يفترض تحصيل المستحق الآن حسب سير العمل (" + fmt(w.dueSum) + " بدون الضريبة) خلال أسبوع. توقيته حسب توفر السيولة عند العملاء، وإذا تأخر يكبر العجز."); ol.append(l); }
-        b.append(ol); box.append(b);
-      }
-      m.append(box);
-    }
+    const box = el("div", "box fcbox");
+    const hd = el("div", "fch2"); hd.append(el("b", "", "الرصيد المتوقع"));
+    const F = A.FC, W0 = F.win[0];
+    hd.append(el("span", neg ? "pill bad" : "pill ok", neg ? "أول عجز " + (W0.a === 0 ? "اليوم" : "بعد " + W0.a + (W0.a <= 10 ? " أيام" : " يومًا")) + " · أكبره " + acc(F.min) : "لا عجز متوقع"));
+    box.append(hd);
+    const c = el("div"); c.innerHTML = A.chart; box.append(c); chartTips(c);
+    const row = el("div", "links");
+    if (neg) { const b = el("button", "lnk", "كيف تتفادى العجز ←"); b.type = "button"; b.onclick = () => more("fc"); row.append(b); }
+    const b2 = el("button", "lnk", "تمويل إكمال المشاريع: " + (A.fund < 0 ? "عجز " : "فائض ") + acc(Math.abs(A.fund)) + " ←"); b2.type = "button"; b2.onclick = () => more("fund"); row.append(b2);
+    box.append(row); m.append(box);
   }
-  // تمويل إكمال المشاريع الحالية
+  const g2 = el("div", "fgrid");
   {
-    m.append(secHead("تمويل إكمال المشاريع الحالية", undefined, A.B ? "تكلفة الإكمال قبل منتصف المشروع = متوسط مشاريعكم المنتهية (" + A.B + " من صافي العقد)، وبعده حسب صرف المشروع" : "تقدير: تكلفة الإكمال محسوبة من المصروف ونسبة الإنجاز"));
+    const box = el("div", "box"); const h = el("div", "fch2"); h.append(el("b", "", "أهم التنبيهات")); box.append(h);
+    if (!A.F.length) box.append(el("div", "small muted", "لا تنبيهات"));
+    A.F.slice(0, 3).forEach((f, i) => { const b = el("button", "al1" + (f.s === "bad" ? " bad" : "")); b.type = "button"; b.append(el("i"), el("span", "", f.t), el("b", f.s === "bad" ? "neg" : "", f.noAmt ? "" : fmt(f.amt))); b.onclick = () => more("al:" + i); box.append(b); });
+    if (A.F.length > 3) { const b = el("button", "lnk", "كل التنبيهات (" + A.F.length + ") ←"); b.type = "button"; b.onclick = () => more("alerts"); box.append(b); }
+    g2.append(box);
+  }
+  {
+    const box = el("div", "box"); const h = el("div", "fch2"); h.append(el("b", "", "صحة المشاريع"), el("span", "small muted", pct(coll) + " محصّل من العقود")); box.append(h);
+    const bar = el("div", "bar big"), i = el("i"); i.style.width = Math.min(100, coll * 100) + "%"; bar.append(i); box.append(bar);
+    const hc = el("div", "hcounts");
+    for (const [n, t, cls, f] of [[A.goodN, "سليم", "good", "proj"], [A.weakN, "ربح ضعيف", "warn", "money"], [A.lossN, "خاسر", "bad", "money"], [A.unkN, "غير معروف", "mute", "proj"]]) { const b = el("button", "hc " + cls); b.type = "button"; b.append(el("b", "", String(n)), el("span", "", t)); b.onclick = () => go(f); hc.append(b); }
+    box.append(hc);
+    const b = el("button", "lnk", "أكبر المبالغ عند العملاء ←"); b.type = "button"; b.onclick = () => more("coll"); box.append(b);
+    g2.append(box);
+  }
+  m.append(g2);
+}
+function chartTips(c) {
+  const pl = c.querySelector(".wc-plot"); if (!pl) return;
+  const tip = pl.querySelector(".fc-tip"), wk = AUD.wk;
+  const show = (x) => {
+    const r = pl.getBoundingClientRect(), i = Math.max(0, Math.min(wk.length - 1, Math.floor((x - r.left) / r.width * wk.length))), w = wk[i];
+    pl.querySelectorAll(".wk").forEach((c2, j) => c2.classList.toggle("on", j === i));
+    tip.hidden = false; tip.replaceChildren();
+    const ln = (t, v, small) => { const d = el("div", "", t + " "); d.append(el("b", v < 0 ? "neg" : "", acc(v))); if (small) d.append(el("small", "", " " + small)); tip.append(d); };
+    tip.append(el("div", "tt-h", w.r)); ln("أقل رصيد", w.mn, w.md); ln("نهاية الأسبوع", w.end);
+    const px = (i + 0.5) / wk.length * r.width; tip.style.left = Math.max(2, Math.min(r.width - tip.offsetWidth - 2, px - tip.offsetWidth / 2)) + "px";
+  };
+  pl.addEventListener("pointermove", (e) => show(e.clientX));
+  pl.addEventListener("pointerdown", (e) => show(e.clientX));
+  pl.addEventListener("pointerleave", () => { tip.hidden = true; pl.querySelectorAll(".wk.on").forEach((c2) => c2.classList.remove("on")); });
+}
+function morePage(m) {
+  const A = AUD, k = MORE || "";
+  if (!A && k !== "wait") return go("home");
+  if (k === "wait") { const w = sec("wait"); backHome(m, "بانتظارك في البوت", w && w.note); if (w) m.append(...cards({ ...w, kpis: null }, "ui")); return; }
+  if (k === "fc") {
+    const F = A.FC; backHome(m, "كيف تتفادى العجز", "أكبر عجز " + acc(F.min) + " يوم " + F.minD + " · " + F.nW + " فترات عجز");
+    for (const w of F.win) {
+      const b = el("div", "box adv"); b.append(el("div", "adv-t", "عجز (" + fmt(-w.min) + ") " + (w.a === w.b ? "يوم " + w.ra : "من " + w.ra + " إلى " + w.rb)));
+      const ol = el("ol");
+      const li = (title, rows) => { const l = el("li"); l.append(el("b", "", title)); for (const [a, bb, cls, small] of rows) { const r = el("div", "adv-i"); const s1 = el("span", "", a); if (small) s1.append(el("small", "", small)); r.append(s1, el("b", cls, bb)); l.append(r); } ol.append(l); };
+      if (w.stage.length) li("قدّم المراحل اللي تفتح دفعات قريبة، عشان تستحق قبل " + w.ra + ":", w.stage.map((e) => [e.nm + ": " + e.trig, fmt(e.g), "rcv", "متوقعة حاليًا " + e.d]));
+      if (w.slow.length) li("أخّر شراء المواد غير العاجلة في مشاريع دفعتها القادمة بعيدة:", w.slow.map((o) => [o.k, fmt(o.v), "pay", o.n === null ? "لا دفعة متوقعة" : "دفعته القادمة " + o.n]));
+      if (w.deferSum > 0) li("اتفق مع الموردين على تأجيل المستحق لما بعد " + w.rb + ":", w.defer.map((e) => [e.w, fmt(e.g), "pay"]));
+      if (w.left > 0) li("إذا ما كفى: تمويل مؤقت حوالي " + fmt(w.left) + " من " + w.ra + " إلى " + w.rb1 + ".", []);
+      if (w.dueSum > 0) ol.append(el("li", "info", "التوقع يفترض تحصيل المستحق الآن (" + fmt(w.dueSum) + " بدون الضريبة) خلال أسبوع؛ إذا تأخر يكبر العجز."));
+      b.append(ol); m.append(b);
+    }
+    return;
+  }
+  if (k === "fund") {
+    backHome(m, "تمويل إكمال المشاريع الحالية", A.B ? "تكلفة الإكمال قبل منتصف المشروع = متوسط مشاريعكم المنتهية (" + A.B + " من صافي العقد)، وبعده حسب صرف المشروع" : "تكلفة الإكمال محسوبة من المصروف ونسبة الإنجاز");
     const g = el("div", "fgrid"), L = el("div", "box flist");
     const row = (l, v, sgn, cls, sub) => { const r = el("div", "fr"), a = el("span", "", l); if (sub) a.append(el("small", "", sub)); r.append(a, el("b", cls || "", sgn + fmt(Math.abs(v)))); L.append(r); };
     row("النقد اليوم", A.cash, "", "", A.cashDone ? "" : "لم يُدخل"); row("الباقي عند العملاء", A.fIn, "+ ", "rcv", "بدون الضريبة"); row("تكلفة إكمال المشاريع", A.fCost, "− ", "pay", "تقدير"); row("المستحق للموردين والمقاولين", A.fPay, "− ", "pay", "");
@@ -381,33 +444,31 @@ function home(m) {
     const Rr = el("div", "box"); Rr.append(el("div", "small muted", "مشاريع تكلفة إكمالها أكبر من الباقي عند العميل"));
     if (!A.fShort.length) Rr.append(el("div", "small muted", "لا يوجد"));
     for (const o of A.fShort) { const b = el("button", "tl"); b.type = "button"; const t = el("span", "tn", o.name); t.append(el("small", "", "الإنجاز " + Math.round(o.prog * 100) + "% · التحصيل " + pct(o.coll))); b.append(t, el("b", "neg", "(" + fmt(o.d) + ")")); b.onclick = () => openProjByName(o.name); Rr.append(b); }
-    g.append(L, Rr); m.append(g);
+    g.append(L, Rr); m.append(g); return;
   }
-  // أهم التنبيهات + صحة المشاريع
-  const g2 = el("div", "fgrid");
-  {
-    const box = el("div", "box"); const h = secHead("أهم التنبيهات", A.F.length, "مرتبة بالمبلغ"); h.style.margin = "0 0 6px"; box.append(h);
-    const list = el("div", "alerts"); const FF = showAllF ? A.F : A.F.slice(0, 5);
-    if (!FF.length) list.append(el("div", "small muted", "لا تنبيهات. كل شيء ضمن الحدود."));
-    for (const f of FF) { const b = el("button", "al" + (f.s === "bad" ? " bad" : "")); b.type = "button"; const t = el("div"); t.append(el("div", "", f.t), el("div", "x", f.d)); b.append(el("i"), t, el("b", f.s === "bad" ? "neg" : "", f.noAmt ? "" : fmt(f.amt))); b.onclick = () => go(f.go === "proj" ? "proj" : f.go === "subs" ? "subs" : f.go === "sups" ? "sups" : "audit"); list.append(b); }
-    box.append(list);
-    if (A.F.length > 5) { const b = el("button", "sbtn", showAllF ? "عرض أهم 5 فقط" : "عرض كل التنبيهات (" + A.F.length + ")"); b.type = "button"; b.onclick = () => { showAllF = !showAllF; draw(); }; box.append(b); }
-    g2.append(box);
+  if (k === "coll") {
+    backHome(m, "أكبر المبالغ عند العملاء", "الباقي من العقود حسب العميل");
+    const box = el("div", "box");
+    for (const o of A.groups) { const b = el("button", "tl"); b.type = "button"; const t = el("span", "tn", o.name); t.append(el("small", "", pct(o.con ? o.rec / o.con : 0) + " محصّل" + (o.n > 1 ? " · " + o.n + " عقود" : ""))); b.append(t, el("b", "rcv", fmt(o.toC))); b.onclick = () => (o.n > 1 ? go("proj") : openProjByName(o.pname)); box.append(b); }
+    m.append(box); return;
   }
-  {
-    const box = el("div", "box"); const h = secHead("صحة المشاريع"); h.style.margin = "0 0 6px"; box.append(h);
-    const hr = el("div", "hrow"); hr.append(el("span", "", "المحصّل من العقود"), el("b", "", fmt(A.received) + " من " + fmt(A.contracts))); hr.lastChild.firstChild && null;
-    const bar = el("div", "bar big"), i = el("i"); i.style.width = Math.min(100, coll * 100) + "%"; bar.append(i);
-    box.append(hr, bar, el("div", "small muted", pct(coll) + " محصّل · باقي " + fmt(A.toCollect)));
-    const hc = el("div", "hcounts");
-    for (const [n, t, cls] of [[A.goodN, "سليم", "good"], [A.weakN, "ربح ضعيف", "warn"], [A.lossN, "خاسر", "bad"], [A.unkN, "غير معروف", "mute"]]) { const b = el("button", "hc " + cls); b.type = "button"; b.append(el("b", "", String(n)), el("span", "", t)); b.onclick = () => go("proj"); hc.append(b); }
-    box.append(hc);
-    if (A.groups.length) { box.append(el("div", "small muted", "أكبر المبالغ الباقية عند العملاء")); for (const o of A.groups) { const b = el("button", "tl"); b.type = "button"; const t = el("span", "tn", o.name); t.append(el("small", "", pct(o.con ? o.rec / o.con : 0) + " محصّل" + (o.n > 1 ? " · " + o.n + " عقود" : ""))); b.append(t, el("b", "rcv", fmt(o.toC))); b.onclick = () => (o.n > 1 ? go("proj") : openProjByName(o.pname)); box.append(b); } }
-    g2.append(box);
+  if (k === "alerts" || k.startsWith("al:")) {
+    const one = k.startsWith("al:") ? +k.slice(3) : null;
+    const FF = one === null ? A.F : [A.F[one]];
+    backHome(m, one === null ? "التنبيهات" : "تنبيه", one === null ? A.F.length + " تنبيهات، مرتبة بالمبلغ" : null);
+    for (const f of FF) {
+      if (!f) continue;
+      const b = el("div", "box alx" + (f.s === "bad" ? " bad" : ""));
+      const h = el("div", "fch2"); h.append(el("b", "", f.t)); if (!f.noAmt) h.append(el("b", f.s === "bad" ? "neg" : "", fmt(f.amt)));
+      b.append(h, el("div", "small", f.d));
+      const tgt = { proj: ["proj", "افتح المشاريع"], subs: ["subs", "افتح مقاولي الباطن"], sups: ["sups", "افتح الموردين"] }[f.go] || ["audit", "عدّل في إدخال التدقيق"];
+      const a = el("button", "lnk", tgt[1] + " ←"); a.type = "button"; a.onclick = () => go(tgt[0]);
+      if (/عجز/.test(f.t) && AUD.FC && AUD.FC.min < 0) { a.textContent = "كيف تتفادى العجز ←"; a.onclick = () => more("fc"); }
+      b.append(a);
+      m.append(b);
+    }
+    if (one !== null && A.F.length > 1) { const a = el("button", "lnk", "كل التنبيهات (" + A.F.length + ") ←"); a.type = "button"; a.onclick = () => more("alerts"); m.append(a); }
   }
-  m.append(g2);
-  const w = sec("wait");
-  if (w && w.table.rows.length) { const h = secHead("بانتظارك في البوت", w.table.rows.length, w.note); h.id = "waitBox"; m.append(h, ...cards({ ...w, kpis: null }, "ui")); }
 }
 let AF = null, auditDirty = false;
 window.addEventListener("message", (e) => { if (e.source === (AF && AF.contentWindow) && e.data && e.data.taa === "saved") auditDirty = true; });
