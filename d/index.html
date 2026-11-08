@@ -1,185 +1,407 @@
 <!doctype html>
-<html lang="ar" dir="rtl"> 
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
-<title>لوحة المتابعة — طاء</title>
+<title>طاء — لوحة المتابعة</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root { --bg: #F4F5F2; --card: #FFFFFF; --ink: #1C2321; --muted: #5B6461; --line: #E2E4DF; --line2: #EEF0EC; --brand: #0E5A5F; --nav: #12312F;
-    --ok-bg: #E8F1E8; --ok: #2F5A33; --warn-bg: #FFF1E6; --warn: #8A3A0A; --bad-bg: #F8E8E6; --bad: #8E2A1E; }
-  * { box-sizing: border-box; } [hidden] { display: none !important; }
-  body { margin: 0; font-family: "IBM Plex Sans Arabic", system-ui, sans-serif; color: var(--ink); background: var(--bg); line-height: 1.6; font-size: 15px; }
-  header { background: var(--nav); color: #fff; padding: 20px 16px; }
-  .wrap { max-width: 1200px; margin: 0 auto; }
-  header .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
-  header h1 { margin: 0; font-size: 22px; }
-  header .sub { color: #C9D7D3; font-size: 14px; margin-top: 2px; }
-  .chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-  .chip { border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 600; }
-  .mode { background: #FFF1E6; color: #8A3A0A; }
-  .mode.ok { background: #E8F1E8; color: #2F5A33; }
-  .mode.bad { background: #F8E8E6; color: #8E2A1E; }
-  button { font-family: inherit; font-size: 14px; font-weight: 600; border-radius: 8px; padding: 9px 16px; min-height: 40px; cursor: pointer; border: 1px solid #2A5552; background: #1F4A47; color: #fff; }
-  main { padding: 20px 16px 48px; }
-  section { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 18px; margin-bottom: 18px; }
-  section h2 { margin: 0; font-size: 18px; }
-  .head { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; justify-content: space-between; margin-bottom: 12px; }
-  .note { color: var(--muted); font-size: 13px; }
-  .count { color: var(--muted); font-size: 14px; font-weight: 500; }
-  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 4px; }
-  .kpi { border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
-  .kpi .l { color: var(--muted); font-size: 13px; }
-  .kpi .v { font-size: 24px; font-weight: 700; margin-top: 2px; }
-  .kpi .s { color: var(--muted); font-size: 12px; }
-  .kpi.warn .v { color: #A3470C; } .kpi.bad .v { color: var(--bad); } .kpi.ok .v { color: var(--ok); }
-  .tbl { overflow-x: auto; margin-top: 8px; }
-  table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 560px; }
-  th { text-align: right; font-weight: 500; color: var(--muted); padding: 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
-  td { padding: 10px 8px; border-bottom: 1px solid var(--line2); vertical-align: top; }
-  td:first-child { font-weight: 600; }
-  .tag { display: inline-block; border-radius: 6px; padding: 2px 8px; font-size: 13px; font-weight: 600; }
-  .tag.ok { background: var(--ok-bg); color: var(--ok); } .tag.warn { background: var(--warn-bg); color: var(--warn); } .tag.bad { background: var(--bad-bg); color: var(--bad); }
-  .empty { color: var(--muted); font-size: 14px; padding: 6px 0; }
-  .msg { max-width: 520px; margin: 60px auto; text-align: center; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 28px 20px; }
-  .msg h1 { font-size: 20px; margin: 0 0 8px; }
-  .muted { color: var(--muted); }
-  .skel { height: 120px; border-radius: 12px; background: linear-gradient(90deg, #ECEEEA, #F6F7F4, #ECEEEA); margin-bottom: 18px; }
-  .login { display: inline-block; margin: 14px 0 6px; background: #1F7A4D; color: #fff; text-decoration: none; font-weight: 700; font-size: 16px; padding: 12px 22px; border-radius: 10px; }
-  .login:hover { background: #17633E; color: #fff; }
-  .small { font-size: 13px; }
-  footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 16px 28px; }
-  .tabs { display: flex; gap: 6px; padding: 12px 16px 0; }
-  .tab { background: transparent; color: var(--ink); border: 1px solid var(--line); }
-  .tab.on { background: var(--brand); color: #fff; border-color: var(--brand); }
-  .btn2 { background: #fff; color: var(--ink); border: 1px solid #D3D7D1; }
-  .btn-sm { padding: 6px 12px; min-height: 36px; font-size: 13px; }
-  dialog { border: 0; border-radius: 14px; padding: 0; width: min(720px, 96vw); max-height: 92vh; }
-  dialog::backdrop { background: rgba(18,49,47,.45); }
-  .dlg { padding: 20px; overflow: auto; max-height: 92vh; }
-  .dlg h3 { margin: 0 0 12px; font-size: 18px; }
-  .fg { margin: 14px 0 4px; font-weight: 700; color: var(--brand); font-size: 14px; }
-  .f { margin-bottom: 12px; }
-  .f label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
-  .f input[type=text], .f input[type=number], .f input[type=tel], .f select { width: 100%; font-family: inherit; font-size: 15px; padding: 10px 12px; border: 1px solid #D3D7D1; border-radius: 8px; background: #fff; }
-  .f .hint { font-size: 12px; color: var(--muted); margin-top: 3px; }
-  .multi { display: flex; flex-wrap: wrap; gap: 6px; }
-  .multi label { display: inline-flex; align-items: center; gap: 6px; border: 1px solid #D3D7D1; border-radius: 999px; padding: 6px 12px; color: var(--ink); font-size: 14px; margin: 0; cursor: pointer; }
-  .multi input:checked + span { font-weight: 700; color: var(--brand); }
-  tr.click { cursor: pointer; } tr.click:hover td { background: #F7F8F5; }
-  .items td:first-child { width: 40%; min-width: 160px; }
-  .items td { padding: 4px; border: 0; } .items input { width: 100%; font-family: inherit; font-size: 14px; padding: 8px; border: 1px solid #D3D7D1; border-radius: 6px; }
-  .items input:disabled { background: #F1F2EF; color: var(--muted); }
-  .bar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-start; margin-top: 16px; }
-  .res { margin-top: 12px; padding: 10px 12px; border-radius: 8px; font-size: 14px; display: none; }
-  .res.ok { display: block; background: var(--ok-bg); color: var(--ok); } .res.warn { display: block; background: var(--warn-bg); color: var(--warn); } .res.bad { display: block; background: var(--bad-bg); color: var(--bad); }
+@font-face{font-family:"SAR";src:url(data:font/woff2;base64,d09GMgABAAAAAAT0AA0AAAAAC2QAAASeAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP0ZGVE0cGhgGYACCZhEICocEhXcLGgABNgIkAzAEIAWHLgeBBRvVCSCOwnEvSojJ5ORhKiWep9/bPPc32mdnUaW+wXeJKlVIJCg8CIfcQWViVHSETJeZqNqErgZPp/28VaAy13pTkXvNQZv4IHCbHD9In+dyevP5Cfy7K+slmC3ybGwuLx2T18L1PKA2pnPbFCvQCdbLLSJq0N0AB31thACv29f9APD1k6ZUJ0tAD4aoQDO8bhmyFC1UI+oCuAO15AO2Q8G5MwSqDefwClCi9Be6wX9nQPsMEKAeA1AQUIMaLCGACzQCljAqQE+OwoCjcu0D6kv8/x/sl6sfkIpP/3/9/WpgdgoEQAeYoIR0QACkAlSghuJ31w3LAXyr/P+vAvSAOTCAzAK5B6CBQzRNhcGgGoYLL+dYrlnFKgu9iOcEj646uXaI2W3sJ9lTI4EetCRQAgulmH6SYMZBziQb1xBipCaQaS6l0vWRWr1q1aFDnTA52r1fr8fUTpXKWvLQ4KnSwb0+PppFHxtVC1at2uXrO9JOSIUWTzV+QWdXLT0K2uhG0jpJEiZs6WjSR9KuG9Zv1u+P2q1UujpcsT1L3dNzqhQszNevVtPHSYnHKlXoGEWtDpi6yX/duUgVJGGvzwIypcpt/Ni4Jly1atcq32n6zc+V4+ld7k6gz53h7vgOHLKN10L3KkUS7kouYUcPhGVony1zOi//ctkTdm/3kAqubk+P0MptoSFlXH1d5ZyIwuAyWX7+z+picypWzAjs1xCbVaGJLgqt5qqbqg/Y6ntEjm76aneF9Yjvano5HXrdrjSkllfHmVOk+o/IY8O89mBNc9Lbwcoe28z7DRmFzSmN4wbrT5X+B/E2SdMQn2S1PFaUu1OkJfIXKxVt+w1pFa2xjdll47yrvsvczl7/4ETotcmj56Zkzxs3b+7w0ZMNx9wX7srQ8rIsghhH+yj839cG7rwS/FVUQnWXgYUdjUP+HL5C8fybvBJ6ZQRWMKOhfsi7ZqHZEz4e3TZxMtEqXR8kGN0n/5/a9jk9IKKiFlmPtlWvYKy8rF34efCtxR9snP0uNWnu7Jj8kj9HHV1INdJDNT2jhozoFXwqYPLE+VjfWDBpsq7FUrJmU3brXPVwppI6gm8PCAjcX9RU3FdX8KtcJcczkIBc+4K9C8ZdxNPL/LtD9KcF19fLgOpBtODVPMNO+5d0/C2p2BEBPefddskgYA8Aa9mMABgKQwChUg9RkbGjprcJDW9v0SJ+QccrQRhDkk6Os7mYoEtPTCIZQk6xo9ALyCFMI3lIDtjnGFLlm9EzZJUcNNIoAAUACL10ULSMoCUYAkaUk2BRfgAnwm+QoZJMytlMKIQkH0pUBpAqdhjUMjIGGlTuklr2MTzoI92UJ23+wONVGmQ40WC8UgM5iCwsRBYopXLQcHEwXzrQIVosogW4IRrFwqmv4ZzGEQ2Em8tRFmff4c5x4kDgmpXdKAOJhsMnRWOAIg8/SVZ+YGXZ5ee18vMkZYbYopod2PHxMh22lbggxy4aiTp8UzunkRxGMUliNsQgyayTKk8k+l05RzpGmT7YjNb5FSWKKTxHRVTCPj0ISoRIUaJDEZowhCWctufXnHPwkJG/e0pZDQA=) format("woff2");font-weight:100 500;unicode-range:U+20C1}
+@font-face{font-family:"SAR";src:url(data:font/woff2;base64,d09GMk9UVE8AAAWoAAoAAAAADGQAAAVcAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAADYxyBmAAdAE2AiQDKD9sdGFnEgQGBYctByAbrAtRlCxOieyLA54Mb+RgxYeVCNNn6ibiVNV+Iu7SXN7DMXieH4d/7tNARoBxEVJoS0JXyFsoW1Moa0KaP3h17UL8Z0G+wBqkolCFS0d0cb3/9H9m67tCDa7gd/JWZq0/QJPsJM2HiFWr1tLePW+ILU35CMfCxNgIk9+uDhIpVNFAwkU4QgfkEqEjfCxJFyFEQJA608kHaOYTPEYwgogEzt+7MCg9+j+fFrH2vqj2xzh+xKofcfpHvFlZiXX+sfa3jQP2dSsOW6ke7uaC470xi5nB3UyAMN/6tK8HXiIqOC4pOSU1LTe7+EyoLja6TllRtXBaqpb1etfB2QghKyIRUSIlSng7vBVCM4PF4QnqUy9mzx63qH8GMALA+KHXAAKchaCqZ3+R9X/T3/FDL8bx5L4+sqOeQ/5kKShTh/Ce48012bmYEdGdKW1ZTQRI178DKPS07zm3iwTINywBSLqB/R2BAbxZi7VAsLxAPtouAHzuGJ8w3+AASnjUzhkAeTo6eFgHZ1Mq65uiO5LbR1TD+NN8bJvU620Yk8zmMK/2G0qac1hVc3NNZxEBkE+Jxnt0kTnLrLZ12DwLn9/vhJ/xPeum18lbDgD48nGcyRQmqo+3/eOHXpPN7in/xE6XHH+4VAK4GjJdBK1a/B+EZwCoF717sIcAWAKUKijRP9EyrX0Pr+X2ZhH/XGiehgi/3QS2JhDMPmtjok7o3cbtlrVcJfoX5PgLmFA1CDp+ItViuqSNoImt2dPrzJJOwC3sI5gXX3ib1xLwbVpiHJ+pkEnzRwD8UA5KrhwOyLRRrsfS0x3NFI8BSQ3ll0cgR+ghQDEhrhdXg9MdEpaIHNLxisDya2dFiWy0UNHEvPpWBUegl4TBX6omfTKiAIWSAoH6UKuXeIqi3ARnuJJHuk+albhwLVM/fKhbiF2gKx3ha3kgF77uJK2dXR24Ipz4coGvkPAVoLjYhNSoaKq4Ed0rXiHhmeQZnhGwBgBZiOZ5XkXkVolsdFFsUEJAUgglBieHxYIAphOx+ExNxn+9UbR9llsFeRWGlUc2UFxQfGB8CMWER4fHRFBseGxEQialIjlaeCw+Fh5RxMOAl6f7FrvF/58AtIQDxPb5sX272CC+hBoOF+1N20ZAO3JAhUgS8wIpNyjdI96bCiwEW+EsBcUHxPvEkV+sX6QvCODKAEiiJ9ELNyWFjIkjAJkOAAKEeEEkz58X/q6+Q3wi0/yQPV8bSQDkSgCBa40AwDUBAmSTAJDYjqKINgIUkwSAwMURAOTDAWK60UzXk6nW05/qx3ebflFGQ1JrfPMq+xvuQe4gDa0WJBoLalm1AavaQeSS7BSDNgkEb0YLNyCJ/Jz/vybInkQbBKE96MnSAeG+GEYqwgViut+pmkKl3VHi8RW+Us/8/0+3+P+R4LrUXeCSGeGFAPgqgb1jdlJlX6Q9Abi7s2atyJ5Pbq1GZeBMWH6zvhT299ZbDArMSYbMX5lgsUvtsEBqcAqhZsgb/9yNWU1Nom1LhHCIwpNw0aQ7EEOieLEoNjNdABEPFHkxPcWLeBVLvbtLfRBf8nQs9WOpP0sDJ9ESlDaLNYEllkTw4UIUhlvRhJQlhkCPYhG2xBHAhXgg5Mf0zPCKtn33wRuzQUBVdA4NAQRwEjWgRyPGa5XAIoAAAggggAACACGAAEAIIAAQAsjh83K3Si91KNF/uUlhXUsVkQf1dlBvDnQHmEtGtTejszIqISuPyBhOftilcytw+ut9M94gSbF6NydKLHAzJRInatEz1EUvX3dC/Xz86cw1U5dXVV7BcH91d3ErkDkY6MP2Lppo3ZLES+GNI8oAAAA=) format("woff2");font-weight:600 900;unicode-range:U+20C1}
+/* Same look as «تدقيق طاء»: a Salesforce-like app — global header, app tabs, record cards, record pages.
+   Accounting = ledger green, engineering = blueprint blue, alerts = red / amber (alerts never colour a number). */
+:root{
+ --bg:#F3F3F3;--surface:#FFFFFF;--sunk:#F3F3F3;--ink:#181818;--muted:#5C5C5C;--line:#E5E5E5;--field:#C9C9C9;
+ --ui:#0B5CAB;--ui-2:#1B96FF;--ui-1:#EEF4FF;
+ --eng9:#0A3D7A;--eng6:#2A72D4;--eng1:#E4EEFB;
+ --acc9:#0E5A3A;--acc6:#1F8A5B;--acc1:#E2F3EA;--out:#3F4B54;--neg:#9F1D1D;
+ --crit:#C23934;--crit1:#FCE4E2;--warn:#A86400;--warn1:#FFF0D2;--track:#ECECEC;
+}
+@media (prefers-color-scheme:dark){:root{
+ --bg:#16181B;--surface:#1F2227;--sunk:#262A30;--ink:#ECEEF1;--muted:#A3A9B2;--line:#33383F;--field:#4A5059;
+ --ui:#5AA9FF;--ui-2:#5AA9FF;--ui-1:#1C2C42;--eng9:#9CC4FF;--eng6:#5A9CF0;--eng1:#1C2C42;
+ --acc9:#7DD3A6;--acc6:#4CB884;--acc1:#173126;--out:#B7C0C8;--neg:#F29B9B;--crit:#F07A73;--crit1:#3A1F1E;--warn:#E9B45A;--warn1:#372A12;--track:#33383F;color-scheme:dark}}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"SAR","IBM Plex Sans Arabic","Segoe UI",Tahoma,system-ui,sans-serif;font-size:14px;line-height:1.55}
+button{font:inherit;cursor:pointer}
+.wrapx{max-width:1400px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+/* global header + app tabs */
+.gh{background:var(--surface);border-bottom:1px solid var(--line)}
+.gh .wrapx{display:flex;align-items:center;gap:12px;min-height:54px}
+.logo{width:32px;height:32px;border-radius:6px;background:var(--ui);color:#fff;font-weight:700;display:grid;place-items:center;font-size:17px;flex:none}
+.gh-t{display:flex;flex-direction:column;line-height:1.25;min-width:0;flex:1}.gh-t b{font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.gh-t span{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.badge{font-size:12px;padding:3px 10px;border-radius:4px;background:var(--warn1);color:var(--warn);white-space:nowrap;font-weight:600}
+.badge.ok{background:var(--acc1);color:var(--acc9)}.badge.bad{background:var(--crit1);color:var(--crit)}
+.ibtn{border:1px solid var(--field);background:var(--surface);color:var(--ui);border-radius:4px;padding:6px 10px;font-weight:600;font-size:13px}
+.tabs{background:var(--surface);border-bottom:3px solid var(--ui);box-shadow:0 2px 3px rgba(0,0,0,.06);position:sticky;top:0;z-index:5}
+.tabs .wrapx{display:flex;overflow-x:auto;scrollbar-width:none}.tabs .wrapx::-webkit-scrollbar{display:none}
+.tab{flex:none;border:0;background:transparent;color:var(--ink);padding:11px 14px 10px;font-size:14px;border-bottom:3px solid transparent;margin-bottom:-3px;display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+.tab:hover{background:var(--sunk)}.tab i{width:8px;height:8px;border-radius:2px;background:var(--fam,var(--ui));display:inline-block}
+.tab[aria-current="page"]{background:var(--ui-1);font-weight:600;border-bottom-color:var(--ui-2)}
+.tab .n{background:var(--crit);color:#fff;border-radius:9px;font-size:11px;min-width:18px;height:18px;display:inline-grid;place-items:center;padding:0 5px;font-weight:700}
+main{padding-block:14px 56px;display:flex;flex-direction:column;gap:14px}
+/* page heads */
+.ph{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.ph .ic{width:34px;height:34px;border-radius:6px;background:var(--fam,var(--ui));color:#fff;display:grid;place-items:center;font-weight:700;flex:none}
+.ph h1{margin:0;font-size:18px;font-weight:600;line-height:1.3}.ph .sub{color:var(--muted);font-size:12.5px}
+.ph .grow{flex:1;min-width:0}
+.sec-h{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin:6px 2px 0}
+.sec-h h2{margin:0;font-size:15.5px;font-weight:600}.sec-h .c{color:var(--muted);font-size:13px}.sec-h .note{color:var(--muted);font-size:12.5px;flex-basis:100%}
+/* KPI strip */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:0;background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.kpi{background:var(--surface);padding:12px 16px;position:relative;min-width:0;box-shadow:-1px 0 0 var(--line),0 1px 0 var(--line)}
+.kpi::before{content:"";position:absolute;inset-inline-start:0;top:12px;bottom:12px;width:3px;border-radius:2px;background:var(--fam,transparent)}
+.kpi .l{font-size:12px;color:var(--muted)}.kpi .v{font-size:20px;font-weight:600;color:var(--vc,var(--ink));overflow-wrap:anywhere;font-variant-numeric:tabular-nums}.kpi .s{font-size:12px;color:var(--muted)}
+.kpi[data-f="in"]{--fam:var(--acc6);--vc:var(--acc9)}.kpi[data-f="out"]{--fam:var(--out);--vc:var(--out)}.kpi[data-f="cash"]{--fam:var(--acc6)}
+.kpi[data-f="eng"]{--fam:var(--eng6);--vc:var(--eng9)}.kpi[data-t="warn"]{--fam:var(--warn)}.kpi[data-t="bad"]{--fam:var(--crit)}
+.flag{display:inline-block;margin-top:4px;font-size:11.5px;font-weight:600;padding:1px 8px;border-radius:10px}.flag.warn{background:var(--warn1);color:var(--warn)}.flag.bad{background:var(--crit1);color:var(--crit)}
+/* record cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px;align-items:stretch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:9px;min-width:0;text-align:right;color:var(--ink);position:relative}
+button.card{cursor:pointer}button.card:hover{border-color:var(--ui-2)}
+.card.warn{box-shadow:inset -3px 0 0 var(--warn)}.card.bad{box-shadow:inset -3px 0 0 var(--crit)}
+.card .t{font-weight:600;font-size:14.5px;color:var(--ui);line-height:1.35;overflow-wrap:anywhere}
+.card .st{font-size:12px;color:var(--muted);margin-top:-6px}
+.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:3px 10px;font-size:13px}.kv span{color:var(--muted)}.kv b{font-weight:600;text-align:left;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.fam-acc .kv b{color:var(--acc9)}.fam-eng .kv b{color:var(--eng9)}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:2px 9px;border-radius:12px;background:var(--sunk);color:var(--muted);white-space:nowrap}
+.pill.ok{background:var(--acc1);color:var(--acc9)}.pill.warn{background:var(--warn1);color:var(--warn)}.pill.bad{background:var(--crit1);color:var(--crit)}.pill.eng{background:var(--eng1);color:var(--eng9)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
+.empty{color:var(--muted);background:var(--surface);border:1px dashed var(--field);border-radius:8px;padding:16px;text-align:center}
+/* project card */
+.pc .mid{display:flex;align-items:center;gap:12px}
+.ring{flex:none}.ring text{font-weight:600;font-size:14px;fill:var(--ink)}
+.amt{font-size:20px;font-weight:600;color:var(--acc9);white-space:nowrap;font-variant-numeric:tabular-nums;line-height:1.2}.amt-l{font-size:12px;color:var(--muted)}
+.bar{height:6px;background:var(--track);border-radius:3px;overflow:hidden}.bar i{display:block;height:100%;background:var(--acc6)}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chip{border:1px solid var(--field);background:var(--surface);color:var(--ink);border-radius:4px;padding:6px 12px;font-size:13px}
+.chip[aria-pressed="true"]{background:var(--ui);border-color:var(--ui);color:#fff}
+.search{flex:1 1 200px;min-width:0;font:inherit;border:1px solid var(--field);border-radius:4px;padding:7px 10px;background:var(--surface);color:var(--ink)}
+/* record page */
+.back{align-self:flex-start;border:0;background:none;color:var(--ui);font-weight:600;padding:0}
+.sub-tabs{display:flex;gap:0;border-bottom:1px solid var(--line);background:var(--surface);border-radius:8px 8px 0 0;overflow-x:auto}
+.sub-tabs button{border:0;background:none;padding:10px 14px;border-bottom:2px solid transparent;color:var(--ink);white-space:nowrap}
+.sub-tabs button[aria-current="true"]{border-bottom-color:var(--ui-2);font-weight:600;color:var(--ui)}
+.panel{background:var(--surface);border:1px solid var(--line);border-top:0;border-radius:0 0 8px 8px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.inst{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:4px 10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.inst:last-child{border-bottom:0}.inst .a{font-weight:600;font-variant-numeric:tabular-nums;color:var(--acc9);white-space:nowrap}
+.ebar{display:grid;grid-template-columns:120px minmax(0,1fr) auto;gap:10px;align-items:center;font-size:13px;padding:4px 0}
+.ebar .bar{height:10px}.ebar .bar i{background:var(--out)}.ebar b{font-variant-numeric:tabular-nums;white-space:nowrap}
+.notes{white-space:pre-wrap;font-size:13.5px;line-height:1.8;background:var(--sunk);border-radius:8px;padding:12px}
+.alerts{display:flex;flex-direction:column}
+.al{display:grid;grid-template-columns:4px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 4px;border-bottom:1px solid var(--line);background:none;border-inline:0;border-top:0;text-align:right;color:var(--ink)}
+.al:last-child{border-bottom:0}.al i{align-self:stretch;border-radius:2px;background:var(--warn)}.al.bad i{background:var(--crit)}
+.al .x{font-size:12px;color:var(--muted)}.al b{font-weight:600;white-space:nowrap}
+.box .kv{max-width:440px}.box{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+/* login / errors */
+.msg{max-width:520px;margin:60px auto;text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:28px 20px}
+.msg h1{font-size:20px;margin:0 0 8px}.muted{color:var(--muted)}.small{font-size:13px}
+.login{display:inline-block;margin:14px 0 6px;background:#1F7A4D;color:#fff;text-decoration:none;font-weight:700;font-size:16px;padding:12px 22px;border-radius:6px}
+.skel{height:110px;border-radius:8px;background:linear-gradient(90deg,var(--line),var(--surface),var(--line))}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:0 16px 28px}
+/* data editor dialog */
+.pbtn{border:1px solid var(--ui);background:var(--ui);color:#fff;border-radius:4px;padding:7px 14px;font-weight:600}
+.sbtn{border:1px solid var(--field);background:var(--surface);color:var(--ui);border-radius:4px;padding:6px 12px;font-weight:600;font-size:13px}
+dialog{border:0;border-radius:8px;padding:0;width:min(720px,96vw);max-height:92vh;background:var(--surface);color:var(--ink)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+.dlg{padding:20px;overflow:auto;max-height:92vh}.dlg h3{margin:0 0 12px;font-size:18px}
+.fg{margin:14px 0 4px;font-weight:700;color:var(--ui);font-size:14px}
+.f{margin-bottom:12px}.f label{display:block;font-size:13px;color:var(--muted);margin-bottom:4px}
+.f input[type=text],.f input[type=tel],.f select,.items input{width:100%;font:inherit;font-size:15px;padding:9px 11px;border:1px solid var(--field);border-radius:4px;background:var(--surface);color:var(--ink)}
+.f .hint{font-size:12px;color:var(--muted);margin-top:3px}
+.multi{display:flex;flex-wrap:wrap;gap:6px}.multi label{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--field);border-radius:999px;padding:6px 12px;color:var(--ink);font-size:14px;margin:0;cursor:pointer}
+.items{width:100%;border-collapse:collapse}.items td,.items th{padding:3px;text-align:right;font-weight:500;color:var(--muted);font-size:12px}
+.items input:disabled{background:var(--sunk);color:var(--muted)}
+.dbar{display:flex;gap:8px;margin-top:16px}
+.res{margin-top:12px;padding:10px 12px;border-radius:6px;font-size:14px;display:none}
+.res.ok{display:block;background:var(--acc1);color:var(--acc9)}.res.warn{display:block;background:var(--warn1);color:var(--warn)}.res.bad{display:block;background:var(--crit1);color:var(--crit)}
+@media (max-width:560px){
+ .grid{grid-template-columns:1fr 1fr;gap:8px}.grid>.card{padding:10px;gap:7px}
+ .card .t{font-size:13px}.kv{font-size:11.5px;grid-template-columns:1fr}.kv b{text-align:right}
+ .amt{font-size:15px}.ring{width:46px;height:46px}.pc .mid{gap:8px}
+ .kpis{grid-template-columns:1fr 1fr}.kpi{padding:10px 12px}.kpi .v{font-size:16px}
+ .ebar{grid-template-columns:90px minmax(0,1fr) auto}
+ .gh .badge{display:none}
+}
 </style>
 </head>
 <body>
-<header><div class="wrap row">
-  <div><h1 id="who">لوحة المتابعة</h1><div class="sub" id="roles">مؤسسة طاء الرائدة للمقاولات العامة</div></div>
-  <div class="chips"><span class="chip mode" id="mode" hidden></span><span class="sub" id="at"></span><button type="button" id="reload" hidden>تحديث</button></div>
+<header class="gh"><div class="wrapx">
+  <div class="logo" aria-hidden="true">ط</div>
+  <div class="gh-t"><b id="who">لوحة المتابعة</b><span id="roles">مؤسسة طاء الرائدة للمقاولات العامة</span></div>
+  <span class="badge" id="mode" hidden></span>
+  <button type="button" class="ibtn" id="reload" hidden>تحديث</button>
 </div></header>
-<nav class="wrap tabs" id="tabs" hidden><button type="button" class="tab on" data-v="mon">المتابعة</button><button type="button" class="tab" data-v="data">البيانات</button></nav>
-<main class="wrap" id="main"><div class="skel"></div><div class="skel"></div></main>
+<nav class="tabs" id="tabs" hidden aria-label="الأقسام"><div class="wrapx" id="tabRow"></div></nav>
+<main class="wrapx" id="main"><div class="skel"></div><div class="skel"></div></main>
 <dialog id="dlg"><div class="dlg" id="dlgBody"></div></dialog>
 <footer>الاعتماد والرفض والصرف من البوت في واتساب. تعديل الأشخاص والمشاريع والعقود وبيانات الدفع يُنفَّذ بعد ضغط «تأكيد» في واتساب. الرابط شخصي، لا تحوّله لأحد.</footer>
 <script>
 const API = "https://zkbwrgulnsycqqfbwkee.supabase.co/functions/v1/bird-webhook/dash";
+const BOT = "966551313729";
 const token = decodeURIComponent((location.hash || "").slice(1));
 const $ = (id) => document.getElementById(id);
-const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined && text !== null) e.textContent = text; return e; };
+const SAR = "\u20C1";
+const fmt = (v) => (v < 0 ? "−" : "") + Math.round(Math.abs(+v || 0)).toLocaleString("en-US") + " " + SAR;
+const sar = (t) => String(t).replace(/\.00(?= ﷼)/g, "").replace(/﷼/g, SAR);
+const pct = (f) => Math.round((f || 0) * 100) + "%";
 
-const BOT = "966551313729";
+// app tabs: which sections live where, and their colour family
+const TABS = [
+  { v: "home", t: "الرئيسية", fam: "var(--ui)" },
+  { v: "proj", t: "المشاريع", fam: "var(--acc6)" },
+  { v: "subs", t: "مقاولو الباطن", ids: ["subk", "subrec", "certs"], fam: "var(--acc6)", f: "acc" },
+  { v: "sups", t: "الموردون", ids: ["sups"], fam: "var(--acc6)", f: "acc" },
+  { v: "money", t: "المالية", ids: ["claims", "profit"], fam: "var(--acc6)", f: "acc" },
+  { v: "site", t: "الموقع", ids: ["reqs", "pours", "units"], fam: "var(--eng6)", f: "eng" },
+  { v: "sales", t: "المبيعات", ids: ["changes", "leads"], fam: "var(--ui)" },
+  { v: "rat", t: "Rent a Tool", ids: ["rat"], fam: "var(--ui)" },
+  { v: "sys", t: "النظام", ids: ["health"], fam: "var(--out)" },
+  { v: "data", t: "البيانات", fam: "var(--out)" },
+];
+let D = null, REG = null, view = "home", rec = null, recTab = "inst", pf = { kind: "all", q: "" };
+const sec = (id) => D && D.sections.find((s) => s.id === id);
+
 function fail(title, text) {
+  $("tabs").hidden = true;
   const m = $("main"); m.replaceChildren();
   const box = el("div", "msg"); box.append(el("h1", "", title), el("p", "muted", text));
   const a = el("a", "login", "تسجيل الدخول عبر واتساب"); a.href = "https://wa.me/" + BOT + "?text=" + encodeURIComponent("لوحة المتابعة");
   box.append(a, el("p", "muted small", "يفتح واتساب برسالة «لوحة المتابعة» جاهزة — أرسلها، ويرد عليك البوت برابط لوحتك (صالح 12 ساعة). من الكمبيوتر: استخدم واتساب ويب."));
   m.append(box);
 }
-function cell(c) {
-  const td = el("td");
-  if (c && typeof c === "object") { const s = el("span", c.tone ? "tag " + c.tone : "", c.t); td.append(s); }
-  else td.textContent = c == null ? "" : String(c);
-  return td;
+function pill(c, label) { const t = txt(c); return el("span", "pill " + ((c && c.tone) || ""), label && /\d/.test(t) ? label + ": " + t : t); }
+const txt = (c) => sar(c && typeof c === "object" ? c.t : c == null ? "" : String(c));
+function ring(f) {
+  const r = 22, C = 2 * Math.PI * r, v = Math.max(0, Math.min(1, f || 0));
+  const s = `<svg class="ring" width="56" height="56" viewBox="0 0 56 56" aria-hidden="true"><circle cx="28" cy="28" r="${r}" fill="none" stroke="var(--track)" stroke-width="6"/><circle cx="28" cy="28" r="${r}" fill="none" stroke="var(--acc6)" stroke-width="6" stroke-dasharray="${C * v} ${C}" transform="rotate(-90 28 28)" stroke-linecap="round"/><text x="28" y="33" text-anchor="middle">${Math.round(v * 100)}%</text></svg>`;
+  const w = el("span"); w.innerHTML = s; return w.firstChild;
 }
-function render(d) {
-  $("who").textContent = d.name;
-  $("roles").textContent = d.roles.join(" · ");
-  const m = $("mode"); m.hidden = false; m.textContent = "الوضع: " + d.mode;
-  m.className = "chip mode" + (d.mode === "فعلي" ? " ok" : d.mode === "إيقاف آمن" ? " bad" : "");
-  $("at").textContent = "آخر تحديث " + new Date(d.at).toLocaleTimeString("ar-SA", { hour: "2-digit", minute: "2-digit" });
-  $("reload").hidden = false;
-  const main = $("main"); main.replaceChildren();
-  for (const s of d.sections) {
-    const sec = el("section"); sec.id = "s-" + s.id;
-    const head = el("div", "head"), h = el("h2", "", s.title);
-    if (s.table) h.append(el("span", "count", "  (" + s.table.rows.length + ")"));
-    head.append(h); if (s.note) head.append(el("div", "note", s.note)); sec.append(head);
-    if (s.kpis) {
-      const g = el("div", "kpis");
-      for (const k of s.kpis) { const b = el("div", "kpi" + (k.tone ? " " + k.tone : "")); b.append(el("div", "l", k.label), el("div", "v", k.value)); if (k.sub) b.append(el("div", "s", k.sub)); g.append(b); }
-      sec.append(g);
+function kpiStrip(list) {
+  const g = el("div", "kpis");
+  for (const k of list) {
+    const b = el("div", "kpi"); if (k.f) b.dataset.f = k.f; if (k.tone) b.dataset.t = k.tone;
+    b.append(el("div", "l", k.label), el("div", "v", sar(k.value))); if (k.sub) b.append(el("div", "s", sar(k.sub)));
+    if (k.tone === "warn" || k.tone === "bad") b.append(el("span", "flag " + k.tone, k.tone === "bad" ? "متأخر" : "يحتاج متابعة"));
+    g.append(b);
+  }
+  return g;
+}
+const KF = { "قيمة العقود": "in", "المحصّل": "in", "مستحق الآن عند العملاء": "in", "المصروف حتى الآن": "out", "مستحق للموردين": "out", "النقد المتاح": "cash", "مستحق لمقاولي الباطن": "out", "مطالبات عند العملاء": "in", "صُرف آخر 30 يوماً": "out" };
+function secHead(title, count, note) {
+  const h = el("div", "sec-h"); h.append(el("h2", "", title)); if (count !== undefined) h.append(el("span", "c", "(" + count + ")")); if (note) h.append(el("div", "note", note)); return h;
+}
+// a section's table rows → record cards (first column = title, second = subtitle, the rest = labelled fields)
+function cards(s, f) {
+  const out = [];
+  if (s.kpis) out.push(kpiStrip(s.kpis.map((k) => ({ ...k, f: KF[k.label] || (f === "eng" ? "eng" : "") }))));
+  if (!s.table) return out;
+  if (!s.table.rows.length) { out.push(el("div", "empty", s.empty || "لا شيء")); return out; }
+  const g = el("div", "grid fam-" + (f || "ui"));
+  for (const r of s.table.rows) {
+    const tone = r.map((c) => c && c.tone).find((t) => t === "bad") || r.map((c) => c && c.tone).find((t) => t === "warn") || "";
+    const c = el("div", "card" + (tone ? " " + tone : ""));
+    c.append(el("div", "t", txt(r[0])));
+    let i = 1; if (r.length > 2 && typeof r[1] !== "object" && !/\d/.test(txt(r[1]))) { c.append(el("div", "st", txt(r[1]))); i = 2; }
+    const kv = el("div", "kv"), tags = el("div", "tags");
+    for (; i < r.length; i++) {
+      if (r[i] && typeof r[i] === "object" && r[i].tone !== undefined && i === r.length - 1) { tags.append(pill(r[i], s.table.cols[i])); continue; }
+      if (!txt(r[i])) continue;
+      kv.append(el("span", "", s.table.cols[i]), el("b", "", txt(r[i])));
     }
-    if (s.table) {
-      if (!s.table.rows.length) sec.append(el("div", "empty", s.empty || "لا شيء"));
-      else {
-        const wrap = el("div", "tbl"), t = el("table"), thead = el("thead"), tr = el("tr");
-        for (const c of s.table.cols) tr.append(el("th", "", c));
-        thead.append(tr); t.append(thead);
-        const tb = el("tbody");
-        for (const r of s.table.rows) { const row = el("tr"); for (const c of r) row.append(cell(c)); tb.append(row); }
-        t.append(tb); wrap.append(t); sec.append(wrap);
+    c.append(kv); if (tags.children.length) c.append(tags);
+    g.append(c);
+  }
+  out.push(g); return out;
+}
+function page(icon, title, sub, fam) {
+  const p = el("div", "ph"); p.style.setProperty("--fam", fam || "var(--ui)");
+  const ic = el("div", "ic", icon), t = el("div", "grow"); t.append(el("h1", "", title)); if (sub) t.append(el("div", "sub", sub));
+  p.append(ic, t); return p;
+}
+
+function renderTabs() {
+  const row = $("tabRow"); row.replaceChildren();
+  for (const T of TABS) {
+    let show = T.v === "home" || (T.v === "proj" ? !!(D.projects && D.projects.length) : T.v === "data" ? !!(REG && REG.length) : (T.ids || []).some((x) => sec(x)));
+    if (!show) continue;
+    const b = el("button", "tab"); b.type = "button"; b.style.setProperty("--fam", T.fam);
+    b.append(el("i"), el("span", "", T.t));
+    if (T.v === "home") { const w = sec("wait"); if (w && w.table.rows.length) b.append(el("span", "n", String(w.table.rows.length))); }
+    if (view === T.v) b.setAttribute("aria-current", "page");
+    b.onclick = () => go(T.v); row.append(b);
+  }
+  $("tabs").hidden = false;
+}
+function go(v) { view = v; rec = null; draw(); window.scrollTo(0, 0); }
+
+function draw() {
+  renderTabs();
+  const m = $("main"); m.replaceChildren();
+  if (view === "home") return home(m);
+  if (view === "proj") return rec ? record(m) : projects(m);
+  if (view === "data") return renderData(m);
+  const T = TABS.find((x) => x.v === view);
+  m.append(page(T.t.slice(0, 1), T.t, null, T.fam));
+  for (const id of T.ids) { const s = sec(id); if (!s) continue; m.append(secHead(s.title, s.table ? s.table.rows.length : undefined, s.note), ...cards(s, T.f)); }
+}
+
+function home(m) {
+  m.append(page("ط", "مرحباً " + D.name.replace(/^المهندس\s+/, ""), D.roles.join(" · ")));
+  const ks = [...(sec("fin") ? sec("fin").kpis : []), ...(sec("money") ? sec("money").kpis.filter((k) => k.label !== "مطالبات عند العملاء") : [])];
+  if (ks.length) m.append(kpiStrip(ks.map((k) => ({ ...k, f: KF[k.label] || "" }))));
+  // alerts that need someone today
+  const al = [];
+  for (const p of D.projects || []) if (p.x.dueNow > 0.5) al.push({ t: "مستحق عند العميل — " + p.name, x: "دفعات استحقت ولم تُحصّل", a: fmt(p.x.dueNow), v: p.x.dueNow, go: () => { view = "proj"; rec = p.id; recTab = "inst"; draw(); } });
+  al.sort((a, b) => b.v - a.v);
+  const rr = sec("subrec");
+  const subAl = rr ? rr.table.rows.filter((r) => r[3] && r[3].tone === "bad").map((r) => ({ t: "دفعات باطن أكثر من قيود — " + r[0], x: "راجع المستخلصات مع المحاسب", a: txt(r[3]), bad: true, go: () => go("subs") })) : [];
+  const list = [...subAl, ...al.slice(0, 6)];
+  const w = sec("wait");
+  if (w) { m.append(secHead("بانتظارك", w.table.rows.length, w.note)); m.append(...cards({ ...w, kpis: null }, "ui")); }
+  if (list.length) {
+    m.append(secHead("تنبيهات", list.length));
+    const box = el("div", "box alerts");
+    for (const a of list) { const b = el("button", "al" + (a.bad ? " bad" : "")); b.type = "button"; const t = el("div"); t.append(el("div", "", a.t), el("div", "x", a.x)); b.append(el("i"), t, el("b", "", a.a)); b.onclick = a.go; box.append(b); }
+    m.append(box);
+  }
+  if (!ks.length && !w && !list.length) m.append(el("div", "empty", "لا يوجد شيء الآن"));
+}
+
+function projects(m) {
+  const all = D.projects || [];
+  const sum = (k) => all.reduce((t, p) => t + p.x[k], 0);
+  m.append(page("م", "المشاريع", all.length + " مشروع · المصدر: تدقيق طاء وقيود", "var(--acc6)"));
+  m.append(kpiStrip([
+    { label: "قيمة العقود", value: fmt(sum("contract")), f: "in" }, { label: "المحصّل", value: fmt(sum("collected")), sub: "باقي " + fmt(sum("toCollect")), f: "in" },
+    { label: "مستحق الآن", value: fmt(sum("dueNow")), f: "in", tone: sum("dueNow") ? "warn" : "" }, { label: "المصروف", value: fmt(sum("spent")), f: "out" }]));
+  const fl = el("div", "filters");
+  for (const [k, t] of [["all", "الكل"], ["str", "عظم"], ["fin", "تشطيب"], ["due", "عليها مستحق"]]) {
+    const b = el("button", "chip", t); b.type = "button"; b.setAttribute("aria-pressed", String(pf.kind === k)); b.onclick = () => { pf.kind = k; draw(); }; fl.append(b);
+  }
+  const q = el("input", "search"); q.type = "search"; q.placeholder = "بحث باسم المشروع أو العميل"; q.value = pf.q;
+  q.oninput = () => { pf.q = q.value; paint(); }; fl.append(q); m.append(fl);
+  const g = el("div", "grid fam-acc"); m.append(g);
+  const paint = () => {
+    g.replaceChildren();
+    const list = all.filter((p) => (pf.kind === "all" || (pf.kind === "due" ? p.x.dueNow > 0.5 : p.kind === pf.kind)) && (!pf.q || (p.name + p.client).includes(pf.q)))
+      .sort((a, b) => b.x.dueNow - a.x.dueNow || b.x.contract - a.x.contract);
+    if (!list.length) { g.append(el("div", "empty", "لا توجد مشاريع بهذا البحث")); return; }
+    for (const p of list) {
+      const c = el("button", "card pc" + (p.x.dueNow > 0.5 ? " warn" : "")); c.type = "button";
+      c.append(el("div", "t", p.name), el("div", "st", [p.kind === "fin" ? "تشطيب" : p.kind === "str" ? "عظم" : "", p.status].filter(Boolean).join(" · ")));
+      const mid = el("div", "mid"), am = el("div"); am.append(el("div", "amt", fmt(p.x.collected)), el("div", "amt-l", "محصّل من " + fmt(p.x.contract)));
+      mid.append(ring(p.x.pct), am); c.append(mid);
+      const kv = el("div", "kv"); kv.append(el("span", "", "المصروف"), el("b", "", fmt(p.x.spent))); kv.lastChild.style.color = "var(--out)";
+      c.append(kv);
+      const tags = el("div", "tags");
+      if (p.x.dueNow > 0.5) tags.append(el("span", "pill warn", "مستحق " + fmt(p.x.dueNow)));
+      if (p.x.unnamed > 0.5) tags.append(el("span", "pill", "باطن بلا اسم " + fmt(p.x.unnamed)));
+      if (tags.children.length) c.append(tags);
+      c.onclick = () => { rec = p.id; recTab = "inst"; draw(); window.scrollTo(0, 0); };
+      g.append(c);
+    }
+  };
+  paint();
+}
+
+function record(m) {
+  const p = (D.projects || []).find((x) => x.id === rec); if (!p) { rec = null; return projects(m); }
+  const back = el("button", "back", "→ كل المشاريع"); back.type = "button"; back.onclick = () => { rec = null; draw(); }; m.append(back);
+  const ph = page("م", p.name, [p.kind === "fin" ? "تشطيب" : p.kind === "str" ? "عظم" : "", p.status, p.client].filter(Boolean).join(" · "), "var(--acc6)");
+  m.append(ph);
+  const cash = p.x.collected - p.x.spent;
+  m.append(kpiStrip([
+    { label: "قيمة العقود", value: fmt(p.x.contract), f: "in" }, { label: "المحصّل", value: fmt(p.x.collected), sub: pct(p.x.pct) + " من العقد", f: "in" },
+    { label: "مستحق الآن", value: fmt(p.x.dueNow), f: "in", tone: p.x.dueNow > 0.5 ? "warn" : "" }, { label: "باقي للتحصيل", value: fmt(p.x.toCollect), f: "in" },
+    { label: "المصروف حتى الآن", value: fmt(p.x.spent), sub: "منها باطن " + fmt(p.x.subCert), f: "out" },
+    { label: "صافي النقد", value: (cash < 0 ? "(" + fmt(-cash) + ")" : fmt(cash)), sub: "المحصّل − المصروف", f: "cash" }]));
+  const st = el("div", "sub-tabs"), panel = el("div", "panel");
+  const T = [["inst", "الدفعات", p.contracts.reduce((t, k) => t + k.inst.length, 0)], ["exp", "المصروف", p.exp.length], ["subs", "مقاولو الباطن", p.subs.length], ["notes", "ملاحظات التدقيق"]];
+  for (const [k, t, n] of T) { const b = el("button", "", t + (n !== undefined ? " (" + n + ")" : "")); b.type = "button"; b.setAttribute("aria-current", String(recTab === k)); b.onclick = () => { recTab = k; draw(); }; st.append(b); }
+  m.append(st, panel);
+  if (recTab === "inst") {
+    if (!p.contracts.length) panel.append(el("div", "empty", "لا يوجد عقد مسجّل"));
+    for (const k of p.contracts) {
+      const c = el("div", "box"); c.append(el("div", "t", k.name)); c.firstChild.style.cssText = "font-weight:600;color:var(--ui)";
+      const kv = el("div", "kv"); kv.append(el("span", "", "قيمة العقد"), el("b", "", fmt(k.value))); if (k.date) kv.append(el("span", "", "التاريخ"), el("b", "", k.date));
+      if (k.inst.length) kv.append(el("span", "", "المحصّل"), el("b", "", fmt(k.got)));
+      kv.querySelectorAll("b").forEach((b) => (b.style.color = "var(--acc9)")); c.append(kv);
+      if (k.inst.length) { const bar = el("div", "bar"); bar.style.margin = "8px 0 4px"; const i = el("i"); i.style.width = Math.min(100, k.value ? (k.got / k.value) * 100 : 0) + "%"; bar.append(i); c.append(bar); }
+      for (const i of k.inst) {
+        const r = el("div", "inst"); r.append(el("div", "", i.name), el("div", "a", fmt(i.amt)));
+        const left = i.amt - i.got;
+        r.append(i.st === "محصّلة" ? el("span", "pill ok", "محصّلة") : i.st === "محصّلة جزئيًا" ? el("span", "pill " + (i.due ? "warn" : ""), "جزئية — باقي " + fmt(left)) : i.due ? el("span", "pill bad", "مستحقة") : el("span", "pill", "لم تستحق"));
+        c.append(r);
       }
+      if (!k.inst.length) c.append(el("div", "muted small", "مسجّل بدون جدول دفعات"));
+      panel.append(c);
     }
-    main.append(sec);
+  } else if (recTab === "exp") {
+    const max = Math.max(1, ...p.exp.map((e) => e.v), p.x.subCert);
+    const rows = [...p.exp, ...(p.x.subCert ? [{ label: "مقاولو الباطن (قيود)", v: p.x.subCert }] : [])].sort((a, b) => b.v - a.v);
+    if (!rows.length) panel.append(el("div", "empty", "لا يوجد مصروف مسجّل"));
+    for (const e of rows) { const r = el("div", "ebar"), bar = el("div", "bar"), i = el("i"); i.style.width = (e.v / max) * 100 + "%"; bar.append(i); r.append(el("span", "", e.label), bar, el("b", "", fmt(e.v))); panel.append(r); }
+    if (rows.length) { const t = el("div", "ebar"); t.style.borderTop = "2px solid var(--ink)"; t.append(el("b", "", "المجموع"), el("span"), el("b", "", fmt(p.x.spent))); panel.append(t); }
+  } else if (recTab === "subs") {
+    panel.append(kpiStrip([{ label: "مدفوع لمقاولي الباطن (قيود)", value: fmt(p.x.subPaid), f: "out" }, { label: "مسجّل بالاسم في المستخلصات", value: fmt(p.x.named), f: "out" },
+      { label: "لم يُسجَّل باسمه بعد", value: fmt(p.x.unnamed), tone: p.x.unnamed < -0.5 ? "bad" : p.x.unnamed > 0.5 ? "warn" : "" }]));
+    if (!p.subs.length) panel.append(el("div", "empty", "لا توجد اتفاقيات مسجّلة بأسماء المقاولين لهذا المشروع"));
+    const g = el("div", "grid fam-acc");
+    for (const s of p.subs) {
+      const c = el("div", "card" + (s.owing > 0.5 ? " warn" : "")); c.append(el("div", "t", s.sub + (s.trade ? " · " + s.trade : "")));
+      const kv = el("div", "kv"); for (const [l, v] of [["قيمة الاتفاقية", fmt(s.total)], ["المنفّذ", fmt(s.exec) + " (" + pct(s.pct) + ")"], ["المصروف له", fmt(s.paid)], ["المتبقي له الآن", s.owing > 0.5 ? fmt(s.owing) : "—"]]) kv.append(el("span", "", l), el("b", "", v));
+      c.append(kv); g.append(c);
+    }
+    if (p.subs.length) panel.append(g);
+  } else {
+    const parts = [p.note, ...p.contracts.filter((k) => k.note).map((k) => "— " + k.name + " —\n" + k.note.trim())].filter((x) => x && x.trim());
+    if (!parts.length) panel.append(el("div", "empty", "لا توجد ملاحظات"));
+    for (const t of parts) panel.append(el("div", "notes", t.trim()));
   }
 }
-async function load() {
+
+async function load(keep) {
   if (!token) return fail("لوحة المتابعة", "لموظفي مؤسسة طاء الرائدة للمقاولات العامة. الدخول برقم جوالك المسجل في النظام.");
   try {
     const r = await fetch(API, { headers: { "x-form-token": token } });
     const j = await r.json().catch(() => ({}));
     if (!r.ok) return fail(r.status === 401 ? "انتهت صلاحية الرابط" : r.status === 403 ? "غير مصرح" : "تعذّر التحميل", j.error || "حاول مرة أخرى بعد قليل.");
-    render(j);
+    D = j;
+    $("who").textContent = D.name; $("roles").textContent = D.roles.join(" · ") + " · آخر تحديث " + new Date(D.at).toLocaleTimeString("ar-SA", { hour: "2-digit", minute: "2-digit" });
+    const mo = $("mode"); mo.hidden = false; mo.textContent = "الوضع: " + D.mode; mo.className = "badge" + (D.mode === "فعلي" ? " ok" : D.mode === "إيقاف آمن" ? " bad" : "");
+    $("reload").hidden = false;
+    if (!keep) view = "home";
+    draw();
   } catch (e) { fail("تعذّر الاتصال", "تحقق من الإنترنت ثم اضغط تحديث."); $("reload").hidden = false; }
 }
-let view = "mon", REG = null;
+
+// ---- data panel (البيانات): master data, each department its own part ----
 async function api(body) {
   const r = await fetch(API, { method: "POST", headers: { "x-form-token": token, "content-type": "application/json" }, body: JSON.stringify(body) });
   return { status: r.status, j: await r.json().catch(() => ({})) };
 }
-async function loadReg() {
-  const { status, j } = await api({ op: "reg" });
-  REG = status === 200 ? j.ents : [];
-  $("tabs").hidden = !REG.length;
-}
-function renderData() {
-  const main = $("main"); main.replaceChildren();
-  for (const e of REG) {
-    const sec = el("section"), head = el("div", "head"), h = el("h2", "", e.title);
-    h.append(el("span", "count", "  (" + e.rows.length + ")")); head.append(h);
-    if (e.canAdd) { const b = el("button", "btn-sm", "+ إضافة"); b.type = "button"; b.onclick = () => openForm(e, null); head.append(b); }
-    sec.append(head);
-    if (e.confirm) sec.append(el("div", "note", "اضغط على أي سطر لتعديله. الحفظ يرسل لك زر «تأكيد» في واتساب، ولا يُنفَّذ قبله.")); else if (e.rows.length) sec.append(el("div", "note", "اضغط على أي سطر لتعديله."));
-    if (!e.rows.length) sec.append(el("div", "empty", "لا توجد سجلات بعد"));
-    else {
-      const wrap = el("div", "tbl"), t = el("table"), tr = el("tr");
-      for (const c of e.cols) tr.append(el("th", "", c)); tr.append(el("th", "", ""));
-      const th = el("thead"); th.append(tr); t.append(th); const tb = el("tbody");
-      for (const r of e.rows) {
-        const row = el("tr"); for (const c of r.cells) row.append(cell(c));
-        const td = el("td"); if (r.edit) { const b = el("button", "btn2 btn-sm", "تعديل"); b.type = "button"; b.onclick = (ev) => { ev.stopPropagation(); openForm(e, r); }; td.append(b); row.classList.add("click"); row.onclick = () => openForm(e, r); }
-        row.append(td); tb.append(row);
-      }
-      t.append(tb); wrap.append(t); sec.append(wrap);
+async function loadReg() { const { status, j } = await api({ op: "reg" }); REG = status === 200 ? j.ents : []; }
+function renderData(m) {
+  m.append(page("ب", "البيانات", "كل مسؤول يعدّل قسمه — التعديلات الحساسة تُنفَّذ بعد «تأكيد» في واتساب", "var(--out)"));
+  for (const e of REG || []) {
+    const h = secHead(e.title, e.rows.length, e.confirm ? "اضغط على أي بطاقة لتعديلها. الحفظ يرسل لك زر «تأكيد» في واتساب، ولا يُنفَّذ قبله." : "اضغط على أي بطاقة لتعديلها.");
+    if (e.canAdd) { const b = el("button", "sbtn", "+ إضافة"); b.type = "button"; b.onclick = () => openForm(e, null); h.insertBefore(b, h.querySelector(".note")); }
+    m.append(h);
+    if (!e.rows.length) { m.append(el("div", "empty", "لا توجد سجلات بعد")); continue; }
+    const g = el("div", "grid");
+    for (const r of e.rows) {
+      const c = el(r.edit ? "button" : "div", "card"); if (r.edit) { c.type = "button"; c.onclick = () => openForm(e, r); }
+      c.append(el("div", "t", r.cells[0]));
+      const kv = el("div", "kv"); for (let i = 1; i < r.cells.length; i++) if (r.cells[i] && r.cells[i] !== "—") kv.append(el("span", "", e.cols[i]), el("b", "", r.cells[i]));
+      c.append(kv); g.append(c);
     }
-    main.append(sec);
+    m.append(g);
   }
 }
 function input(type, val) { const i = el("input"); i.type = type; i.value = val ?? ""; return i; }
@@ -193,10 +415,9 @@ function openForm(e, r) {
     const box = el("div", "f"), lab = el("label", "", f.label + (f.required ? " *" : "")); box.append(lab);
     const v = data[f.key];
     if (f.type === "text" || f.type === "phone" || f.type === "number") {
-      const i = input(f.type === "number" ? "text" : f.type === "phone" ? "tel" : "text", v);
+      const i = input(f.type === "phone" ? "tel" : "text", v);
       if (f.type === "number") i.inputMode = "decimal";
-      if (f.key === "name" && e.key === "projects" && r) i.disabled = true;
-      if (f.key === "project" && r) i.disabled = true;
+      if ((f.key === "name" && e.key === "projects" && r) || (f.key === "project" && r)) i.disabled = true;
       box.append(i); get[f.key] = () => i.value;
     } else if (f.type === "select") {
       const sel = el("select"); for (const o of f.options || []) { const op = el("option", "", o.t); op.value = o.v; sel.append(op); }
@@ -209,26 +430,26 @@ function openForm(e, r) {
       if (!(f.options || []).length) wrap.append(el("span", "muted", "لا يوجد أحد بهذا الدور بعد — أضفه من «الأشخاص والأدوار»"));
       box.append(wrap); get[f.key] = () => [...wrap.querySelectorAll("input:checked")].map((x) => x.value);
     } else if (f.type === "bool") {
-      const l = el("label", "multi"), c = input("checkbox"); c.checked = !!v; lab.textContent = ""; const w = el("label"); w.append(c, el("span", "", f.label)); l.append(w); box.append(l); get[f.key] = () => c.checked;
+      const l = el("div", "multi"), c = input("checkbox"); c.checked = !!v; lab.textContent = ""; const w = el("label"); w.append(c, el("span", "", f.label)); l.append(w); box.append(l); get[f.key] = () => c.checked;
     } else if (f.type === "items") {
       const t = el("table", "items"), hd = el("tr"); for (const c of ["البند", "الوحدة", "الكمية", "السعر", ""]) hd.append(el("th", "", c)); t.append(hd);
       const add = (it) => {
         const tr = el("tr"); tr.dataset.id = it.id || "";
         const n = input("text", it.name), u = input("text", it.unit || "م²"), q = input("text", it.qty), p = input("text", it.rate);
         q.inputMode = p.inputMode = "decimal"; if (it.locked) { p.disabled = true; p.title = "دخل في مستخلص"; }
-        const del = el("button", "btn2 btn-sm", "حذف"); del.type = "button"; if (it.locked) del.disabled = true; del.onclick = () => tr.remove();
+        const del = el("button", "sbtn", "حذف"); del.type = "button"; if (it.locked) del.disabled = true; del.onclick = () => tr.remove();
         for (const x of [n, u, q, p]) { const td = el("td"); td.append(x); tr.append(td); } const td = el("td"); td.append(del); tr.append(td);
         tr._v = () => ({ id: tr.dataset.id || undefined, name: n.value, unit: u.value, qty: q.value, rate: p.value }); t.append(tr);
       };
       for (const it of v || []) add(it); if (!(v || []).length) add({});
-      const more = el("button", "btn2 btn-sm", "+ بند"); more.type = "button"; more.onclick = () => add({});
-      const w = el("div", "tbl"); w.append(t); box.append(w, more);
+      const more = el("button", "sbtn", "+ بند"); more.type = "button"; more.onclick = () => add({});
+      const w = el("div"); w.style.overflowX = "auto"; w.append(t); box.append(w, more);
       get[f.key] = () => [...t.querySelectorAll("tr")].filter((x) => x._v).map((x) => x._v());
     }
     if (f.hint) box.append(el("div", "hint", f.hint));
     body.append(box);
   }
-  const res = el("div", "res"), bar = el("div", "bar"), save = el("button", "", "حفظ"), close = el("button", "btn2", "إغلاق");
+  const res = el("div", "res"), bar = el("div", "dbar"), save = el("button", "pbtn", "حفظ"), close = el("button", "sbtn", "إغلاق");
   save.type = close.type = "button"; bar.append(save, close); body.append(res, bar);
   close.onclick = () => $("dlg").close();
   save.onclick = async () => {
@@ -236,7 +457,7 @@ function openForm(e, r) {
     save.disabled = true; res.className = "res"; res.textContent = "";
     try {
       const { status, j } = await api({ op: "save", ent: e.key, id: r ? r.id : "", data: out });
-      if (status === 200) { res.className = "res ok"; res.textContent = j.msg || "تم الحفظ ✅"; await loadReg(); renderData(); setTimeout(() => $("dlg").close(), 900); }
+      if (status === 200) { res.className = "res ok"; res.textContent = j.msg || "تم الحفظ ✅"; await loadReg(); draw(); setTimeout(() => $("dlg").close(), 900); }
       else if (status === 202) { res.className = "res warn"; res.textContent = (j.msg || "") + " — افتح واتساب واضغط «تأكيد»."; }
       else { res.className = "res bad"; res.textContent = j.error || "تعذّر الحفظ"; }
     } catch { res.className = "res bad"; res.textContent = "تعذّر الاتصال"; }
@@ -244,13 +465,10 @@ function openForm(e, r) {
   };
   $("dlg").showModal();
 }
-for (const b of document.querySelectorAll(".tab")) b.addEventListener("click", async () => {
-  view = b.dataset.v; for (const x of document.querySelectorAll(".tab")) x.classList.toggle("on", x === b);
-  if (view === "data") { await loadReg(); renderData(); } else load();
-});
-$("reload").addEventListener("click", async () => { if (view === "data") { await loadReg(); renderData(); } else load(); });
-load().then(() => token && loadReg()).catch(() => {});
-setInterval(() => { if (document.visibilityState === "visible" && view === "mon" && !$("dlg").open) load(); }, 120000);
+
+$("reload").addEventListener("click", async () => { if (view === "data") await loadReg(); load(true); });
+load().then(() => token && loadReg().then(() => D && renderTabs())).catch(() => {});
+setInterval(() => { if (document.visibilityState === "visible" && view !== "data" && !$("dlg").open) load(true); }, 120000);
 </script>
 </body>
 </html>
