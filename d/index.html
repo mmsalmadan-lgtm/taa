@@ -434,7 +434,7 @@ function go(v) { if (v === "subs") { MT = v; v = "money"; } if (v === "sups") { 
 const MTABS = [
   { k: "rcv", t: "التحصيل", ids: ["receipts", "claims"] },
   { k: "cus", t: "عهدات العملاء", ids: ["custody"] },
-  { k: "subs", t: "مقاولو الباطن", ids: ["subk", "subrec", "certs"] },
+  { k: "subs", t: "مقاولو الباطن", ids: ["subk", "certs"] }, // «مطابقة دفعات مقاولي الباطن» removed 2026-11-09 (owner): the cards read each subcontractor's Qoyod account
   { k: "cash", t: "النقد والمصاريف الثابتة", ids: [], cash: true },
   { k: "prof", t: "الربحية", ids: [], prof: true },
 ];
