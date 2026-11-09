@@ -29,7 +29,7 @@
 *{box-sizing:border-box}[hidden]{display:none!important}
 :focus-visible{outline:2px solid var(--ui);outline-offset:2px}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
-@media (pointer:coarse){.sbtn,.ibtn,.ebtn,.wchip,.chip,.sub-tabs button{min-height:44px}.lnk{min-height:44px;display:inline-flex;align-items:center}}
+@media (pointer:coarse){.pbtn,.qa summary,.sbtn,.ibtn,.ebtn,.wchip,.chip,.sub-tabs button{min-height:44px}.lnk{min-height:44px;display:inline-flex;align-items:center}}
 html,body{overflow-x:hidden}body{margin:0;background:var(--bg);color:var(--ink);font-family:"SAR","IBM Plex Sans Arabic","Segoe UI",Tahoma,system-ui,sans-serif;font-size:14px;line-height:1.55}
 button{font:inherit;cursor:pointer}
 .wrapx{max-width:1400px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
@@ -119,7 +119,7 @@ button.card{cursor:pointer}button.card:hover{border-color:var(--ui-2)}
 /* cash from Qoyod */
 .qc{margin-top:12px;display:flex;flex-direction:column;gap:6px}.qc p{margin:0;font-size:12.5px;padding:6px 10px;border-radius:5px;background:var(--sunk)}
 .qc p.bad{background:var(--crit1);color:var(--crit)}.qc p.warn{background:var(--warn1);color:var(--warn)}
-.qa{margin-top:10px}.qa summary{cursor:pointer;font-size:13px;color:var(--ui);font-weight:600;min-height:32px}
+.qa{margin-top:10px}.qa summary{cursor:pointer;font-size:13px;color:var(--ui);font-weight:600;min-height:32px}@media (pointer:coarse){.qa>summary{min-height:44px;padding-top:12px}}
 .qa table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}.qa td{padding:6px 4px;border-bottom:1px solid var(--line)}.qa td:last-child{text-align:left;white-space:nowrap;direction:ltr}
 .qa td.neg{color:var(--crit)}
 .gh-a{display:flex;gap:8px}.gh-a:empty{display:none}
@@ -219,6 +219,9 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 .dbar{display:flex;gap:8px;margin-top:16px;position:sticky;bottom:0;background:var(--surface);padding:10px 0;border-top:1px solid var(--line);z-index:1}
 .ferr{font-size:13px;color:var(--crit);margin-top:4px;font-weight:600}.f input[aria-invalid=true]{border-color:var(--crit);border-width:2px}
 .kpi.dep,.fcbox.dep{opacity:.55}.cashfirst{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border-color:var(--warn);background:var(--warn1)}.cashfirst b{display:block;font-size:15px;color:var(--ink)}.cashfirst .muted{color:var(--ink)}.cashfirst .pbtn{min-height:44px}
+.rvw{margin-top:12px;padding:12px 14px;border-radius:6px;border:1px solid var(--ui);background:var(--sunk)}.rvw b{display:block;margin-bottom:4px}.rvw p{margin:4px 0;font-size:15px}.rvw p.warn{color:var(--warn);font-weight:600}
+.dzone{margin-top:20px;padding-top:14px;border-top:1px solid var(--line)}.dzone b{display:block;color:var(--crit)}.dzone p{margin:4px 0 10px}.dzone .danger{margin-inline-start:0}
+.f select[aria-invalid=true]{border-color:var(--crit);border-width:2px}
 .res{margin-top:12px;padding:10px 12px;border-radius:6px;font-size:14px;display:none}
 .res.ok{display:block;background:var(--acc1);color:var(--acc9)}.res.warn{display:block;background:var(--warn1);color:var(--warn)}.res.bad{display:block;background:var(--crit1);color:var(--crit)}
 @media (max-width:560px){
@@ -346,9 +349,11 @@ function pinDialog() {
   const n1 = field("الرمز السري الجديد", "password", "new-password", "من 6 إلى 12 رقماً");
   const n2 = field("أعد كتابة الرمز الجديد", "password", "new-password");
   const res = el("div", "res"); res.setAttribute("role", "status");
-  const bar = el("div", "dbar"), save = el("button", "pbtn", "حفظ"), all = el("button", "sbtn", "خروج من كل الأجهزة"), close = el("button", "sbtn", "إغلاق");
-  save.type = all.type = close.type = "button"; bar.append(save, all, close);
-  body.append(old.box, n1.box, n2.box, res, bar);
+  const bar = el("div", "dbar"), save = el("button", "pbtn", "حفظ"), close = el("button", "sbtn", "إغلاق");
+  save.type = close.type = "button"; bar.append(save, close);
+  const out = el("div", "dzone"), all = el("button", "sbtn danger", "خروج من كل الأجهزة"); all.type = "button";
+  out.append(el("b", "", "خروج من كل الأجهزة"), el("p", "muted small", "يُخرجك فوراً من هذا الجهاز وكل جهاز دخلت منه، وتحتاج بعدها الرمز السري لتدخل من جديد."), all);
+  body.append(old.box, n1.box, n2.box, res, bar, out);
   close.onclick = () => $("dlg").close();
   save.onclick = async () => {
     res.className = "res";
@@ -362,6 +367,7 @@ function pinDialog() {
     save.disabled = false;
   };
   all.onclick = async () => {
+    if (!all.dataset.sure) { all.dataset.sure = "1"; all.textContent = "تأكيد: اخرج من كل الأجهزة"; return; }
     all.disabled = true;
     const { status, j } = await call({ op: "revoke" }).catch(() => ({ status: 0, j: {} }));
     if (status === 200) { $("dlg").close(); signIn("", "خرجت من كل الأجهزة. سجّل الدخول من جديد."); }
@@ -1089,9 +1095,24 @@ function qoyodCashBox(box, Q) {
 // ---- our own cash book ----
 function openBookOffer(box) {
   const w = el("div", "qc"); w.append(el("p", "warn", "النقد هنا مؤقتاً من قيود. افتح دفتر النقد الخاص بنا: تُستورد أرصدة اليوم من قيود مرة واحدة كرصيد افتتاحي، وبعدها لا يحرّك الأرصدة إلا سنداتنا وما تسجّله هنا، ويبقى قيود للمقارنة فقط."));
-  const b = el("button", "pbtn", "فتح دفتر النقد"); b.type = "button";
-  b.onclick = async () => { b.disabled = true; const { status, j } = await api({ op: "cashopen" }); toast(status === 200 ? j.msg : j.error || "تعذّر"); if (status === 200) { draw(); refreshAud(); } else b.disabled = false; };
+  const b = el("button", "pbtn", "فتح دفتر النقد…"); b.type = "button"; b.onclick = () => openBookDialog(w);
   const a = el("div", "acts"); a.append(b); w.append(a); box.append(w);
+}
+// done once and for good: today's Qoyod balances become the opening; there is no undo, so it is said before it happens
+function openBookDialog(offer) {
+  const body = $("dlgBody"); body.replaceChildren(el("h3", "", "فتح دفتر النقد"));
+  body.append(el("p", "", "تُؤخذ أرصدة البنوك والصندوق والعهد من قيود الآن، مرة واحدة، رصيداً افتتاحياً بتاريخ اليوم."),
+    el("p", "", "بعدها لا يحرّك الأرصدة إلا سنداتنا وما تسجّله هنا، ويبقى قيود للمقارنة فقط. لا يمكن التراجع عن الفتح ولا إعادته."));
+  const res = el("div", "res"); res.setAttribute("role", "status");
+  const bar = el("div", "dbar"), go = el("button", "pbtn", "افتح الدفتر الآن"), close = el("button", "sbtn", "إلغاء"); go.type = close.type = "button"; bar.append(go, close); body.append(res, bar);
+  close.onclick = () => $("dlg").close();
+  go.onclick = async () => {
+    go.disabled = close.disabled = true; res.className = "res";
+    const { status, j } = await api({ op: "cashopen" }).catch(() => ({ status: 0, j: {} }));
+    if (status === 200 || status === 409) { offer.hidden = true; go.remove(); close.disabled = false; close.textContent = "إغلاق"; res.className = status === 200 ? "res ok" : "res warn"; res.textContent = status === 200 ? j.msg : (j.error || "الدفتر مفتوح من قبل"); close.focus(); draw(); refreshAud(); }
+    else { res.className = "res bad"; res.textContent = j.error || "تعذّر الاتصال — لم يُفتح الدفتر. حاول مرة أخرى."; go.disabled = close.disabled = false; }
+  };
+  $("dlg").showModal(); close.focus();
 }
 const MVT = { handover: "تسليم عهدة", expense: "مصروف", payment: "صرف", receipt: "قبض", transfer: "تحويل" };
 function bookBox(box, K) {
@@ -1128,75 +1149,123 @@ function bookBox(box, K) {
 // today in Riyadh (the bot dates everything in Riyadh time; the browser UTC date is yesterday after 21:00 UTC)
 const riyadhToday = () => new Date(Date.now() + 3 * 36e5).toISOString().slice(0, 10);
 function dlgField(body, label, type) { const box = el("div", "f"), id = "f" + Math.random().toString(36).slice(2, 8), l = el("label", "", label), i = type === "select" ? el("select") : el("input"); i.id = id; l.htmlFor = id; if (type !== "select") i.type = type; box.append(l, i); body.append(box); return i; }
-function accSelect(body, label, K, kinds) { const s = dlgField(body, label, "select"); for (const a of K.accounts.filter((x) => !kinds || kinds.includes(x.kind))) { const o = el("option", "", a.name + " — " + fmt(a.balance)); o.value = a.id; s.append(o); } return s; }
-function dlgSave(body, send, after) {
+// an inline error at the field itself (aria-invalid + aria-describedby); returns true when there is one
+function fieldErr(i, msg) {
+  const box = i.closest(".f"); let e = box.querySelector(".ferr");
+  if (!msg) { i.removeAttribute("aria-invalid"); i.removeAttribute("aria-describedby"); if (e) e.remove(); return false; }
+  if (!e) { e = el("div", "ferr"); e.id = i.id + "-err"; box.append(e); }
+  e.textContent = msg; i.setAttribute("aria-invalid", "true"); i.setAttribute("aria-describedby", e.id); return true;
+}
+// "5,000" / "٥٬٠٠٠" / "5000 ﷼" → 5000, the same reading as the bot; anything else → NaN
+const toAmt = (x) => { const s = String(x ?? "").replace(/[٠-٩]/g, (c) => "٠١٢٣٤٥٦٧٨٩".indexOf(c)).replace(/[,٬\s﷼⃁]/g, "").replace("٫", "."); return s === "" || !/^\d*\.?\d+$/.test(s) ? NaN : Number(s); };
+function amtField(body, label, zeroOk) {
+  const i = dlgField(body, label, "text"); i.inputMode = "decimal"; i.dir = "ltr"; i.autocomplete = "off";
+  i.check = () => { const v = toAmt(i.value); return fieldErr(i, !i.value.trim() ? (zeroOk ? "اكتب المبلغ (صفر إن لم يبقَ شيء)" : "اكتب المبلغ") : !isFinite(v) ? "أرقام فقط، مثل 5,000" : !zeroOk && v <= 0 ? "المبلغ أكبر من صفر" : ""); };
+  i.addEventListener("blur", () => { if (i.value.trim()) i.check(); });
+  i.addEventListener("input", () => { if (i.getAttribute("aria-invalid")) i.check(); });
+  return i;
+}
+// no account is chosen for the person: a movement from the wrong account must be a choice, never a default
+function accSelect(body, label, K, kinds) {
+  const s = dlgField(body, label, "select"), ph = el("option", "", "— اختر الحساب —"); ph.value = ""; ph.disabled = ph.selected = true; s.append(ph);
+  for (const a of K.accounts.filter((x) => !kinds || kinds.includes(x.kind))) { const o = el("option", "", a.name + " — " + fmt(a.balance)); o.value = a.id; s.append(o); }
+  s.check = () => fieldErr(s, s.value ? "" : "اختر الحساب");
+  s.addEventListener("change", () => s.check());
+  return s;
+}
+// every money save is two presses: «مراجعة» restates it in words, «تأكيد وحفظ» sends it. One operation id per dialog, so a
+// retry after a lost answer (or a second press) is recorded once by the bot. The result stays on screen until closed.
+function dlgSave(body, o) {
+  const opId = (Math.random().toString(36).slice(2, 10) + Date.now().toString(36)).slice(0, 20);
+  const rv = el("div", "rvw"); rv.hidden = true; rv.setAttribute("aria-live", "polite");
   const res = el("div", "res"); res.setAttribute("role", "status");
-  const bar = el("div", "dbar"), go = el("button", "pbtn", "حفظ"), close = el("button", "sbtn", "إغلاق"); go.type = close.type = "button"; bar.append(go, close); body.append(res, bar);
-  close.onclick = () => $("dlg").close();
+  const bar = el("div", "dbar"), go = el("button", "pbtn", "مراجعة"), close = el("button", "sbtn", "إغلاق"); go.type = close.type = "button"; bar.append(go, close); body.append(rv, res, bar);
+  const inputs = [...body.querySelectorAll("input,select")], boxes = [...body.querySelectorAll(".f")];
+  let step = "edit";
+  // while reviewing, the fields step aside so the review is what the person reads (not below the fold behind the buttons)
+  const fieldsShown = (on) => { boxes.forEach((x) => (x.hidden = !on)); inputs.forEach((i) => (i.disabled = !on)); };
+  const toEdit = () => { step = "edit"; rv.hidden = true; fieldsShown(true); go.textContent = "مراجعة"; close.textContent = "إغلاق"; res.className = "res"; };
+  close.onclick = () => { if (step === "review") { toEdit(); inputs[0] && inputs[0].focus(); } else $("dlg").close(); };
   go.onclick = async () => {
-    go.disabled = true; res.className = "res";
-    try { const { status, j } = await api(send()); if (status === 200) { res.className = "res ok"; res.textContent = after ? after(j) : j.msg; setTimeout(() => { $("dlg").close(); draw(); refreshAud(); }, 1200); } else { res.className = "res bad"; res.textContent = j.error || "تعذّر الحفظ"; go.disabled = false; } }
-    catch { res.className = "res bad"; res.textContent = "تعذّر الاتصال"; go.disabled = false; }
+    if (step === "edit") {
+      const bad = (o.checks || []).map((i) => i.check && i.check()).some(Boolean);
+      if (bad) { const f = body.querySelector("[aria-invalid=true]"); if (f) f.focus(); return; }
+      rv.replaceChildren(el("b", "", "راجع قبل الحفظ"), ...o.review().map((t) => (Array.isArray(t) ? el("p", t[1], t[0]) : el("p", "", t))));
+      rv.hidden = false; fieldsShown(false); body.scrollTop = 0; step = "review"; go.textContent = "تأكيد وحفظ"; close.textContent = "رجوع للتعديل"; go.focus(); return;
+    }
+    go.disabled = close.disabled = true; res.className = "res";
+    try {
+      const { status, j } = await api({ ...o.send(), opId });
+      if (status === 200) {
+        step = "done"; rv.hidden = true; go.remove(); close.disabled = false; close.textContent = "إغلاق";
+        res.className = "res ok"; res.textContent = o.after ? o.after(j) : j.msg; close.focus(); draw(); refreshAud();
+      } else { res.className = "res bad"; res.textContent = j.error || "تعذّر الحفظ"; go.disabled = close.disabled = false; }
+    } catch { res.className = "res bad"; res.textContent = "تعذّر الاتصال ولا نعرف هل وصل الحفظ — اضغط «إعادة المحاولة»: لن تُسجَّل مرتين."; go.textContent = "إعادة المحاولة"; go.disabled = close.disabled = false; }
   };
 }
+const accName = (K, id) => { const a = K.accounts.find((x) => x.id === id); return a ? a.name : "—"; };
+const accAfter = (K, id, delta) => { const a = K.accounts.find((x) => x.id === id); if (!a) return ""; const v = a.balance + delta, t = "رصيد «" + a.name + "» بعدها: " + (v < 0 ? "−" : "") + fmt2(Math.abs(v)); return v < -0.005 ? [t + " — سالب، تأكد من الحساب", "warn"] : t; };
 function mvForm(K, type) {
   const body = $("dlgBody"); body.replaceChildren(el("h3", "", MVT[type]));
   const from = ["handover", "expense", "payment", "transfer"].includes(type) ? accSelect(body, type === "expense" ? "صُرف من" : "من حساب", K, type === "handover" ? ["bank", "box"] : type === "expense" ? ["custody", "box", "bank"] : null) : null;
   const to = ["handover", "receipt", "transfer"].includes(type) ? accSelect(body, type === "handover" ? "إلى عهدة" : "إلى حساب", K, type === "handover" ? ["custody"] : null) : null;
-  const amt = dlgField(body, "المبلغ (" + SAR + ")", "text"); amt.inputMode = "decimal"; amt.dir = "ltr";
+  const amt = amtField(body, "المبلغ (" + SAR + ")");
   const dt = dlgField(body, "التاريخ", "date"); dt.value = riyadhToday(); dt.max = dt.value;
   const party = ["payment", "receipt"].includes(type) ? dlgField(body, type === "payment" ? "صُرف إلى" : "من", "text") : null;
   const proj = ["expense", "payment", "receipt", "handover"].includes(type) ? dlgField(body, "المشروع (اختياري)", "text") : null;
   if (proj) { const dl = el("datalist"); dl.id = "projlist"; for (const p of D.projects || []) { const o = el("option"); o.value = p.name; dl.append(o); } body.append(dl); proj.setAttribute("list", "projlist"); }
   const note = dlgField(body, type === "expense" ? "على ماذا صُرف" : "ملاحظة", "text");
-  dlgSave(body, () => ({ op: "cashmv", type, from: from && from.value, to: to && to.value, amount: amt.value, date: dt.value, party: party && party.value, project: proj && proj.value, note: note.value }));
-  $("dlg").showModal(); amt.focus();
+  const sameAcc = { check: () => !!(from && to && from.value && from.value === to.value) && fieldErr(to, "اختر حساباً غير حساب المصدر") };
+  const why = { check: () => ["expense", "payment", "receipt"].includes(type) ? fieldErr(note, !note.value.trim() && !(party && party.value.trim()) ? (type === "receipt" ? "اكتب من أين دخل المبلغ" : "اكتب على ماذا صُرف") : "") : false };
+  dlgSave(body, {
+    checks: [from, to, amt, sameAcc, why].filter(Boolean),
+    review: () => {
+      const a = fmt2(toAmt(amt.value)), when = dt.value === riyadhToday() ? "اليوم" : dt.value, extra = [party && party.value.trim(), proj && proj.value.trim(), note.value.trim()].filter(Boolean).join(" · ");
+      const head = type === "receipt" ? "قبض " + a + " إلى «" + accName(K, to.value) + "»" : (type === "handover" || type === "transfer") ? MVT[type] + " " + a + " من «" + accName(K, from.value) + "» إلى «" + accName(K, to.value) + "»" : MVT[type] + " " + a + " من «" + accName(K, from.value) + "»";
+      return [head + " — " + when, extra, from ? accAfter(K, from.value, -toAmt(amt.value)) : accAfter(K, to.value, toAmt(amt.value))].filter(Boolean);
+    },
+    send: () => ({ op: "cashmv", type, from: from && from.value, to: to && to.value, amount: amt.value, date: dt.value, party: party && party.value, project: proj && proj.value, note: note.value }),
+  });
+  $("dlg").showModal(); (from || to).focus();
 }
 function countForm(a) {
   const body = $("dlgBody"); body.replaceChildren(el("h3", "", "جرد العهدة — " + a.name));
   body.append(el("p", "muted small", "رصيدها في دفترنا " + fmt(a.balance) + ". اكتب ما في يده فعلاً (صفر إن لم يبقَ شيء). الفرق يُسجَّل «مصروفات لم تُسجَّل بعد» حتى تصل فواتيرها."));
-  const amt = dlgField(body, "المبلغ في يده (" + SAR + ")", "text"); amt.inputMode = "decimal"; amt.dir = "ltr";
+  const amt = amtField(body, "المبلغ في يده (" + SAR + ")", true);
   const dt = dlgField(body, "تاريخ الجرد", "date"); dt.value = riyadhToday(); dt.max = dt.value;
-  dlgSave(body, () => ({ op: "cashcount", acc: a.id, amount: amt.value, date: dt.value }), (j) => j.msg + (j.diff <= -1 ? " — مصروفات لم تُسجَّل بعد " + fmt(-j.diff) : j.diff >= 1 ? " — زيادة " + fmt(j.diff) : " — مطابق"));
+  dlgSave(body, {
+    checks: [amt],
+    review: () => { const d = toAmt(amt.value) - a.balance; return ["جرد «" + a.name + "»: في يده " + fmt2(toAmt(amt.value)) + " — " + dt.value, Math.abs(d) < 1 ? "مطابق لدفترنا" : d < 0 ? "يُسجَّل " + fmt2(-d) + " مصروفات لم تُسجَّل بعد" : "يُسجَّل " + fmt2(d) + " زيادة عن الدفتر"]; },
+    send: () => ({ op: "cashcount", acc: a.id, amount: amt.value, date: dt.value }),
+    after: (j) => j.msg + (j.diff <= -1 ? " — مصروفات لم تُسجَّل بعد " + fmt(-j.diff) : j.diff >= 1 ? " — زيادة " + fmt(j.diff) : " — مطابق"),
+  });
   $("dlg").showModal(); amt.focus();
 }
 // what a custody holder really has in hand (custody spending is often not booked in Qoyod)
 function custodyForm(a) {
   const body = $("dlgBody"); body.replaceChildren(el("h3", "", "المبلغ في يد صاحب العهدة"));
   body.append(el("p", "muted small", "«" + a.name + "»: رصيدها في قيود " + fmt(a.balance) + ". اكتب ما في يده فعلاً الآن (صفر إن لم يبقَ شيء). الفرق مصروفات لم تُسجَّل في قيود بعد."));
-  const mk = (label, type) => { const box = el("div", "f"), id = "f" + Math.random().toString(36).slice(2, 8), l = el("label", "", label), i = el("input"); i.id = id; l.htmlFor = id; i.type = type; box.append(l, i); body.append(box); return i; };
-  const amt = mk("المبلغ في يده (" + SAR + ")", "text"); amt.inputMode = "decimal"; amt.dir = "ltr";
-  const dt = mk("التاريخ", "date"); dt.value = riyadhToday(); dt.max = dt.value;
-  const res = el("div", "res"); res.setAttribute("role", "status");
-  const bar = el("div", "dbar"), go = el("button", "pbtn", "حفظ"), close = el("button", "sbtn", "إغلاق"); go.type = close.type = "button"; bar.append(go, close); body.append(res, bar);
-  close.onclick = () => $("dlg").close();
-  go.onclick = async () => {
-    go.disabled = true; res.className = "res";
-    try {
-      const { status, j } = await api({ op: "custodycheck", code: a.code, amount: amt.value, date: dt.value });
-      if (status === 200) { res.className = "res ok"; res.textContent = j.msg + (j.unbooked >= 1 ? " — مصروفات لم تُسجَّل في قيود " + fmt(j.unbooked) : ""); setTimeout(() => { $("dlg").close(); draw(); refreshAud(); }, 1300); }
-      else { res.className = "res bad"; res.textContent = j.error || "تعذّر الحفظ"; go.disabled = false; }
-    } catch { res.className = "res bad"; res.textContent = "تعذّر الاتصال"; go.disabled = false; }
-  };
+  const amt = amtField(body, "المبلغ في يده (" + SAR + ")", true);
+  const dt = dlgField(body, "التاريخ", "date"); dt.value = riyadhToday(); dt.max = dt.value;
+  dlgSave(body, {
+    checks: [amt],
+    review: () => ["«" + a.name + "»: في يده " + fmt2(toAmt(amt.value)) + " — " + dt.value],
+    send: () => ({ op: "custodycheck", code: a.code, amount: amt.value, date: dt.value }),
+    after: (j) => j.msg + (j.unbooked >= 1 ? " — مصروفات لم تُسجَّل في قيود " + fmt(j.unbooked) : ""),
+  });
   $("dlg").showModal(); amt.focus();
 }
 function bankCheckForm(Q) {
   const body = $("dlgBody"); body.replaceChildren(el("h3", "", "رصيد كشف البنك"));
   body.append(el("p", "muted small", "اكتب مجموع أرصدة حسابات البنك كما في كشف البنك، وتاريخه. يُقارن مع رصيد البنوك " + (Q.from === "book" ? "في دفترنا" : "في قيود") + " (" + fmt(Q.bank) + ")."));
-  const mk = (label, type) => { const box = el("div", "f"), id = "f" + Math.random().toString(36).slice(2, 8), l = el("label", "", label), i = el("input"); i.id = id; l.htmlFor = id; i.type = type; box.append(l, i); body.append(box); return i; };
-  const amt = mk("الرصيد في الكشف (" + SAR + ")", "text"); amt.inputMode = "decimal"; amt.dir = "ltr";
-  const dt = mk("تاريخ الكشف", "date"); dt.value = riyadhToday(); dt.max = dt.value;
-  const res = el("div", "res"); res.setAttribute("role", "status");
-  const bar = el("div", "dbar"), go = el("button", "pbtn", "حفظ"), close = el("button", "sbtn", "إغلاق"); go.type = close.type = "button"; bar.append(go, close); body.append(res, bar);
-  close.onclick = () => $("dlg").close();
-  go.onclick = async () => {
-    go.disabled = true; res.className = "res";
-    try {
-      const { status, j } = await api({ op: "bankcheck", amount: amt.value, date: dt.value });
-      if (status === 200) { res.className = "res ok"; res.textContent = j.msg + (j.diff !== null && j.diff !== undefined ? (Math.abs(j.diff) < 1 ? " — مطابق لقيود" : " — الفرق مع قيود " + fmt(j.diff)) : ""); setTimeout(() => { $("dlg").close(); draw(); refreshAud(); }, 1200); }
-      else { res.className = "res bad"; res.textContent = j.error || "تعذّر الحفظ"; go.disabled = false; }
-    } catch { res.className = "res bad"; res.textContent = "تعذّر الاتصال"; go.disabled = false; }
-  };
+  const amt = amtField(body, "الرصيد في الكشف (" + SAR + ")", true);
+  const dt = dlgField(body, "تاريخ الكشف", "date"); dt.value = riyadhToday(); dt.max = dt.value;
+  dlgSave(body, {
+    checks: [amt],
+    review: () => { const d = toAmt(amt.value) - Q.bank; return ["كشف البنك " + fmt2(toAmt(amt.value)) + " بتاريخ " + dt.value, Math.abs(d) < 1 ? "مطابق لرصيد البنوك" : "الفرق مع رصيد البنوك " + fmt2(d)]; },
+    send: () => ({ op: "bankcheck", amount: amt.value, date: dt.value }),
+    after: (j) => j.msg + (j.diff !== null && j.diff !== undefined ? (Math.abs(j.diff) < 1 ? " — مطابق" : " — الفرق " + fmt(j.diff)) : ""),
+  });
   $("dlg").showModal(); amt.focus();
 }
 function ptitle(p) { const t = el("div", "t"); if (p.code) t.append(el("span", "pcode", p.code)); t.append(document.createTextNode(p.name)); return t; }
