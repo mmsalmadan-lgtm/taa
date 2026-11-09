@@ -1037,7 +1037,8 @@ async function cashBox(m) {
     if (Q) { // cash = Qoyod's own balances (the bot reads them on every load)
       cell("البنوك", fmt(Q.bank), "من قيود", "");
       cell("الصندوق الرئيسي", fmt(Q.box), "من قيود", Q.box < 0 ? "neg" : "");
-      cell("العهد النقدية (صافي)", fmt(Q.petty), Q.owedToStaff ? "منها عهد سالبة " + fmt(Q.owedToStaff) : "من قيود", "");
+      if (Q.confirmed !== undefined) cell("العهد المؤكدة", fmt(Q.confirmed), Q.unconfirmed ? "غير مؤكدة " + fmt(Q.unconfirmed) + " — غير محسوبة" : "كلها مؤكدة", Q.unconfirmed ? "wv" : "");
+      else cell("العهد النقدية (صافي)", fmt(Q.petty), Q.owedToStaff ? "منها عهد سالبة " + fmt(Q.owedToStaff) : "من قيود", "");
       cell("النقد اليوم", fmt(Q.total), Q.at ? "قيود — آخر تحديث " + new Date(Q.at).toLocaleString("ar-SA-u-nu-latn", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "قيود", "pay");
     } else {
       const named = (S.cash || []).filter((c) => c.name);
@@ -1060,10 +1061,43 @@ function qoyodCashBox(box, Q) {
   const b = el("button", "sbtn", Q.check ? "تحديث رصيد كشف البنك" : "أدخل رصيد كشف البنك"); b.type = "button"; b.onclick = () => bankCheckForm(Q);
   const acts = el("div", "acts"); acts.append(b); al.append(acts);
   const d = el("details", "qa"), sm = el("summary", "", "كل الحسابات في قيود (" + Q.accounts.length + ")"), t = el("table");
+  if (Q.unconfirmed) d.open = true; // the custody confirmations are what the page needs from you
   const GRP = { "Bank Account": "بنك", "Non-bank Cash and equivalents": "صندوق", "Petty cash": "عهدة" };
-  for (const a of Q.accounts) { const tr = el("tr"); tr.append(el("td", "", a.name), el("td", "muted", GRP[a.grp] || a.grp), el("td", a.balance < 0 ? "neg" : "", fmt(a.balance))); t.append(tr); }
+  for (const a of Q.accounts) {
+    const tr = el("tr"), st = el("td", "muted");
+    st.append(document.createTextNode(GRP[a.grp] || a.grp));
+    if (a.grp === "Petty cash" && a.balance > 0.005 && Q.confirmed !== undefined) {
+      const c = a.check, line = el("div", "small");
+      if (c && !c.stale) line.textContent = "في يده " + fmt(c.amount) + " (" + c.date + ")";
+      else line.textContent = c && c.stale ? "تغيّر رصيد قيود بعد التأكيد" : "غير مؤكدة";
+      if (!(c && !c.stale)) line.className = "small wv";
+      const cb = el("button", "lnk", c && !c.stale ? "تحديث" : "تأكيد ما في يده"); cb.type = "button"; cb.onclick = () => custodyForm(a);
+      st.append(line, cb);
+    } else if (a.grp === "Petty cash" && a.balance < -0.005) st.append(el("div", "small", "المؤسسة مدينة له"));
+    tr.append(el("td", "", a.name), st, el("td", a.balance < 0 ? "neg" : "", fmt(a.balance))); t.append(tr);
+  }
   d.append(sm, t); al.append(d);
   box.append(al);
+}
+// what a custody holder really has in hand (custody spending is often not booked in Qoyod)
+function custodyForm(a) {
+  const body = $("dlgBody"); body.replaceChildren(el("h3", "", "المبلغ في يد صاحب العهدة"));
+  body.append(el("p", "muted small", "«" + a.name + "»: رصيدها في قيود " + fmt(a.balance) + ". اكتب ما في يده فعلاً الآن (صفر إن لم يبقَ شيء). الفرق مصروفات لم تُسجَّل في قيود بعد."));
+  const mk = (label, type) => { const box = el("div", "f"), id = "f" + Math.random().toString(36).slice(2, 8), l = el("label", "", label), i = el("input"); i.id = id; l.htmlFor = id; i.type = type; box.append(l, i); body.append(box); return i; };
+  const amt = mk("المبلغ في يده (" + SAR + ")", "text"); amt.inputMode = "decimal"; amt.dir = "ltr";
+  const dt = mk("التاريخ", "date"); dt.value = new Date().toISOString().slice(0, 10); dt.max = dt.value;
+  const res = el("div", "res"); res.setAttribute("role", "status");
+  const bar = el("div", "dbar"), go = el("button", "pbtn", "حفظ"), close = el("button", "sbtn", "إغلاق"); go.type = close.type = "button"; bar.append(go, close); body.append(res, bar);
+  close.onclick = () => $("dlg").close();
+  go.onclick = async () => {
+    go.disabled = true; res.className = "res";
+    try {
+      const { status, j } = await api({ op: "custodycheck", code: a.code, amount: amt.value, date: dt.value });
+      if (status === 200) { res.className = "res ok"; res.textContent = j.msg + (j.unbooked >= 1 ? " — مصروفات لم تُسجَّل في قيود " + fmt(j.unbooked) : ""); setTimeout(() => { $("dlg").close(); draw(); refreshAud(); }, 1300); }
+      else { res.className = "res bad"; res.textContent = j.error || "تعذّر الحفظ"; go.disabled = false; }
+    } catch { res.className = "res bad"; res.textContent = "تعذّر الاتصال"; go.disabled = false; }
+  };
+  $("dlg").showModal(); amt.focus();
 }
 function bankCheckForm(Q) {
   const body = $("dlgBody"); body.replaceChildren(el("h3", "", "رصيد كشف البنك"));
