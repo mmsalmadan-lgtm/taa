@@ -116,6 +116,12 @@ button.card{cursor:pointer}button.card:hover{border-color:var(--ui-2)}
 .auth .wa{display:block;text-align:center;margin-top:6px;color:var(--muted);font-size:13px}
 .code{direction:ltr;font-size:30px;font-weight:700;letter-spacing:.12em;text-align:center;background:var(--sunk);border-radius:6px;padding:14px 8px;margin:10px 0;user-select:all}
 .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+/* cash from Qoyod */
+.qc{margin-top:12px;display:flex;flex-direction:column;gap:6px}.qc p{margin:0;font-size:12.5px;padding:6px 10px;border-radius:5px;background:var(--sunk)}
+.qc p.bad{background:var(--crit1);color:var(--crit)}.qc p.warn{background:var(--warn1);color:var(--warn)}
+.qa{margin-top:10px}.qa summary{cursor:pointer;font-size:13px;color:var(--ui);font-weight:600;min-height:32px}
+.qa table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}.qa td{padding:6px 4px;border-bottom:1px solid var(--line)}.qa td:last-child{text-align:left;white-space:nowrap;direction:ltr}
+.qa td.neg{color:var(--crit)}
 .gh-a{display:flex;gap:8px}.gh-a:empty{display:none}
 /* «مقاولو الباطن»: one card per subcontractor, his projects inside */
 .scs{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,520px),1fr));gap:12px;align-items:start}
@@ -972,20 +978,26 @@ function editSubPay(p) {
 function editCash() {
   editForm("النقد والمصاريف الثابتة والضريبة", (S) => {
     S.cash = S.cash || []; S.over = S.over || [];
-    const f = [{ type: "head", label: "النقد اليوم" }];
-    S.cash.forEach((c, n) => f.push({ key: "cn" + n, label: "اسم الحساب", type: "text", value: c.name }, { key: "ca" + n, label: "الرصيد (﷼)", type: "num", value: c.amount }));
-    f.push({ key: "cnN", label: "حساب جديد (اختياري)", type: "text", value: "" }, { key: "caN", label: "رصيده (﷼)", type: "num", value: "" });
+    const fromQ = !!(S.cashSource && S.cashSource.from === "qoyod");
+    const f = [];
+    if (!fromQ) {
+      f.push({ type: "head", label: "النقد اليوم" });
+      S.cash.forEach((c, n) => f.push({ key: "cn" + n, label: "اسم الحساب", type: "text", value: c.name }, { key: "ca" + n, label: "الرصيد (﷼)", type: "num", value: c.amount }));
+      f.push({ key: "cnN", label: "حساب جديد (اختياري)", type: "text", value: "" }, { key: "caN", label: "رصيده (﷼)", type: "num", value: "" });
+    }
     f.push({ type: "head", label: "المصاريف الثابتة شهرياً" });
     S.over.forEach((o, n) => f.push({ key: "oa" + n, label: o.item, type: "num", value: o.amount }));
     f.push({ key: "onN", label: "بند جديد (اختياري)", type: "text", value: "" }, { key: "oaN", label: "مبلغه شهرياً (﷼)", type: "num", value: "" });
     f.push({ type: "head", label: "ضريبة القيمة المضافة" },
       { key: "vatIn", label: "ضريبة المدخلات القابلة للخصم (﷼)", type: "num", value: S.vatIn, hint: "ضريبة فواتير المشتريات والمقاولين المسجّلة في قيود" },
       { key: "vatPaid", label: "المدفوع للهيئة (﷼)", type: "num", value: S.vatPaid });
-    return { intro: "الأرقام هنا تدخل في الرصيد المتوقع والعجز وتمويل المشاريع.", fields: f,
+    return { intro: fromQ ? "النقد يُقرأ من قيود تلقائياً ولا يُعدَّل هنا. الأرقام هنا تدخل في الرصيد المتوقع والعجز وتمويل المشاريع." : "الأرقام هنا تدخل في الرصيد المتوقع والعجز وتمويل المشاريع.", fields: f,
       save: (v) => {
-        S.cash.forEach((c, n) => { c.name = v["cn" + n].trim(); c.amount = v["ca" + n] ? numTxt(numIn(v["ca" + n])) : ""; });
-        S.cash = S.cash.filter((c) => c.name || c.amount);
-        if (v.cnN.trim()) S.cash.push({ id: rid(), name: v.cnN.trim(), amount: v.caN ? numTxt(numIn(v.caN)) : "" });
+        if (!fromQ) {
+          S.cash.forEach((c, n) => { c.name = v["cn" + n].trim(); c.amount = v["ca" + n] ? numTxt(numIn(v["ca" + n])) : ""; });
+          S.cash = S.cash.filter((c) => c.name || c.amount);
+          if (v.cnN.trim()) S.cash.push({ id: rid(), name: v.cnN.trim(), amount: v.caN ? numTxt(numIn(v.caN)) : "" });
+        }
         S.over.forEach((o, n) => { o.amount = v["oa" + n] ? numTxt(numIn(v["oa" + n])) : ""; });
         if (v.onN.trim()) S.over.push({ id: rid(), item: v.onN.trim(), amount: v.oaN ? numTxt(numIn(v.oaN)) : "" });
         S.vatIn = v.vatIn ? numTxt(numIn(v.vatIn)) : ""; S.vatPaid = v.vatPaid ? numTxt(numIn(v.vatPaid)) : "";
@@ -1021,15 +1033,56 @@ async function cashBox(m) {
   try {
     const S = await edLoad(); g.replaceChildren();
     const cell = (l, v, sub, cls) => { const d = el("div"); d.append(el("span", "", l), el("b", cls || "", v)); if (sub) d.append(el("small", "", sub)); g.append(d); };
-    const named = (S.cash || []).filter((c) => c.name);
-    for (const c of named) cell(c.name, c.amount ? fmt(numIn(c.amount)) : "— لم يُدخل", "", c.amount ? "" : "wv");
-    // the home chip «الرصيد النقدي لم يُدخل» lands here: show the missing balance itself, not only its neighbours
-    if (!named.some((c) => numIn(c.amount))) cell("الرصيد النقدي", "— لم يُدخل", "اضغط «تعديل» وأدخل رصيد كل حساب والعهدة", "wv");
+    const Q = S.cashSource && S.cashSource.from === "qoyod" ? S.cashSource : null;
+    if (Q) { // cash = Qoyod's own balances (the bot reads them on every load)
+      cell("البنوك", fmt(Q.bank), "من قيود", "");
+      cell("الصندوق الرئيسي", fmt(Q.box), "من قيود", Q.box < 0 ? "neg" : "");
+      cell("العهد النقدية (صافي)", fmt(Q.petty), Q.owedToStaff ? "منها عهد سالبة " + fmt(Q.owedToStaff) : "من قيود", "");
+      cell("النقد اليوم", fmt(Q.total), Q.at ? "قيود — آخر تحديث " + new Date(Q.at).toLocaleString("ar-SA-u-nu-latn", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "قيود", "pay");
+    } else {
+      const named = (S.cash || []).filter((c) => c.name);
+      for (const c of named) cell(c.name, c.amount ? fmt(numIn(c.amount)) : "— لم يُدخل", "", c.amount ? "" : "wv");
+      // the home chip «الرصيد النقدي لم يُدخل» lands here: show the missing balance itself, not only its neighbours
+      if (!named.some((c) => numIn(c.amount))) cell("الرصيد النقدي", "— لم يُدخل", "اضغط «تعديل» وأدخل رصيد كل حساب والعهدة", "wv");
+    }
     const ov = (S.over || []).reduce((t, o) => t + numIn(o.amount), 0), empty = (S.over || []).filter((o) => !numIn(o.amount)).map((o) => o.item);
     cell("المصاريف الثابتة شهرياً", ov ? fmt(ov) : "— لم تُدخل", empty.length ? (ov ? "ناقص: " : "البنود: ") + empty.join("، ") : "", !ov || empty.length ? "wv" : "pay");
     cell("ضريبة المدخلات", S.vatIn ? fmt(numIn(S.vatIn)) : "— لم تُدخل", "", S.vatIn ? "" : "wv");
     cell("المدفوع للهيئة", S.vatPaid ? fmt(numIn(S.vatPaid)) : "—");
+    if (Q) qoyodCashBox(box, Q);
   } catch (e) { g.replaceChildren(el("div", "res bad", e.message)); }
+}
+// Qoyod cash: alerts, every account, and the bank-statement check
+function qoyodCashBox(box, Q) {
+  const al = el("div", "qc");
+  for (const a of Q.alerts || []) al.append(el("p", a.tone, sym(a.t)));
+  if (Q.check && Math.abs(Q.check.diff) < 1) al.append(el("p", "", "كشف البنك " + fmt(Q.check.amount) + " في " + Q.check.date + " مطابق لقيود ✓"));
+  const b = el("button", "sbtn", Q.check ? "تحديث رصيد كشف البنك" : "أدخل رصيد كشف البنك"); b.type = "button"; b.onclick = () => bankCheckForm(Q);
+  const acts = el("div", "acts"); acts.append(b); al.append(acts);
+  const d = el("details", "qa"), sm = el("summary", "", "كل الحسابات في قيود (" + Q.accounts.length + ")"), t = el("table");
+  const GRP = { "Bank Account": "بنك", "Non-bank Cash and equivalents": "صندوق", "Petty cash": "عهدة" };
+  for (const a of Q.accounts) { const tr = el("tr"); tr.append(el("td", "", a.name), el("td", "muted", GRP[a.grp] || a.grp), el("td", a.balance < 0 ? "neg" : "", fmt(a.balance))); t.append(tr); }
+  d.append(sm, t); al.append(d);
+  box.append(al);
+}
+function bankCheckForm(Q) {
+  const body = $("dlgBody"); body.replaceChildren(el("h3", "", "رصيد كشف البنك"));
+  body.append(el("p", "muted small", "اكتب مجموع أرصدة حسابات البنك كما في كشف البنك، وتاريخه. يُقارن مع رصيد البنوك في قيود (" + fmt(Q.bank) + ")."));
+  const mk = (label, type) => { const box = el("div", "f"), id = "f" + Math.random().toString(36).slice(2, 8), l = el("label", "", label), i = el("input"); i.id = id; l.htmlFor = id; i.type = type; box.append(l, i); body.append(box); return i; };
+  const amt = mk("الرصيد في الكشف (" + SAR + ")", "text"); amt.inputMode = "decimal"; amt.dir = "ltr";
+  const dt = mk("تاريخ الكشف", "date"); dt.value = new Date().toISOString().slice(0, 10); dt.max = dt.value;
+  const res = el("div", "res"); res.setAttribute("role", "status");
+  const bar = el("div", "dbar"), go = el("button", "pbtn", "حفظ"), close = el("button", "sbtn", "إغلاق"); go.type = close.type = "button"; bar.append(go, close); body.append(res, bar);
+  close.onclick = () => $("dlg").close();
+  go.onclick = async () => {
+    go.disabled = true; res.className = "res";
+    try {
+      const { status, j } = await api({ op: "bankcheck", amount: amt.value, date: dt.value });
+      if (status === 200) { res.className = "res ok"; res.textContent = j.msg + (j.diff !== null && j.diff !== undefined ? (Math.abs(j.diff) < 1 ? " — مطابق لقيود" : " — الفرق مع قيود " + fmt(j.diff)) : ""); setTimeout(() => { $("dlg").close(); draw(); refreshAud(); }, 1200); }
+      else { res.className = "res bad"; res.textContent = j.error || "تعذّر الحفظ"; go.disabled = false; }
+    } catch { res.className = "res bad"; res.textContent = "تعذّر الاتصال"; go.disabled = false; }
+  };
+  $("dlg").showModal(); amt.focus();
 }
 function ptitle(p) { const t = el("div", "t"); if (p.code) t.append(el("span", "pcode", p.code)); t.append(document.createTextNode(p.name)); return t; }
 function openProjByName(name) { const p = (D.projects || []).find((x) => x.name === name); view = "proj"; rec = p ? p.id : null; recTab = "inst"; draw(); window.scrollTo(0, 0); }
