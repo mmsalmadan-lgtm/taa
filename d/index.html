@@ -122,6 +122,7 @@ button.card{cursor:pointer}button.card:hover{border-color:var(--ui-2)}
 .wk-l.b{transform:translate(-50%,3px)}.wc-x{position:relative;height:18px;font-size:11px;color:var(--muted);grid-column:2}.wc-x span{position:absolute;transform:translateX(-50%);top:3px;white-space:nowrap}
 .fcbox .sm{font-size:12px}.fcbox .muted{color:var(--muted)}
 @media (max-width:520px){.wc{grid-template-columns:44px minmax(0,1fr);grid-template-rows:160px auto}}
+.pcode{display:inline-block;font:600 11.5px/1.6 ui-monospace,Menlo,monospace;direction:ltr;background:var(--track);color:var(--ink);border-radius:4px;padding:0 6px;margin-inline-end:6px;vertical-align:1px}
 .ebar2{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .ebtn{padding:4px 10px;font-size:12.5px}.danger{color:var(--crit)!important;border-color:color-mix(in srgb,var(--crit) 40%,var(--line))!important;margin-inline-start:auto}
 button.inst.ed{width:100%;background:none;border:0;border-bottom:1px solid var(--line);font:inherit;color:inherit;text-align:right;cursor:pointer}button.inst.ed:hover{background:var(--track)}
@@ -348,7 +349,7 @@ function dueBlock(m) {
   const g = el("div", "grid fam-acc");
   for (const p of L) {
     const c = el("button", "card warn"); c.type = "button"; c.onclick = () => { view = "proj"; rec = p.id; recTab = "inst"; draw(); window.scrollTo(0, 0); };
-    c.append(el("div", "t", p.name)); if (p.client) c.append(el("div", "st", p.client));
+    c.append(ptitle(p)); if (p.client) c.append(el("div", "st", p.client));
     const kv = el("div", "kv");
     kv.append(el("span", "", "المستحق الآن"), el("b", "wv", fmt(p.x.dueNow)), el("span", "", "المحصّل"), el("b", "rcv", fmt(p.x.collected) + " (" + pct(p.x.pct) + ")"));
     c.append(kv);
@@ -623,7 +624,8 @@ async function editForm(title, build) {
     try { spec.save(vals(), S); await edSave(); $("dlg").close(); } catch (e) { res.className = "res bad"; res.textContent = e.message; save.disabled = false; save.textContent = "حفظ"; }
   };
 }
-const aProj = (S, p) => S.proj.find((x) => x.name === p.name);
+// the audit's project is found by its id (never by name); name is only a fallback for records built before ids were sent
+const aProj = (S, p) => S.proj.find((x) => (p.aid ? x.id === p.aid : x.name === p.name));
 const kindOf = (S, p) => (aProj(S, p) || {}).kind || (p.kind === "fin" ? "تشطيب" : "عظم");
 const stageOpts = (kind) => [["", "بدون مرحلة (أحدد الاستحقاق يدوياً)"], ["sign", "توقيع العقد"], ...ELEMENTS[kind], ["handover", "التسليم / انتهاء الأعمال"]];
 const ebtn = (t, f, cls) => { const b = el("button", cls || "sbtn ebtn", t); b.type = "button"; b.onclick = (e) => { e.stopPropagation(); f(); }; return b; };
@@ -766,6 +768,7 @@ async function cashBox(m) {
     cell("المدفوع للهيئة", S.vatPaid ? fmt(numIn(S.vatPaid)) : "—");
   } catch (e) { g.replaceChildren(el("div", "res bad", e.message)); }
 }
+function ptitle(p) { const t = el("div", "t"); if (p.code) t.append(el("span", "pcode", p.code)); t.append(document.createTextNode(p.name)); return t; }
 function openProjByName(name) { const p = (D.projects || []).find((x) => x.name === name); view = "proj"; rec = p ? p.id : null; recTab = "inst"; draw(); window.scrollTo(0, 0); }
 function profitCards(m) {
   if (!AUD || !D.projects) return;
@@ -775,7 +778,7 @@ function profitCards(m) {
   for (const { p, a } of L) {
     const tone = a.unknown ? "" : a.margin < 0 ? "bad" : a.margin < 0.10 ? "warn" : "";
     const c = el("button", "card" + (tone ? " " + tone : "")); c.type = "button"; c.onclick = () => openProjByName(p.name);
-    c.append(el("div", "t", p.name));
+    c.append(ptitle(p));
     const kv = el("div", "kv");
     for (const [l, v, cls] of [["العقد", fmt(a.contract), ""], ["التكلفة المتوقعة", a.unknown ? "—" : fmt(a.total), "pay"], ["الإنجاز", Math.round((a.prog || 0) * 100) + "%", "eng"]]) { kv.append(el("span", "", l)); const b = el("b", cls, v); kv.append(b); }
     c.append(kv);
@@ -818,17 +821,17 @@ function projects(m) {
   for (const [k, t] of [["all", "الكل"], ["str", "عظم"], ["fin", "تشطيب"], ["due", "عليها مستحق"]]) {
     const b = el("button", "chip", t); b.type = "button"; b.setAttribute("aria-pressed", String(pf.kind === k)); b.onclick = () => { pf.kind = k; draw(); }; fl.append(b);
   }
-  const q = el("input", "search"); q.type = "search"; q.placeholder = "بحث باسم المشروع أو العميل"; q.value = pf.q;
+  const q = el("input", "search"); q.type = "search"; q.placeholder = "بحث برقم المشروع أو اسمه أو العميل"; q.value = pf.q;
   q.oninput = () => { pf.q = q.value; paint(); }; fl.append(q); m.append(fl);
   const g = el("div", "grid fam-acc"); m.append(g);
   const paint = () => {
     g.replaceChildren();
-    const list = all.filter((p) => (pf.kind === "all" || (pf.kind === "due" ? p.x.dueNow > 0.5 : p.kind === pf.kind)) && (!pf.q || (p.name + p.client).includes(pf.q)))
+    const list = all.filter((p) => (pf.kind === "all" || (pf.kind === "due" ? p.x.dueNow > 0.5 : p.kind === pf.kind)) && (!pf.q || (p.name + p.client + " " + (p.code || "")).toLowerCase().includes(pf.q.trim().toLowerCase())))
       .sort((a, b) => b.x.dueNow - a.x.dueNow || b.x.contract - a.x.contract);
     if (!list.length) { g.append(el("div", "empty", "لا توجد مشاريع بهذا البحث")); return; }
     for (const p of list) {
       const c = el("button", "card pc" + (p.x.dueNow > 0.5 ? " warn" : "")); c.type = "button";
-      c.append(el("div", "t", p.name), el("div", "st", [p.kind === "fin" ? "تشطيب" : p.kind === "str" ? "عظم" : "", p.status].filter(Boolean).join(" · ")));
+      c.append(ptitle(p), el("div", "st", [p.kind === "fin" ? "تشطيب" : p.kind === "str" ? "عظم" : "", p.status].filter(Boolean).join(" · ")));
       const mid = el("div", "mid"), am = el("div"); am.append(el("div", "amt", fmt(p.x.collected)), el("div", "amt-l", "محصّل من " + fmt(p.x.contract)));
       mid.append(ring(p.x.pct), am); c.append(mid);
       const kv = el("div", "kv"); kv.append(el("span", "", "المصروف"), el("b", "pay", fmt(p.x.spent)));
@@ -858,7 +861,7 @@ function mixBar(p) {
 function record(m) {
   const p = (D.projects || []).find((x) => x.id === rec); if (!p) { rec = null; return projects(m); }
   const back = el("button", "back", "→ كل المشاريع"); back.type = "button"; back.onclick = () => { rec = null; draw(); }; m.append(back);
-  const ph = page("م", p.name, [p.kind === "fin" ? "تشطيب" : p.kind === "str" ? "عظم" : "", p.status, p.client].filter(Boolean).join(" · "), "var(--acc6)");
+  const ph = page("م", p.name, [p.code ? "رقم المشروع " + p.code : "", p.kind === "fin" ? "تشطيب" : p.kind === "str" ? "عظم" : "", p.status, p.client].filter(Boolean).join(" · "), "var(--acc6)");
   if (canEdit()) { const eb = el("div", "ebar2"); eb.append(ebtn("تعديل المشروع", () => editProject(p)), ebtn("مراحل التنفيذ", () => editStages(p))); eb.style.marginTop = "8px"; ph.querySelector(".grow").append(eb); }
   m.append(ph);
   const cash = p.x.collected - p.x.spent;
