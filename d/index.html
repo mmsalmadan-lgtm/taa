@@ -1034,7 +1034,13 @@ async function cashBox(m) {
     const S = await edLoad(); g.replaceChildren();
     const cell = (l, v, sub, cls) => { const d = el("div"); d.append(el("span", "", l), el("b", cls || "", v)); if (sub) d.append(el("small", "", sub)); g.append(d); };
     const Q = S.cashSource && S.cashSource.from === "qoyod" ? S.cashSource : null;
-    if (Q) { // cash = Qoyod's own balances (the bot reads them on every load)
+    const K = S.cashSource && S.cashSource.from === "book" ? S.cashSource : null;
+    if (K) { // our own cash book (Qoyod only as a comparison)
+      cell("البنوك", fmt(K.bank), "دفترنا", K.bank < 0 ? "neg" : "");
+      cell("الصندوق", fmt(K.box), "دفترنا", K.box < 0 ? "neg" : "");
+      cell("العهد المجرودة", fmt(K.custody), K.uncounted ? "لم تُجرد " + fmt(K.uncounted) + " — غير محسوبة" : "كلها مجرودة", K.uncounted ? "wv" : "");
+      cell("النقد اليوم", fmt(K.total), "دفترنا — منذ " + (K.opened || "—"), "pay");
+    } else if (Q) { // cash = Qoyod's own balances (the bot reads them on every load)
       cell("البنوك", fmt(Q.bank), "من قيود", "");
       cell("الصندوق الرئيسي", fmt(Q.box), "من قيود", Q.box < 0 ? "neg" : "");
       if (Q.confirmed !== undefined) cell("العهد المؤكدة", fmt(Q.confirmed), Q.unconfirmed ? "غير مؤكدة " + fmt(Q.unconfirmed) + " — غير محسوبة" : "كلها مؤكدة", Q.unconfirmed ? "wv" : "");
@@ -1050,7 +1056,8 @@ async function cashBox(m) {
     cell("المصاريف الثابتة شهرياً", ov ? fmt(ov) : "— لم تُدخل", empty.length ? (ov ? "ناقص: " : "البنود: ") + empty.join("، ") : "", !ov || empty.length ? "wv" : "pay");
     cell("ضريبة المدخلات", S.vatIn ? fmt(numIn(S.vatIn)) : "— لم تُدخل", "", S.vatIn ? "" : "wv");
     cell("المدفوع للهيئة", S.vatPaid ? fmt(numIn(S.vatPaid)) : "—");
-    if (Q) qoyodCashBox(box, Q);
+    if (K) bookBox(box, K);
+    else if (Q) { qoyodCashBox(box, Q); if (canEdit() && D.roles.includes("الإدارة")) openBookOffer(box); }
   } catch (e) { g.replaceChildren(el("div", "res bad", e.message)); }
 }
 // Qoyod cash: alerts, every account, and the bank-statement check
@@ -1079,13 +1086,87 @@ function qoyodCashBox(box, Q) {
   d.append(sm, t); al.append(d);
   box.append(al);
 }
+// ---- our own cash book ----
+function openBookOffer(box) {
+  const w = el("div", "qc"); w.append(el("p", "warn", "النقد هنا مؤقتاً من قيود. افتح دفتر النقد الخاص بنا: تُستورد أرصدة اليوم من قيود مرة واحدة كرصيد افتتاحي، وبعدها لا يحرّك الأرصدة إلا سنداتنا وما تسجّله هنا، ويبقى قيود للمقارنة فقط."));
+  const b = el("button", "pbtn", "فتح دفتر النقد"); b.type = "button";
+  b.onclick = async () => { b.disabled = true; const { status, j } = await api({ op: "cashopen" }); toast(status === 200 ? j.msg : j.error || "تعذّر"); if (status === 200) { draw(); refreshAud(); } else b.disabled = false; };
+  const a = el("div", "acts"); a.append(b); w.append(a); box.append(w);
+}
+const MVT = { handover: "تسليم عهدة", expense: "مصروف", payment: "صرف", receipt: "قبض", transfer: "تحويل" };
+function bookBox(box, K) {
+  const al = el("div", "qc");
+  for (const a of K.alerts || []) al.append(el("p", a.tone, sym(a.t)));
+  if (K.check && Math.abs(K.check.diff) < 1) al.append(el("p", "", "كشف البنك " + fmt(K.check.amount) + " في " + K.check.date + " مطابق لدفترنا ✓"));
+  const acts = el("div", "acts");
+  for (const [t, label] of Object.entries(MVT)) { const b = el("button", "sbtn", label); b.type = "button"; b.onclick = () => mvForm(K, t); acts.append(b); }
+  const bc = el("button", "sbtn", K.check ? "تحديث رصيد كشف البنك" : "أدخل رصيد كشف البنك"); bc.type = "button"; bc.onclick = () => bankCheckForm(K); acts.append(bc);
+  al.append(acts);
+  const d = el("details", "qa"), t = el("table"); d.open = !!K.uncounted;
+  d.append(el("summary", "", "الحسابات (" + K.accounts.length + ")"));
+  const KT = { bank: "بنك", box: "صندوق", custody: "عهدة" };
+  for (const a of K.accounts) {
+    const tr = el("tr"), st = el("td", "muted"); st.append(document.createTextNode(KT[a.kind] || a.kind));
+    if (a.kind === "custody" && a.balance >= -0.005) {
+      st.append(el("div", "small" + (a.verified ? "" : " wv"), a.counted ? "جُردت " + a.counted.date : "لم تُجرد"));
+      const cb = el("button", "lnk", a.counted ? "جرد جديد" : "جرد العهدة"); cb.type = "button"; cb.onclick = () => countForm(a); st.append(cb);
+    } else if (a.kind === "custody") st.append(el("div", "small", "المؤسسة مدينة له"));
+    const v = el("td", a.balance < 0 ? "neg" : "", fmt(a.balance));
+    if (a.qoyod !== null && a.qoyod !== undefined) v.append(el("div", "small muted", "قيود: " + fmt(a.qoyod)));
+    tr.append(el("td", "", a.name), st, v); t.append(tr);
+  }
+  d.append(t); al.append(d);
+  if ((K.recent || []).length) {
+    const r = el("details", "qa"), rt = el("table"); r.append(el("summary", "", "آخر الحركات (" + K.recent.length + ")"));
+    const nm = Object.fromEntries(K.accounts.map((a) => [a.id, a.name]));
+    const KIND = { receipt: "قبض", payment: "صرف", handover: "تسليم عهدة", expense: "مصروف", transfer: "تحويل", count: "فرق جرد", rv: "سند قبض", pv: "سند صرف", subpay: "دفعة مقاول", custodydep: "عهدة عميل" };
+    for (const x of K.recent) { const tr = el("tr"); tr.append(el("td", "", x.date), el("td", "", (KIND[x.kind] || x.kind) + " · " + (nm[x.acc] || x.acc) + (x.project ? " · " + x.project : "") + (x.party ? " · " + x.party : "") + (x.note ? " · " + x.note : "")), el("td", x.amount < 0 ? "neg" : "", fmt(x.amount))); rt.append(tr); }
+    r.append(rt); al.append(r);
+  }
+  box.append(al);
+}
+// today in Riyadh (the bot dates everything in Riyadh time; the browser UTC date is yesterday after 21:00 UTC)
+const riyadhToday = () => new Date(Date.now() + 3 * 36e5).toISOString().slice(0, 10);
+function dlgField(body, label, type) { const box = el("div", "f"), id = "f" + Math.random().toString(36).slice(2, 8), l = el("label", "", label), i = type === "select" ? el("select") : el("input"); i.id = id; l.htmlFor = id; if (type !== "select") i.type = type; box.append(l, i); body.append(box); return i; }
+function accSelect(body, label, K, kinds) { const s = dlgField(body, label, "select"); for (const a of K.accounts.filter((x) => !kinds || kinds.includes(x.kind))) { const o = el("option", "", a.name + " — " + fmt(a.balance)); o.value = a.id; s.append(o); } return s; }
+function dlgSave(body, send, after) {
+  const res = el("div", "res"); res.setAttribute("role", "status");
+  const bar = el("div", "dbar"), go = el("button", "pbtn", "حفظ"), close = el("button", "sbtn", "إغلاق"); go.type = close.type = "button"; bar.append(go, close); body.append(res, bar);
+  close.onclick = () => $("dlg").close();
+  go.onclick = async () => {
+    go.disabled = true; res.className = "res";
+    try { const { status, j } = await api(send()); if (status === 200) { res.className = "res ok"; res.textContent = after ? after(j) : j.msg; setTimeout(() => { $("dlg").close(); draw(); refreshAud(); }, 1200); } else { res.className = "res bad"; res.textContent = j.error || "تعذّر الحفظ"; go.disabled = false; } }
+    catch { res.className = "res bad"; res.textContent = "تعذّر الاتصال"; go.disabled = false; }
+  };
+}
+function mvForm(K, type) {
+  const body = $("dlgBody"); body.replaceChildren(el("h3", "", MVT[type]));
+  const from = ["handover", "expense", "payment", "transfer"].includes(type) ? accSelect(body, type === "expense" ? "صُرف من" : "من حساب", K, type === "handover" ? ["bank", "box"] : type === "expense" ? ["custody", "box", "bank"] : null) : null;
+  const to = ["handover", "receipt", "transfer"].includes(type) ? accSelect(body, type === "handover" ? "إلى عهدة" : "إلى حساب", K, type === "handover" ? ["custody"] : null) : null;
+  const amt = dlgField(body, "المبلغ (" + SAR + ")", "text"); amt.inputMode = "decimal"; amt.dir = "ltr";
+  const dt = dlgField(body, "التاريخ", "date"); dt.value = riyadhToday(); dt.max = dt.value;
+  const party = ["payment", "receipt"].includes(type) ? dlgField(body, type === "payment" ? "صُرف إلى" : "من", "text") : null;
+  const proj = ["expense", "payment", "receipt", "handover"].includes(type) ? dlgField(body, "المشروع (اختياري)", "text") : null;
+  if (proj) { const dl = el("datalist"); dl.id = "projlist"; for (const p of D.projects || []) { const o = el("option"); o.value = p.name; dl.append(o); } body.append(dl); proj.setAttribute("list", "projlist"); }
+  const note = dlgField(body, type === "expense" ? "على ماذا صُرف" : "ملاحظة", "text");
+  dlgSave(body, () => ({ op: "cashmv", type, from: from && from.value, to: to && to.value, amount: amt.value, date: dt.value, party: party && party.value, project: proj && proj.value, note: note.value }));
+  $("dlg").showModal(); amt.focus();
+}
+function countForm(a) {
+  const body = $("dlgBody"); body.replaceChildren(el("h3", "", "جرد العهدة — " + a.name));
+  body.append(el("p", "muted small", "رصيدها في دفترنا " + fmt(a.balance) + ". اكتب ما في يده فعلاً (صفر إن لم يبقَ شيء). الفرق يُسجَّل «مصروفات لم تُسجَّل بعد» حتى تصل فواتيرها."));
+  const amt = dlgField(body, "المبلغ في يده (" + SAR + ")", "text"); amt.inputMode = "decimal"; amt.dir = "ltr";
+  const dt = dlgField(body, "تاريخ الجرد", "date"); dt.value = riyadhToday(); dt.max = dt.value;
+  dlgSave(body, () => ({ op: "cashcount", acc: a.id, amount: amt.value, date: dt.value }), (j) => j.msg + (j.diff <= -1 ? " — مصروفات لم تُسجَّل بعد " + fmt(-j.diff) : j.diff >= 1 ? " — زيادة " + fmt(j.diff) : " — مطابق"));
+  $("dlg").showModal(); amt.focus();
+}
 // what a custody holder really has in hand (custody spending is often not booked in Qoyod)
 function custodyForm(a) {
   const body = $("dlgBody"); body.replaceChildren(el("h3", "", "المبلغ في يد صاحب العهدة"));
   body.append(el("p", "muted small", "«" + a.name + "»: رصيدها في قيود " + fmt(a.balance) + ". اكتب ما في يده فعلاً الآن (صفر إن لم يبقَ شيء). الفرق مصروفات لم تُسجَّل في قيود بعد."));
   const mk = (label, type) => { const box = el("div", "f"), id = "f" + Math.random().toString(36).slice(2, 8), l = el("label", "", label), i = el("input"); i.id = id; l.htmlFor = id; i.type = type; box.append(l, i); body.append(box); return i; };
   const amt = mk("المبلغ في يده (" + SAR + ")", "text"); amt.inputMode = "decimal"; amt.dir = "ltr";
-  const dt = mk("التاريخ", "date"); dt.value = new Date().toISOString().slice(0, 10); dt.max = dt.value;
+  const dt = mk("التاريخ", "date"); dt.value = riyadhToday(); dt.max = dt.value;
   const res = el("div", "res"); res.setAttribute("role", "status");
   const bar = el("div", "dbar"), go = el("button", "pbtn", "حفظ"), close = el("button", "sbtn", "إغلاق"); go.type = close.type = "button"; bar.append(go, close); body.append(res, bar);
   close.onclick = () => $("dlg").close();
@@ -1101,10 +1182,10 @@ function custodyForm(a) {
 }
 function bankCheckForm(Q) {
   const body = $("dlgBody"); body.replaceChildren(el("h3", "", "رصيد كشف البنك"));
-  body.append(el("p", "muted small", "اكتب مجموع أرصدة حسابات البنك كما في كشف البنك، وتاريخه. يُقارن مع رصيد البنوك في قيود (" + fmt(Q.bank) + ")."));
+  body.append(el("p", "muted small", "اكتب مجموع أرصدة حسابات البنك كما في كشف البنك، وتاريخه. يُقارن مع رصيد البنوك " + (Q.from === "book" ? "في دفترنا" : "في قيود") + " (" + fmt(Q.bank) + ")."));
   const mk = (label, type) => { const box = el("div", "f"), id = "f" + Math.random().toString(36).slice(2, 8), l = el("label", "", label), i = el("input"); i.id = id; l.htmlFor = id; i.type = type; box.append(l, i); body.append(box); return i; };
   const amt = mk("الرصيد في الكشف (" + SAR + ")", "text"); amt.inputMode = "decimal"; amt.dir = "ltr";
-  const dt = mk("تاريخ الكشف", "date"); dt.value = new Date().toISOString().slice(0, 10); dt.max = dt.value;
+  const dt = mk("تاريخ الكشف", "date"); dt.value = riyadhToday(); dt.max = dt.value;
   const res = el("div", "res"); res.setAttribute("role", "status");
   const bar = el("div", "dbar"), go = el("button", "pbtn", "حفظ"), close = el("button", "sbtn", "إغلاق"); go.type = close.type = "button"; bar.append(go, close); body.append(res, bar);
   close.onclick = () => $("dlg").close();
