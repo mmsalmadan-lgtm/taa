@@ -61,8 +61,8 @@ card or page · finance things live under المالية, purchases under الم
 Known good totals (2026-11-09): contracts 14,259,433.75 · collected 7,751,477.43 · due now 201,663.50.
 
 ## Open items
-- «المستندات» tab is live (2026-11-09) but stays on its "after the bot update" note until the bot with receipt vouchers
-  (taa-bot PR #23) is deployed to production.
+- «المستندات» tab and the bot behind it are live (2026-11-09; bot ebed7cd deployed). It lists documents issued from then on;
+  older PO / GRN / PV have no stored PDF. Not yet checked with real data or against the known-good totals (needs a dash link).
 - GET /dash is slow (~25 s) — cache or trim.
 - Data still missing in the audit: salaries/fixed costs, input VAT and paid VAT (VAT due is inflated), petty-cash balance,
   existing client custody deposits.
