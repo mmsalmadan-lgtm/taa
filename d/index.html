@@ -117,6 +117,28 @@ button.card{cursor:pointer}button.card:hover{border-color:var(--ui-2)}
 .code{direction:ltr;font-size:30px;font-weight:700;letter-spacing:.12em;text-align:center;background:var(--sunk);border-radius:6px;padding:14px 8px;margin:10px 0;user-select:all}
 .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
 .gh-a{display:flex;gap:8px}.gh-a:empty{display:none}
+/* «مقاولو الباطن»: one card per subcontractor, his projects inside */
+.scs{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,520px),1fr));gap:12px;align-items:start}
+.sc{background:var(--surface);border:1px solid var(--line);border-radius:8px;min-width:0}
+.sc.bad{box-shadow:inset -3px 0 0 var(--crit)}.sc.warn{box-shadow:inset -3px 0 0 var(--warn)}
+.sc>summary{list-style:none;cursor:pointer;padding:14px;display:flex;flex-direction:column;gap:10px}.sc>summary::-webkit-details-marker{display:none}
+.sc .hd{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.sc .hd b{font-size:16px;color:var(--ui)}.sc .hd span{font-size:12px;color:var(--muted)}
+.sc .hd .tg{margin-inline-start:auto;font-size:12px;color:var(--ui);font-weight:600}.sc[open] .hd .tg::after{content:" ▴"}.sc:not([open]) .hd .tg::after{content:" ▾"}
+.sc .nums{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.sc .nums div{background:var(--sunk);border-radius:6px;padding:7px 8px;min-width:0}.sc .nums small{display:block;font-size:11.5px;color:var(--muted)}
+.sc .nums b{font-size:14px;white-space:nowrap}.sc .nums .neg{color:var(--crit)}.sc .nums .pos{color:var(--acc9)}
+.sc .al{display:flex;flex-direction:column;align-items:stretch;gap:5px}.sc .al p{text-align:right}
+.sc .al p{margin:0;font-size:12.5px;padding:5px 9px;border-radius:5px;background:var(--sunk);color:var(--ink)}
+.sc .al p.bad{background:var(--crit1);color:var(--crit)}.sc .al p.warn{background:var(--warn1);color:var(--warn)}
+.sc .body{border-top:1px solid var(--line);padding:6px 14px 14px;display:flex;flex-direction:column}
+.sp{padding:11px 0;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:6px}.sp:last-child{border-bottom:0}
+.sp .pn{font-weight:600;font-size:14px}.sp .pn .pcode{margin-inline-end:6px}
+.sp .bar{height:7px;border-radius:4px;background:var(--track);overflow:hidden}.sp .bar i{display:block;height:100%;background:var(--acc6)}
+.sp .bar.over i{background:var(--crit)}
+.sp .ln{font-size:12.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 12px}.sp .ln b{color:var(--ink);font-weight:600}
+.sp.oth .pn{color:var(--warn)}
+.sc .src{font-size:11.5px;color:var(--muted);margin-top:8px}
+@media (max-width:560px){.sc .nums{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
 .skel{height:110px;border-radius:8px;background:linear-gradient(90deg,var(--line),var(--surface),var(--line))}
 .back{align-self:flex-start;border:0;background:none;color:var(--ui);font:inherit;font-size:14px;font-weight:600;padding:10px 0;min-height:44px;cursor:pointer}
 .fcbox{display:flex;flex-direction:column;gap:6px}.fch2{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}.fch2>b:first-child{font-size:15px}
@@ -436,6 +458,52 @@ function buyView(m) {
   if (cur.sups && canEdit()) supsBox(m);
   for (const id of cur.ids) { const s = sec(id); if (!s) continue; m.append(secHead(s.title, s.table ? s.table.rows.length : undefined, noteOf(s)), ...cards(s, "acc")); }
 }
+// one card per subcontractor: his projects inside, where he reached, what he received, and every gap as an alert
+function subCards(m) {
+  const S = sec("subcards"), C = (S.data && S.data.cards) || [];
+  m.append(secHead(S.title, C.length, S.note));
+  if (!C.length) { m.append(el("div", "empty", "لا يوجد مقاولو باطن بعد")); return; }
+  const g = el("div", "scs");
+  for (const c of C) {
+    const bad = c.alerts.some((a) => a.tone === "bad") || c.projects.some((p) => p.alerts.some((a) => a.tone === "bad"));
+    const warn = !bad && (c.alerts.some((a) => a.tone === "warn") || c.projects.some((p) => p.alerts.length) || c.other.length);
+    const d = el("details", "sc" + (bad ? " bad" : warn ? " warn" : "")), su = el("summary");
+    const hd = el("div", "hd"); hd.append(el("b", "", c.name), el("span", "", [c.trades.join("، "), c.projects.length ? arN(c.projects.length, "مشروع واحد", "مشروعان", "مشاريع", "مشروعًا") : ""].filter(Boolean).join(" · ")), el("span", "tg", "التفاصيل"));
+    const nums = el("div", "nums");
+    const n = (label, v, cls) => { const x = el("div"); x.append(el("small", "", label), el("b", cls || "", v)); nums.append(x); };
+    n("الاتفاقيات", fmt(c.agreed)); n("الأعمال المثبتة", fmt(c.work)); n("المصروف له", fmt(c.paid));
+    n(c.balance > 1 ? "دُفع له زيادة" : c.balance < -1 ? "مستحق له" : "الفرق", fmt(Math.abs(c.balance)), c.balance > 1 ? "neg" : c.balance < -1 ? "pos" : "");
+    su.append(hd, nums);
+    const issues = [...c.alerts, ...c.projects.flatMap((p) => p.alerts.filter((a) => a.tone === "bad").map((a) => ({ ...a, t: p.name.split(" - ")[0] + ": " + a.t })))];
+    if (issues.length) { const al = el("div", "al"); for (const a of issues) al.append(el("p", a.tone, sym(a.t))); su.append(al); }
+    d.append(su);
+    const body = el("div", "body");
+    for (const p of c.projects) {
+      const row = el("div", "sp"), pn = el("div", "pn");
+      if (p.code) pn.append(el("span", "pcode", p.code)); pn.append(document.createTextNode(p.name));
+      const pct = p.value > 0 ? Math.min(1, p.work / p.value) : 0, bar = el("div", "bar" + (p.work > p.value + 1 ? " over" : "")), fill = el("i");
+      fill.style.width = Math.round(pct * 100) + "%"; bar.append(fill); bar.setAttribute("role", "img"); bar.setAttribute("aria-label", "منجز " + Math.round(pct * 100) + "%");
+      const ln = el("div", "ln");
+      const kv = (k, v) => { const x = el("span"); x.append(document.createTextNode(k + " "), el("b", "", v)); ln.append(x); };
+      kv("وصل:", p.work <= 1 ? "لم تبدأ" : p.stages && p.done >= p.stages ? "اكتملت كل المراحل" : p.exact ? p.stage : "بين «" + p.stage + "» و«" + p.next + "»");
+      kv("المثبت", fmt(p.work) + " من " + fmt(p.value)); kv("الباقي", fmt(p.remaining));
+      if (p.stages) kv("المراحل", p.done + " من " + p.stages);
+      if (p.last) kv("آخر إثبات", p.last);
+      row.append(pn, bar, ln);
+      if (p.alerts.length) { const al = el("div", "al"); for (const a of p.alerts) al.append(el("p", a.tone, sym(a.t))); row.append(al); }
+      body.append(row);
+    }
+    for (const o of c.other) {
+      const row = el("div", "sp oth"); row.append(el("div", "pn", o.name));
+      const ln = el("div", "ln"), x = el("span"); x.append(document.createTextNode("أعمال مثبتة في قيود "), el("b", "", fmt(o.work))); ln.append(x); row.append(ln);
+      const al = el("div", "al"); for (const a of o.alerts) al.append(el("p", a.tone, sym(a.t))); row.append(al);
+      body.append(row);
+    }
+    body.append(el("div", "src", c.source === "qoyod" ? "الأعمال والمصروف من حسابه في قيود (" + c.account + ")؛ المصروف مجموع واحد لأن الدفعات في قيود لا تحمل اسم المشروع غالباً." : "من مستخلصات ودفعات البوت — لا حساب قيود مربوط."));
+    d.append(body); g.append(d);
+  }
+  m.append(g);
+}
 function siteView(m) {
   const T = TABS.find((x) => x.v === "site");
   m.append(page("ت", T.t, "استلام الأعمال بقوائم التحقق، ملاحظات العملاء والضمان، وما تحتاجه المواقع", T.fam));
@@ -482,7 +550,8 @@ function moneyView(m) {
   if (cur.prof) return profitCards(m);
   if (cur.cash) return cashBox(m);
   if (cur.k === "rcv") dueBlock(m);
-  for (const id of cur.ids) { const s = sec(id); if (!s) continue; m.append(secHead(s.title, s.table ? s.table.rows.length : undefined, noteOf(s)), ...cards(s, "acc")); }
+  if (cur.k === "subs" && sec("subcards")) subCards(m);
+  for (const id of cur.ids) { if (id === "subk" && sec("subcards")) continue; const s = sec(id); if (!s) continue; m.append(secHead(s.title, s.table ? s.table.rows.length : undefined, noteOf(s)), ...cards(s, "acc")); }
 }
 
 // History: every place in the dashboard is a history entry (same URL — the hash holds the personal token), so the phone's
