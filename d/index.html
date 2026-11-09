@@ -122,6 +122,11 @@ button.card{cursor:pointer}button.card:hover{border-color:var(--ui-2)}
 .wk-l.b{transform:translate(-50%,3px)}.wc-x{position:relative;height:18px;font-size:11px;color:var(--muted);grid-column:2}.wc-x span{position:absolute;transform:translateX(-50%);top:3px;white-space:nowrap}
 .fcbox .sm{font-size:12px}.fcbox .muted{color:var(--muted)}
 @media (max-width:520px){.wc{grid-template-columns:44px minmax(0,1fr);grid-template-rows:160px auto}}
+.ebar2{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.ebtn{padding:4px 10px;font-size:12.5px}.danger{color:var(--crit)!important;border-color:color-mix(in srgb,var(--crit) 40%,var(--line))!important;margin-inline-start:auto}
+button.inst.ed{width:100%;background:none;border:0;border-bottom:1px solid var(--line);font:inherit;color:inherit;text-align:right;cursor:pointer}button.inst.ed:hover{background:var(--track)}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:10px 18px;border-radius:8px;font-size:14px;z-index:50;max-width:90vw}.toast[hidden]{display:none}
+.dlg textarea{width:100%;font:inherit;border:1px solid var(--field);border-radius:4px;padding:8px}
 main.full{max-width:none;padding:0;gap:0}main.full~footer{display:none}
 iframe.audit{display:block;width:100%;height:calc(100dvh - 110px);border:0;background:var(--bg)}
 .kbox{display:flex;flex-direction:column;gap:6px}.kh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}.kh b{color:var(--ui);font-size:15px}
@@ -212,7 +217,6 @@ const TABS = [
   { v: "sales", t: "المبيعات", ids: ["changes", "leads"], fam: "var(--ui)" },
   { v: "rat", t: "Rent a Tool", ids: ["rat"], fam: "var(--ui)" },
   { v: "sys", t: "النظام", ids: ["health"], fam: "var(--out)" },
-  { v: "audit", t: "إدخال التدقيق", fam: "var(--out)" },
   { v: "data", t: "البيانات", fam: "var(--out)" },
 ];
 let D = null, REG = null, view = "home", rec = null, recTab = "inst", pf = { kind: "all", q: "" };
@@ -300,6 +304,7 @@ const MTABS = [
   { k: "pur", t: "المشتريات", ids: ["purchases"] },
   { k: "subs", t: "مقاولو الباطن", ids: ["subk", "subrec", "certs"] },
   { k: "sups", t: "الموردون", ids: ["sups"] },
+  { k: "cash", t: "النقد والمصاريف الثابتة", ids: [], cash: true },
   { k: "prof", t: "الربحية", ids: [], prof: true },
 ];
 let MT = "rcv";
@@ -341,7 +346,7 @@ function dueBlock(m) {
 function moneyView(m) {
   const T = TABS.find((x) => x.v === "money");
   m.append(page("م", "المالية والمحاسبة", null, T.fam));
-  const avail = MTABS.filter((x) => (x.prof ? !!AUD : x.ids.some((i) => sec(i))));
+  const avail = MTABS.filter((x) => (x.prof ? !!AUD : x.cash ? canEdit() : x.ids.some((i) => sec(i)) || (x.k === "sups" && canEdit())));
   if (!avail.length) return;
   if (!avail.some((x) => x.k === MT)) MT = avail[0].k;
   const st = el("div", "sub-tabs mtabs");
@@ -349,6 +354,8 @@ function moneyView(m) {
   m.append(st);
   const cur = avail.find((x) => x.k === MT);
   if (cur.prof) return profitCards(m);
+  if (cur.cash) return cashBox(m);
+  if (cur.k === "sups" && canEdit()) supsBox(m);
   if (cur.k === "rcv") dueBlock(m);
   for (const id of cur.ids) { const s = sec(id); if (!s) continue; m.append(secHead(s.title, s.table ? s.table.rows.length : undefined, s.note), ...cards(s, "acc")); }
 }
@@ -356,9 +363,7 @@ function moneyView(m) {
 function draw() {
   renderTabs();
   const m = $("main"); m.replaceChildren(); m.classList.remove("full");
-  if (view !== "audit" && auditDirty) { auditDirty = false; load(true); refreshAud(); return; }
   if (view === "home") return home(m);
-  if (view === "audit") return auditView(m);
   if (view === "more") return morePage(m);
   if (view === "money") return moneyView(m);
   if (view === "site") return siteView(m);
@@ -418,7 +423,8 @@ function home(m) {
   if (A.lossN + A.weakN) W.push(["مشروع ربحه أقل من 10%", A.lossN + A.weakN, () => { MT = "prof"; go("money"); }]);
   if (A.lateN) W.push(["دفعة متأخرة لدى عميل", A.lateN, () => go("proj")]);
   if (A.advN) W.push(["مقاول صُرف له أكثر من المعتمد", A.advN, () => go("subs")]);
-  if (!A.hasOpen) W.push(["المطابقة لم تُشغّل", 1, () => go("audit")]); else if (Math.abs(A.recDiff) > A.tol) W.push(["الرصيد النقدي غير مطابق", 1, () => go("audit")]);
+  const toCash = () => { MT = "cash"; go("money"); };
+  if (!A.cashDone) W.push(["الرصيد النقدي لم يُدخل", 1, toCash]);
   if (W.length) { const wb = el("div", "waiting"); wb.append(el("b", "", "بانتظارك:")); for (const [t, n, f] of W) { const b = el("button", "wchip"); b.type = "button"; b.append(el("span", "", t), el("span", "cnt", String(n))); b.onclick = f; wb.append(b); } m.append(wb); }
   const coll = A.contracts ? A.received / A.contracts : 0;
   const neg = A.FC && A.FC.min < 0;
@@ -533,8 +539,10 @@ function morePage(m) {
       const b = el("div", "box alx" + (f.s === "bad" ? " bad" : ""));
       const h = el("div", "fch2"); h.append(el("b", "", f.t)); if (!f.noAmt) h.append(el("b", f.s === "bad" ? "neg" : "", fmt(f.amt)));
       b.append(h, el("div", "small", f.d));
-      const tgt = { proj: ["proj", "افتح المشاريع"], subs: ["subs", "افتح مقاولي الباطن"], sups: ["sups", "افتح الموردين"] }[f.go] || ["audit", "عدّل في إدخال التدقيق"];
-      const a = el("button", "lnk", tgt[1] + " ←"); a.type = "button"; a.onclick = () => go(tgt[0]);
+      const tgt = { proj: ["proj", "افتح المشاريع"], subs: ["subs", "افتح مقاولي الباطن"], sups: ["sups", "افتح الموردين"] }[f.go] || ["cash", "افتح النقد والمصاريف الثابتة"];
+      const a = el("button", "lnk", tgt[1] + " ←"); a.type = "button"; a.onclick = () => (tgt[0] === "cash" ? ((MT = "cash"), go("money")) : go(tgt[0]));
+      const pj = (D.projects || []).find((x) => f.t.includes(x.name) || f.d.includes(x.name));
+      if (pj) { a.textContent = "افتح المشروع ←"; a.onclick = () => { openProjByName(pj.name); recTab = /ملاحظة/.test(f.t) ? "notes" : "inst"; draw(); }; }
       if (/عجز/.test(f.t) && AUD.FC && AUD.FC.min < 0) { a.textContent = "كيف تتفادى العجز ←"; a.onclick = () => more("fc"); }
       b.append(a);
       m.append(b);
@@ -542,12 +550,206 @@ function morePage(m) {
     if (one !== null && A.F.length > 1) { const a = el("button", "lnk", "كل التنبيهات (" + A.F.length + ") ←"); a.type = "button"; a.onclick = () => more("alerts"); m.append(a); }
   }
 }
-let AF = null, auditDirty = false;
-window.addEventListener("message", (e) => { if (e.source === (AF && AF.contentWindow) && e.data && e.data.taa === "saved") auditDirty = true; });
-function auditView(m) {
-  m.classList.add("full");
-  if (!AF) { AF = el("iframe", "audit"); AF.title = "إدخال التدقيق"; AF.src = "audit.html#" + encodeURIComponent(token); }
-  m.append(AF);
+// ===== Editing in place: every figure is edited where it is shown. The data lives in the audit state (settings/audit),
+// saved through the bot (op audit_save), which writes it back into the projects, suppliers and finance settings.
+const ELEMENTS = {
+  "عظم": [["dig", "الحفر"], ["repl", "الإحلال"], ["fill", "الدفان"], ["dewat", "نزح المياه"], ["shor", "الإسناد"], ["bdig", "حفر القبو"], ["foot", "القواعد والرقاب"], ["bwall", "أرضية وجدران القبو"], ["bins", "عزل القبو"], ["bslab", "أعمدة وسقف القبو"], ["beam", "الميدات وسباكة العظم الأرضية"], ["gf", "أعمدة وسقف الدور الأرضي"], ["ff", "أعمدة وسقف الدور الأول"], ["xf", "أعمدة وسقف دور إضافي"], ["roof", "الملحق وسترة السطح والوارش"], ["blkg", "طابوق الدور الأرضي"], ["blkf", "طابوق الدور الأول"], ["blkx", "طابوق الدور الإضافي"], ["blkr", "طابوق الملحق"], ["fence", "السور"]],
+  "تشطيب": [["elec", "الكهرباء (تأسيس وتشطيب)"], ["plmb", "السباكة (تأسيس وتشطيب)"], ["plas", "اللياسة"], ["insu", "العزل"], ["tilein", "البلاط الداخلي"], ["tileout", "البلاط الخارجي"], ["gyp", "الجبس"], ["pntin", "الدهان الداخلي"], ["pntout", "الدهان الخارجي"]],
+};
+const EXPC = {
+  "عظم": [["steel", "حديد"], ["concrete", "خرسانة"], ["block", "طابوق"], ["aux", "مواد مساعدة (مسامير، شنبر، بسكوت، شبك، زوايا)"], ["mep", "مواد سباكة وكهرباء العظم"], ["insu", "مواد عزل القواعد والرقاب"], ["equip", "معدات (Rent a Tool)"], ["site", "ماء وكهرباء الموقع"], ["fence", "سياج مؤقت ولوحة"], ["earth", "حفر وإحلال ودفان"], ["shore", "إسناد ونزح مياه"], ["labor", "عمالة يومية"], ["other", "أخرى"]],
+  "تشطيب": [["mep", "مواد سباكة وكهرباء"], ["plas", "مواد لياسة"], ["tile", "بلاط"], ["paint", "دهانات"], ["gyp", "جبس"], ["insu", "عزل"], ["equip", "معدات (Rent a Tool)"], ["labor", "عمالة يومية"], ["other", "أخرى"]],
+};
+const EL_STATES = ["غير مشمول", "لم يبدأ", "جاري", "منتهي"], INST_ST = ["محصّلة", "محصّلة جزئيًا", "غير محصّلة"], WHEN = ["هذا الشهر", "خلال 3 أشهر", "بعد 3 أشهر"];
+const numIn = (v) => { const n = parseFloat(String(v ?? "").replace(/[٠-٩]/g, (d) => "٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/[,٬\s]/g, "").replace("٫", ".")); return isFinite(n) ? n : 0; };
+const numTxt = (n) => (n ? Math.round(n * 100) / 100 : 0).toLocaleString("en-US", { maximumFractionDigits: 2 });
+const rid = () => Math.random().toString(36).slice(2, 8) + Math.random().toString(36).slice(2, 8);
+const canEdit = () => !!(D && D.projects);
+let ED = null;
+async function edLoad() { const { status, j } = await api({ op: "audit" }); if (status !== 200 || !j.state) throw new Error(j.error || "تعذّر تحميل البيانات"); ED = { S: JSON.parse(j.state), at: j.at }; return ED.S; }
+async function edSave(note) {
+  const { status, j } = await api({ op: "audit_save", state: JSON.stringify(ED.S), base: ED.at });
+  if (status === 409) { ED = null; throw new Error("عدّل شخص آخر البيانات قبل لحظات — افتح التعديل مرة ثانية"); }
+  if (status !== 200) throw new Error(j.error || "تعذّر الحفظ");
+  ED.at = j.at; toast(note || "تم الحفظ ✓ — الأرقام تتحدث خلال ثوانٍ"); load(true); refreshAud();
+}
+function toast(t) { let d = document.getElementById("toast"); if (!d) { d = el("div", "toast"); d.id = "toast"; document.body.append(d); } d.textContent = t; d.hidden = false; clearTimeout(d._t); d._t = setTimeout(() => (d.hidden = true), 4000); }
+// opens a fresh copy of the data, then the form; fields: {key,label,type:text|num|select|area|seg,opts:[[v,t]],hint,show:(vals)=>bool}
+async function editForm(title, build) {
+  const body = $("dlgBody"); body.replaceChildren(el("h3", "", title), el("div", "muted", "جارٍ التحميل…")); $("dlg").showModal();
+  let S; try { S = await edLoad(); } catch (e) { body.replaceChildren(el("h3", "", title), el("div", "res bad", e.message)); return; }
+  const spec = build(S); if (!spec) { $("dlg").close(); return; }
+  body.replaceChildren(el("h3", "", title)); if (spec.intro) body.append(el("div", "hint", spec.intro));
+  const get = {}, rows = [];
+  const vals = () => Object.fromEntries(Object.entries(get).map(([k, f]) => [k, f()]));
+  const refresh = () => { const v = vals(); for (const [f, box] of rows) if (f.show) box.hidden = !f.show(v); };
+  for (const f of spec.fields || []) {
+    if (f.type === "head") { body.append(el("div", "fg", f.label)); continue; }
+    const box = el("div", "f"); box.append(el("label", "", f.label)); const v = f.value;
+    let i;
+    if (f.type === "select") { i = el("select"); for (const [ov, ot] of f.opts) { const o = el("option", "", ot); o.value = ov; i.append(o); } i.value = v ?? f.opts[0][0]; }
+    else if (f.type === "area") { i = el("textarea"); i.rows = 4; i.value = v ?? ""; }
+    else { i = el("input"); i.type = "text"; i.value = f.type === "num" ? (v === "" || v === undefined || v === null ? "" : numTxt(numIn(v))) : v ?? ""; if (f.type === "num") i.inputMode = "decimal"; if (f.type === "date") i.placeholder = "2026-11-09"; }
+    i.onchange = i.oninput = refresh; box.append(i); get[f.key] = () => i.value;
+    if (f.hint) box.append(el("div", "hint", f.hint));
+    rows.push([f, box]); body.append(box);
+  }
+  if (spec.list) body.append(spec.list);
+  refresh();
+  const res = el("div", "res"), bar = el("div", "dbar"), save = el("button", "pbtn", "حفظ"), close = el("button", "sbtn", "إلغاء");
+  save.type = close.type = "button"; bar.append(save, close);
+  if (spec.del) { const d = el("button", "sbtn danger", spec.del.label || "حذف"); d.type = "button"; d.onclick = async () => { if (!confirm(spec.del.confirm || "تأكيد الحذف؟")) return; try { spec.del.run(S); d.disabled = save.disabled = true; await edSave("تم الحذف ✓"); $("dlg").close(); } catch (e) { res.className = "res bad"; res.textContent = e.message; d.disabled = save.disabled = false; } }; bar.append(d); }
+  body.append(res, bar);
+  close.onclick = () => $("dlg").close();
+  save.onclick = async () => {
+    res.className = "res"; res.textContent = "";
+    const err = spec.check && spec.check(vals()); if (err) { res.className = "res bad"; res.textContent = err; return; }
+    save.disabled = true; save.textContent = "جارٍ الحفظ…";
+    try { spec.save(vals(), S); await edSave(); $("dlg").close(); } catch (e) { res.className = "res bad"; res.textContent = e.message; save.disabled = false; save.textContent = "حفظ"; }
+  };
+}
+const aProj = (S, p) => S.proj.find((x) => x.name === p.name);
+const kindOf = (S, p) => (aProj(S, p) || {}).kind || (p.kind === "fin" ? "تشطيب" : "عظم");
+const stageOpts = (kind) => [["", "بدون مرحلة (أحدد الاستحقاق يدوياً)"], ["sign", "توقيع العقد"], ...ELEMENTS[kind], ["handover", "التسليم / انتهاء الأعمال"]];
+const ebtn = (t, f, cls) => { const b = el("button", cls || "sbtn ebtn", t); b.type = "button"; b.onclick = (e) => { e.stopPropagation(); f(); }; return b; };
+
+function editProject(p) {
+  editForm("تعديل المشروع — " + p.name, (S) => {
+    const a = aProj(S, p); if (!a) { alert("المشروع غير موجود في التدقيق"); return null; }
+    return { fields: [
+      { key: "status", label: "الحالة", type: "select", opts: [["لم يبدأ", "لم يبدأ"], ["قائم", "قائم"], ["منتهي", "منتهي"]], value: a.status || "قائم" },
+      { key: "client", label: "العميل", type: "text", value: a.client || "" },
+      { key: "note", label: "ملاحظة المشروع", type: "area", value: a.note || "" },
+    ], save: (v) => { a.status = v.status; a.client = v.client.trim(); a.note = v.note; } };
+  });
+}
+function editStages(p) {
+  editForm("مراحل التنفيذ — " + p.name, (S) => {
+    const a = aProj(S, p); if (!a) return null; const kind = a.kind || "عظم";
+    return { intro: "حالة كل مرحلة تحدد الدفعات المستحقة وتكلفة الإكمال والرصيد المتوقع.", fields: ELEMENTS[kind].map(([k, t]) => ({ key: k, label: t, type: "select", opts: EL_STATES.map((x) => [x, x]), value: (a.el || {})[k] || "لم يبدأ" })),
+      save: (v) => { a.el = { ...(a.el || {}), ...v }; } };
+  });
+}
+function editExp(p) {
+  editForm("مصروف المشروع — " + p.name, (S) => {
+    const a = aProj(S, p); if (!a) return null; const kind = a.kind || "عظم"; const ex = a.exp || {};
+    const cats = [...EXPC[kind], ...(ex.legacy ? [["legacy", "مصروف سابق غير مفصّل"]] : [])];
+    return { intro: "المبالغ بدون الضريبة كما في قيود. مقاولو الباطن يُعدّلون من تبويب «مقاولو الباطن».", fields: cats.map(([k, t]) => ({ key: k, label: t, type: "num", value: ex[k] ?? "" })),
+      save: (v) => { const o = {}; for (const [k, x] of Object.entries(v)) { const n = numIn(x); if (n) o[k] = n; } a.exp = o; } };
+  });
+}
+function editContract(p, ki) {
+  editForm(ki === null ? "عقد جديد — " + p.name : "تعديل العقد", (S) => {
+    const a = aProj(S, p); if (!a) return null; a.contracts = a.contracts || [];
+    const k = ki === null ? null : a.contracts[ki];
+    return { intro: !k && !a.contracts.length && numIn(a.received) ? "المحصّل السابق (" + numTxt(numIn(a.received)) + " ﷼) يُنقل للعقد كدفعة «المحصّل سابقاً». بعدها أضف دفعات الجدول الباقية." : "", fields: [
+      { key: "name", label: "اسم العقد", type: "text", value: k ? k.name : a.contracts.length ? "عقد إضافي" : "العقد" },
+      { key: "date", label: "تاريخ العقد", type: "date", value: k ? k.date : "", hint: "بالشكل 2026-11-09" },
+      { key: "value", label: "قيمة العقد شامل الضريبة (﷼)", type: "num", value: k ? k.value : !a.contracts.length ? a.contract || "" : "" },
+      { key: "dur", label: "مدة التنفيذ (يوم)", type: "num", value: k ? k.dur : "" },
+      { key: "note", label: "ملاحظة العقد", type: "area", value: k ? k.note : "" },
+    ], check: (v) => (!v.name.trim() ? "اكتب اسم العقد" : !(numIn(v.value) > 0) ? "اكتب قيمة العقد" : v.date && !/^\d{4}-\d{2}-\d{2}$/.test(v.date.trim()) ? "التاريخ بالشكل 2026-11-09" : null),
+      save: (v) => {
+        const o = k || { id: rid(), inst: [] }; o.name = v.name.trim(); o.date = v.date.trim(); o.value = numIn(v.value); o.dur = v.dur ? String(numIn(v.dur)) : ""; o.note = v.note;
+        if (!k) { if (!a.contracts.length && numIn(a.received)) o.inst.push({ id: rid(), name: "المحصّل سابقاً", amt: numIn(a.received), stage: "", on: "end", manual: "مستحقة", st: "محصّلة", got: "" }); a.contracts.push(o); a.received = ""; }
+      },
+      del: k ? { label: "حذف العقد", confirm: "حذف العقد وكل دفعاته؟ لا يمكن التراجع إلا من النسخ الاحتياطية.", run: () => a.contracts.splice(ki, 1) } : null };
+  });
+}
+function editInst(p, ki, ii) {
+  editForm(ii === null ? "دفعة جديدة" : "تعديل الدفعة", (S) => {
+    const a = aProj(S, p); if (!a || !a.contracts || !a.contracts[ki]) return null; const k = a.contracts[ki], kind = a.kind || "عظم";
+    const i = ii === null ? null : k.inst[ii];
+    return { intro: k.name, fields: [
+      { key: "name", label: "اسم الدفعة", type: "text", value: i ? i.name : "الدفعة " + (k.inst.length + 1) + " — " },
+      { key: "amt", label: "المبلغ شامل الضريبة (﷼)", type: "num", value: i ? i.amt : "" },
+      { key: "st", label: "التحصيل", type: "select", opts: INST_ST.map((x) => [x, x]), value: i ? i.st : "غير محصّلة" },
+      { key: "got", label: "المحصّل منها (﷼)", type: "num", value: i ? i.got : "", show: (v) => v.st === "محصّلة جزئيًا" },
+      { key: "stage", label: "تستحق مع مرحلة", type: "select", opts: stageOpts(kind), value: i ? i.stage || "" : "" },
+      { key: "on", label: "متى", type: "select", opts: [["end", "عند انتهاء المرحلة"], ["start", "عند بدء المرحلة"]], value: i ? i.on || "end" : "end", show: (v) => !!v.stage },
+      { key: "manual", label: "الاستحقاق", type: "select", opts: [["لم تستحق", "لم تستحق"], ["مستحقة", "مستحقة"]], value: i ? i.manual || "لم تستحق" : "لم تستحق", show: (v) => !v.stage },
+    ], check: (v) => (!v.name.trim() ? "اكتب اسم الدفعة" : !(numIn(v.amt) > 0) ? "اكتب المبلغ" : v.st === "محصّلة جزئيًا" && !(numIn(v.got) > 0 && numIn(v.got) < numIn(v.amt)) ? "المحصّل الجزئي لازم يكون أقل من المبلغ" : null),
+      save: (v) => {
+        const o = i || { id: rid(), dueOn: "" }; o.name = v.name.trim(); o.amt = numIn(v.amt); o.st = v.st; o.got = v.st === "محصّلة جزئيًا" ? numIn(v.got) : ""; o.stage = v.stage; o.on = v.on || "end";
+        if (!v.stage) o.manual = v.manual; else if (!i) o.manual = "لم تستحق";
+        if (!i) k.inst.push(o);
+      },
+      del: i ? { label: "حذف الدفعة", confirm: "حذف هذه الدفعة؟", run: () => k.inst.splice(ii, 1) } : null };
+  });
+}
+function editSubPay(p) {
+  editForm("مدفوعات مقاولي الباطن — " + p.name, (S) => {
+    const a = aProj(S, p); if (!a) return null;
+    const links = []; for (const sb of S.subs || []) for (const l of sb.links || []) if (l.proj === a.id) links.push([sb, l]);
+    const fields = [];
+    links.forEach(([sb, l], n) => { fields.push({ type: "head", label: sb.name.trim() }, { key: "p" + n, label: "المدفوع (﷼)", type: "num", value: l.paid }, { key: "c" + n, label: "المعتمد (المستخلصات) (﷼)", type: "num", value: l.certified }); });
+    fields.push({ type: "head", label: "إضافة مقاول لهذا المشروع" }, { key: "nn", label: "اسم المقاول", type: "text", value: "" }, { key: "np", label: "المدفوع (﷼)", type: "num", value: "" }, { key: "nc", label: "المعتمد (﷼)", type: "num", value: "" });
+    return { intro: "المدفوع حسب قيود. المعتمد = قيمة الأعمال المعتمدة في المستخلصات.", fields,
+      save: (v) => {
+        links.forEach(([, l], n) => { l.paid = v["p" + n] ? numTxt(numIn(v["p" + n])) : ""; l.certified = v["c" + n] ? numTxt(numIn(v["c" + n])) : ""; });
+        const nm = (v.nn || "").trim();
+        if (nm) { let sb = S.subs.find((x) => x.name.trim() === nm); if (!sb) { sb = { id: rid(), name: nm, trade: "", links: [] }; S.subs.push(sb); } sb.links.push({ lid: rid(), proj: a.id, paid: v.np ? numTxt(numIn(v.np)) : "", certified: v.nc ? numTxt(numIn(v.nc)) : "", agreed: "" }); }
+      } };
+  });
+}
+function editCash() {
+  editForm("النقد والمصاريف الثابتة والضريبة", (S) => {
+    S.cash = S.cash || []; S.over = S.over || [];
+    const f = [{ type: "head", label: "النقد اليوم" }];
+    S.cash.forEach((c, n) => f.push({ key: "cn" + n, label: "اسم الحساب", type: "text", value: c.name }, { key: "ca" + n, label: "الرصيد (﷼)", type: "num", value: c.amount }));
+    f.push({ key: "cnN", label: "حساب جديد (اختياري)", type: "text", value: "" }, { key: "caN", label: "رصيده (﷼)", type: "num", value: "" });
+    f.push({ type: "head", label: "المصاريف الثابتة شهرياً" });
+    S.over.forEach((o, n) => f.push({ key: "oa" + n, label: o.item, type: "num", value: o.amount }));
+    f.push({ key: "onN", label: "بند جديد (اختياري)", type: "text", value: "" }, { key: "oaN", label: "مبلغه شهرياً (﷼)", type: "num", value: "" });
+    f.push({ type: "head", label: "ضريبة القيمة المضافة" },
+      { key: "vatIn", label: "ضريبة المدخلات القابلة للخصم (﷼)", type: "num", value: S.vatIn, hint: "ضريبة فواتير المشتريات والمقاولين المسجّلة في قيود" },
+      { key: "vatPaid", label: "المدفوع للهيئة (﷼)", type: "num", value: S.vatPaid });
+    return { intro: "الأرقام هنا تدخل في الرصيد المتوقع والعجز وتمويل المشاريع.", fields: f,
+      save: (v) => {
+        S.cash.forEach((c, n) => { c.name = v["cn" + n].trim(); c.amount = v["ca" + n] ? numTxt(numIn(v["ca" + n])) : ""; });
+        S.cash = S.cash.filter((c) => c.name || c.amount);
+        if (v.cnN.trim()) S.cash.push({ id: rid(), name: v.cnN.trim(), amount: v.caN ? numTxt(numIn(v.caN)) : "" });
+        S.over.forEach((o, n) => { o.amount = v["oa" + n] ? numTxt(numIn(v["oa" + n])) : ""; });
+        if (v.onN.trim()) S.over.push({ id: rid(), item: v.onN.trim(), amount: v.oaN ? numTxt(numIn(v.oaN)) : "" });
+        S.vatIn = v.vatIn ? numTxt(numIn(v.vatIn)) : ""; S.vatPaid = v.vatPaid ? numTxt(numIn(v.vatPaid)) : "";
+      } };
+  });
+}
+function editSupplier(n) {
+  editForm(n === null ? "مورد جديد" : "تعديل مستحقات المورد", (S) => {
+    S.sups = S.sups || []; const o = n === null ? null : S.sups[n];
+    return { fields: [
+      { key: "name", label: "المورد", type: "text", value: o ? o.name : "" },
+      { key: "material", label: "المواد", type: "text", value: o ? o.material : "" },
+      { key: "owed", label: "المستحق له (﷼)", type: "num", value: o ? o.owed : "" },
+      { key: "when", label: "موعد السداد", type: "select", opts: WHEN.map((x) => [x, x]), value: o ? o.when || WHEN[0] : WHEN[0] },
+    ], check: (v) => (!v.name.trim() ? "اكتب اسم المورد" : null),
+      save: (v) => { const x = o || { id: rid() }; x.name = v.name.trim(); x.material = v.material.trim(); x.owed = v.owed ? numIn(v.owed) : ""; x.when = v.when; if (!o) S.sups.push(x); },
+      del: o ? { label: "حذف المورد", confirm: "حذف المورد من قائمة المستحقات؟", run: () => S.sups.splice(n, 1) } : null };
+  });
+}
+async function supsBox(m) {
+  const box = el("div", "box"); const h = el("div", "fch2"); h.append(el("b", "", "مستحقات الموردين")); h.append(ebtn("+ مورد", () => editSupplier(null)));
+  box.append(h, el("div", "small muted", "اضغط على المورد لتعديل المستحق وموعد السداد"));
+  const list = el("div"); list.append(el("div", "small muted", "جارٍ التحميل…")); box.append(list); m.append(box);
+  try {
+    const S = await edLoad(); list.replaceChildren();
+    if (!(S.sups || []).length) list.append(el("div", "small muted", "لا يوجد"));
+    (S.sups || []).forEach((o, n) => { const b = el("button", "tl"); b.type = "button"; const t = el("span", "tn", o.name); t.append(el("small", "", [o.material, o.when].filter(Boolean).join(" · "))); b.append(t, el("b", "pay", o.owed ? fmt(numIn(o.owed)) : "—")); b.onclick = () => editSupplier(n); list.append(b); });
+  } catch (e) { list.replaceChildren(el("div", "res bad", e.message)); }
+}
+async function cashBox(m) {
+  const box = el("div", "box"); const h = el("div", "fch2"); h.append(el("b", "", "النقد والمصاريف الثابتة والضريبة"), ebtn("تعديل", editCash)); box.append(h);
+  const g = el("div", "kgrid"); g.append(el("div", "small muted", "جارٍ التحميل…")); box.append(g); m.append(box);
+  try {
+    const S = await edLoad(); g.replaceChildren();
+    const cell = (l, v, sub, cls) => { const d = el("div"); d.append(el("span", "", l), el("b", cls || "", v)); if (sub) d.append(el("small", "", sub)); g.append(d); };
+    for (const c of S.cash || []) if (c.name) cell(c.name, c.amount ? fmt(numIn(c.amount)) : "— لم يُدخل", "", c.amount ? "" : "wv");
+    const ov = (S.over || []).reduce((t, o) => t + numIn(o.amount), 0), empty = (S.over || []).filter((o) => !numIn(o.amount)).map((o) => o.item);
+    cell("المصاريف الثابتة شهرياً", fmt(ov), empty.length ? "غير مُدخل: " + empty.join("، ") : "", empty.length ? "wv" : "pay");
+    cell("ضريبة المدخلات", S.vatIn ? fmt(numIn(S.vatIn)) : "— لم تُدخل", "", S.vatIn ? "" : "wv");
+    cell("المدفوع للهيئة", S.vatPaid ? fmt(numIn(S.vatPaid)) : "—");
+  } catch (e) { g.replaceChildren(el("div", "res bad", e.message)); }
 }
 function openProjByName(name) { const p = (D.projects || []).find((x) => x.name === name); view = "proj"; rec = p ? p.id : null; recTab = "inst"; draw(); window.scrollTo(0, 0); }
 function profitCards(m) {
@@ -642,6 +844,7 @@ function record(m) {
   const p = (D.projects || []).find((x) => x.id === rec); if (!p) { rec = null; return projects(m); }
   const back = el("button", "back", "→ كل المشاريع"); back.type = "button"; back.onclick = () => { rec = null; draw(); }; m.append(back);
   const ph = page("م", p.name, [p.kind === "fin" ? "تشطيب" : p.kind === "str" ? "عظم" : "", p.status, p.client].filter(Boolean).join(" · "), "var(--acc6)");
+  if (canEdit()) { const eb = el("div", "ebar2"); eb.append(ebtn("تعديل المشروع", () => editProject(p)), ebtn("مراحل التنفيذ", () => editStages(p))); eb.style.marginTop = "8px"; ph.querySelector(".grow").append(eb); }
   m.append(ph);
   const cash = p.x.collected - p.x.spent;
   m.append(kpiStrip([
@@ -656,10 +859,15 @@ function record(m) {
   m.append(st, panel);
   if (recTab === "inst") {
     if (!p.contracts.length) panel.append(el("div", "empty", "لا يوجد عقد مسجّل"));
+    const ed = canEdit(), lumpOnly = p.contracts.length && p.contracts.every((k) => k.lump);
+    if (ed) { const eb = el("div", "ebar2"); eb.append(ebtn(lumpOnly ? "+ إضافة العقد وجدول دفعاته" : "+ عقد", () => editContract(p, null))); panel.append(eb); }
+    let kIdx = 0;
     const dd = (iso, n) => { const d = new Date(iso + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.getUTCDate() + "/" + (d.getUTCMonth() + 1) + "/" + d.getUTCFullYear(); };
     for (const k of p.contracts) {
       const c = el("div", "box kbox"); const h = el("div", "kh"); h.append(el("b", "", k.name));
       if (k.date) h.append(el("span", "small muted", "تاريخ العقد " + k.date.split("-").reverse().join("/")));
+      const ki = k.lump ? null : kIdx++;
+      if (ed && ki !== null) { const eb = el("span", "ebar2"); eb.append(ebtn("تعديل العقد", () => editContract(p, ki)), ebtn("+ دفعة", () => editInst(p, ki, null))); h.append(eb); }
       c.append(h);
       const left = Math.max(0, k.value - k.got), dueK = k.inst.filter((i) => i.due).reduce((t, i) => t + Math.max(0, i.amt - i.got), 0);
       const kv = el("div", "kgrid");
@@ -672,17 +880,19 @@ function record(m) {
       if (k.inst.length) {
         const nOk = k.inst.filter((i) => i.st === "محصّلة").length;
         c.append(el("div", "small muted", "جدول الدفعات: " + k.inst.length + " دفعة · محصّلة " + nOk + (dueK > 0.5 ? " · مستحقة " + k.inst.filter((i) => i.due && i.amt - i.got > 0.5).length : "")));
-        for (const i of k.inst) {
-          const r = el("div", "inst"); r.append(el("div", "", i.name), el("div", "a", fmt(i.amt)));
+        k.inst.forEach((i, ii) => {
+          const r = el(ed ? "button" : "div", "inst" + (ed ? " ed" : "")); if (ed) { r.type = "button"; r.title = "تعديل الدفعة"; r.onclick = () => editInst(p, ki, ii); }
+          r.append(el("div", "", i.name), el("div", "a", fmt(i.amt)));
           const l2 = i.amt - i.got;
           r.append(i.st === "محصّلة" ? el("span", "pill ok", "محصّلة") : i.st === "محصّلة جزئيًا" ? el("span", "pill " + (i.due ? "warn" : ""), "جزئية — باقي " + fmt(l2)) : i.due ? el("span", "pill bad", "مستحقة") : el("span", "pill", "لم تستحق"));
           c.append(r);
-        }
-      } else c.append(el("div", "small muted", "مسجّل بدون جدول دفعات (المحصّل رقم إجمالي" + (one ? " — ظاهر أعلى الصفحة" : "") + "). لإضافة جدول الدفعات: «إدخال التدقيق» ← المشاريع."));
+        });
+      } else c.append(el("div", "small muted", "مسجّل بدون جدول دفعات (المحصّل رقم إجمالي" + (one ? " — ظاهر أعلى الصفحة" : "") + ")." + (ed ? " أضف العقد وجدول دفعاته من الزر أعلاه، والمحصّل السابق يُنقل له." : "")));
       if (k.note) c.append(el("div", "knote", k.note));
       panel.append(c);
     }
   } else if (recTab === "exp") {
+    if (canEdit()) { const eb = el("div", "ebar2"); eb.append(ebtn("تعديل المصروف", () => editExp(p))); panel.append(eb); }
     const max = Math.max(1, ...p.exp.map((e) => e.v), p.x.subCert);
     const rows = [...p.exp, ...(p.x.subCert ? [{ k: "subs", label: "مقاولو الباطن (قيود)", v: p.x.subCert }] : [])].sort((a, b) => b.v - a.v);
     if (!rows.length) panel.append(el("div", "empty", "لا يوجد مصروف مسجّل"));
@@ -690,6 +900,7 @@ function record(m) {
     for (const e of rows) { const r = el("div", "ebar"), bar = el("div", "bar"), i = el("i"); i.style.width = (e.v / max) * 100 + "%"; i.style.background = CATC[e.k] || "#888"; bar.append(i); const lb = el("span", "elab"); const d = el("i", "dot"); d.style.background = CATC[e.k] || "#888"; lb.append(d, document.createTextNode(e.label)); r.append(lb, bar, el("b", "pay", fmt(e.v))); panel.append(r); }
     if (rows.length) { const t = el("div", "ebar"); t.style.borderTop = "2px solid var(--ink)"; t.append(el("b", "", "المجموع"), el("span"), el("b", "", fmt(p.x.spent))); panel.append(t); }
   } else if (recTab === "subs") {
+    if (canEdit()) { const eb = el("div", "ebar2"); eb.append(ebtn("تعديل مدفوعات مقاولي الباطن", () => editSubPay(p))); panel.append(eb); }
     panel.append(kpiStrip([{ label: "مدفوع لمقاولي الباطن (قيود)", value: fmt(p.x.subPaid), f: "out" }, { label: "مسجّل بالاسم في المستخلصات", value: fmt(p.x.named), f: "out" },
       { label: "لم يُسجَّل باسمه بعد", value: fmt(p.x.unnamed), tone: p.x.unnamed < -0.5 ? "bad" : p.x.unnamed > 0.5 ? "warn" : "" }]));
     if (!p.subs.length) panel.append(el("div", "empty", "لا توجد اتفاقيات مسجّلة بأسماء المقاولين لهذا المشروع"));
@@ -810,7 +1021,7 @@ function openForm(e, r) {
 
 $("reload").addEventListener("click", async () => { if (view === "data") await loadReg(); load(true); });
 load().then(() => token && loadReg().then(() => D && renderTabs())).catch(() => {});
-setInterval(() => { if (document.visibilityState === "visible" && view !== "data" && view !== "audit" && !$("dlg").open) load(true); }, 120000);
+setInterval(() => { if (document.visibilityState === "visible" && view !== "data" && !$("dlg").open) load(true); }, 120000);
 </script>
 </body>
 </html>
