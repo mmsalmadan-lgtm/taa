@@ -27,7 +27,10 @@ bot's `ORIGINS` (taaa.sa).
 - Home = a brief overview only (owner's rule): waiting chips, KPI strip, forecast chart (`fcbox`, tips), top-3 alerts, health.
   Detail opens on click via `morePage` (fc / fund / alerts / coll / wait). Don't add long lists to home.
 - Project record: header buttons (تعديل المشروع، مراحل التنفيذ), tabs inst (contracts + installments; a single contract does
-  not repeat header numbers), exp, subs… `ptitle(p)` shows the project number badge (`.pcode`); search includes it.
+  not repeat header numbers), exp, subs, docs, notes. `ptitle(p)` shows the project number badge (`.pcode`); search includes it.
+- «المستندات» (`recTab "docs"`, `docsTab`): `p.docs` from the bot (RV / PO / GRN / supplier invoice / PV, newest first), filter
+  chips by type (`docF`), one card each; «فتح PDF» → `openDoc` → `api({op:"doc", t, id, i})` → short-lived signed URL (the
+  window is opened inside the click so it is not blocked; blocked → same tab). No `p.docs` = bot not yet deployed → a note.
 - Project numbers: `S-yy-nnn` structural / `F-yy-nnn` finishing (e.g. S-25-003), made by the bot (`core/projcode.ts`).
 
 ## Editing in place (no separate entry section — owner's rule)
@@ -51,7 +54,8 @@ card or page · finance things live under المالية, purchases under الم
 Known good totals (2026-11-09): contracts 14,259,433.75 · collected 7,751,477.43 · due now 201,663.50.
 
 ## Open items
-- سند قبض (receipt voucher PDF) for client payments, then a «المستندات» tab on the project page (PO / GRN / invoice / PV / receipts).
+- «المستندات» tab is live (2026-11-09) but stays on its "after the bot update" note until the bot with receipt vouchers
+  (taa-bot PR #23) is deployed to production.
 - GET /dash is slow (~25 s) — cache or trim.
 - Data still missing in the audit: salaries/fixed costs, input VAT and paid VAT (VAT due is inflated), petty-cash balance,
   existing client custody deposits.

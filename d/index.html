@@ -78,6 +78,7 @@ button.card{cursor:pointer}button.card:hover{border-color:var(--ui-2)}
 .amt{font-size:20px;font-weight:600;color:var(--acc9);white-space:nowrap;font-variant-numeric:tabular-nums;line-height:1.2}.amt-l{font-size:12px;color:var(--muted)}
 .bar{height:6px;background:var(--track);border-radius:3px;overflow:hidden}.bar i{display:block;height:100%;background:var(--acc6)}
 .filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.docf{margin-bottom:12px}.doc .dhd{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:4px 8px}.doc .dhd>*{white-space:nowrap}.doc .dno{font-variant-numeric:tabular-nums;direction:ltr;text-align:right}.doc .sbtn{align-self:flex-start;margin-top:auto}.doc .ref{white-space:nowrap;font-variant-numeric:tabular-nums}
 .chip{border:1px solid var(--field);background:var(--surface);color:var(--ink);border-radius:4px;padding:6px 12px;font-size:13px}
 .chip[aria-pressed="true"]{background:var(--ui);border-color:var(--ui);color:#fff}
 .search{flex:1 1 200px;min-width:0;font:inherit;border:1px solid var(--field);border-radius:4px;padding:7px 10px;background:var(--surface);color:var(--ink)}
@@ -872,8 +873,8 @@ function record(m) {
     { label: "صافي النقد", value: (cash < 0 ? "(" + fmt(-cash) + ")" : fmt(cash)), neg: cash < 0, sub: "المحصّل − المصروف", f: "cash" },
     ...((() => { const a = AUD && AUD.P[p.name]; if (!a || !a.contract) return []; return a.unknown ? [{ label: "الربح المتوقع", value: "—", sub: "حدّث المراحل والمصروف", f: "in" }] : [{ label: "الربح المتوقع", value: acc(a.profit), neg: a.profit < 0, sub: (Math.round(a.margin * 1000) / 10) + "% · الإنجاز " + Math.round(a.prog * 100) + "%", f: "in", flag: a.margin < 0 ? ["bad", "خاسر"] : a.margin < 0.10 ? ["warn", "أقل من 10%"] : null }]; })())]));
   const st = el("div", "sub-tabs"), panel = el("div", "panel");
-  const T = [["inst", "الدفعات", p.contracts.reduce((t, k) => t + k.inst.length, 0)], ["exp", "المصروف", p.exp.length], ["subs", "مقاولو الباطن", p.subs.length], ["notes", "ملاحظات التدقيق"]];
-  for (const [k, t, n] of T) { const b = el("button", "", t + (n !== undefined ? " (" + n + ")" : "")); b.type = "button"; b.setAttribute("aria-current", String(recTab === k)); b.onclick = () => { recTab = k; draw(); }; st.append(b); }
+  const T = [["inst", "الدفعات", p.contracts.reduce((t, k) => t + k.inst.length, 0)], ["exp", "المصروف", p.exp.length], ["subs", "مقاولو الباطن", p.subs.length], ["docs", "المستندات", (p.docs || []).length], ["notes", "ملاحظات التدقيق"]];
+  for (const [k, t, n] of T) { const b = el("button", "", t + (n !== undefined ? " (" + n + ")" : "")); b.type = "button"; b.setAttribute("aria-current", String(recTab === k)); b.onclick = () => { recTab = k; draw(); }; st.append(b); if (recTab === k) requestAnimationFrame(() => b.scrollIntoView({ block: "nearest", inline: "nearest" })); }
   m.append(st, panel);
   if (recTab === "inst") {
     if (!p.contracts.length) panel.append(el("div", "empty", "لا يوجد عقد مسجّل"));
@@ -929,11 +930,65 @@ function record(m) {
       c.append(kv); g.append(c);
     }
     if (p.subs.length) panel.append(g);
+  } else if (recTab === "docs") {
+    docsTab(p, panel);
   } else {
     const parts = [p.note, ...p.contracts.filter((k) => k.note).map((k) => "— " + k.name + " —\n" + k.note.trim())].filter((x) => x && x.trim());
     if (!parts.length) panel.append(el("div", "empty", "لا توجد ملاحظات"));
     for (const t of parts) panel.append(el("div", "notes", t.trim()));
   }
+}
+
+// «المستندات»: the project's documents from the bot (ProjRec.docs) — purchase orders, receipts of goods, supplier invoices,
+// payment vouchers (PV) and receipt vouchers (RV). PDFs open through POST op "doc" (a short-lived link, money roles only).
+const DOCK = { PO: ["أمر شراء", "أوامر الشراء", "eng"], GRN: ["محضر استلام", "الاستلام", "eng"], INV: ["فاتورة مورد", "الفواتير", ""], PV: ["سند صرف", "سندات الصرف", "warn"], RV: ["سند قبض", "سندات القبض", "ok"] };
+let docF = "all";
+const fmt2 = (v) => (+v || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " " + SAR;
+// document numbers (PO-S-25-003-01 …) inside Arabic text stay one left-to-right unit and never break mid-number
+function refText(v) {
+  const b = el("b");
+  for (const part of String(v).split(/((?:PO|GRN|PV|RV|INV)-[A-Z0-9-]+)/)) {
+    if (!part) continue;
+    if (/^(?:PO|GRN|PV|RV|INV)-/.test(part)) { const i = el("bdi", "ref", part); i.dir = "ltr"; b.append(i); } else b.append(document.createTextNode(part));
+  }
+  return b;
+}
+async function openDoc(d, btn) {
+  const w = window.open("", "_blank"); // opened inside the click so the browser does not block it
+  btn.disabled = true; const t0 = btn.textContent; btn.textContent = "جارٍ الفتح…";
+  try {
+    const { status, j } = await api({ op: "doc", ...d.open });
+    if (status === 200 && j.url) { if (w) w.location.href = j.url; else location.href = j.url; }
+    else { if (w) w.close(); toast(status === 401 ? "انتهت صلاحية الرابط — اطلب «لوحة المتابعة» من البوت من جديد" : j.error || "تعذّر فتح الملف"); }
+  } catch (e) { if (w) w.close(); toast("تعذّر الاتصال — حاول مرة أخرى"); }
+  btn.disabled = false; btn.textContent = t0;
+}
+function docsTab(p, panel) {
+  const docs = p.docs;
+  if (!docs) { panel.append(el("div", "empty", "المستندات تظهر هنا بعد تحديث البوت.")); return; }
+  if (!docs.length) { panel.append(el("div", "empty", "لا توجد مستندات لهذا المشروع بعد — تُصدر من البوت: أوامر الشراء ومحاضر الاستلام وفواتير الموردين وسندات الصرف والقبض.")); return; }
+  const n = (k) => docs.filter((d) => d.k === k).length;
+  if (docF !== "all" && !n(docF)) docF = "all";
+  const bar = el("div", "filters docf"); bar.setAttribute("role", "group"); bar.setAttribute("aria-label", "نوع المستند");
+  for (const [k, t] of [["all", "الكل"], ...Object.entries(DOCK).map(([k, v]) => [k, v[1]])]) {
+    const c = k === "all" ? docs.length : n(k); if (!c && k !== "all") continue;
+    const b = el("button", "chip", t + " (" + c + ")"); b.type = "button"; b.setAttribute("aria-pressed", String(docF === k)); b.onclick = () => { docF = k; draw(); }; bar.append(b);
+  }
+  panel.append(bar);
+  const g = el("div", "grid docs");
+  for (const d of docs.filter((x) => docF === "all" || x.k === docF)) {
+    const [lbl, , tone] = DOCK[d.k] || [d.k, "", ""];
+    const c = el("div", "card doc");
+    const hd = el("div", "dhd"); hd.append(el("span", "pill " + tone, lbl), el("span", "small muted", d.date || "")); c.append(hd);
+    c.append(el("div", "t dno", d.no));
+    const kv = el("div", "kv");
+    for (const [l, v] of [[d.k === "RV" ? "من" : "المورد", d.party], ["المبلغ", d.amount !== undefined ? fmt2(d.amount) : ""], ["البيان", d.note]]) if (v) kv.append(el("span", "", l), refText(v));
+    c.append(kv);
+    if (d.open) { const b = el("button", "sbtn", "فتح PDF"); if (d.k === "INV") b.textContent = "فتح الفاتورة"; b.type = "button"; b.onclick = () => openDoc(d, b); c.append(b); }
+    else c.append(el("div", "small muted", "الملف غير محفوظ (صدر قبل حفظ المستندات)"));
+    g.append(c);
+  }
+  panel.append(g);
 }
 
 async function load(keep) {
