@@ -19,7 +19,7 @@
  --ui:#0B5CAB;--ui-2:#1B96FF;--ui-1:#EEF4FF;
  --eng9:#0A3D7A;--eng6:#2A72D4;--eng1:#E4EEFB;
  --acc9:#0E5A3A;--acc6:#1F8A5B;--acc1:#E2F3EA;--out:#3F4B54;--neg:#9F1D1D;
- --crit:#C23934;--crit1:#FCE4E2;--warn:#8A5200;--warn1:#FFF0D2;--track:#ECECEC;
+ --crit:#A8261F;--crit1:#FCE4E2;--warn:#8A5200;--warn1:#FFF0D2;--track:#ECECEC;
  --on-acc:#FFFFFF;--field-in:#8C8C8C;
 }
 @media (prefers-color-scheme:dark){:root{
@@ -82,7 +82,7 @@ button.card{cursor:pointer}button.card:hover{border-color:var(--ui-2)}
 .amt{font-size:20px;font-weight:600;color:var(--acc9);white-space:nowrap;font-variant-numeric:tabular-nums;line-height:1.2}.amt-l{font-size:12px;color:var(--muted)}
 .bar{height:6px;background:var(--track);border-radius:3px;overflow:hidden}.bar i{display:block;height:100%;background:var(--acc6)}
 .filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.docf{margin-bottom:12px}.doc .dhd{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:4px 8px}.doc .dhd>*{white-space:nowrap}.doc .dno{font-variant-numeric:tabular-nums;direction:ltr;text-align:right}.doc .sbtn{align-self:flex-start;margin-top:auto}.doc .ref{white-space:nowrap;font-variant-numeric:tabular-nums}
+.docf{margin-bottom:12px}.doc .dhd{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:4px 8px}.doc .dhd>*{white-space:nowrap}.doc .dno{font-variant-numeric:tabular-nums;direction:ltr;text-align:right;color:var(--ink)}.doc .sbtn{align-self:flex-start;margin-top:auto}.doc .ref{white-space:nowrap;font-variant-numeric:tabular-nums}
 .chip{border:1px solid var(--field);background:var(--surface);color:var(--ink);border-radius:4px;padding:6px 12px;font-size:13px}
 .chip[aria-pressed="true"]{background:var(--ui);border-color:var(--ui);color:var(--on-acc)}
 .search{flex:1 1 200px;min-width:0;font:inherit;border:1px solid var(--field);border-radius:4px;padding:7px 10px;background:var(--surface);color:var(--ink)}
@@ -178,7 +178,9 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 .multi{display:flex;flex-wrap:wrap;gap:6px}.multi label{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--field);border-radius:999px;padding:6px 12px;color:var(--ink);font-size:14px;margin:0;cursor:pointer}
 .items{width:100%;border-collapse:collapse}.items td,.items th{padding:3px;text-align:right;font-weight:500;color:var(--muted);font-size:12px}
 .items input:disabled{background:var(--sunk);color:var(--muted)}
-.dbar{display:flex;gap:8px;margin-top:16px}
+.dbar{display:flex;gap:8px;margin-top:16px;position:sticky;bottom:0;background:var(--surface);padding:10px 0;border-top:1px solid var(--line);z-index:1}
+.ferr{font-size:13px;color:var(--crit);margin-top:4px;font-weight:600}.f input[aria-invalid=true]{border-color:var(--crit);border-width:2px}
+.kpi.dep,.fcbox.dep{opacity:.55}.cashfirst{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border-color:var(--warn);background:var(--warn1)}.cashfirst b{display:block;font-size:15px;color:var(--ink)}.cashfirst .muted{color:var(--ink)}.cashfirst .pbtn{min-height:44px}
 .res{margin-top:12px;padding:10px 12px;border-radius:6px;font-size:14px;display:none}
 .res.ok{display:block;background:var(--acc1);color:var(--acc9)}.res.warn{display:block;background:var(--warn1);color:var(--warn)}.res.bad{display:block;background:var(--crit1);color:var(--crit)}
 @media (max-width:560px){
@@ -210,8 +212,13 @@ const token = decodeURIComponent((location.hash || "").slice(1));
 const $ = (id) => document.getElementById(id);
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined && text !== null) e.textContent = text; return e; };
 const SAR = "\u20C1";
-const fmt = (v) => (v < 0 ? "−" : "") + Math.round(Math.abs(+v || 0)).toLocaleString("en-US") + " " + SAR;
+// unknown (null / undefined / "" / not a number) is «—», never «0 ⃁»
+const unknown = (v) => v === null || v === undefined || v === "" || !isFinite(+v);
+const fmt = (v) => unknown(v) ? "—" : (v < 0 ? "−" : "") + Math.round(Math.abs(+v)).toLocaleString("en-US") + " " + SAR;
 const sar = (t) => String(t).replace(/(-?[\d,]+)\.(\d+)(?= ﷼)/g, (m, a, b) => Math.round(+(a.replace(/,/g, "") + "." + b)).toLocaleString("en-US")).replace(/ ﷼/g, " " + SAR).replace(/﷼/g, SAR);
+const sym = (t) => String(t ?? "").replace(/﷼/g, SAR); // the official riyal sign in labels and hints, no rounding
+// Arabic counts: «مشروع واحد» · «مشروعان» · «3 مشاريع» · «11 مشروعًا»
+const arN = (n, one, two, few, many) => (n === 1 ? one : n === 2 ? two : n <= 10 ? n + " " + few : n + " " + many);
 const pct = (f) => Math.round((f || 0) * 100) + "%";
 
 // app tabs: which sections live where, and their colour family
@@ -227,6 +234,7 @@ const TABS = [
   { v: "data", t: "البيانات", fam: "var(--out)" },
 ];
 let D = null, REG = null, view = "home", rec = null, recTab = "inst", pf = { kind: "all", q: "" };
+const noteOf = (s) => (REG && REG.length ? s.note : String(s.note || "").replace(/s*تسجيل عهدة جديدة:[^.]*.?/, "")) || undefined;
 const sec = (id) => D && D.sections.find((s) => s.id === id);
 
 function fail(title, text) {
@@ -247,7 +255,7 @@ function ring(f) {
 function kpiStrip(list) {
   const g = el("div", "kpis");
   for (const k of list) {
-    const b = el("div", "kpi"); if (k.f) b.dataset.f = k.f; if (k.tone) b.dataset.t = k.tone;
+    const b = el("div", "kpi" + (k.dep ? " dep" : "")); if (k.f) b.dataset.f = k.f; if (k.tone) b.dataset.t = k.tone;
     const v = el("div", "v" + (k.neg ? " neg" : ""), sar(k.value));
     b.append(el("div", "l", k.label), v); if (k.sub) b.append(el("div", "s", sar(k.sub)));
     if (k.flag) b.append(el("span", "flag " + k.flag[0], k.flag[1]));
@@ -330,7 +338,7 @@ function buyView(m) {
   m.append(st);
   const cur = avail.find((x) => x.k === BT);
   if (cur.sups && canEdit()) supsBox(m);
-  for (const id of cur.ids) { const s = sec(id); if (!s) continue; m.append(secHead(s.title, s.table ? s.table.rows.length : undefined, s.note), ...cards(s, "acc")); }
+  for (const id of cur.ids) { const s = sec(id); if (!s) continue; m.append(secHead(s.title, s.table ? s.table.rows.length : undefined, noteOf(s)), ...cards(s, "acc")); }
 }
 function siteView(m) {
   const T = TABS.find((x) => x.v === "site");
@@ -341,7 +349,7 @@ function siteView(m) {
   const st = el("div", "sub-tabs mtabs");
   for (const x of avail) { const b = el("button", "", x.t); b.type = "button"; b.setAttribute("aria-current", String(ST === x.k)); b.onclick = () => { ST = x.k; draw(); }; st.append(b); }
   m.append(st);
-  for (const id of avail.find((x) => x.k === ST).ids) { const s = sec(id); if (!s) continue; m.append(secHead(s.title, s.table ? s.table.rows.length : undefined, s.note), ...cards(s, "eng")); }
+  for (const id of avail.find((x) => x.k === ST).ids) { const s = sec(id); if (!s) continue; m.append(secHead(s.title, s.table ? s.table.rows.length : undefined, noteOf(s)), ...cards(s, "eng")); }
 }
 // المستحق الآن: installments whose stage is reached and not yet collected, per project (from the audit data)
 function dueBlock(m) {
@@ -349,11 +357,11 @@ function dueBlock(m) {
   const tot = L.reduce((t, p) => t + p.x.dueNow, 0);
   m.append(secHead("المستحق الآن عند العملاء", L.length, "دفعات وصلت مرحلتها ولم تُحصّل بعد — اضغط على المشروع لتفاصيل دفعاته"));
   if (!L.length) { m.append(el("div", "empty", "لا يوجد مستحق الآن")); return; }
-  m.append(kpiStrip([{ label: "إجمالي المستحق الآن", value: fmt(tot), f: "in", sub: L.length + " مشاريع", tone: "warn" },
+  m.append(kpiStrip([{ label: "إجمالي المستحق الآن", value: fmt(tot), f: "in", sub: arN(L.length, "مشروع واحد", "مشروعان", "مشاريع", "مشروعًا"), tone: "warn" },
     ...(AUD && AUD.overdue ? [{ label: "منه متأخر", value: fmt(AUD.overdue), f: "in", flag: ["bad", "متأخر"] }] : [])]));
   const g = el("div", "grid fam-acc");
   for (const p of L) {
-    const c = el("button", "card warn"); c.type = "button"; c.onclick = () => { view = "proj"; rec = p.id; recTab = "inst"; draw(); window.scrollTo(0, 0); };
+    const c = el("button", "card warn"); c.type = "button"; c.setAttribute("aria-label", (p.code ? p.code + " " : "") + p.name + "، المستحق الآن " + fmt(p.x.dueNow)); c.onclick = () => { view = "proj"; rec = p.id; recTab = "inst"; draw(); window.scrollTo(0, 0); };
     c.append(ptitle(p)); if (p.client) c.append(el("div", "st", p.client));
     const kv = el("div", "kv");
     kv.append(el("span", "", "المستحق الآن"), el("b", "wv", fmt(p.x.dueNow)), el("span", "", "المحصّل"), el("b", "rcv", fmt(p.x.collected) + " (" + pct(p.x.pct) + ")"));
@@ -378,7 +386,7 @@ function moneyView(m) {
   if (cur.prof) return profitCards(m);
   if (cur.cash) return cashBox(m);
   if (cur.k === "rcv") dueBlock(m);
-  for (const id of cur.ids) { const s = sec(id); if (!s) continue; m.append(secHead(s.title, s.table ? s.table.rows.length : undefined, s.note), ...cards(s, "acc")); }
+  for (const id of cur.ids) { const s = sec(id); if (!s) continue; m.append(secHead(s.title, s.table ? s.table.rows.length : undefined, noteOf(s)), ...cards(s, "acc")); }
 }
 
 // History: every place in the dashboard is a history entry (same URL — the hash holds the personal token), so the phone's
@@ -388,12 +396,14 @@ const navState = () => ({ view, rec, recTab, MT, BT, ST, MORE });
 function navSync() {
   const s = navState(), k = JSON.stringify(s), cur = history.state && history.state.k;
   if (cur === k) return;
-  if (!history.state || !history.state.k || navRestoring) history.replaceState({ k, s }, ""); else history.pushState({ k, s }, "");
+  // a sub-tab switch (same page, same project) replaces the step: one back leaves the page, not one per sub-tab
+  const p = history.state && history.state.s, sameplace = p && p.view === s.view && p.rec === s.rec && p.MORE === s.MORE;
+  if (!history.state || !history.state.k || navRestoring || sameplace) history.replaceState({ k, s }, ""); else history.pushState({ k, s }, "");
 }
 // an open dialog is its own step: back closes it and stays on the page; closing it otherwise drops that step
 {
   const dlg = $("dlg"), show = dlg.showModal.bind(dlg), shut = dlg.close.bind(dlg);
-  dlg.showModal = () => { show(); if (history.state && history.state.k && !history.state.dlg) history.pushState({ ...history.state, dlg: 1 }, ""); };
+  dlg.showModal = () => { const h3 = $("dlgBody").querySelector("h3"); if (h3) dlg.setAttribute("aria-label", h3.textContent); show(); if (history.state && history.state.k && !history.state.dlg) history.pushState({ ...history.state, dlg: 1 }, ""); };
   dlg.close = (v) => { const was = dlg.open; shut(v); if (was && !navPopping && history.state && history.state.dlg) history.back(); };
   dlg.addEventListener("cancel", (e) => { e.preventDefault(); dlg.close(); }); // Esc goes through the same path
 }
@@ -406,7 +416,16 @@ window.addEventListener("popstate", (e) => {
   navRestoring = true; try { draw(); } finally { navRestoring = false; }
   window.scrollTo(0, 0);
 });
-function draw() { drawView(); navSync(); }
+function draw() { drawView(); navSync(); showActiveTabs(); }
+// the active tab and sub-tab are always visible on a phone: the bar scrolls sideways only (never the page up or down)
+function showActiveTabs() {
+  for (const b of document.querySelectorAll('#tabRow [aria-current="page"], .sub-tabs [aria-current="true"]')) {
+    let bar = b.parentElement; while (bar && bar.scrollWidth <= bar.clientWidth + 1) bar = bar.parentElement;
+    if (!bar || bar === document.body || bar === document.documentElement) continue;
+    const r = b.getBoundingClientRect(), pr = bar.getBoundingClientRect();
+    if (r.left < pr.left) bar.scrollBy({ left: r.left - pr.left - 16 }); else if (r.right > pr.right) bar.scrollBy({ left: r.right - pr.right + 16 });
+  }
+}
 // the label of every single-value field points at its input (screen readers announce the label, not just the value)
 let fieldN = 0;
 function linkLabels(root) {
@@ -427,7 +446,7 @@ function drawView() {
   if (view === "data") return renderData(m);
   const T = TABS.find((x) => x.v === view);
   m.append(page(T.t.slice(0, 1), T.t, null, T.fam));
-  for (const id of T.ids) { const s = sec(id); if (!s) continue; m.append(secHead(s.title, s.table ? s.table.rows.length : undefined, s.note), ...cards(s, T.f)); }
+  for (const id of T.ids) { const s = sec(id); if (!s) continue; m.append(secHead(s.title, s.table ? s.table.rows.length : undefined, noteOf(s)), ...cards(s, T.f)); }
 }
 
 // ===== «تدقيق طاء» numbers: the audit app's own engine runs in a hidden frame (read-only), so every figure on the
@@ -435,19 +454,22 @@ function drawView() {
 const CATC = { shore: "#5B6C8F", earth: "#8B6B3E", steel: "#4F6D9A", concrete: "#8C939C", block: "#C0623A", aux: "#8A6BB8", mep: "#2B8CB8", equip: "#D9962B", site: "#3AA096", fence: "#7C9A2E", labor: "#B5577E", other: "#7A7F7C", plas: "#C9A227", tile: "#3F7FBF", paint: "#D0557A", gyp: "#9AA4AE", insu: "#5BA35B", legacy: "#6E6E6E", subs: "#6B4FA0" };
 let AUD = null, HF = null;
 const SNIP = `(()=>{const M=model();
- const unkN=M.PL.filter(x=>x.c.contract&&x.c.unknown&&x.p.status!=="لم يبدأ").length;
+ const EST=0.30; /* a margin above twice the 10–15% target is too good to be true: shown as an estimate, counted as not known */
+ const est=x=>x.c.contract&&!x.c.unknown&&x.c.margin>EST;
+ const estN=M.PL.filter(x=>est(x)&&x.p.status!=="لم يبدأ").length;
+ const unkN=M.PL.filter(x=>x.c.contract&&x.c.unknown&&x.p.status!=="لم يبدأ").length+estN;
  const lossN=M.PL.filter(x=>x.c.contract&&!x.c.unknown&&x.c.margin<0).length, weakN=M.PL.filter(x=>x.c.contract&&!x.c.unknown&&x.c.margin>=0&&x.c.margin<0.10).length;
- const goodN=M.PL.filter(x=>x.c.contract&&!x.c.unknown&&x.c.margin>=0.10).length, lateN=M.PL.filter(x=>x.c.late>14&&x.c.dueNow>0).length;
+ const goodN=M.PL.filter(x=>x.c.contract&&!x.c.unknown&&!est(x)&&x.c.margin>=0.10).length, lateN=M.PL.filter(x=>x.c.late>14&&x.c.dueNow>0).length;
  const F=M.FC;
  const win=F?F.Wn.slice(0,3).map(w=>({a:w.a,b:w.b,min:w.min,ra:dm(w.a),rb:dm(w.b),rb1:dm(w.b+1),stage:(w.stage||[]).slice(0,5).map(e=>({nm:e.nm,trig:e.trig,d:dm(e.d),g:e.g})),slow:(w.slow||[]).map(o=>({k:o.k,n:o.n===null?null:dm(o.n),v:o.v})),defer:(w.defer||[]).slice().sort((x,y)=>x.a-y.a).slice(0,5).map(e=>({w:e.w,g:e.g})),deferSum:w.deferSum||0,left:w.left||0,dueSum:w.dueSum||0})):[];
  const groups=groupByClient(M.PL).map(g=>({name:g.name,n:g.items.length,pname:g.items[0].p.name,toC:g.items.reduce((a,x)=>a+x.c.toCollect,0),con:g.items.reduce((a,x)=>a+x.c.contract,0),rec:g.items.reduce((a,x)=>a+x.c.received,0)})).filter(o=>o.toC>0).sort((a,b)=>b.toC-a.toC).slice(0,5);
- return JSON.stringify({toCollect:M.toCollect,contracts:M.contracts,received:M.received,overdue:M.overdue,owe:M.owe,pay3:M.pay3,cash:M.cash,cashDone:!!M.done.cash,vat:M.vat,vatIn:M.vatIn,projProfit:M.projProfit,unkN,lossN,weakN,goodN,lateN,nP:M.PL.length,advN:M.advList.length,
+ return JSON.stringify({toCollect:M.toCollect,contracts:M.contracts,received:M.received,overdue:M.overdue,owe:M.owe,pay3:M.pay3,cash:M.cash,cashDone:!!M.done.cash,vat:M.vat,vatIn:M.vatIn,projProfit:M.projProfit,unkN,estN,lossN,weakN,goodN,lateN,done:M.done,nP:M.PL.length,advN:M.advList.length,
   fund:M.fund,fIn:M.fIn,fCost:M.fCost,fPay:M.fPay,unkF:M.unkF.length,nsF:M.nsF.length,fShort:M.fShort.slice(0,6).map(o=>({name:o.x.p.name,prog:o.x.c.prog,coll:o.x.c.contract?o.x.c.received/o.x.c.contract:0,d:o.d})),
   B:Object.keys(M.B).map(k=>k+" "+Math.round(M.B[k].r*100)+"%").join("، "),over:M.over,hasOpen:M.hasOpen,recDiff:M.recDiff,tol:M.tol,
   chart:F?fcChart(F):"",wk:F&&F.wk?F.wk.map(w=>({r:dm(w.s)+" – "+dm(w.e),mn:w.mn,md:AR_D[addD(w.md).getDay()]+" "+dm(w.md),end:w.end})):[],
   FC:F?{min:F.min,minD:dm(F.minD),first:F.Wn.length?F.Wn[0].a:null,negDays:F.negDays,end:F.end,nW:F.Wn.length,win}:null,
   F:M.F.filter(f=>f.s!=="good").map(f=>({s:f.s,t:f.t,d:f.d,amt:f.amt,noAmt:!!f.noAmt,go:f.go})),groups,
-  P:Object.fromEntries(M.PL.map(x=>[x.p.name,{profit:x.c.profit,margin:x.c.margin,total:x.c.total,prog:x.c.prog,unknown:!!x.c.unknown,contract:x.c.contract,late:x.c.late,net:x.c.net}]))});})()`;
+  P:Object.fromEntries(M.PL.map(x=>[x.p.name,{profit:x.c.profit,margin:x.c.margin,total:x.c.total,prog:x.c.prog,unknown:!!x.c.unknown,est:!!est(x),contract:x.c.contract,late:x.c.late,net:x.c.net}]))});})()`;
 function refreshAud() {
   if (!D || !D.projects) return;
   if (HF) HF.remove();
@@ -480,7 +502,13 @@ function home(m) {
   if (A.lateN) W.push(["دفعة متأخرة لدى عميل", A.lateN, () => go("proj")]);
   if (A.advN) W.push(["مقاول صُرف له أكثر من المعتمد", A.advN, () => go("subs")]);
   const toCash = () => { MT = "cash"; go("money"); };
-  if (!A.cashDone) W.push(["الرصيد النقدي لم يُدخل", 1, toCash]);
+  // cash first: until the balance is entered, half the figures below are not real yet — say so before them
+  if (!A.cashDone) {
+    const cb = el("div", "box cashfirst"); cb.setAttribute("role", "region"); cb.setAttribute("aria-label", "الرصيد النقدي");
+    const t = el("div", "grow"); t.append(el("b", "", "أدخل الرصيد النقدي أولاً"), el("div", "small muted", "الفائض والرصيد المتوقع محسوبان من صفر حتى تُدخل رصيد كل حساب والعهدة."));
+    const b = el("button", "pbtn", "أدخل الرصيد"); b.type = "button"; b.onclick = toCash;
+    cb.append(t, b); m.append(cb);
+  }
   if (W.length) { const wb = el("div", "waiting"); wb.append(el("b", "", "بانتظارك:")); for (const [t, n, f] of W) { const b = el("button", "wchip"); b.type = "button"; b.append(el("span", "", t), el("span", "cnt", String(n))); b.onclick = f; wb.append(b); } m.append(wb); }
   const coll = A.contracts ? A.received / A.contracts : 0;
   const neg = A.FC && A.FC.min < 0;
@@ -492,22 +520,25 @@ function home(m) {
   K.push({ label: "الباقي عند العملاء", value: fmt(A.toCollect), f: "in", sub: "من العقود، شامل الضريبة", flag: A.overdue ? ["bad", "متأخر " + fmt(A.overdue)] : null });
   const kc = bk("المحصّل"); if (kc) K.push({ ...kc, f: "in", tone: "", sub: pct(coll) + " من العقود" });
   const ke = bk("المصروف حتى الآن"); if (ke) K.push({ ...ke, f: "out", tone: "" });
-  K.push({ label: "الالتزامات", value: fmt(A.owe), f: "out", sub: "خلال 3 أشهر " + fmt(A.pay3), flag: A.owe > A.cash ? ["bad", "أكبر من النقد"] : null });
+  // obligations are known only once subcontractor or supplier dues were entered in the audit; before that a 0 is not a fact
+  const oweKnown = !!(A.done && (A.done.subs || A.done.sups)) || A.owe > 0;
+  K.push(oweKnown ? { label: "الالتزامات", value: fmt(A.owe), f: "out", sub: "خلال 3 أشهر " + fmt(A.pay3), flag: A.cashDone && A.owe > A.cash ? ["bad", "أكبر من النقد"] : null }
+    : { label: "الالتزامات", value: "—", f: "out", flag: ["warn", "مستحقات الموردين والمقاولين لم تُدخل"] });
   // cash: the audit's own figure (the same one the forecast and the funding page use) — an unknown balance is «—», never 0
   K.push({ label: "الرصيد النقدي اليوم", value: A.cashDone ? fmt(A.cash) : "—", f: "cash", sub: A.over ? "مصاريف ثابتة " + fmt(A.over) + " شهرياً" : "", flag: A.cashDone ? null : ["warn", "لم يُدخل"] });
   const k30 = bk("صُرف آخر 30 يوماً"); if (k30) K.push({ ...k30, f: "out", tone: "" });
   const ks = bk("مستحق لمقاولي الباطن"); if (ks && parseFloat(String(ks.value).replace(/,/g, "")) > 0) K.push({ ...ks, f: "out" });
   const kp = bk("مشتريات بانتظار المدير المالي"); if (kp && +kp.value > 0) K.push({ ...kp, f: "out" });
   K.push({ label: "الضريبة المستحقة", value: fmt(A.vat), f: "out", flag: A.vat && !A.vatIn ? ["warn", "تحتاج تأكيد"] : null });
-  K.push({ label: "ربح المشاريع المتوقع", value: A.unkN === A.nP && A.nP ? "—" : fmt(A.projProfit), f: "in", sub: A.unkN ? A.unkN + " مشاريع غير محسوبة" : "" });
-  // without the cash balance the forecast starts from 0: say so instead of showing a calm surplus
-  if (!A.cashDone) K.push({ label: "الفائض قبل إضافة النقد", value: acc(A.fund), neg: A.fund < 0, f: "cash", flag: ["warn", "ينقصه الرصيد النقدي"] });
+  K.push({ label: "ربح المشاريع المتوقع", value: A.unkN === A.nP && A.nP ? "—" : fmt(A.projProfit), f: "in", sub: A.unkN ? arN(A.unkN, "مشروع واحد غير محسوب", "مشروعان غير محسوبين", "مشاريع غير محسوبة", "مشروعًا غير محسوب") : "", flag: A.estN ? ["warn", "تقديري"] : null });
+  // without the cash balance the forecast starts from 0: say so instead of showing a calm surplus (dimmed until cash is in)
+  if (!A.cashDone) K.push({ label: "الفائض قبل إضافة النقد", value: acc(A.fund), neg: A.fund < 0, f: "cash", flag: ["warn", "ينقصه الرصيد النقدي"], dep: true });
   else K.push(neg ? { label: "أكبر عجز قادم", value: acc(A.FC.min), neg: true, f: "cash", sub: "يوم " + A.FC.minD }
-    : { label: A.fund < 0 ? "العجز المتوقع" : "الفائض المتوقع", value: acc(A.fund), neg: A.fund < 0, f: "cash", flag: A.unkF ? ["warn", "تقديري — " + A.unkF + " مشاريع غير محسوبة"] : null });
+    : { label: A.fund < 0 ? "العجز المتوقع" : "الفائض المتوقع", value: acc(A.fund), neg: A.fund < 0, f: "cash", flag: A.unkF ? ["warn", "تقديري — " + arN(A.unkF, "مشروع واحد غير محسوب", "مشروعان غير محسوبين", "مشاريع غير محسوبة", "مشروعًا غير محسوب")] : null });
   m.append(kpiStrip(K));
   // الرصيد المتوقع: the audit's own weekly chart
   if (A.FC) {
-    const box = el("div", "box fcbox");
+    const box = el("div", "box fcbox" + (A.cashDone ? "" : " dep"));
     const hd = el("div", "fch2"); hd.append(el("b", "", "الرصيد المتوقع"));
     const F = A.FC, W0 = F.win[0];
     hd.append(!A.cashDone ? el("span", "pill warn", "يبدأ من رصيد صفر — أدخل الرصيد النقدي") : el("span", neg ? "pill bad" : "pill ok", neg ? "أول عجز " + (W0.a === 0 ? "اليوم" : "بعد " + W0.a + (W0.a <= 10 ? " أيام" : " يومًا")) + " · أكبره " + acc(F.min) : "لا عجز متوقع"));
@@ -577,7 +608,7 @@ function morePage(m) {
     const g = el("div", "fgrid"), L = el("div", "box flist");
     const row = (l, v, sgn, cls, sub) => { const r = el("div", "fr"), a = el("span", "", l); if (sub) a.append(el("small", "", sub)); r.append(a, el("b", cls || "", v === null ? "—" : sgn + fmt(Math.abs(v)))); L.append(r); };
     // an unknown cash balance is shown as unknown and the total is labelled as the result before cash — never «0 ⃁»
-    row("النقد اليوم", A.cashDone ? A.cash : null, "", "", A.cashDone ? "" : "لم يُدخل — أدخله من «النقد والمصاريف الثابتة»"); row("الباقي عند العملاء", A.fIn, "+ ", "rcv", "بدون الضريبة"); row("تكلفة إكمال المشاريع", A.fCost, "− ", "pay", "تقدير"); row("المستحق للموردين والمقاولين", A.fPay, "− ", "pay", "");
+    row("النقد اليوم", A.cashDone ? A.cash : null, "", "", A.cashDone ? "" : "لم يُدخل — أدخله من «النقد والمصاريف الثابتة»"); row("الباقي عند العملاء", A.fIn, "+ ", "rcv", "بدون الضريبة"); row("تكلفة إكمال المشاريع", A.fCost, "− ", "pay", "تقدير"); row("المستحق للموردين والمقاولين", A.fPay > 0 || (A.done && (A.done.subs || A.done.sups)) ? A.fPay : null, "− ", "pay", A.fPay > 0 || (A.done && (A.done.subs || A.done.sups)) ? "" : "لم يُدخل");
     const tot = el("div", "fr tot"); tot.append(el("span", "", !A.cashDone ? "النتيجة قبل إضافة النقد" : A.fund < 0 ? "العجز المتوقع" : "الفائض المتوقع"), el("b", A.fund < 0 ? "neg" : "rcv", acc(A.fund))); L.append(tot);
     if (!A.cashDone) { const b = el("button", "lnk", "أدخل الرصيد النقدي ←"); b.type = "button"; b.onclick = () => { MT = "cash"; go("money"); }; L.append(b); }
     if (A.unkF) L.append(el("div", "small warnline", A.unkF + " مشاريع غير داخلة في الحساب: حدّد مراحل إنجازها"));
@@ -624,6 +655,8 @@ const EXPC = {
   "تشطيب": [["mep", "مواد سباكة وكهرباء"], ["plas", "مواد لياسة"], ["tile", "بلاط"], ["paint", "دهانات"], ["gyp", "جبس"], ["insu", "عزل"], ["equip", "معدات (Rent a Tool)"], ["labor", "عمالة يومية"], ["other", "أخرى"]],
 };
 const EL_STATES = ["غير مشمول", "لم يبدأ", "جاري", "منتهي"], INST_ST = ["محصّلة", "محصّلة جزئيًا", "غير محصّلة"], WHEN = ["هذا الشهر", "خلال 3 أشهر", "بعد 3 أشهر"];
+// a typed amount that is not a number (after removing separators); empty is allowed — it means "not entered"
+const numBad = (v) => { const t = String(v ?? "").replace(/[٠-٩]/g, (d) => "٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/[,٬\s]/g, "").replace("٫", "."); return t !== "" && !/^-?\d+(\.\d+)?$/.test(t); };
 const numIn = (v) => { const n = parseFloat(String(v ?? "").replace(/[٠-٩]/g, (d) => "٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/[,٬\s]/g, "").replace("٫", ".")); return isFinite(n) ? n : 0; };
 const numTxt = (n) => (n ? Math.round(n * 100) / 100 : 0).toLocaleString("en-US", { maximumFractionDigits: 2 });
 const rid = () => Math.random().toString(36).slice(2, 8) + Math.random().toString(36).slice(2, 8);
@@ -642,23 +675,37 @@ async function editForm(title, build) {
   const body = $("dlgBody"); body.replaceChildren(el("h3", "", title), el("div", "muted", "جارٍ التحميل…")); $("dlg").showModal();
   let S; try { S = await edLoad(); } catch (e) { body.replaceChildren(el("h3", "", title), el("div", "res bad", e.message)); return; }
   const spec = build(S); if (!spec) { $("dlg").close(); return; }
-  body.replaceChildren(el("h3", "", title)); if (spec.intro) body.append(el("div", "hint", spec.intro));
-  const get = {}, rows = [];
+  body.replaceChildren(el("h3", "", title)); if (spec.intro) body.append(el("div", "hint", sym(spec.intro)));
+  const get = {}, rows = [], nums = [];
   const vals = () => Object.fromEntries(Object.entries(get).map(([k, f]) => [k, f()]));
   const refresh = () => { const v = vals(); for (const [f, box] of rows) if (f.show) box.hidden = !f.show(v); };
   for (const f of spec.fields || []) {
     if (f.type === "head") { body.append(el("div", "fg", f.label)); continue; }
-    const box = el("div", "f"); box.append(el("label", "", f.label)); const v = f.value;
+    const box = el("div", "f"); box.append(el("label", "", sym(f.label))); const v = f.value;
     let i;
     if (f.type === "select") { i = el("select"); for (const [ov, ot] of f.opts) { const o = el("option", "", ot); o.value = ov; i.append(o); } i.value = v ?? f.opts[0][0]; }
     else if (f.type === "area") { i = el("textarea"); i.rows = 4; i.value = v ?? ""; }
     else { i = el("input"); i.type = "text"; i.value = f.type === "num" ? (v === "" || v === undefined || v === null ? "" : numTxt(numIn(v))) : v ?? ""; if (f.type === "num") i.inputMode = "decimal"; if (f.type === "date") i.placeholder = "2026-11-09"; }
     i.onchange = i.oninput = refresh; box.append(i); get[f.key] = () => i.value;
-    if (f.hint) box.append(el("div", "hint", f.hint));
+    if (f.type === "num") nums.push([f, box, i]);
+    if (f.hint) box.append(el("div", "hint", sym(f.hint)));
     rows.push([f, box]); body.append(box);
   }
   if (spec.list) body.append(spec.list);
   refresh(); linkLabels(body);
+  if (matchMedia("(pointer:fine)").matches) { const first = body.querySelector("input, select, textarea"); if (first) first.focus(); } // no keyboard pop-up on phones
+  // an amount that is not a number is refused at its field — never saved as 0 (or as a deleted line)
+  const badNums = () => {
+    let first = null;
+    for (const [f, box, i] of nums) {
+      const old = box.querySelector(".ferr"); if (old) old.remove(); i.removeAttribute("aria-invalid");
+      if (box.hidden || !numBad(i.value)) continue;
+      const m = el("div", "ferr", "اكتب رقماً فقط في «" + f.label.replace(/\s*\(.*\)\s*$/, "") + "»"); m.id = i.id + "-err";
+      i.setAttribute("aria-invalid", "true"); i.setAttribute("aria-describedby", m.id); box.append(m); if (!first) first = i;
+    }
+    if (first) first.focus();
+    return !!first;
+  };
   const res = el("div", "res"); res.setAttribute("role", "status"); const bar = el("div", "dbar"), save = el("button", "pbtn", "حفظ"), close = el("button", "sbtn", "إلغاء");
   save.type = close.type = "button"; bar.append(save, close);
   if (spec.del) { const d = el("button", "sbtn danger", spec.del.label || "حذف"); d.type = "button"; d.onclick = async () => { if (!confirm(spec.del.confirm || "تأكيد الحذف؟")) return; try { spec.del.run(S); d.disabled = save.disabled = true; await edSave("تم الحذف ✓"); $("dlg").close(); } catch (e) { res.className = "res bad"; res.textContent = e.message; d.disabled = save.disabled = false; } }; bar.append(d); }
@@ -666,6 +713,7 @@ async function editForm(title, build) {
   close.onclick = () => $("dlg").close();
   save.onclick = async () => {
     res.className = "res"; res.textContent = "";
+    if (badNums()) { res.className = "res bad"; res.textContent = "في الحقول المعلّمة نص بدل رقم — صحّحها ثم احفظ."; return; }
     const err = spec.check && spec.check(vals()); if (err) { res.className = "res bad"; res.textContent = err; return; }
     save.disabled = true; save.textContent = "جارٍ الحفظ…";
     try { spec.save(vals(), S); await edSave(); $("dlg").close(); } catch (e) { res.className = "res bad"; res.textContent = e.message; save.disabled = false; save.textContent = "حفظ"; }
@@ -827,13 +875,13 @@ function profitCards(m) {
   const g = el("div", "grid fam-acc");
   for (const { p, a } of L) {
     const tone = a.unknown ? "" : a.margin < 0 ? "bad" : a.margin < 0.10 ? "warn" : "";
-    const c = el("button", "card" + (tone ? " " + tone : "")); c.type = "button"; c.onclick = () => openProjByName(p.name);
+    const c = el("button", "card" + (tone ? " " + tone : "")); c.type = "button"; c.setAttribute("aria-label", (p.code ? p.code + " " : "") + p.name); c.onclick = () => openProjByName(p.name);
     c.append(ptitle(p));
     const kv = el("div", "kv");
     for (const [l, v, cls] of [["العقد", fmt(a.contract), ""], ["التكلفة المتوقعة", a.unknown ? "—" : fmt(a.total), "pay"], ["الإنجاز", Math.round((a.prog || 0) * 100) + "%", "eng"]]) { kv.append(el("span", "", l)); const b = el("b", cls, v); kv.append(b); }
     c.append(kv);
     const tags = el("div", "tags");
-    tags.append(a.unknown ? el("span", "pill", "الربح غير معروف — حدّث المراحل والمصروف") : el("span", "pill " + (a.margin < 0 ? "bad" : a.margin < 0.10 ? "warn" : "ok"), "الربح المتوقع " + acc(a.profit)), el("span", "pill " + (a.margin < 0 ? "bad" : a.margin < 0.10 ? "warn" : "ok"), "هامش " + Math.round(a.margin * 1000) / 10 + "%"));
+    tags.append(a.unknown ? el("span", "pill", "الربح غير معروف — حدّث المراحل والمصروف") : a.est ? el("span", "pill warn", "تقديري — الهامش " + Math.round(a.margin * 1000) / 10 + "% أعلى من المعقول، راجع المراحل والمصروف") : el("span", "pill " + (a.margin < 0 ? "bad" : a.margin < 0.10 ? "warn" : "ok"), "الربح المتوقع " + acc(a.profit)), el("span", "pill " + (a.margin < 0 ? "bad" : a.margin < 0.10 ? "warn" : "ok"), "هامش " + Math.round(a.margin * 1000) / 10 + "%"));
     c.append(tags); g.append(c);
   }
   m.append(g);
@@ -886,15 +934,16 @@ function projects(m) {
       mid.append(ring(p.x.pct), am); c.append(mid);
       const kv = el("div", "kv"); kv.append(el("span", "", "المصروف"), el("b", "pay", fmt(p.x.spent)));
       const a = AUD && AUD.P[p.name];
-      if (a && a.contract && !a.unknown) kv.append(el("span", "", "الربح المتوقع"), el("b", a.profit < 0 ? "neg" : "rcv", acc(a.profit) + " (" + Math.round(a.margin * 1000) / 10 + "%)"));
+      if (a && a.contract && !a.unknown) kv.append(el("span", "", "الربح المتوقع"), el("b", a.est ? "wv" : a.profit < 0 ? "neg" : "rcv", acc(a.profit) + " (" + Math.round(a.margin * 1000) / 10 + "%)"));
       c.append(kv, mixBar(p));
       const tags = el("div", "tags");
       if (a && a.contract && !a.unknown && a.margin < 0.10) tags.append(el("span", "pill " + (a.margin < 0 ? "bad" : "warn"), a.margin < 0 ? "خاسر" : "ربح أقل من 10%"));
       if (a && a.unknown && a.contract) tags.append(el("span", "pill", "الربح غير معروف"));
+      if (a && a.est) tags.append(el("span", "pill warn", "تقديري"));
       if (p.x.dueNow > 0.5) tags.append(el("span", "pill warn", "مستحق " + fmt(p.x.dueNow)));
       if (p.x.unnamed > 0.5) tags.append(el("span", "pill", "باطن بلا اسم " + fmt(p.x.unnamed)));
       if (tags.children.length) c.append(tags);
-      c.onclick = () => { rec = p.id; recTab = "inst"; draw(); window.scrollTo(0, 0); };
+      c.setAttribute("aria-label", (p.code ? p.code + " " : "") + p.name); c.onclick = () => { rec = p.id; recTab = "inst"; draw(); window.scrollTo(0, 0); };
       g.append(c);
     }
   };
@@ -921,10 +970,10 @@ function record(m) {
     ...(p.x.dueNow > 0.5 && Math.abs(p.x.toCollect - p.x.dueNow) < 0.5 ? [] : [{ label: "الباقي عند العميل", value: fmt(p.x.toCollect), f: "in" }]),
     { label: "المصروف حتى الآن", value: fmt(p.x.spent), sub: "منها باطن " + fmt(p.x.subCert), f: "out" },
     { label: "صافي النقد", value: (cash < 0 ? "(" + fmt(-cash) + ")" : fmt(cash)), neg: cash < 0, sub: "المحصّل − المصروف", f: "cash" },
-    ...((() => { const a = AUD && AUD.P[p.name]; if (!a || !a.contract) return []; return a.unknown ? [{ label: "الربح المتوقع", value: "—", sub: "حدّث المراحل والمصروف", f: "in" }] : [{ label: "الربح المتوقع", value: acc(a.profit), neg: a.profit < 0, sub: (Math.round(a.margin * 1000) / 10) + "% · الإنجاز " + Math.round(a.prog * 100) + "%", f: "in", flag: a.margin < 0 ? ["bad", "خاسر"] : a.margin < 0.10 ? ["warn", "أقل من 10%"] : null }]; })())]));
+    ...((() => { const a = AUD && AUD.P[p.name]; if (!a || !a.contract) return []; return a.unknown ? [{ label: "الربح المتوقع", value: "—", sub: "حدّث المراحل والمصروف", f: "in" }] : [{ label: "الربح المتوقع", value: acc(a.profit), neg: a.profit < 0, sub: (Math.round(a.margin * 1000) / 10) + "% · الإنجاز " + Math.round(a.prog * 100) + "%", f: "in", flag: a.est ? ["warn", "تقديري — راجع المراحل والمصروف"] : a.margin < 0 ? ["bad", "خاسر"] : a.margin < 0.10 ? ["warn", "أقل من 10%"] : null }]; })())]));
   const st = el("div", "sub-tabs"), panel = el("div", "panel");
   const T = [["inst", "الدفعات", p.contracts.reduce((t, k) => t + k.inst.length, 0)], ["exp", "المصروف", p.exp.length], ["subs", "مقاولو الباطن", p.subs.length], ["docs", "المستندات", (p.docs || []).length], ["notes", "ملاحظات التدقيق"]];
-  for (const [k, t, n] of T) { const b = el("button", "", t + (n !== undefined ? " (" + n + ")" : "")); b.type = "button"; b.setAttribute("aria-current", String(recTab === k)); b.onclick = () => { recTab = k; draw(); }; st.append(b); if (recTab === k) requestAnimationFrame(() => b.scrollIntoView({ block: "nearest", inline: "nearest" })); }
+  for (const [k, t, n] of T) { const b = el("button", "", t + (n !== undefined ? " (" + n + ")" : "")); b.type = "button"; b.setAttribute("aria-current", String(recTab === k)); b.onclick = () => { recTab = k; draw(); }; st.append(b); }
   m.append(st, panel);
   if (recTab === "inst") {
     if (!p.contracts.length) panel.append(el("div", "empty", "لا يوجد عقد مسجّل"));
@@ -934,7 +983,7 @@ function record(m) {
     const dd = (iso, n) => { const d = new Date(iso + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.getUTCDate() + "/" + (d.getUTCMonth() + 1) + "/" + d.getUTCFullYear(); };
     for (const k of p.contracts) {
       const c = el("div", "box kbox"); const h = el("div", "kh"); h.append(el("b", "", k.name));
-      if (k.date) h.append(el("span", "small muted", "تاريخ العقد " + k.date.split("-").reverse().join("/")));
+      if (k.date) h.append(el("span", "small muted", "تاريخ العقد " + k.date));
       const ki = k.lump ? null : kIdx++;
       if (ed && ki !== null) { const eb = el("span", "ebar2"); eb.append(ebtn("تعديل العقد", () => editContract(p, ki)), ebtn("+ دفعة", () => editInst(p, ki, null))); h.append(eb); }
       c.append(h);
@@ -976,7 +1025,7 @@ function record(m) {
     const g = el("div", "grid fam-acc");
     for (const s of p.subs) {
       const c = el("div", "card" + (s.owing > 0.5 ? " warn" : "")); c.append(el("div", "t", s.sub + (s.trade ? " · " + s.trade : "")));
-      const kv = el("div", "kv"); for (const [l, v] of [["قيمة الاتفاقية", fmt(s.total)], ["المنفّذ", fmt(s.exec) + " (" + pct(s.pct) + ")"], ["المصروف له", fmt(s.paid)], ["المتبقي له الآن", s.owing > 0.5 ? fmt(s.owing) : "—"]]) kv.append(el("span", "", l), el("b", "", v));
+      const kv = el("div", "kv"); for (const [l, v] of [["قيمة الاتفاقية", fmt(s.total)], ["المنفّذ", s.exec > 0 ? fmt(s.exec) + " (" + pct(s.pct) + ")" : "لا مستخلص بعد"], ["المصروف له", fmt(s.paid)], ["المتبقي له الآن", s.owing > 0.5 ? fmt(s.owing) : "—"]]) kv.append(el("span", "", l), el("b", "", v));
       c.append(kv); g.append(c);
     }
     if (p.subs.length) panel.append(g);
@@ -993,7 +1042,8 @@ function record(m) {
 // payment vouchers (PV) and receipt vouchers (RV). PDFs open through POST op "doc" (a short-lived link, money roles only).
 const DOCK = { PO: ["أمر شراء", "أوامر الشراء", "eng"], GRN: ["محضر استلام", "الاستلام", "eng"], INV: ["فاتورة مورد", "الفواتير", ""], PV: ["سند صرف", "سندات الصرف", "warn"], RV: ["سند قبض", "سندات القبض", "ok"] };
 let docF = "all";
-const fmt2 = (v) => (+v || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " " + SAR;
+// documents keep their halalas, but a whole amount is written like everywhere else on the page
+const fmt2 = (v) => unknown(v) ? "—" : Number.isInteger(Math.round(+v * 100) / 100) ? fmt(+v) : (+v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " " + SAR;
 // document numbers (PO-S-25-003-01 …) inside Arabic text stay one left-to-right unit and never break mid-number
 function refText(v) {
   const b = el("b");
@@ -1034,7 +1084,7 @@ function docsTab(p, panel) {
     const kv = el("div", "kv");
     for (const [l, v] of [[d.k === "RV" ? "من" : "المورد", d.party], ["المبلغ", d.amount !== undefined ? fmt2(d.amount) : ""], ["البيان", d.note]]) if (v) kv.append(el("span", "", l), refText(v));
     c.append(kv);
-    if (d.open) { const b = el("button", "sbtn", "فتح PDF"); if (d.k === "INV") b.textContent = "فتح الفاتورة"; b.type = "button"; b.onclick = () => openDoc(d, b); c.append(b); }
+    if (d.open) { const b = el("button", "sbtn", "فتح PDF"); if (d.k === "INV") b.textContent = "فتح الفاتورة"; b.setAttribute("aria-label", b.textContent + " " + d.no); b.type = "button"; b.onclick = () => openDoc(d, b); c.append(b); }
     else c.append(el("div", "small muted", "الملف غير محفوظ (صدر قبل حفظ المستندات)"));
     g.append(c);
   }
@@ -1049,7 +1099,7 @@ async function load(keep) {
     if (!r.ok) return fail(r.status === 401 ? "انتهت صلاحية الرابط" : r.status === 403 ? "غير مصرح" : "تعذّر التحميل", j.error || "حاول مرة أخرى بعد قليل.");
     D = j;
     $("who").textContent = D.name; $("roles").textContent = D.roles.join(" · ") + " · آخر تحديث " + new Date(D.at).toLocaleTimeString("ar-SA-u-nu-latn", { hour: "2-digit", minute: "2-digit" });
-    const mo = $("mode"); mo.hidden = false; mo.replaceChildren(el("span", "bl", "الوضع: "), document.createTextNode(D.mode)); // phones show the mode alone mo.className = "badge" + (D.mode === "فعلي" ? " ok" : D.mode === "إيقاف آمن" ? " bad" : "");
+    const mo = $("mode"); mo.hidden = false; mo.replaceChildren(el("span", "bl", "الوضع: "), document.createTextNode(D.mode)); mo.className = "badge" + (D.mode === "فعلي" ? " ok" : D.mode === "إيقاف آمن" ? " bad" : "");
     $("reload").hidden = false;
     if (!keep) view = "home";
     draw();
@@ -1088,7 +1138,7 @@ function openForm(e, r) {
   const get = {}; let group = "";
   for (const f of e.fields) {
     if (f.group && f.group !== group) { group = f.group; body.append(el("div", "fg", group)); }
-    const box = el("div", "f"), lab = el("label", "", f.label + (f.required ? " *" : "")); box.append(lab);
+    const box = el("div", "f"), lab = el("label", "", sym(f.label) + (f.required ? " *" : "")); box.append(lab);
     const v = data[f.key];
     if (f.type === "text" || f.type === "phone" || f.type === "number") {
       const i = input(f.type === "phone" ? "tel" : "text", v);
