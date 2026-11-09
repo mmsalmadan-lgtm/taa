@@ -124,6 +124,10 @@ button.card{cursor:pointer}button.card:hover{border-color:var(--ui-2)}
 @media (max-width:520px){.wc{grid-template-columns:44px minmax(0,1fr);grid-template-rows:160px auto}}
 main.full{max-width:none;padding:0;gap:0}main.full~footer{display:none}
 iframe.audit{display:block;width:100%;height:calc(100dvh - 110px);border:0;background:var(--bg)}
+.kbox{display:flex;flex-direction:column;gap:6px}.kh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}.kh b{color:var(--ui);font-size:15px}
+.kgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}.kgrid>div{display:flex;flex-direction:column;background:var(--sunk,#F3F3F3);border-radius:6px;padding:8px 10px}
+.kgrid span{font-size:12px;color:var(--muted)}.kgrid b{font-size:16px;font-weight:700}.kgrid small{font-size:11.5px;color:var(--muted)}
+.knote{white-space:pre-wrap;font-size:13px;background:var(--warn1);border-radius:6px;padding:8px 10px;color:var(--ink)}
 .waiting{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .waiting b{font-size:14px;font-weight:600}
 .wchip{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--field);background:var(--surface);color:var(--ink);border-radius:4px;padding:4px 6px 4px 12px;font-size:13px}
@@ -637,19 +641,32 @@ function record(m) {
   m.append(st, panel);
   if (recTab === "inst") {
     if (!p.contracts.length) panel.append(el("div", "empty", "لا يوجد عقد مسجّل"));
+    const dd = (iso, n) => { const d = new Date(iso + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.getUTCDate() + "/" + (d.getUTCMonth() + 1) + "/" + d.getUTCFullYear(); };
     for (const k of p.contracts) {
-      const c = el("div", "box"); c.append(el("div", "t", k.name)); c.firstChild.style.cssText = "font-weight:600;color:var(--ui)";
-      const kv = el("div", "kv"); kv.append(el("span", "", "قيمة العقد"), el("b", "", fmt(k.value))); if (k.date) kv.append(el("span", "", "التاريخ"), el("b", "", k.date));
-      if (k.inst.length) kv.append(el("span", "", "المحصّل"), el("b", "", fmt(k.got)));
-      kv.querySelectorAll("b").forEach((b) => (b.style.color = "var(--acc9)")); c.append(kv);
-      if (k.inst.length) { const bar = el("div", "bar"); bar.style.margin = "8px 0 4px"; const i = el("i"); i.style.width = Math.min(100, k.value ? (k.got / k.value) * 100 : 0) + "%"; bar.append(i); c.append(bar); }
-      for (const i of k.inst) {
-        const r = el("div", "inst"); r.append(el("div", "", i.name), el("div", "a", fmt(i.amt)));
-        const left = i.amt - i.got;
-        r.append(i.st === "محصّلة" ? el("span", "pill ok", "محصّلة") : i.st === "محصّلة جزئيًا" ? el("span", "pill " + (i.due ? "warn" : ""), "جزئية — باقي " + fmt(left)) : i.due ? el("span", "pill bad", "مستحقة") : el("span", "pill", "لم تستحق"));
-        c.append(r);
-      }
-      if (!k.inst.length) c.append(el("div", "muted small", "مسجّل بدون جدول دفعات"));
+      const c = el("div", "box kbox"); const h = el("div", "kh"); h.append(el("b", "", k.name));
+      if (k.date) h.append(el("span", "small muted", "تاريخ العقد " + k.date.split("-").reverse().join("/")));
+      c.append(h);
+      const left = Math.max(0, k.value - k.got), dueK = k.inst.filter((i) => i.due).reduce((t, i) => t + Math.max(0, i.amt - i.got), 0);
+      const kv = el("div", "kgrid");
+      const cell = (l, v, cls, sub) => { const d = el("div"); d.append(el("span", "", l), el("b", cls || "", v)); if (sub) d.append(el("small", "", sub)); kv.append(d); };
+      cell("قيمة العقد", fmt(k.value), "rcv");
+      cell("المحصّل", fmt(k.got), "rcv", k.value ? pct(k.got / k.value) : "");
+      cell("الباقي", fmt(left), "");
+      if (dueK > 0.5) cell("مستحق الآن", fmt(dueK), "wv");
+      if (k.dur) cell("مدة التنفيذ", k.dur + " يوم", "", k.date ? "تنتهي " + dd(k.date, k.dur) : "");
+      c.append(kv);
+      const bar = el("div", "bar"); bar.style.margin = "8px 0 4px"; const bi = el("i"); bi.style.width = Math.min(100, k.value ? (k.got / k.value) * 100 : 0) + "%"; bar.append(bi); c.append(bar);
+      if (k.inst.length) {
+        const nOk = k.inst.filter((i) => i.st === "محصّلة").length;
+        c.append(el("div", "small muted", "جدول الدفعات: " + k.inst.length + " دفعة · محصّلة " + nOk + (dueK > 0.5 ? " · مستحقة " + k.inst.filter((i) => i.due && i.amt - i.got > 0.5).length : "")));
+        for (const i of k.inst) {
+          const r = el("div", "inst"); r.append(el("div", "", i.name), el("div", "a", fmt(i.amt)));
+          const l2 = i.amt - i.got;
+          r.append(i.st === "محصّلة" ? el("span", "pill ok", "محصّلة") : i.st === "محصّلة جزئيًا" ? el("span", "pill " + (i.due ? "warn" : ""), "جزئية — باقي " + fmt(l2)) : i.due ? el("span", "pill bad", "مستحقة") : el("span", "pill", "لم تستحق"));
+          c.append(r);
+        }
+      } else c.append(el("div", "small muted", "مسجّل بدون جدول دفعات (المحصّل رقم إجمالي). لإضافة جدول الدفعات: «إدخال التدقيق» ← المشاريع."));
+      if (k.note) c.append(el("div", "knote", k.note));
       panel.append(c);
     }
   } else if (recTab === "exp") {
