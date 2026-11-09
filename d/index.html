@@ -29,7 +29,7 @@
 *{box-sizing:border-box}[hidden]{display:none!important}
 :focus-visible{outline:2px solid var(--ui);outline-offset:2px}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
-@media (pointer:coarse){.pbtn,.qa summary,.sbtn,.ibtn,.ebtn,.wchip,.chip,.sub-tabs button{min-height:44px}.lnk{min-height:44px;display:inline-flex;align-items:center}}
+@media (pointer:coarse){.f input,.f select,.pbtn,.qa summary,.sbtn,.ibtn,.ebtn,.wchip,.chip,.sub-tabs button{min-height:44px}.lnk,a.wa{min-height:44px;display:inline-flex;align-items:center}}
 html,body{overflow-x:hidden}body{margin:0;background:var(--bg);color:var(--ink);font-family:"SAR","IBM Plex Sans Arabic","Segoe UI",Tahoma,system-ui,sans-serif;font-size:14px;line-height:1.55}
 button{font:inherit;cursor:pointer}
 .wrapx{max-width:1400px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
@@ -132,7 +132,7 @@ button.card{cursor:pointer}button.card:hover{border-color:var(--ui-2)}
 .sc .hd .tg{margin-inline-start:auto;font-size:12px;color:var(--ui);font-weight:600}.sc[open] .hd .tg::after{content:" ▴"}.sc:not([open]) .hd .tg::after{content:" ▾"}
 .sc .nums{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .sc .nums div{background:var(--sunk);border-radius:6px;padding:7px 8px;min-width:0}.sc .nums small{display:block;font-size:11.5px;color:var(--muted)}
-.sc .nums b{font-size:14px;white-space:nowrap}.sc .nums .neg{color:var(--crit)}.sc .nums .pos{color:var(--acc9)}
+.sc .nums b{font-size:14px;white-space:nowrap}.sc .nums .pos{color:var(--acc9)}
 .sc .al{display:flex;flex-direction:column;align-items:stretch;gap:5px}.sc .al p{text-align:right}
 .sc .al p{margin:0;font-size:12.5px;padding:5px 9px;border-radius:5px;background:var(--sunk);color:var(--ink)}
 .sc .al p.bad{background:var(--crit1);color:var(--crit)}.sc .al p.warn{background:var(--warn1);color:var(--warn)}
@@ -143,7 +143,7 @@ button.card{cursor:pointer}button.card:hover{border-color:var(--ui-2)}
 .sp .bar.over i{background:var(--crit)}
 .sp .ln{font-size:12.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 12px}.sp .ln b{color:var(--ink);font-weight:600}
 .sp.oth .pn{color:var(--warn)}
-.sc .src{font-size:11.5px;color:var(--muted);margin-top:8px}
+.sc .src{font-size:12.5px;color:var(--muted);margin-top:8px}
 @media (max-width:560px){.sc .nums{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
 .skel{height:110px;border-radius:8px;background:linear-gradient(90deg,var(--line),var(--surface),var(--line))}
 .back{align-self:flex-start;border:0;background:none;color:var(--ui);font:inherit;font-size:14px;font-weight:600;padding:10px 0;min-height:44px;cursor:pointer}
@@ -489,7 +489,8 @@ function subCards(m) {
     n("الاتفاقيات", fmt(c.agreed)); n("الأعمال المثبتة", kf(c.work)); n("المصروف له", kf(c.paid));
     n(!known ? "مستحق له" : c.balance > 1 ? "دفعة مقدمة" : c.balance < -1 ? "مستحق له" : "الفرق", kf(Math.abs(c.balance)), known && c.balance < -1 ? "pos" : "");
     su.append(hd, nums);
-    const issues = [...c.alerts, ...c.projects.flatMap((p) => p.alerts.filter((a) => a.tone === "bad").map((a) => ({ ...a, t: p.name.split(" - ")[0] + ": " + a.t })))];
+    const badP = c.projects.filter((p) => p.alerts.some((a) => a.tone === "bad")).length;
+    const issues = [...c.alerts, ...(badP ? [{ tone: "bad", t: (badP === 1 ? "مشروع فيه" : badP === 2 ? "مشروعان فيهما" : badP + " مشاريع فيها") + " أعمال أكثر من الاتفاقية — افتح التفاصيل" }] : [])];
     if (issues.length) { const al = el("div", "al"); for (const a of issues) al.append(el("p", a.tone, sym(a.t))); su.append(al); }
     d.append(su);
     const body = el("div", "body");
@@ -1065,8 +1066,9 @@ async function cashBox(m) {
     if (K) { // our own cash book (Qoyod only as a comparison)
       cell("البنوك", fmt(K.bank), "دفترنا", K.bank < 0 ? "neg" : "");
       cell("الصندوق", fmt(K.box), "دفترنا", K.box < 0 ? "neg" : "");
-      cell("العهد المجرودة", fmt(K.custody), K.uncounted ? "لم تُجرد " + fmt(K.uncounted) + " — غير محسوبة" : "كلها مجرودة", K.uncounted ? "wv" : "");
-      cell("النقد اليوم", fmt(K.total), "دفترنا — منذ " + (K.opened || "—"), "pay");
+      const anyCount = (K.accounts || []).some((a) => a.kind === "custody" && a.counted);
+      cell("العهد المجرودة", anyCount ? fmt(K.custody) : "—", K.uncounted ? "لم تُجرد " + fmt(K.uncounted) + " — غير محسوبة" : "كلها مجرودة", K.uncounted ? "wv" : "");
+      cell("النقد اليوم", fmt(K.total), K.uncounted ? "بدون العهد التي لم تُجرد" : "دفترنا — منذ " + (K.opened || "—"), "pay");
     } else if (Q) { // cash = Qoyod's own balances (the bot reads them on every load)
       cell("البنوك", fmt(Q.bank), "من قيود", "");
       cell("الصندوق الرئيسي", fmt(Q.box), "من قيود", Q.box < 0 ? "neg" : "");
@@ -1154,7 +1156,7 @@ function bookBox(box, K) {
       const cb = el("button", "lnk", a.counted ? "جرد جديد" : "جرد العهدة"); cb.type = "button"; cb.onclick = () => countForm(a); st.append(cb);
     } else if (a.kind === "custody") st.append(el("div", "small", "المؤسسة مدينة له"));
     const v = el("td", a.balance < 0 ? "neg" : "", fmt(a.balance));
-    if (a.qoyod !== null && a.qoyod !== undefined) v.append(el("div", "small muted", "قيود: " + fmt(a.qoyod)));
+    if (a.qoyod !== null && a.qoyod !== undefined && Math.abs(a.qoyod - a.balance) >= 1) v.append(el("div", "small muted", "قيود: " + fmt(a.qoyod)));
     tr.append(el("td", "", a.name), st, v); t.append(tr);
   }
   d.append(t); al.append(d);
