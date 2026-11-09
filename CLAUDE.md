@@ -40,6 +40,13 @@ suppliers and settings.finance.
 Salesforce-like cards, 2 per row on a phone · accounting colours (`--acc*`), engineering colours (`--eng*`), alert colours kept
 apart; `CATC` for expense categories · official Saudi riyal symbol (SAR font, U+20C1) for money · no information repeated on a
 card or page · finance things live under المالية, purchases under المشتريات · mobile first (header buttons go under the title).
+- An unknown input is «—» with «لم يُدخل», never «0 ⃁»; a total built on it says so (e.g. «الفائض قبل إضافة النقد» while
+  `AUD.cashDone` is false — the audit counts cash as entered only when it is > 0). Cash on home comes from the audit (`A.cash`),
+  the same figure as the funding page and the forecast.
+- Navigation is in the browser history (`navSync` after every `draw`, `popstate` restores; same URL because the hash is the
+  token): the phone's back gesture goes one step back. An open dialog is its own step (wrapped `showModal`/`close`).
+- Colours on accent surfaces use `--on-acc` (white in light, dark ink in dark mode); inputs use `--field-in` (≥3:1). Touch
+  targets ≥44px on `pointer:coarse`. Run `impeccable detect --json d/index.html` before a PR (side-tab is a sanctioned ignore).
 
 ## How to change and verify (the owner expects Claude to check its own work)
 1. `git fetch && git checkout -B <branch> origin/main` (always from a fresh main — PRs are squash-merged).
