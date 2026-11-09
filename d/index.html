@@ -483,8 +483,10 @@ function subCards(m) {
     const hd = el("div", "hd"); hd.append(el("b", "", c.name), el("span", "", [c.trades.join("، "), c.projects.length ? arN(c.projects.length, "مشروع واحد", "مشروعان", "مشاريع", "مشروعًا") : ""].filter(Boolean).join(" · ")), el("span", "tg", "التفاصيل"));
     const nums = el("div", "nums");
     const n = (label, v, cls) => { const x = el("div"); x.append(el("small", "", label), el("b", cls || "", v)); nums.append(x); };
-    n("الاتفاقيات", fmt(c.agreed)); n("الأعمال المثبتة", fmt(c.work)); n("المصروف له", fmt(c.paid));
-    n(c.balance > 1 ? "دُفع له زيادة" : c.balance < -1 ? "مستحق له" : "الفرق", fmt(Math.abs(c.balance)), c.balance > 1 ? "neg" : c.balance < -1 ? "pos" : "");
+    // Qoyod unreadable → unknown, never 0; paid ahead of the proven work is a normal advance (the alert says when it is not)
+    const known = c.loaded !== false, kf = (v) => (known ? fmt(v) : "—");
+    n("الاتفاقيات", fmt(c.agreed)); n("الأعمال المثبتة", kf(c.work)); n("المصروف له", kf(c.paid));
+    n(!known ? "مستحق له" : c.balance > 1 ? "دفعة مقدمة" : c.balance < -1 ? "مستحق له" : "الفرق", kf(Math.abs(c.balance)), known && c.balance < -1 ? "pos" : "");
     su.append(hd, nums);
     const issues = [...c.alerts, ...c.projects.flatMap((p) => p.alerts.filter((a) => a.tone === "bad").map((a) => ({ ...a, t: p.name.split(" - ")[0] + ": " + a.t })))];
     if (issues.length) { const al = el("div", "al"); for (const a of issues) al.append(el("p", a.tone, sym(a.t))); su.append(al); }
@@ -497,10 +499,10 @@ function subCards(m) {
       fill.style.width = Math.round(pct * 100) + "%"; bar.append(fill); bar.setAttribute("role", "img"); bar.setAttribute("aria-label", "منجز " + Math.round(pct * 100) + "%");
       const ln = el("div", "ln");
       const kv = (k, v) => { const x = el("span"); x.append(document.createTextNode(k + " "), el("b", "", v)); ln.append(x); };
-      kv("وصل:", p.work <= 1 ? "لم تبدأ" : p.stages && p.done >= p.stages ? "اكتملت كل المراحل" : p.exact ? p.stage : "بين «" + p.stage + "» و«" + p.next + "»");
-      kv("المثبت", fmt(p.work) + " من " + fmt(p.value)); kv("الباقي", fmt(p.remaining));
-      if (p.stages) kv("المراحل", p.done + " من " + p.stages);
-      if (p.last) kv("آخر إثبات", p.last);
+      if (c.loaded !== false) kv("وصل:", p.work <= 1 ? "لم تبدأ" : p.stages && p.done >= p.stages ? "اكتملت كل المراحل" : p.exact ? p.stage : "بين «" + p.stage + "» و«" + p.next + "»");
+      if (c.loaded === false) kv("المثبت", "— من " + fmt(p.value)); else { kv("المثبت", fmt(p.work) + " من " + fmt(p.value)); kv("الباقي", fmt(p.remaining)); }
+      if (p.stages && c.loaded !== false) kv("المراحل", p.done + " من " + p.stages);
+      if (p.last && c.loaded !== false) kv("آخر إثبات", p.last);
       row.append(pn, bar, ln);
       if (p.alerts.length) { const al = el("div", "al"); for (const a of p.alerts) al.append(el("p", a.tone, sym(a.t))); row.append(al); }
       body.append(row);
@@ -704,7 +706,7 @@ function home(m) {
   // cash: the audit's own figure (the same one the forecast and the funding page use) — an unknown balance is «—», never 0
   K.push({ label: "الرصيد النقدي اليوم", value: A.cashDone ? fmt(A.cash) : "—", f: "cash", sub: A.over ? "مصاريف ثابتة " + fmt(A.over) + " شهرياً" : "", flag: A.cashDone ? null : ["warn", "لم يُدخل"] });
   const k30 = bk("صُرف آخر 30 يوماً"); if (k30) K.push({ ...k30, f: "out", tone: "" });
-  const ks = bk("مستحق لمقاولي الباطن"); if (ks && parseFloat(String(ks.value).replace(/,/g, "")) > 0) K.push({ ...ks, f: "out" });
+  const ks = bk("مستحق لمقاولي الباطن"); if (ks && (ks.value === "—" || parseFloat(String(ks.value).replace(/,/g, "")) > 0)) K.push({ ...ks, f: "out", flag: ks.value === "—" ? ["warn", ks.sub || "لم يُقرأ"] : null, sub: ks.value === "—" ? "" : ks.sub });
   const kp = bk("مشتريات بانتظار المدير المالي"); if (kp && +kp.value > 0) K.push({ ...kp, f: "out" });
   K.push({ label: "الضريبة المستحقة", value: fmt(A.vat), f: "out", flag: A.vat && !A.vatIn ? ["warn", "تحتاج تأكيد"] : null });
   K.push({ label: "ربح المشاريع المتوقع", value: A.unkN === A.nP && A.nP ? "—" : fmt(A.projProfit), f: "in", sub: A.unkN ? arN(A.unkN, "مشروع واحد غير محسوب", "مشروعان غير محسوبين", "مشاريع غير محسوبة", "مشروعًا غير محسوب") : "", flag: A.estN ? ["warn", "تقديري"] : null });
