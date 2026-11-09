@@ -107,6 +107,16 @@ button.card{cursor:pointer}button.card:hover{border-color:var(--ui-2)}
 .msg{max-width:520px;margin:60px auto;text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:28px 20px}
 .msg h1{font-size:20px;margin:0 0 8px}.muted{color:var(--muted)}.small{font-size:13px}
 .login{display:inline-block;margin:14px 0 6px;background:#1F7A4D;color:#fff;text-decoration:none;font-weight:700;font-size:16px;padding:12px 22px;border-radius:6px}
+/* sign-in: phone + PIN, activation code the first time */
+.auth{max-width:400px;margin:40px auto;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:24px 20px}
+.auth h1{font-size:20px;margin:0 0 4px}.auth .lead{margin:0 0 18px}
+.auth .f input,.dlg .f input[type=password]{width:100%;font:inherit;font-size:17px;padding:11px 12px;border:1px solid var(--field-in);border-radius:4px;background:var(--surface);color:var(--ink);direction:ltr;text-align:right;letter-spacing:.06em}
+.auth .pbtn{width:100%;min-height:46px;font-size:16px;margin-top:4px}
+.auth .alt{display:block;width:100%;margin-top:14px;background:none;border:0;color:var(--ui);font:inherit;font-weight:600;font-size:14px;min-height:44px;cursor:pointer}
+.auth .wa{display:block;text-align:center;margin-top:6px;color:var(--muted);font-size:13px}
+.code{direction:ltr;font-size:30px;font-weight:700;letter-spacing:.12em;text-align:center;background:var(--sunk);border-radius:6px;padding:14px 8px;margin:10px 0;user-select:all}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.gh-a{display:flex;gap:8px}.gh-a:empty{display:none}
 .skel{height:110px;border-radius:8px;background:linear-gradient(90deg,var(--line),var(--surface),var(--line))}
 .back{align-self:flex-start;border:0;background:none;color:var(--ui);font:inherit;font-size:14px;font-weight:600;padding:10px 0;min-height:44px;cursor:pointer}
 .fcbox{display:flex;flex-direction:column;gap:6px}.fch2{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}.fch2>b:first-child{font-size:15px}
@@ -191,6 +201,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
  .pill{font-size:11px;padding:2px 7px}.kpi{padding:10px 12px}.kpi .v{font-size:16px}
  .ebar{grid-template-columns:90px minmax(0,1fr) auto}
  .gh .badge{font-size:11.5px;padding:2px 7px}.gh .badge .bl{display:none}
+ .gh .wrapx{flex-wrap:wrap;row-gap:6px;padding-top:6px;padding-bottom:8px}.gh-a{flex-basis:100%}
 }
 </style>
 </head>
@@ -199,16 +210,20 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   <div class="logo" aria-hidden="true">ط</div>
   <div class="gh-t"><b id="who">لوحة المتابعة</b><span id="roles">مؤسسة طاء الرائدة للمقاولات العامة</span></div>
   <span class="badge" id="mode" hidden></span>
-  <button type="button" class="ibtn" id="reload" hidden>تحديث</button>
+  <div class="gh-a"><button type="button" class="ibtn" id="reload" hidden>تحديث</button><button type="button" class="ibtn" id="pinBtn" hidden>تغيير الرمز السري</button><button type="button" class="ibtn" id="outBtn" hidden>خروج</button></div>
 </div></header>
 <nav class="tabs" id="tabs" hidden aria-label="الأقسام"><div class="wrapx" id="tabRow"></div></nav>
 <main class="wrapx" id="main"><div class="skel"></div><div class="skel"></div></main>
 <dialog id="dlg"><div class="dlg" id="dlgBody"></div></dialog>
-<footer>الاعتماد والرفض والصرف من البوت في واتساب. تعديل الأشخاص والمشاريع والعقود وبيانات الدفع يُنفَّذ بعد ضغط «تأكيد» في واتساب. الرابط شخصي، لا تحوّله لأحد.</footer>
+<footer>الاعتماد والرفض والصرف من البوت في واتساب. تعديل الأشخاص والمشاريع والعقود وبيانات الدفع يُنفَّذ بعد ضغط «تأكيد» في واتساب. رمزك السري لك وحدك، لا تعطه لأحد.</footer>
 <script>
 const API = "https://zkbwrgulnsycqqfbwkee.supabase.co/functions/v1/bird-webhook/dash";
 const BOT = "966551313729";
-const token = decodeURIComponent((location.hash || "").slice(1));
+// who is signed in: the bot's WhatsApp link (#token, 12 h) or a PIN sign-in kept on this device for its 7 days
+const TK = "taa.dash.session";
+const store = { get() { try { const x = JSON.parse(localStorage.getItem(TK) || "null"); return x && x.token && Date.parse(x.exp) > Date.now() ? x : null; } catch { return null; } },
+  set(x) { try { localStorage.setItem(TK, JSON.stringify(x)); } catch {} }, clear() { try { localStorage.removeItem(TK); } catch {} } };
+let token = decodeURIComponent((location.hash || "").slice(1)) || (store.get() || {}).token || "";
 const $ = (id) => document.getElementById(id);
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined && text !== null) e.textContent = text; return e; };
 const SAR = "\u20C1";
@@ -241,9 +256,90 @@ function fail(title, text) {
   $("tabs").hidden = true;
   const m = $("main"); m.replaceChildren();
   const box = el("div", "msg"); box.append(el("h1", "", title), el("p", "muted", text));
-  const a = el("a", "login", "تسجيل الدخول عبر واتساب"); a.href = "https://wa.me/" + BOT + "?text=" + encodeURIComponent("لوحة المتابعة");
-  box.append(a, el("p", "muted small", "يفتح واتساب برسالة «لوحة المتابعة» جاهزة — أرسلها، ويرد عليك البوت برابط لوحتك (صالح 12 ساعة). من الكمبيوتر: استخدم واتساب ويب."));
-  m.append(box);
+  const b = el("button", "pbtn", "تسجيل الدخول"); b.type = "button"; b.onclick = () => signIn();
+  box.append(b); m.append(box);
+}
+// ---- sign-in: phone + PIN; the first time phone + activation code + a PIN of your own ----
+const clearHash = () => { if (location.hash) history.replaceState(history.state, "", location.pathname + location.search); };
+function signedOut() {
+  token = ""; store.clear(); clearHash(); D = null; REG = null; AUTHL = null;
+  for (const id of ["reload", "pinBtn", "outBtn", "mode"]) $(id).hidden = true;
+  $("who").textContent = "لوحة المتابعة"; $("roles").textContent = "مؤسسة طاء الرائدة للمقاولات العامة";
+}
+function field(label, type, ac, hint) {
+  const box = el("div", "f"), id = "f" + Math.random().toString(36).slice(2, 8), lab = el("label", "", label), i = el("input");
+  i.type = type; i.id = id; lab.htmlFor = id; i.autocomplete = ac; i.dir = "ltr";
+  if (type !== "tel") i.inputMode = "numeric";
+  box.append(lab, i); if (hint) box.append(el("div", "hint", hint)); return { box, i };
+}
+async function call(body) {
+  const r = await fetch(API, { method: "POST", headers: { "content-type": "application/json", ...(token ? { "x-form-token": token } : {}) }, body: JSON.stringify(body) });
+  return { status: r.status, j: await r.json().catch(() => ({})) };
+}
+function remember(j) { token = j.token; store.set({ token: j.token, exp: j.exp, name: j.name }); clearHash(); }
+function signIn(mode, msg) {
+  signedOut(); $("tabs").hidden = true;
+  const m = $("main"); m.replaceChildren();
+  const first = mode === "activate";
+  const box = el("form", "auth"); box.noValidate = true;
+  box.append(el("h1", "", first ? "تفعيل الدخول" : "تسجيل الدخول"),
+    el("p", "muted small lead", first ? "اكتب رقم جوالك ورمز التفعيل الذي أعطتك إياه الإدارة، ثم اختر رمزك السري." : "لموظفي مؤسسة طاء الرائدة للمقاولات العامة. ادخل برقم جوالك المسجل ورمزك السري."));
+  const phone = field("رقم الجوال", "tel", "tel", "مثال: 05xxxxxxxx");
+  const code = first ? field("رمز التفعيل (10 أرقام)", "text", "one-time-code") : null;
+  const pin = field(first ? "رمزك السري الجديد" : "الرمز السري", "password", first ? "new-password" : "current-password", first ? "من 6 إلى 12 رقماً، لا رقماً مكرراً ولا أرقاماً متتالية" : "");
+  const pin2 = first ? field("أعد كتابة الرمز السري", "password", "new-password") : null;
+  for (const x of [phone, code, pin, pin2]) if (x) box.append(x.box);
+  const res = el("div", "res" + (msg ? " ok" : "")); res.setAttribute("role", "status"); if (msg) res.textContent = msg;
+  const go = el("button", "pbtn", first ? "تفعيل ودخول" : "دخول"); go.type = "submit";
+  const alt = el("button", "alt", first ? "عندي رمز سري — تسجيل الدخول" : "أول مرة؟ عندي رمز تفعيل"); alt.type = "button"; alt.onclick = () => signIn(first ? "" : "activate");
+  const wa = el("a", "wa", "أو اطلب رابط الدخول من البوت في واتساب"); wa.href = "https://wa.me/" + BOT + "?text=" + encodeURIComponent("لوحة المتابعة");
+  box.append(res, go, alt, wa);
+  box.onsubmit = async (ev) => {
+    ev.preventDefault(); res.className = "res"; res.textContent = "";
+    const bad = (t, at) => { res.className = "res bad"; res.textContent = t; if (at) at.focus(); };
+    if (!phone.i.value.trim()) return bad("اكتب رقم جوالك", phone.i);
+    if (first && !code.i.value.trim()) return bad("اكتب رمز التفعيل", code.i);
+    if (!pin.i.value) return bad("اكتب الرمز السري", pin.i);
+    if (first && pin.i.value !== pin2.i.value) return bad("الرمزان غير متطابقين", pin2.i);
+    go.disabled = true; go.textContent = "جارٍ التحقق…";
+    try {
+      const { status, j } = await call(first ? { op: "activate", phone: phone.i.value, code: code.i.value, pin: pin.i.value } : { op: "login", phone: phone.i.value, pin: pin.i.value });
+      if (status === 200 && j.token) { remember(j); return boot(); }
+      bad(j.error || "تعذّر الدخول — حاول مرة أخرى");
+    } catch { bad("تعذّر الاتصال — تحقق من الإنترنت"); }
+    go.disabled = false; go.textContent = first ? "تفعيل ودخول" : "دخول";
+  };
+  m.append(box); phone.i.focus();
+}
+// change (or set the first) PIN; the other devices are signed out, this one gets a fresh 7-day session
+function pinDialog() {
+  const body = $("dlgBody"); body.replaceChildren(el("h3", "", "تغيير الرمز السري"));
+  const old = field("الرمز السري الحالي", "password", "current-password", "اتركه فارغاً إن لم يكن لك رمز سري بعد (دخلت برابط واتساب)");
+  const n1 = field("الرمز السري الجديد", "password", "new-password", "من 6 إلى 12 رقماً");
+  const n2 = field("أعد كتابة الرمز الجديد", "password", "new-password");
+  const res = el("div", "res"); res.setAttribute("role", "status");
+  const bar = el("div", "dbar"), save = el("button", "pbtn", "حفظ"), all = el("button", "sbtn", "خروج من كل الأجهزة"), close = el("button", "sbtn", "إغلاق");
+  save.type = all.type = close.type = "button"; bar.append(save, all, close);
+  body.append(old.box, n1.box, n2.box, res, bar);
+  close.onclick = () => $("dlg").close();
+  save.onclick = async () => {
+    res.className = "res";
+    if (n1.i.value !== n2.i.value) { res.className = "res bad"; res.textContent = "الرمزان غير متطابقين"; return; }
+    save.disabled = true;
+    try {
+      const { status, j } = await call({ op: "pin", old: old.i.value, pin: n1.i.value });
+      if (status === 200 && j.token) { remember(j); res.className = "res ok"; res.textContent = j.msg || "تم ✅"; setTimeout(() => $("dlg").close(), 1200); }
+      else { res.className = "res bad"; res.textContent = j.error || "تعذّر الحفظ"; }
+    } catch { res.className = "res bad"; res.textContent = "تعذّر الاتصال"; }
+    save.disabled = false;
+  };
+  all.onclick = async () => {
+    all.disabled = true;
+    const { status, j } = await call({ op: "revoke" }).catch(() => ({ status: 0, j: {} }));
+    if (status === 200) { $("dlg").close(); signIn("", "خرجت من كل الأجهزة. سجّل الدخول من جديد."); }
+    else { res.className = "res bad"; res.textContent = j.error || "تعذّر الاتصال"; all.disabled = false; }
+  };
+  $("dlg").showModal();
 }
 function pill(c, label) { const t = txt(c); return el("span", "pill " + ((c && c.tone) || ""), label && /\d/.test(t) ? label + ": " + t : t); }
 const txt = (c) => sar(c && typeof c === "object" ? c.t : c == null ? "" : String(c));
@@ -1092,15 +1188,16 @@ function docsTab(p, panel) {
 }
 
 async function load(keep) {
-  if (!token) return fail("لوحة المتابعة", "لموظفي مؤسسة طاء الرائدة للمقاولات العامة. الدخول برقم جوالك المسجل في النظام.");
+  if (!token) return signIn();
   try {
     const r = await fetch(API, { headers: { "x-form-token": token } });
     const j = await r.json().catch(() => ({}));
-    if (!r.ok) return fail(r.status === 401 ? "انتهت صلاحية الرابط" : r.status === 403 ? "غير مصرح" : "تعذّر التحميل", j.error || "حاول مرة أخرى بعد قليل.");
+    if (r.status === 401) return signIn("", j.error || "انتهت الجلسة — سجّل الدخول من جديد");
+    if (!r.ok) return fail(r.status === 403 ? "غير مصرح" : "تعذّر التحميل", j.error || "حاول مرة أخرى بعد قليل.");
     D = j;
     $("who").textContent = D.name; $("roles").textContent = D.roles.join(" · ") + " · آخر تحديث " + new Date(D.at).toLocaleTimeString("ar-SA-u-nu-latn", { hour: "2-digit", minute: "2-digit" });
     const mo = $("mode"); mo.hidden = false; mo.replaceChildren(el("span", "bl", "الوضع: "), document.createTextNode(D.mode)); mo.className = "badge" + (D.mode === "فعلي" ? " ok" : D.mode === "إيقاف آمن" ? " bad" : "");
-    $("reload").hidden = false;
+    $("reload").hidden = $("pinBtn").hidden = $("outBtn").hidden = false;
     if (!keep) view = "home";
     draw();
     if (!keep || !AUD) refreshAud();
@@ -1112,7 +1209,59 @@ async function api(body) {
   const r = await fetch(API, { method: "POST", headers: { "x-form-token": token, "content-type": "application/json" }, body: JSON.stringify(body) });
   return { status: r.status, j: await r.json().catch(() => ({})) };
 }
-async function loadReg() { const { status, j } = await api({ op: "reg" }); REG = status === 200 ? j.ents : []; }
+async function loadReg() {
+  const { status, j } = await api({ op: "reg" }); REG = status === 200 ? j.ents : [];
+  // the sign-in list is for admins only (the server checks it too)
+  const a = D && (D.roles || []).includes("الإدارة") ? await api({ op: "authlist" }).catch(() => ({ status: 0 })) : { status: 0 }; AUTHL = a.status === 200 ? a.j.people : null;
+}
+let AUTHL = null;
+const when = (iso) => iso ? new Date(iso).toLocaleString("ar-SA-u-nu-latn", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "—";
+// admin: everyone with a dashboard role — PIN set or not, last sign-in, a pending activation code; issue a code / end sessions
+function renderAccess(m) {
+  if (!AUTHL) return;
+  m.append(secHead("الدخول إلى اللوحة", AUTHL.length, "رمز التفعيل يُعطى للشخص مرة واحدة (مقابلة أو مكالمة) ليختار رمزه السري. لا يُرسل في واتساب ولا يُحفظ."));
+  const g = el("div", "grid");
+  for (const p of AUTHL) {
+    const c = el("div", "card" + (p.pin ? "" : " warn"));
+    c.append(el("div", "t", p.name));
+    const kv = el("div", "kv");
+    kv.append(el("span", "", "الجوال"), el("b", "", p.phone || "—"), el("span", "", "الرمز السري"), el("b", p.pin ? "" : "wv", p.pin ? "مُعيَّن" : "لم يُعيَّن بعد"),
+      el("span", "", "آخر دخول"), el("b", "", when(p.lastLogin)));
+    if (p.code) kv.append(el("span", "", "رمز تفعيل ساري حتى"), el("b", "", when(p.code.exp)));
+    const acts = el("div", "acts"), give = el("button", "sbtn", p.code ? "إصدار رمز جديد" : "إصدار رمز تفعيل"), end = el("button", "sbtn", "إنهاء الجلسات");
+    give.type = end.type = "button"; give.onclick = () => adminDialog(p, "issue"); end.onclick = () => adminDialog(p, "revoke");
+    acts.append(give); if (p.lastLogin) acts.append(end);
+    c.append(kv, acts); g.append(c);
+  }
+  m.append(g);
+}
+// the admin re-enters his own PIN (instead of «تأكيد» in WhatsApp); the code is shown here once
+function adminDialog(p, op) {
+  const body = $("dlgBody"); body.replaceChildren(el("h3", "", (op === "issue" ? "رمز تفعيل — " : "إنهاء جلسات — ") + p.name));
+  const intro = el("p", "muted small", op === "issue" ? "يحل الرمز الجديد محل أي رمز سابق، وهو صالح 72 ساعة لمرة واحدة. للتأكيد اكتب رمزك السري أنت." : "يخرج " + p.name + " من كل الأجهزة. للتأكيد اكتب رمزك السري أنت."); body.append(intro);
+  const mine = field("رمزك السري", "password", "current-password");
+  const res = el("div", "res"); res.setAttribute("role", "status");
+  const bar = el("div", "dbar"), go = el("button", "pbtn", op === "issue" ? "إصدار الرمز" : "إنهاء الجلسات"), close = el("button", "sbtn", "إغلاق");
+  go.type = close.type = "button"; bar.append(go, close); body.append(mine.box, res, bar);
+  close.onclick = () => $("dlg").close();
+  go.onclick = async () => {
+    go.disabled = true; res.className = "res";
+    try {
+      const { status, j } = await call({ op, person: p.id, pin: mine.i.value });
+      if (status === 200 && op === "issue") {
+        mine.box.remove(); go.remove(); intro.remove();
+        body.insertBefore(el("div", "code", j.code.replace(/(\d{5})(\d{5})/, "$1 $2")), res);
+        res.className = "res warn"; res.textContent = "يظهر مرة واحدة فقط. أعطه إلى " + p.name + " مباشرة أو بمكالمة — صالح حتى " + when(j.exp) + ". يفتح taaa.sa/d ثم «أول مرة؟ عندي رمز تفعيل».";
+        loadReg().then(() => { if (view === "data" && !$("dlg").open) drawView(); });
+        return;
+      }
+      if (status === 200) { res.className = "res ok"; res.textContent = j.msg || "تم ✅"; await loadReg(); setTimeout(() => { $("dlg").close(); if (view === "data") draw(); }, 900); return; }
+      res.className = "res bad"; res.textContent = j.error || "تعذّر التنفيذ";
+    } catch { res.className = "res bad"; res.textContent = "تعذّر الاتصال"; }
+    go.disabled = false;
+  };
+  $("dlg").showModal(); mine.i.focus();
+}
 function renderData(m) {
   m.append(page("ب", "البيانات", "كل مسؤول يعدّل قسمه — التعديلات الحساسة تُنفَّذ بعد «تأكيد» في واتساب", "var(--out)"));
   for (const e of REG || []) {
@@ -1129,6 +1278,7 @@ function renderData(m) {
     }
     m.append(g);
   }
+  renderAccess(m);
 }
 function input(type, val) { const i = el("input"); i.type = type; i.value = val ?? ""; return i; }
 function openForm(e, r) {
@@ -1194,8 +1344,11 @@ function openForm(e, r) {
 }
 
 $("reload").addEventListener("click", async () => { if (view === "data") await loadReg(); load(true); });
-load().then(() => token && loadReg().then(() => D && renderTabs())).catch(() => {});
-setInterval(() => { if (document.visibilityState === "visible" && view !== "data" && !$("dlg").open) load(true); }, 120000);
+$("pinBtn").addEventListener("click", pinDialog);
+$("outBtn").addEventListener("click", () => signIn("", "خرجت من اللوحة على هذا الجهاز."));
+function boot() { return load().then(() => token && D && loadReg().then(() => D && renderTabs())).catch(() => {}); }
+boot();
+setInterval(() => { if (token && D && document.visibilityState === "visible" && view !== "data" && !$("dlg").open) load(true); }, 120000);
 </script>
 </body>
 </html>
