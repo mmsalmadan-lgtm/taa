@@ -208,7 +208,7 @@ const TABS = [
   { v: "home", t: "الرئيسية", fam: "var(--ui)" },
   { v: "proj", t: "المشاريع", fam: "var(--acc6)" },
   { v: "money", t: "المالية والمحاسبة", ids: ["receipts", "claims", "custody", "purchases", "subk", "subrec", "certs", "sups"], fam: "var(--acc6)", f: "acc" },
-  { v: "site", t: "الموقع", ids: ["reqs", "pours", "units"], fam: "var(--eng6)", f: "eng" },
+  { v: "site", t: "التنفيذ والجودة", ids: ["quality", "defects", "reqs", "pours", "units"], fam: "var(--eng6)", f: "eng" },
   { v: "sales", t: "المبيعات", ids: ["changes", "leads"], fam: "var(--ui)" },
   { v: "rat", t: "Rent a Tool", ids: ["rat"], fam: "var(--ui)" },
   { v: "sys", t: "النظام", ids: ["health"], fam: "var(--out)" },
@@ -303,6 +303,20 @@ const MTABS = [
   { k: "prof", t: "الربحية", ids: [], prof: true },
 ];
 let MT = "rcv";
+// «التنفيذ والجودة»: quality of the works first, then what the sites need (requests, pours)
+const STABS = [{ k: "q", t: "الجودة", ids: ["quality", "defects"] }, { k: "r", t: "طلبات المواد والمعدات", ids: ["reqs"] }, { k: "p", t: "الصبات", ids: ["pours"] }, { k: "u", t: "بانتظار الاستلام", ids: ["units"] }];
+let ST = "q";
+function siteView(m) {
+  const T = TABS.find((x) => x.v === "site");
+  m.append(page("ت", T.t, "استلام الأعمال بقوائم التحقق، ملاحظات العملاء والضمان، وما تحتاجه المواقع", T.fam));
+  const avail = STABS.filter((x) => x.ids.some((i) => sec(i)));
+  if (!avail.length) return;
+  if (!avail.some((x) => x.k === ST)) ST = avail[0].k;
+  const st = el("div", "sub-tabs mtabs");
+  for (const x of avail) { const b = el("button", "", x.t); b.type = "button"; b.setAttribute("aria-current", String(ST === x.k)); b.onclick = () => { ST = x.k; draw(); }; st.append(b); }
+  m.append(st);
+  for (const id of avail.find((x) => x.k === ST).ids) { const s = sec(id); if (!s) continue; m.append(secHead(s.title, s.table ? s.table.rows.length : undefined, s.note), ...cards(s, "eng")); }
+}
 // المستحق الآن: installments whose stage is reached and not yet collected, per project (from the audit data)
 function dueBlock(m) {
   const L = (D.projects || []).filter((p) => p.x.dueNow > 0.5).sort((a, b) => b.x.dueNow - a.x.dueNow);
@@ -347,6 +361,7 @@ function draw() {
   if (view === "audit") return auditView(m);
   if (view === "more") return morePage(m);
   if (view === "money") return moneyView(m);
+  if (view === "site") return siteView(m);
   if (view === "proj") return rec ? record(m) : projects(m);
   if (view === "data") return renderData(m);
   const T = TABS.find((x) => x.v === view);
@@ -649,13 +664,11 @@ function record(m) {
       const left = Math.max(0, k.value - k.got), dueK = k.inst.filter((i) => i.due).reduce((t, i) => t + Math.max(0, i.amt - i.got), 0);
       const kv = el("div", "kgrid");
       const cell = (l, v, cls, sub) => { const d = el("div"); d.append(el("span", "", l), el("b", cls || "", v)); if (sub) d.append(el("small", "", sub)); kv.append(d); };
-      cell("قيمة العقد", fmt(k.value), "rcv");
-      cell("المحصّل", fmt(k.got), "rcv", k.value ? pct(k.got / k.value) : "");
-      cell("الباقي", fmt(left), "");
-      if (dueK > 0.5) cell("مستحق الآن", fmt(dueK), "wv");
+      const one = p.contracts.length === 1; // the page header already shows the contract's value, collected and due
+      if (!one) { cell("قيمة العقد", fmt(k.value), "rcv"); cell("المحصّل", fmt(k.got), "rcv", k.value ? pct(k.got / k.value) : ""); cell("الباقي", fmt(left), ""); if (dueK > 0.5) cell("مستحق الآن", fmt(dueK), "wv"); }
       if (k.dur) cell("مدة التنفيذ", k.dur + " يوم", "", k.date ? "تنتهي " + dd(k.date, k.dur) : "");
-      c.append(kv);
-      const bar = el("div", "bar"); bar.style.margin = "8px 0 4px"; const bi = el("i"); bi.style.width = Math.min(100, k.value ? (k.got / k.value) * 100 : 0) + "%"; bar.append(bi); c.append(bar);
+      if (kv.children.length) c.append(kv);
+      if (!one) { const bar = el("div", "bar"); bar.style.margin = "8px 0 4px"; const bi = el("i"); bi.style.width = Math.min(100, k.value ? (k.got / k.value) * 100 : 0) + "%"; bar.append(bi); c.append(bar); }
       if (k.inst.length) {
         const nOk = k.inst.filter((i) => i.st === "محصّلة").length;
         c.append(el("div", "small muted", "جدول الدفعات: " + k.inst.length + " دفعة · محصّلة " + nOk + (dueK > 0.5 ? " · مستحقة " + k.inst.filter((i) => i.due && i.amt - i.got > 0.5).length : "")));
@@ -665,7 +678,7 @@ function record(m) {
           r.append(i.st === "محصّلة" ? el("span", "pill ok", "محصّلة") : i.st === "محصّلة جزئيًا" ? el("span", "pill " + (i.due ? "warn" : ""), "جزئية — باقي " + fmt(l2)) : i.due ? el("span", "pill bad", "مستحقة") : el("span", "pill", "لم تستحق"));
           c.append(r);
         }
-      } else c.append(el("div", "small muted", "مسجّل بدون جدول دفعات (المحصّل رقم إجمالي). لإضافة جدول الدفعات: «إدخال التدقيق» ← المشاريع."));
+      } else c.append(el("div", "small muted", "مسجّل بدون جدول دفعات (المحصّل رقم إجمالي" + (one ? " — ظاهر أعلى الصفحة" : "") + "). لإضافة جدول الدفعات: «إدخال التدقيق» ← المشاريع."));
       if (k.note) c.append(el("div", "knote", k.note));
       panel.append(c);
     }
