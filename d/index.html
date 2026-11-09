@@ -212,8 +212,9 @@ const pct = (f) => Math.round((f || 0) * 100) + "%";
 const TABS = [
   { v: "home", t: "الرئيسية", fam: "var(--ui)" },
   { v: "proj", t: "المشاريع", fam: "var(--acc6)" },
-  { v: "money", t: "المالية والمحاسبة", ids: ["receipts", "claims", "custody", "purchases", "subk", "subrec", "certs", "sups"], fam: "var(--acc6)", f: "acc" },
-  { v: "site", t: "التنفيذ والجودة", ids: ["quality", "defects", "reqs", "pours", "units"], fam: "var(--eng6)", f: "eng" },
+  { v: "money", t: "المالية والمحاسبة", ids: ["receipts", "claims", "custody", "subk", "subrec", "certs"], fam: "var(--acc6)", f: "acc" },
+  { v: "buy", t: "المشتريات", ids: ["reqs", "purchases", "sups"], fam: "var(--acc6)", f: "acc" },
+  { v: "site", t: "التنفيذ والجودة", ids: ["quality", "defects", "pours", "units"], fam: "var(--eng6)", f: "eng" },
   { v: "sales", t: "المبيعات", ids: ["changes", "leads"], fam: "var(--ui)" },
   { v: "rat", t: "Rent a Tool", ids: ["rat"], fam: "var(--ui)" },
   { v: "sys", t: "النظام", ids: ["health"], fam: "var(--out)" },
@@ -286,7 +287,7 @@ function page(icon, title, sub, fam) {
 function renderTabs() {
   const row = $("tabRow"); row.replaceChildren();
   for (const T of TABS) {
-    let show = T.v === "home" || (T.v === "proj" ? !!(D.projects && D.projects.length) : T.v === "audit" ? !!D.projects : T.v === "money" ? !!(AUD || MTABS.some((x) => x.ids.some((i) => sec(i)))) : T.v === "data" ? !!(REG && REG.length) : (T.ids || []).some((x) => sec(x)));
+    let show = T.v === "home" || (T.v === "proj" ? !!(D.projects && D.projects.length) : T.v === "audit" ? !!D.projects : T.v === "money" ? !!(AUD || MTABS.some((x) => x.ids.some((i) => sec(i)))) : T.v === "data" ? !!(REG && REG.length) : T.v === "buy" ? canEdit() || T.ids.some((x) => sec(x)) : (T.ids || []).some((x) => sec(x)));
     if (!show) continue;
     const b = el("button", "tab"); b.type = "button"; b.style.setProperty("--fam", T.fam);
     b.append(el("i"), el("span", "", T.t));
@@ -296,21 +297,35 @@ function renderTabs() {
   }
   $("tabs").hidden = false;
 }
-function go(v) { if (v === "subs" || v === "sups") { MT = v; v = "money"; } view = v; rec = null; draw(); window.scrollTo(0, 0); }
+function go(v) { if (v === "subs") { MT = v; v = "money"; } if (v === "sups") { BT = "sups"; v = "buy"; } view = v; rec = null; draw(); window.scrollTo(0, 0); }
 // «المالية والمحاسبة»: one place for everything money — each part in its own sub-tab
 const MTABS = [
   { k: "rcv", t: "التحصيل", ids: ["receipts", "claims"] },
   { k: "cus", t: "عهدات العملاء", ids: ["custody"] },
-  { k: "pur", t: "المشتريات", ids: ["purchases"] },
   { k: "subs", t: "مقاولو الباطن", ids: ["subk", "subrec", "certs"] },
-  { k: "sups", t: "الموردون", ids: ["sups"] },
   { k: "cash", t: "النقد والمصاريف الثابتة", ids: [], cash: true },
   { k: "prof", t: "الربحية", ids: [], prof: true },
 ];
 let MT = "rcv";
 // «التنفيذ والجودة»: quality of the works first, then what the sites need (requests, pours)
-const STABS = [{ k: "q", t: "الجودة", ids: ["quality", "defects"] }, { k: "r", t: "طلبات المواد والمعدات", ids: ["reqs"] }, { k: "p", t: "الصبات", ids: ["pours"] }, { k: "u", t: "بانتظار الاستلام", ids: ["units"] }];
+const STABS = [{ k: "q", t: "الجودة", ids: ["quality", "defects"] }, { k: "p", t: "الصبات", ids: ["pours"] }, { k: "u", t: "بانتظار الاستلام", ids: ["units"] }];
 let ST = "q";
+// «المشتريات»: what the sites asked for, what was bought (and on whose account), and the suppliers with what we owe them
+const BTABS = [{ k: "req", t: "الطلبات المفتوحة", ids: ["reqs"] }, { k: "log", t: "سجل المشتريات", ids: ["purchases"] }, { k: "sups", t: "الموردون", ids: ["sups"], sups: true }];
+let BT = "req";
+function buyView(m) {
+  const T = TABS.find((x) => x.v === "buy");
+  m.append(page("ش", T.t, "طلبات المواقع، وسجل الشراء وعلى حساب مين، والموردون ومستحقاتهم", T.fam));
+  const avail = BTABS.filter((x) => x.ids.some((i) => sec(i)) || (x.sups && canEdit()));
+  if (!avail.length) return;
+  if (!avail.some((x) => x.k === BT)) BT = avail[0].k;
+  const st = el("div", "sub-tabs mtabs");
+  for (const x of avail) { const b = el("button", "", x.t); b.type = "button"; b.setAttribute("aria-current", String(BT === x.k)); b.onclick = () => { BT = x.k; draw(); }; st.append(b); }
+  m.append(st);
+  const cur = avail.find((x) => x.k === BT);
+  if (cur.sups && canEdit()) supsBox(m);
+  for (const id of cur.ids) { const s = sec(id); if (!s) continue; m.append(secHead(s.title, s.table ? s.table.rows.length : undefined, s.note), ...cards(s, "acc")); }
+}
 function siteView(m) {
   const T = TABS.find((x) => x.v === "site");
   m.append(page("ت", T.t, "استلام الأعمال بقوائم التحقق، ملاحظات العملاء والضمان، وما تحتاجه المواقع", T.fam));
@@ -346,7 +361,7 @@ function dueBlock(m) {
 function moneyView(m) {
   const T = TABS.find((x) => x.v === "money");
   m.append(page("م", "المالية والمحاسبة", null, T.fam));
-  const avail = MTABS.filter((x) => (x.prof ? !!AUD : x.cash ? canEdit() : x.ids.some((i) => sec(i)) || (x.k === "sups" && canEdit())));
+  const avail = MTABS.filter((x) => (x.prof ? !!AUD : x.cash ? canEdit() : x.ids.some((i) => sec(i))));
   if (!avail.length) return;
   if (!avail.some((x) => x.k === MT)) MT = avail[0].k;
   const st = el("div", "sub-tabs mtabs");
@@ -355,7 +370,6 @@ function moneyView(m) {
   const cur = avail.find((x) => x.k === MT);
   if (cur.prof) return profitCards(m);
   if (cur.cash) return cashBox(m);
-  if (cur.k === "sups" && canEdit()) supsBox(m);
   if (cur.k === "rcv") dueBlock(m);
   for (const id of cur.ids) { const s = sec(id); if (!s) continue; m.append(secHead(s.title, s.table ? s.table.rows.length : undefined, s.note), ...cards(s, "acc")); }
 }
@@ -367,6 +381,7 @@ function draw() {
   if (view === "more") return morePage(m);
   if (view === "money") return moneyView(m);
   if (view === "site") return siteView(m);
+  if (view === "buy") return buyView(m);
   if (view === "proj") return rec ? record(m) : projects(m);
   if (view === "data") return renderData(m);
   const T = TABS.find((x) => x.v === view);
