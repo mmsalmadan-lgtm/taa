@@ -246,7 +246,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 <nav class="tabs" id="tabs" hidden aria-label="الأقسام"><div class="wrapx" id="tabRow"></div></nav>
 <main class="wrapx" id="main"><div class="skel"></div><div class="skel"></div></main>
 <dialog id="dlg"><div class="dlg" id="dlgBody"></div></dialog>
-<footer>الاعتماد والرفض والصرف من البوت في واتساب. تعديل الأشخاص والمشاريع والعقود وبيانات الدفع يُنفَّذ بعد ضغط «تأكيد» في واتساب. رمزك السري لك وحدك، لا تعطه لأحد.</footer>
+<footer>تسجّل هنا النقد والعهد والاتفاقيات والموردين والأشخاص والمشاريع — التعديل الحساس يُؤكَّد برمزك السري. اعتماد المستخلصات والمشتريات والصرف ما زال من البوت في واتساب. رمزك السري لك وحدك، لا تعطه لأحد.</footer>
 <script>
 const API = "https://zkbwrgulnsycqqfbwkee.supabase.co/functions/v1/bird-webhook/dash";
 const BOT = "966551313729";
@@ -280,7 +280,7 @@ const TABS = [
   { v: "data", t: "البيانات", fam: "var(--out)" },
 ];
 let D = null, REG = null, view = "home", rec = null, recTab = "inst", pf = { kind: "all", q: "" };
-const noteOf = (s) => (REG && REG.length ? s.note : String(s.note || "").replace(/s*تسجيل عهدة جديدة:[^.]*.?/, "")) || undefined;
+const noteOf = (s) => (REG && REG.length ? s.note : String(s.note || "").replace(/\s*تسجيل عهدة جديدة:[^.]*\.?/, "")) || undefined;
 const sec = (id) => D && D.sections.find((s) => s.id === id);
 
 function fail(title, text) {
@@ -460,7 +460,7 @@ let BT = "req";
 function buyView(m) {
   const T = TABS.find((x) => x.v === "buy");
   m.append(page("ش", T.t, "طلبات المواقع، وسجل الشراء وعلى حساب مين، والموردون ومستحقاتهم", T.fam));
-  const avail = BTABS.filter((x) => x.ids.some((i) => sec(i)) || (x.sups && canEdit()));
+  const avail = BTABS.filter((x) => x.ids.some((i) => sec(i)) || (x.sups && (canEdit() || !!regEnt("suppliers"))));
   if (!avail.length) return;
   if (!avail.some((x) => x.k === BT)) BT = avail[0].k;
   const st = el("div", "sub-tabs mtabs");
@@ -468,6 +468,7 @@ function buyView(m) {
   m.append(st);
   const cur = avail.find((x) => x.k === BT);
   if (cur.sups && canEdit()) supsBox(m);
+  if (cur.sups) supDetails(m);
   for (const id of cur.ids) { const s = sec(id); if (!s) continue; m.append(secHead(s.title, s.table ? s.table.rows.length : undefined, noteOf(s)), ...cards(s, "acc")); }
 }
 // one card per subcontractor: his projects inside, where he reached, what he received, and every gap as an alert
@@ -505,12 +506,17 @@ function subCards(m) {
       if (p.last && c.loaded !== false) kv("آخر إثبات", p.last);
       row.append(pn, bar, ln);
       if (p.alerts.length) { const al = el("div", "al"); for (const a of p.alerts) al.append(el("p", a.tone, sym(a.t))); row.append(al); }
+      const ka = el("div", "acts"), op = el("button", "lnk", "فتح المشروع"); op.type = "button"; op.onclick = () => openProjByName(p.name); ka.append(op);
+      const ke = regEnt("contracts"), kr = ke && ke.rows.find((x) => x.id === p.kid);
+      if (kr && kr.edit) { const eb = el("button", "lnk", "تعديل الاتفاقية"); eb.type = "button"; eb.onclick = () => openForm(ke, kr); ka.append(eb); }
+      row.append(ka);
       body.append(row);
     }
     for (const o of c.other) {
       const row = el("div", "sp oth"); row.append(el("div", "pn", o.name));
       const ln = el("div", "ln"), x = el("span"); x.append(document.createTextNode("أعمال مثبتة في قيود "), el("b", "", fmt(o.work))); ln.append(x); row.append(ln);
       const al = el("div", "al"); for (const a of o.alerts) al.append(el("p", a.tone, sym(a.t))); row.append(al);
+      const ab = regBtn("contracts", "+ اتفاقية لهذا المشروع", { sub: c.name, project: o.name }); if (ab) { const ka = el("div", "acts"); ab.className = "lnk"; ka.append(ab); row.append(ka); }
       body.append(row);
     }
     body.append(el("div", "src", c.source === "qoyod" ? "الأعمال والمصروف من حسابه في قيود (" + c.account + ")؛ المصروف مجموع واحد لأن الدفعات في قيود لا تحمل اسم المشروع غالباً." : "من مستخلصات ودفعات البوت — لا حساب قيود مربوط."));
@@ -565,6 +571,7 @@ function moneyView(m) {
   if (cur.cash) return cashBox(m);
   if (cur.k === "rcv") dueBlock(m);
   if (cur.k === "subs" && sec("subcards")) subCards(m);
+  if (cur.k === "cus") { const b = regBtn("custody", "+ إيداع عهدة عميل"); if (b) { const a = el("div", "acts"); a.append(b); m.append(a); } }
   for (const id of cur.ids) { if (id === "subk" && sec("subcards")) continue; const s = sec(id); if (!s) continue; m.append(secHead(s.title, s.table ? s.table.rows.length : undefined, noteOf(s)), ...cards(s, "acc")); }
 }
 
@@ -1025,8 +1032,20 @@ function editSupplier(n) {
       del: o ? { label: "حذف المورد", confirm: "حذف المورد من قائمة المستحقات؟", run: () => S.sups.splice(n, 1) } : null };
   });
 }
+// who the suppliers are (contact, what they supply) — the bot's supplier records, saved directly (no money or access)
+function supDetails(m) {
+  const e = regEnt("suppliers"); if (!e) return;
+  const box = el("div", "box"), h = el("div", "fch2"); h.append(el("b", "", "بيانات الموردين"));
+  const add = regBtn("suppliers", "+ مورد"); if (add) h.append(add); box.append(h);
+  if (!e.rows.length) box.append(el("div", "small muted", "لا يوجد موردون مسجّلون بعد"));
+  for (const r of e.rows) {
+    const b = el("button", "tl"); b.type = "button"; const t = el("span", "tn", r.cells[0]); t.append(el("small", "", [r.cells[1], r.cells[2], r.cells[3]].filter((x) => x && x !== "—").join(" · ")));
+    b.append(t); if (r.edit) b.onclick = () => openForm(e, r); else b.disabled = true; box.append(b);
+  }
+  m.append(box);
+}
 async function supsBox(m) {
-  const box = el("div", "box"); const h = el("div", "fch2"); h.append(el("b", "", "مستحقات الموردين")); h.append(ebtn("+ مورد", () => editSupplier(null)));
+  const box = el("div", "box"); const h = el("div", "fch2"); h.append(el("b", "", "مستحقات الموردين")); h.append(ebtn("+ مستحق مورد", () => editSupplier(null)));
   box.append(h, el("div", "small muted", "اضغط على المورد لتعديل المستحق وموعد السداد"));
   const list = el("div"); list.append(el("div", "small muted", "جارٍ التحميل…")); box.append(list); m.append(box);
   try {
@@ -1570,10 +1589,16 @@ function adminDialog(p, op) {
   };
   $("dlg").showModal(); mine.i.focus();
 }
+// edited where it is shown (owner, 2026-11-10): client custody on its tab, agreements inside the subcontractor cards,
+// suppliers on the suppliers tab. «البيانات» keeps them only for someone who does not see that place (a supervisor has
+// no subcontractor cards, so his agreements stay here).
+const regEnt = (k) => (REG || []).find((e) => e.key === k) || null;
+const shownElsewhere = (k) => (k === "custody" ? !!sec("custody") : k === "contracts" ? !!sec("subcards") : k === "suppliers");
+function regBtn(k, label, prefill) { const e = regEnt(k); if (!e || !e.canAdd) return null; const b = el("button", "sbtn", label); b.type = "button"; b.onclick = () => openForm(e, null, prefill); return b; }
 function renderData(m) {
-  m.append(page("ب", "البيانات", "كل مسؤول يعدّل قسمه — التعديلات الحساسة تُنفَّذ بعد «تأكيد» في واتساب", "var(--out)"));
-  for (const e of REG || []) {
-    const h = secHead(e.title, e.rows.length, e.confirm ? "اضغط على أي بطاقة لتعديلها. الحفظ يرسل لك زر «تأكيد» في واتساب، ولا يُنفَّذ قبله." : "اضغط على أي بطاقة لتعديلها.");
+  m.append(page("ب", "البيانات", "الأشخاص والأدوار والمشاريع — كل تعديل حساس يُؤكَّد برمزك السري", "var(--out)"));
+  for (const e of (REG || []).filter((x) => !shownElsewhere(x.key))) {
+    const h = secHead(e.title, e.rows.length, "اضغط على أي بطاقة لتعديلها." + (e.confirm ? " تراجع التعديل ثم تؤكده برمزك السري." : ""));
     if (e.canAdd) { const b = el("button", "sbtn", "+ إضافة"); b.type = "button"; b.onclick = () => openForm(e, null); h.insertBefore(b, h.querySelector(".note")); }
     m.append(h);
     if (!e.rows.length) { m.append(el("div", "empty", "لا توجد سجلات بعد")); continue; }
@@ -1589,8 +1614,8 @@ function renderData(m) {
   renderAccess(m);
 }
 function input(type, val) { const i = el("input"); i.type = type; i.value = val ?? ""; return i; }
-function openForm(e, r) {
-  const data = r ? JSON.parse(JSON.stringify(r.data)) : {};
+function openForm(e, r, prefill) {
+  const data = r ? JSON.parse(JSON.stringify(r.data)) : { ...(prefill || {}) };
   const body = $("dlgBody"); body.replaceChildren();
   body.append(el("h3", "", (r ? "تعديل — " : "إضافة — ") + e.title));
   const get = {}; let group = "";
@@ -1634,19 +1659,41 @@ function openForm(e, r) {
     body.append(box);
   }
   linkLabels(body);
-  const res = el("div", "res"); res.setAttribute("role", "status"); const bar = el("div", "dbar"), save = el("button", "pbtn", "حفظ"), close = el("button", "sbtn", "إغلاق");
-  save.type = close.type = "button"; bar.append(save, close); body.append(res, bar);
-  close.onclick = () => $("dlg").close();
+  const opId = (Math.random().toString(36).slice(2, 10) + Date.now().toString(36)).slice(0, 20);
+  const rv = el("div", "rvw"); rv.hidden = true; rv.setAttribute("aria-live", "polite");
+  const pin = field("رمزك السري للتأكيد", "password", "current-password", "التعديل لا يُنفَّذ إلا برمزك أنت"); pin.box.hidden = true;
+  const res = el("div", "res"); res.setAttribute("role", "status"); const bar = el("div", "dbar"), save = el("button", "pbtn", e.confirm ? "مراجعة" : "حفظ"), close = el("button", "sbtn", "إغلاق");
+  save.type = close.type = "button"; bar.append(save, close); body.append(rv, pin.box, res, bar);
+  const parts = [...body.querySelectorAll(".f, .fg")].filter((x) => x !== pin.box);
+  let step = "edit", out = {};
+  const toEdit = () => { step = "edit"; rv.hidden = pin.box.hidden = true; parts.forEach((x) => (x.hidden = false)); save.textContent = "مراجعة"; close.textContent = "إغلاق"; res.className = "res"; pin.i.value = ""; };
+  close.onclick = () => (step === "review" ? toEdit() : $("dlg").close());
+  const done = async (j) => { step = "done"; save.remove(); rv.hidden = pin.box.hidden = true; close.textContent = "إغلاق"; close.disabled = false; res.className = "res ok"; res.textContent = j.msg || "تم الحفظ ✅"; close.focus(); await loadReg(); draw(); };
   save.onclick = async () => {
-    const out = {}; for (const k in get) out[k] = get[k]();
-    save.disabled = true; res.className = "res"; res.textContent = "";
+    res.className = "res"; res.textContent = "";
+    if (step === "edit") { out = {}; for (const k in get) out[k] = get[k](); }
+    save.disabled = close.disabled = true;
     try {
-      const { status, j } = await api({ op: "save", ent: e.key, id: r ? r.id : "", data: out });
-      if (status === 200) { res.className = "res ok"; res.textContent = j.msg || "تم الحفظ ✅"; await loadReg(); draw(); setTimeout(() => $("dlg").close(), 900); }
-      else if (status === 202) { res.className = "res warn"; res.textContent = (j.msg || "") + " — افتح واتساب واضغط «تأكيد»."; }
-      else { res.className = "res bad"; res.textContent = j.error || "تعذّر الحفظ"; }
-    } catch { res.className = "res bad"; res.textContent = "تعذّر الاتصال"; }
-    save.disabled = false;
+      if (!e.confirm) { // suppliers: no money or access → saved directly
+        const { status, j } = await api({ op: "save", ent: e.key, id: r ? r.id : "", data: out, opId });
+        if (status === 200) return done(j);
+        res.className = "res bad"; res.textContent = j.error || "تعذّر الحفظ"; return;
+      }
+      if (step === "edit") { // the bot checks it on a throw-away copy and says the change in words; nothing is saved yet
+        const { status, j } = await api({ op: "save", ent: e.key, id: r ? r.id : "", data: out, preview: true });
+        if (status !== 200) { res.className = "res bad"; res.textContent = j.error || "تعذّر التحقق"; return; }
+        rv.replaceChildren(el("b", "", "راجع قبل الحفظ"), ...(j.lines || []).map((t) => el("p", "", sym(t))));
+        parts.forEach((x) => (x.hidden = true)); rv.hidden = pin.box.hidden = false; body.scrollTop = 0;
+        step = "review"; save.textContent = "تأكيد وحفظ"; close.textContent = "رجوع للتعديل"; pin.i.focus(); return;
+      }
+      if (!pin.i.value.trim()) { res.className = "res bad"; res.textContent = "اكتب رمزك السري"; pin.i.focus(); return; }
+      const { status, j } = await api({ op: "save", ent: e.key, id: r ? r.id : "", data: out, pin: pin.i.value, opId });
+      if (status === 200) return done(j);
+      res.className = "res bad"; res.textContent = j.error || "تعذّر الحفظ"; pin.i.value = "";
+      if (j.needPin) { const sp = el("button", "sbtn", "تعيين الرمز السري"); sp.type = "button"; sp.onclick = pinDialog; res.append(document.createTextNode(" "), sp); }
+      else pin.i.focus();
+    } catch { res.className = "res bad"; res.textContent = "تعذّر الاتصال ولا نعرف هل وصل الحفظ — أعد المحاولة: لن يُسجَّل مرتين."; }
+    finally { if (step !== "done") save.disabled = close.disabled = false; }
   };
   $("dlg").showModal();
 }
