@@ -1198,6 +1198,95 @@ async function supLink(h, account) {
   toast(status === 200 ? j.msg : j.error || "تعذّر الحفظ"); if (status === 200) load(true).then(() => draw()).catch(() => {});
 }
 async function editSupByName(name) { try { const S = await edLoad(); const i = (S.sups || []).findIndex((o) => o.name === name); editSupplier(i >= 0 ? i : null); } catch (e) { toast(e.message); } }
+// «كشف حساب المورد»: Kumar asks the supplier from his card (op stmt_req); the supplier answers the bot on WhatsApp; the statement is
+// read and matched with his Qoyod account by the bot, and the card shows the result. The admin may allow the supplier's number
+// during the test (otherwise the owner receives it in his place).
+const isAdmin = () => (D && (D.roles || []).includes("admin"));
+async function stmtReq(h) {
+  const allow = isAdmin() && window.confirm("أثناء التجربة: اسمح لـ«" + h.name + "» باستلام رسائل البوت؟ (إلغاء = تصلك أنت بدلاً منه)");
+  const { status, j } = await api({ op: "stmt_req", pid: h.id, allow }).catch(() => ({ status: 0, j: {} }));
+  toast(status === 200 ? j.msg : j.error || "تعذّر الإرسال"); if (status === 200) load(true).then(() => draw()).catch(() => {});
+}
+function supMsg(h) {
+  const body = $("dlgBody"); body.replaceChildren(el("h3", "", "رسالة إلى " + h.name));
+  const box = el("div", "f"), id = "f" + Math.random().toString(36).slice(2, 8), lab = el("label", "", "الرسالة"), ta = el("textarea");
+  ta.id = id; lab.htmlFor = id; ta.rows = 6; ta.maxLength = 1500; ta.style.width = "100%"; box.append(lab, ta); body.append(box);
+  body.append(el("div", "small muted", "تصل المورد من رقم البوت، ورده يصل لك ويُحفظ مع طلب كشف الحساب."));
+  let ai = null; if (isAdmin()) { const ab = el("div", "f"); ai = el("input"); const al = el("label", "", "اسمح له باستلام رسائل البوت أثناء التجربة"); ai.type = "checkbox"; ai.id = id + "a"; al.htmlFor = ai.id; al.style.display = "inline"; ab.append(ai, document.createTextNode(" "), al); body.append(ab); }
+  dlgSave(body, {
+    checks: [{ check: () => (!ta.value.trim() ? (fieldErr(ta, "اكتب نص الرسالة"), true) : (fieldErr(ta, ""), false)) }],
+    review: () => ["إلى: " + h.name, ta.value.trim()],
+    send: () => ({ op: "msg_send", pid: h.id, text: ta.value.trim(), allow: !!(ai && ai.checked) }),
+    after: (j) => { load(true).then(() => draw()).catch(() => {}); return j.msg; },
+  });
+  $("dlg").showModal(); ta.focus();
+}
+const ST_TXT = { requested: "طُلب الكشف — بانتظار رد المورد", received: "وصل الكشف — يُقرأ ويُطابَق خلال ربع ساعة", done: "طوبق مع قيود", failed: "تعذّرت قراءة الكشف" };
+async function stmtShow(st, name) {
+  const body = $("dlgBody"); body.replaceChildren(el("h3", "", "كشف حساب " + name), el("div", "muted", "جارٍ التحميل…")); $("dlg").showModal();
+  const { status, j } = await api({ op: "stmt", id: st.id }).catch(() => ({ status: 0, j: {} }));
+  body.replaceChildren(el("h3", "", "كشف حساب " + name + (j.read && j.read.from ? " · " + j.read.from + " – " + (j.read.to || "") : "")));
+  if (status !== 200) { body.append(el("div", "res bad", j.error || "تعذّر التحميل")); }
+  else {
+    const s = j.summary || {};
+    body.append(kpiStrip([{ label: "مطابق", value: s.matched + " من " + s.lines }, { label: "فواتير ليست في قيود", value: fmt(s.missingInvoicesAmount), sub: s.missingInvoices + " فاتورة", tone: s.missingInvoices ? "warn" : "" },
+      { label: "رصيد الكشف / قيود", value: (s.closing === null ? "—" : fmt(s.closing)) + " / " + (s.qBalance === null ? "—" : fmt(s.qBalance)), sub: s.gap === null ? "" : Math.abs(s.gap) >= 1 ? "الفرق " + fmt(s.gap) : "مطابق ✅", tone: s.gap !== null && Math.abs(s.gap) >= 1 ? "warn" : "" }]));
+    const tb = el("table", "ovt"), KT = { invoice: "فاتورة", payment: "دفعة", credit_note: "إشعار دائن", opening: "رصيد افتتاحي", other: "أخرى" };
+    for (const l of j.lines || []) {
+      const tr = el("tr"), a = el("td"); a.append(el("b", "", (KT[l.kind] || l.kind) + (l.ref ? " " + l.ref : "")), el("div", "small muted", [l.date, l.description].filter(Boolean).join(" · ")));
+      const v = el("td", "n", fmt2(l.amount));
+      v.append(l.status === "matched" ? el("div", "small", "✅ قيود " + l.q.d) : l.status === "missing" ? el("div", "small wv", "⚠️ ليست في قيود") : el("div", "small muted", "—"));
+      tr.append(a, v); tb.append(tr);
+    }
+    body.append(tb);
+    if ((j.qOnly || []).length) { body.append(el("div", "fg", "في قيود وليست في الكشف (" + j.qOnly.length + ")")); const t2 = el("table", "ovt"); for (const q of j.qOnly) { const tr = el("tr"); tr.append(el("td", "", (q.kind === "work" ? "مشتريات" : "دفعة") + " · " + q.d + (q.note ? " · " + q.note : "")), el("td", "n", fmt2(q.amount))); t2.append(tr); } body.append(t2); }
+  }
+  const c = el("button", "sbtn", "إغلاق"); c.type = "button"; c.onclick = () => $("dlg").close(); body.append(c);
+}
+// «أضف رقم واتساب المورد»: the card is the supplier's Qoyod account, so the record created/updated is linked by that account
+function supPhone(c, h) {
+  const body = $("dlgBody"); body.replaceChildren(el("h3", "", "رقم واتساب " + (h ? h.name : c.name)));
+  const mk = (t, v, ph) => { const b = el("div", "f"), id = "f" + Math.random().toString(36).slice(2, 8), l = el("label", "", t), i = el("input"); i.id = id; l.htmlFor = id; i.value = v || ""; if (ph) i.placeholder = ph; b.append(l, i); body.append(b); return i; };
+  const ic = mk("اسم المسؤول عند المورد", "", "مثلاً: Ahmed"), ip = mk("رقم الواتساب", "", "0501234567"); ip.inputMode = "tel"; ip.dir = "ltr";
+  body.append(el("div", "small muted", "يُحفظ مع حساب المورد في قيود (" + c.account + ")، ومنه تطلب كشف الحساب وتراسل المورد من اللوحة."));
+  dlgSave(body, {
+    checks: [{ check: () => (!/^\+?[0-9]{8,15}$/.test(ip.value.replace(/[\s\-()]/g, "")) ? (fieldErr(ip, "اكتب الرقم بالأرقام، مثل 0501234567"), true) : (fieldErr(ip, ""), false)) }],
+    review: () => [(h ? h.name : c.name) + " — حساب قيود " + c.account, "المسؤول: " + (ic.value.trim() || "—"), "واتساب: " + ip.value.trim()],
+    send: () => ({ op: "sup_contact", account: c.account, name: c.name, id: h ? h.id : undefined, contact: ic.value.trim(), phone: ip.value.trim() }),
+    after: (j) => { load(true).then(() => draw()).catch(() => {}); return j.msg; },
+  });
+  $("dlg").showModal(); ic.focus();
+}
+function supContact(body, c, S) {
+  const hand = c.hand || [];
+  const CT = (S.data && S.data.contact) || {}, STM = (S.data && S.data.stmts) || {};
+  if (!hand.length) {
+    if (!/^[0-9]{4,8}$/.test(String(c.account || ""))) return;
+    const box = el("div", "sp"), acts = el("div", "acts"), b = el("button", "lnk", "أضف رقم واتساب المورد"); b.type = "button"; b.onclick = () => supPhone(c, null);
+    box.append(el("div", "pn", "واتساب المورد: غير مسجّل — سجّله لتطلب كشف حسابه وتراسله من هنا"), acts); acts.append(b); body.append(box); return;
+  }
+  for (const h of hand) {
+    const ct = CT[h.id] || {}, st = STM[h.id], box = el("div", "sp"), pn = el("div", "pn");
+    pn.append(document.createTextNode("واتساب المورد: " + (ct.phone ? (ct.contact ? ct.contact + " · " : "") + ct.phone : "غير مسجّل")));
+    box.append(pn);
+    if (st) {
+      const ln = el("div", "ln"); ln.append(el("span", st.status === "failed" ? "wv" : "", (ST_TXT[st.status] || st.status) + (st.byName ? " · " + st.byName : "")));
+      if (st.status === "done" && st.summary) { const sm = st.summary; ln.append(el("span", sm.missingInvoices || (sm.gap !== null && Math.abs(sm.gap) >= 1) ? "wv" : "", " · مطابق " + sm.matched + " من " + sm.lines + (sm.missingInvoices ? " · فواتير ليست في قيود " + fmt(sm.missingInvoicesAmount) : "") + (sm.gap !== null ? (Math.abs(sm.gap) >= 1 ? " · فرق الرصيد " + fmt(sm.gap) : " · الرصيد مطابق ✅") : ""))); }
+      if (st.status === "failed" && st.error) ln.append(el("span", "small muted", " · " + st.error));
+      box.append(ln);
+      for (const msg of st.msgs || []) box.append(el("div", "small muted", (msg.from === "sup" ? "المورد: " : (msg.by || "نحن") + ": ") + msg.text));
+    }
+    const acts = el("div", "acts");
+    if (!ct.phone) { const b = el("button", "lnk", "أضف رقم واتساب المورد"); b.type = "button"; b.onclick = () => supPhone(c, h); acts.append(b); }
+    else {
+      const q = el("button", "lnk", st && st.status === "requested" ? "إعادة طلب كشف الحساب" : "طلب كشف حساب"); q.type = "button"; q.onclick = () => stmtReq(h); acts.append(q);
+      const mm = el("button", "lnk", "رسالة"); mm.type = "button"; mm.onclick = () => supMsg(h); acts.append(mm);
+    }
+    if (st && st.status === "done") { const v = el("button", "lnk", "عرض المطابقة"); v.type = "button"; v.onclick = () => stmtShow(st, c.name); acts.append(v); }
+    if (acts.children.length) box.append(acts);
+    body.append(box);
+  }
+}
 function supsView(m) {
   const S = sec("supcards");
   if (!S) { if (canEdit()) supsBox(m); supDetails(m); return; }
@@ -1250,9 +1339,11 @@ function supCards(m) {
     const body = el("div", "body");
     for (const p of c.projects) { const row = el("div", "sp"), pn = el("div", "pn"); if (p.code) pn.append(el("span", "pcode", p.code)); pn.append(document.createTextNode(p.name)); const ln = el("div", "ln"), x = el("span"); x.append(document.createTextNode("مشتريات "), el("b", "", fmt(p.amount))); ln.append(x); row.append(pn, ln); body.append(row); }
     if (c.untagged >= 1) body.append(el("div", "small muted", "مشتريات بلا مشروع في قيود: " + fmt(c.untagged)));
-    for (const h of hand) { const row = el("div", "sp"), pn = el("div", "pn"); pn.append(document.createTextNode("مستحق يدوي: " + h.name + (h.when ? " · " + h.when : ""))); const ln = el("div", "ln"), x = el("span"); x.append(el("b", "", h.owed >= 1 ? fmt(h.owed) : "—")); ln.append(x); row.append(pn, ln);
+    for (const h of hand) { if (h.owed < 1 && !h.when) continue; // a contact-only record (WhatsApp number, no hand-kept due) shows in supContact
+      const row = el("div", "sp"), pn = el("div", "pn"); pn.append(document.createTextNode("مستحق يدوي: " + h.name + (h.when ? " · " + h.when : ""))); const ln = el("div", "ln"), x = el("span"); x.append(el("b", "", h.owed >= 1 ? fmt(h.owed) : "—")); ln.append(x); row.append(pn, ln);
       if (canEdit()) { const acts = el("div", "acts"), e = el("button", "lnk", "تعديل المستحق"), u = el("button", "lnk", "إلغاء الربط"); e.type = u.type = "button"; e.onclick = () => editSupByName(h.name); u.onclick = () => supLink(h, ""); acts.append(e, u); row.append(acts); }
       body.append(row); }
+    supContact(body, c, S);
     body.append(el("div", "src", "من حسابه في قيود (" + c.account + ")."));
     d.append(body); return d;
   });
