@@ -468,24 +468,24 @@ let MT = "rcv";
 const STABS = [{ k: "q", t: "الجودة", ids: ["quality", "defects"] }, { k: "p", t: "الصبات", ids: ["pours"] }, { k: "u", t: "بانتظار الاستلام", ids: ["units"] }];
 let ST = "q";
 // «المشتريات»: what the sites asked for, what was bought (and on whose account), and the suppliers with what we owe them
-const BTABS = [{ k: "req", t: "الطلبات المفتوحة", ids: ["reqs"] }, { k: "log", t: "سجل المشتريات", ids: ["purchases"] }, { k: "mat", t: "المواد مقابل الميزانية", ids: [] }, { k: "sups", t: "الموردون", ids: ["sups"], sups: true }];
-let BT = "req";
+// owner, 10 Nov 2026 («ادارة المشتريات مبعثرة»): three questions, three tabs — who do we owe (one card per supplier = his Qoyod
+// account, the hand-kept dues inside it), what did we buy (the Qoyod log, then the take-off budget), what do the sites ask for.
+const BTABS = [{ k: "sups", t: "الموردون", ids: [], sups: true }, { k: "log", t: "المشتريات", ids: [] }, { k: "req", t: "طلبات المواقع", ids: ["reqs", "purchases"] }];
+let BT = "sups";
 function buyView(m) {
   const T = TABS.find((x) => x.v === "buy");
-  m.append(page("ش", T.t, "طلبات المواقع، وسجل الشراء وعلى حساب مين، والموردون ومستحقاتهم", T.fam));
-  const avail = BTABS.filter((x) => x.ids.some((i) => sec(i)) || (x.sups && (canEdit() || !!regEnt("suppliers"))) || ((x.k === "log" || x.k === "mat") && canEdit()));
+  m.append(page("ش", T.t, "لمن ندين؟ وش اشترينا ومن مين؟ ووش تطلب المواقع؟", T.fam));
+  const avail = BTABS.filter((x) => x.ids.some((i) => sec(i)) || (x.sups && (canEdit() || !!regEnt("suppliers") || !!sec("supcards"))) || (x.k === "log" && canEdit()));
   if (!avail.length) return;
   if (!avail.some((x) => x.k === BT)) BT = avail[0].k;
   const st = el("div", "sub-tabs mtabs");
-  for (const x of avail) { const b = el("button", "", x.t); b.type = "button"; b.setAttribute("aria-current", String(BT === x.k)); b.onclick = () => { BT = x.k; draw(); }; st.append(b); }
+  for (const x of avail) { const n = x.k === "req" ? ["reqs"].reduce((t, i) => t + (((sec(i) || {}).table || { rows: [] }).rows.length), 0) : 0; const b = el("button", "", x.t + (n ? " (" + n + ")" : "")); b.type = "button"; b.setAttribute("aria-current", String(BT === x.k)); b.onclick = () => { BT = x.k; draw(); }; st.append(b); }
   m.append(st);
   const cur = avail.find((x) => x.k === BT);
-  if (cur.k === "log") plogBox(m);
-  if (cur.k === "mat") matBox(m);
-  if (cur.sups && canEdit()) supsBox(m);
-  if (cur.sups) supDetails(m);
-  if (cur.sups && sec("supcards")) supCards(m);
-  for (const id of cur.ids) { const s = sec(id); if (!s) continue; m.append(secHead(s.title, s.table ? s.table.rows.length : undefined, noteOf(s)), ...cards(s, "acc")); }
+  if (cur.k === "log") { plogBox(m); matBox(m); }
+  if (cur.sups) supsView(m);
+  if (cur.k === "req" && !cur.ids.some((i) => sec(i))) m.append(el("div", "empty", "لا توجد طلبات من المواقع — تصل من البوت: طلب الموقع ← أمر الشراء ← الاستلام ← الفاتورة ← الدفع."));
+  for (const id of cur.ids) { const s = sec(id); if (!s) continue; m.append(secHead(id === "purchases" ? "دورة الشراء: أمر الشراء ← الاستلام ← الفاتورة ← الدفع" : s.title, s.table ? s.table.rows.length : undefined, noteOf(s)), ...cards(s, "acc")); }
 }
 // one card per subcontractor: his projects inside, where he reached, what he received, and every gap as an alert
 // search and folding of quiet accounts (kept across redraws); a card is «active» with an agreement, a balance, or a movement
@@ -1188,22 +1188,71 @@ async function matBox(m) {
   }
 }
 // every supplier account in Qoyod: bought, paid, owed to him, on which projects (his account number is the link)
+// «الموردون»: one list. A card per supplier = his Qoyod account (bought, paid, balance, projects); the hand-kept dues (audit list)
+// sit inside the card once the accountant links them (op sup_link, never by name) and are compared with Qoyod there; unlinked
+// dues are listed first with the accounts the bot suggests. Without Qoyod the old hand list and contacts are shown as they were.
+async function supLink(h, account) {
+  const ok = window.confirm(account ? "ربط «" + h.name + "» بحساب قيود " + account + "؟ تصير مستحقاته داخل بطاقة هذا الحساب." : "إلغاء ربط «" + h.name + "» بحساب قيود؟");
+  if (!ok) return;
+  const { status, j } = await api({ op: "sup_link", id: h.id, account }).catch(() => ({ status: 0, j: {} }));
+  toast(status === 200 ? j.msg : j.error || "تعذّر الحفظ"); if (status === 200) load(true).then(() => draw()).catch(() => {});
+}
+async function editSupByName(name) { try { const S = await edLoad(); const i = (S.sups || []).findIndex((o) => o.name === name); editSupplier(i >= 0 ? i : null); } catch (e) { toast(e.message); } }
+function supsView(m) {
+  const S = sec("supcards");
+  if (!S) { if (canEdit()) supsBox(m); supDetails(m); return; }
+  const C = (S.data && S.data.cards) || [], H = (S.data && S.data.hand) || [], known = C.every((c) => c.loaded !== false);
+  const sum = (a, k) => a.reduce((t, x) => t + (+x[k] || 0), 0), unl = H.filter((h) => !h.account && h.owed >= 1);
+  const confl = C.filter((c) => c.check === "conflict").length, diffs = C.filter((c) => c.check === "diff").length;
+  m.append(kpiStrip([
+    { label: "علينا للموردين", value: known ? fmt(sum(C, "owed")) : "—", sub: "حسب قيود", f: "out", tone: sum(C, "owed") >= 1 ? "warn" : "" },
+    { label: "دفعات مقدمة عند موردين", value: known ? fmt(sum(C, "advance")) : "—", sub: "حسب قيود", f: "out" },
+    { label: "قائمة المستحقات اليدوية", value: fmt(sum(H, "owed")), sub: [confl ? confl + " تعارض" : "", diffs ? diffs + " فرق" : "", unl.length ? unl.length + " غير مربوطة" : ""].filter(Boolean).join(" · ") || "مطابقة", tone: confl || unl.length ? "warn" : "", f: "out" }]));
+  const hb = el("div", "ebar2"); if (canEdit()) hb.append(ebtn("+ مستحق مورد", () => editSupplier(null))); const add = regBtn("suppliers", "+ مورد"); if (add) hb.append(add); if (hb.children.length) m.append(hb);
+  if (unl.length) {
+    const box = el("div", "box"), h0 = el("div", "fch2"); h0.append(el("b", "", "مستحقات يدوية غير مربوطة بحساب في قيود")); box.append(h0, el("div", "small muted", "اربط كل مورد بحسابه في قيود لتصير مستحقاته داخل بطاقته وتُقارن بقيود. الاقتراحات من كلمات مشتركة في الاسم — يؤكدها المحاسب."));
+    for (const h of unl) {
+      const row = el("div", "sp"), pn = el("div", "pn"); pn.append(el("b", "", h.name)); if (h.when) pn.append(el("span", "small muted", " · " + h.when));
+      const ln = el("div", "ln"), x = el("span"); x.append(document.createTextNode("المستحق "), el("b", "", h.owed >= 1 ? fmt(h.owed) : "—")); ln.append(x); row.append(pn, ln);
+      if (canEdit()) {
+        const acts = el("div", "acts");
+        for (const mb of h.maybe || []) { const b = el("button", "lnk", "اربط بـ " + mb.name + " (" + mb.code + ")"); b.type = "button"; b.onclick = () => supLink(h, mb.code); acts.append(b); }
+        const other = el("button", "lnk", "رقم حساب آخر"); other.type = "button"; other.onclick = () => { const a = (window.prompt("رقم حساب «" + h.name + "» في قيود (مثل 211023)") || "").trim(); if (a) supLink(h, a); }; acts.append(other);
+        const e = el("button", "lnk", "تعديل المستحق"); e.type = "button"; e.onclick = () => editSupByName(h.name); acts.append(e);
+        row.append(acts);
+      } else if ((h.maybe || []).length) row.append(el("div", "small muted", "قد يكون: " + h.maybe.map((mb) => mb.name + " (" + mb.code + ")").join("، ")));
+      box.append(row);
+    }
+    m.append(box);
+  }
+  supCards(m);
+}
 function supCards(m) {
   const S = sec("supcards"), C = (S.data && S.data.cards) || [];
   m.append(secHead(S.title, C.length, S.note));
   if (!C.length) { m.append(el("div", "empty", "لا توجد حسابات موردين")); return; }
-  const live = (c) => (c.last && c.last >= yearAgo()) || Math.abs(c.owed) >= 1 || Math.abs(c.advance) >= 1;
+  const live = (c) => (c.last && c.last >= yearAgo()) || Math.abs(c.owed) >= 1 || Math.abs(c.advance) >= 1 || (c.hand && c.hand.length);
+  const rank = (c) => (c.check === "conflict" ? 0 : c.check === "diff" ? 1 : c.owed >= 1 ? 2 : c.advance >= 1 ? 3 : 4);
+  C.sort((a, b) => rank(a) - rank(b) || b.owed - a.owed || b.advance - a.advance || String(b.last).localeCompare(String(a.last)));
   listTools(m, C, live, "ابحث باسم المورد", () => SUPQ, (v) => (SUPQ = v), () => SUPALL, (v) => (SUPALL = v), (c) => {
-    const d = el("details", "sc"), su = el("summary"), hd = el("div", "hd");
+    const d = el("details", "sc" + (c.check === "conflict" ? " bad" : c.check === "diff" ? " warn" : "")), su = el("summary"), hd = el("div", "hd");
     hd.append(el("b", "", c.name), el("span", "", [c.projects.length ? arN(c.projects.length, "مشروع واحد", "مشروعان", "مشاريع", "مشروعًا") : "", c.last ? "آخر حركة " + c.last : ""].filter(Boolean).join(" · ")), el("span", "tg", "التفاصيل"));
     const nums = el("div", "nums"), n = (l, v, cls) => { const x = el("div"); x.append(el("small", "", l), el("b", cls || "", v)); nums.append(x); };
     const kf = (v) => (c.loaded ? fmt(v) : "—");
     n("المشتريات", kf(c.purchased)); n("المدفوع له", kf(c.paid));
     n(c.advance >= 1 ? "دُفع له مقدماً" : "المستحق له", kf(c.advance >= 1 ? c.advance : c.owed), c.owed >= 1 ? "pos" : "");
-    su.append(hd, nums); d.append(su);
+    const hand = c.hand || [], hT = hand.reduce((t, x) => t + x.owed, 0);
+    if (hand.length) n("في القائمة اليدوية", hT >= 1 ? fmt(hT) : "—", c.check === "conflict" || c.check === "diff" ? "wv" : "");
+    su.append(hd, nums);
+    if (c.check === "conflict") { const al = el("div", "al"); al.append(el("p", "bad", "تعارض: قيود تقول دُفع له مقدماً " + fmt(c.advance) + "، والقائمة اليدوية تقول علينا له " + fmt(hT) + " — يطابق المحاسب كشف حساب المورد مع قيود ويسجّل الفواتير الناقصة.")); su.append(al); }
+    else if (c.check === "diff") { const al = el("div", "al"); al.append(el("p", "warn", "فرق " + fmt(Math.abs(c.gap)) + " بين قيود (" + fmt(c.owed) + ") والقائمة اليدوية (" + fmt(hT) + ") — فواتير لم تُسجّل في قيود، أو القائمة قديمة.")); su.append(al); }
+    d.append(su);
     const body = el("div", "body");
     for (const p of c.projects) { const row = el("div", "sp"), pn = el("div", "pn"); if (p.code) pn.append(el("span", "pcode", p.code)); pn.append(document.createTextNode(p.name)); const ln = el("div", "ln"), x = el("span"); x.append(document.createTextNode("مشتريات "), el("b", "", fmt(p.amount))); ln.append(x); row.append(pn, ln); body.append(row); }
     if (c.untagged >= 1) body.append(el("div", "small muted", "مشتريات بلا مشروع في قيود: " + fmt(c.untagged)));
+    for (const h of hand) { const row = el("div", "sp"), pn = el("div", "pn"); pn.append(document.createTextNode("مستحق يدوي: " + h.name + (h.when ? " · " + h.when : ""))); const ln = el("div", "ln"), x = el("span"); x.append(el("b", "", h.owed >= 1 ? fmt(h.owed) : "—")); ln.append(x); row.append(pn, ln);
+      if (canEdit()) { const acts = el("div", "acts"), e = el("button", "lnk", "تعديل المستحق"), u = el("button", "lnk", "إلغاء الربط"); e.type = u.type = "button"; e.onclick = () => editSupByName(h.name); u.onclick = () => supLink(h, ""); acts.append(e, u); row.append(acts); }
+      body.append(row); }
     body.append(el("div", "src", "من حسابه في قيود (" + c.account + ")."));
     d.append(body); return d;
   });
