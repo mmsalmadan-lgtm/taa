@@ -121,7 +121,18 @@ button.card{cursor:pointer}button.card:hover{border-color:var(--ui-2)}
 .qc p.bad{background:var(--crit1);color:var(--crit)}.qc p.warn{background:var(--warn1);color:var(--warn)}
 .qa{margin-top:10px}.qa summary{cursor:pointer;font-size:13px;color:var(--ui);font-weight:600;min-height:32px}@media (pointer:coarse){.qa>summary{min-height:44px;padding-top:12px}}
 .qa table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}.qa td{padding:6px 4px;border-bottom:1px solid var(--line)}.qa td:last-child{text-align:left;white-space:nowrap;direction:ltr}
-.qa td.neg{color:var(--crit)}.qa td.wrap,td.wrap{white-space:normal;text-align:right;direction:rtl}
+.qa td.neg{color:var(--crit)}
+.ovg{display:grid;grid-template-columns:1fr 1fr;gap:12px}.ovg .full{grid-column:1/-1}
+.ovg h3{font-size:15px;margin:0 0 8px;font-weight:600;display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.srcc{font-size:11px;font-weight:400;color:var(--muted);background:var(--sunk);border-radius:3px;padding:1px 6px}
+.stg{display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:6px 4px}
+.stg div{font-size:12px;line-height:1.4;color:var(--muted);text-align:center}.stg i{display:block;height:6px;border-radius:3px;background:var(--track);margin-bottom:5px}
+.stg .done{color:var(--acc9)}.stg .done i{background:var(--acc6)}.stg .now{color:var(--eng9);font-weight:600}.stg .now i{background:linear-gradient(to left,var(--eng6) 50%,var(--track) 50%)}
+.ovt{width:100%;border-collapse:collapse;font-size:13px}.ovt td{padding:7px 2px;border-bottom:1px solid var(--line);vertical-align:top}.ovt tr:last-child td{border-bottom:0}
+.ovt td.n{text-align:left;white-space:nowrap;font-variant-numeric:tabular-nums}
+.ovnext{margin-top:4px;padding:10px 12px;background:var(--eng1);border-radius:4px;font-size:13px}
+.ovtodo{border-inline-start:4px solid var(--warn)}.ovtodo ul{margin:0;padding-inline-start:18px}.ovtodo li{margin-bottom:8px}.ovtodo li span{display:block;font-size:12px;color:var(--muted)}
+@media (max-width:720px){.ovg{grid-template-columns:1fr}}.qa td.wrap,td.wrap{white-space:normal;text-align:right;direction:rtl}
 .gh-a{display:flex;gap:8px}.gh-a:empty{display:none}
 /* «مقاولو الباطن»: one card per subcontractor, his projects inside */
 .scs{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,520px),1fr));gap:12px;align-items:start}
@@ -1600,7 +1611,7 @@ function projects(m) {
       if (p.x.dueNow > 0.5) tags.append(el("span", "pill warn", "مستحق " + fmt(p.x.dueNow)));
       if (p.x.unnamed > 0.5) tags.append(el("span", "pill", "باطن بلا اسم " + fmt(p.x.unnamed)));
       if (tags.children.length) c.append(tags);
-      c.setAttribute("aria-label", (p.code ? p.code + " " : "") + p.name); c.onclick = () => { rec = p.id; recTab = "inst"; draw(); window.scrollTo(0, 0); };
+      c.setAttribute("aria-label", (p.code ? p.code + " " : "") + p.name); c.onclick = () => { rec = p.id; recTab = "ov"; draw(); window.scrollTo(0, 0); };
       g.append(c);
     }
   };
@@ -1613,6 +1624,101 @@ function mixBar(p) {
   if (!tot) return w;
   for (const [k, v, l] of parts) { const i = el("i"); i.style.width = (v / tot) * 100 + "%"; i.style.background = CATC[k] || "#888"; i.title = l + " " + Math.round((v / tot) * 100) + "%"; w.append(i); }
   return w;
+}
+// «نظرة عامة» (owner, 10 Nov 2026: «كل شي مبعثر» → one page per project): everything about the project on one screen —
+// stages, next payment, materials vs the drawings take-off, subcontractors, documents, and what needs follow-up. Each card
+// names its source. Figures come from the same places as the other tabs; materials are read live from Qoyod (op matbudget),
+// and a difference from the audit's spending figure is shown, never hidden.
+let MB, MBq = null;
+function mbLoad() {
+  if (MB !== undefined || MBq) return;
+  MBq = api({ op: "matbudget" }).then(({ status, j }) => { MB = status === 200 ? j : null; }).catch(() => { MB = null; }).finally(() => { MBq = null; if (view === "proj" && rec && recTab === "ov") draw(); });
+}
+const AUDK = { rebar: "steel", concrete: "concrete", building: "block" };
+// construction order for the stage strip (the edit form keeps its own order): backfill comes after the ground beams
+const STG_ORDER = ["dig", "repl", "dewat", "shor", "bdig", "foot", "bwall", "bins", "bslab", "beam", "fill", "gf", "ff", "xf", "roof", "blkg", "blkf", "blkx", "blkr", "fence",
+  "elec", "plmb", "plas", "insu", "tilein", "gyp", "tileout", "pntin", "pntout"];
+function ovCard(g, title, src, cls) { const c = el("section", "box" + (cls ? " " + cls : "")), h = el("h3"); h.append(document.createTextNode(title)); if (src) h.append(el("span", "srcc", src)); c.append(h); g.append(c); return c; }
+function overview(p, panel) {
+  mbLoad();
+  const g = el("div", "ovg"); panel.append(g);
+  const syncD = p.synced ? new Date(p.synced).toLocaleDateString("en-GB", { day: "numeric", month: "numeric" }) : "";
+  // stages
+  const kind = p.kind === "fin" ? "تشطيب" : "عظم", oi = (k) => { const i = STG_ORDER.indexOf(k); return i < 0 ? 99 : i; };
+  const list = (ELEMENTS[kind] || []).filter(([k]) => (p.el || {})[k] && p.el[k] !== "غير مشمول").sort((a, b) => oi(a[0]) - oi(b[0]));
+  const sc = ovCard(g, "مراحل التنفيذ", "التدقيق", "full");
+  if (!list.length) sc.append(el("div", "small muted", "المراحل غير مسجّلة بعد" + (canEdit() ? " — «مراحل التنفيذ» أعلى الصفحة" : "")));
+  else {
+    const row = el("div", "stg"); row.setAttribute("role", "list");
+    // the next stage: the first one not finished, in construction order (only when nothing is in progress)
+    const nextI = list.some(([k]) => p.el[k] === "جاري") ? -1 : list.findIndex(([k]) => p.el[k] !== "منتهي");
+    list.forEach(([k, t], i) => {
+      const s = p.el[k]; let c = s === "منتهي" ? "done" : s === "جاري" ? "now" : i === nextI ? "now" : "";
+      const d = el("div", c); d.setAttribute("role", "listitem"); d.append(el("i"), document.createTextNode(t + (s === "جاري" ? " (جاري)" : c === "now" ? " (التالي)" : "")));
+      d.setAttribute("aria-label", t + ": " + s); row.append(d);
+    });
+    sc.append(row);
+  }
+  // money: what comes next from the client
+  const mc = ovCard(g, "الدفعة القادمة", "العقد");
+  const nx = p.contracts.flatMap((k) => k.inst.map((i) => ({ ...i, k: k.name }))).find((i) => i.st !== "محصّلة");
+  const nAll = p.contracts.reduce((t, k) => t + k.inst.length, 0), nOk = p.contracts.reduce((t, k) => t + k.inst.filter((i) => i.st === "محصّلة").length, 0);
+  if (!nAll) mc.append(el("div", "small muted", p.contracts.length ? "العقد مسجّل بدون جدول دفعات" : "لا يوجد عقد مسجّل"));
+  else if (!nx) mc.append(el("div", "", "كل الدفعات محصّلة ✅"));
+  else { const b = el("div", "ovnext"); b.append(el("b", "", (nx.due ? "مستحقة الآن: " : "") + nx.name), el("div", "", fmt(nx.amt - nx.got) + (nx.due ? "" : " — لم تستحق بعد"))); mc.append(b); }
+  if (nAll) mc.append(el("div", "small muted", "محصّل " + nOk + " من " + nAll + " دفعات · " + fmt(p.x.collected) + " من " + fmt(p.x.contract)));
+  // materials vs the take-off
+  const mat = ovCard(g, "المواد مقابل الميزانية", "حصر المخططات + قيود الآن");
+  const ex = Object.fromEntries((p.exp || []).map((e) => [e.k, e.v]));
+  const diffs = [];
+  if (MB === undefined) mat.append(el("div", "small muted", "جارٍ القراءة…"));
+  else if (!MB) mat.append(el("div", "small muted", "تعذّرت قراءة المشتريات الآن"));
+  else {
+    const t = (MB.projects || []).find((x) => x.pid === p.id), n = (MB.noTakeoff || []).find((x) => x.pid === p.id);
+    const gs = t ? t.groups : n ? n.groups : [];
+    if (!gs.length) mat.append(el("div", "small muted", "لا مشتريات مواد مسجّلة على المشروع في قيود"));
+    else {
+      const tb = el("table", "ovt");
+      for (const x of gs) {
+        const tr = el("tr"), a = el("td"); a.append(document.createTextNode(x.label));
+        if (t && !x.noBudget) { const bar = el("div", "bar" + (x.over >= 1 ? " over" : "")), i = el("i"); i.style.width = Math.min(100, x.pct || 0) + "%"; bar.append(i); bar.style.margin = "4px 0 2px"; a.append(bar); }
+        if (t && x.qty) a.append(el("div", "small muted", Number(x.qty).toLocaleString("en-US", { maximumFractionDigits: 1 }) + " " + x.unit + " في الحصر"));
+        const v = el("td", "n", fmt(x.actual) + (t && !x.noBudget ? " من " + fmt(x.budget) : ""));
+        if (t && !x.noBudget) v.append(el("div", x.over >= 1 ? "small neg" : "small muted", x.over >= 1 ? "تجاوز " + fmt(x.over) : x.pct + "%"));
+        tr.append(a, v); tb.append(tr);
+        const ak = AUDK[x.key]; if (ak && Math.abs((ex[ak] || 0) - x.actual) >= 1) diffs.push(x.label + ": قيود " + fmt(x.actual) + " والتدقيق " + fmt(ex[ak] || 0));
+      }
+      mat.append(tb);
+      if (!t) mat.append(el("div", "small wv", "لم تُحصر مخططات المشروع بعد — لا ميزانية للمقارنة. أرسل الإنشائي والمعماري PDF."));
+      else { const miss = [...new Set(t.groups.flatMap((x) => x.missing || []))].length; if (miss) mat.append(el("div", "small wv", "الحصر ناقص: " + miss + " عناصر تحتاج لوحاتها — التفاصيل في «المواد مقابل الميزانية» بالمشتريات")); }
+      if (diffs.length) mat.append(el("div", "small muted", "يختلف عن التدقيق" + (syncD ? " (آخر تحديث " + syncD + ")" : "") + ": " + diffs.join(" · ")));
+    }
+  }
+  // subcontractors
+  const owing = (p.subs || []).reduce((t, s) => t + Math.max(0, s.owing || 0), 0);
+  const sb = ovCard(g, "مقاولو الباطن", "قيود + الاتفاقيات");
+  const kv = el("div", "kgrid");
+  for (const [l, v, c] of [["المصروف لهم", fmt(p.x.subPaid), ""], ["المتبقي لهم الآن", owing > 0.5 ? fmt(owing) : "—", owing > 0.5 ? "wv" : ""], ["اتفاقيات مسجّلة", String((p.subs || []).length), ""]]) { const d = el("div"); d.style.display = "grid"; d.append(el("span", "small muted", l), el("b", c, v)); kv.append(d); }
+  sb.append(kv);
+  if (p.x.unnamed > 0.5) sb.append(el("div", "small wv", "مدفوع بلا اسم مقاول: " + fmt(p.x.unnamed)));
+  // documents
+  const dc = ovCard(g, "المستندات", "");
+  const nd = (p.docs || []).length; dc.append(el("div", "", nd ? nd + " مستند (أوامر شراء، استلام، فواتير، سندات)" : "لا مستندات صادرة من البوت بعد"));
+  if (nd) { const ob = el("button", "sbtn", "عرض المستندات"); ob.type = "button"; ob.onclick = () => { recTab = "docs"; draw(); }; dc.append(ob); }
+  // what needs follow-up — derived from the data above, never typed by hand
+  const todo = [];
+  if (p.x.dueNow > 0.5) todo.push(["دفعة مستحقة على العميل " + fmt(p.x.dueNow), "استحقت ولم تُحصّل"]);
+  if (owing > 0.5) todo.push(["مستحق لمقاولي الباطن " + fmt(owing), "أعمال مثبتة لم تُصرف"]);
+  if (p.x.unnamed > 0.5) todo.push(["مدفوعات باطن بلا اسم " + fmt(p.x.unnamed), "سجّلها باسم المقاول في «مقاولو الباطن»"]);
+  if (MB && (MB.projects || []).find((x) => x.pid === p.id && x.over >= 1)) todo.push(["مواد تجاوزت ميزانية الحصر", "راجع «المواد مقابل الميزانية»"]);
+  if (MB && (MB.noTakeoff || []).find((x) => x.pid === p.id)) todo.push(["لا حصر من المخططات لهذا المشروع", "أرسل الإنشائي والمعماري PDF لتُحسب ميزانية المواد"]);
+  if (p.links && !p.links.clients && p.status !== "منتهي") todo.push(["لا عميل مربوط بالمشروع في البوت", "لا تصله التقارير اليومية ولا طلبات الاستلام"]);
+  if (p.links && !p.links.supervisors && p.status !== "منتهي") todo.push(["لا مشرف ولا مهندس موقع مربوط", "لا تُرفع تقارير يومية من الموقع"]);
+  if (p.contracts.length && !nAll) todo.push(["العقد بلا جدول دفعات", "لا يُعرف ما يستحق ومتى"]);
+  if (diffs.length) todo.push(["أرقام المواد في قيود تختلف عن التدقيق", "راجع الفرق وحدّث المصروف أو صحّح قيود"]);
+  const tc = ovCard(g, "يحتاج متابعة", "", "full ovtodo");
+  if (!todo.length) tc.append(el("div", "", "لا شيء يحتاج متابعة الآن ✅"));
+  else { const ul = el("ul"); for (const [a, b] of todo) { const li = el("li"); li.append(document.createTextNode(a), el("span", "", b)); ul.append(li); } tc.append(ul); }
 }
 function record(m) {
   const p = (D.projects || []).find((x) => x.id === rec); if (!p) { rec = null; return projects(m); }
@@ -1629,10 +1735,11 @@ function record(m) {
     { label: "صافي النقد", value: (cash < 0 ? "(" + fmt(-cash) + ")" : fmt(cash)), neg: cash < 0, sub: "المحصّل − المصروف", f: "cash" },
     ...((() => { const a = AUD && AUD.P[p.name]; if (!a || !a.contract) return []; return a.unknown ? [{ label: "الربح المتوقع", value: "—", sub: "حدّث المراحل والمصروف", f: "in" }] : [{ label: "الربح المتوقع", value: acc(a.profit), neg: a.profit < 0, sub: (Math.round(a.margin * 1000) / 10) + "% · الإنجاز " + Math.round(a.prog * 100) + "%", f: "in", flag: a.est ? ["warn", "تقديري — راجع المراحل والمصروف"] : a.margin < 0 ? ["bad", "خاسر"] : a.margin < 0.10 ? ["warn", "أقل من 10%"] : null }]; })())]));
   const st = el("div", "sub-tabs"), panel = el("div", "panel");
-  const T = [["inst", "الدفعات", p.contracts.reduce((t, k) => t + k.inst.length, 0)], ["exp", "المصروف", p.exp.length], ["subs", "مقاولو الباطن", p.subs.length], ["docs", "المستندات", (p.docs || []).length], ["notes", "ملاحظات التدقيق"]];
+  const T = [["ov", "نظرة عامة"], ["inst", "الدفعات", p.contracts.reduce((t, k) => t + k.inst.length, 0)], ["exp", "المصروف", p.exp.length], ["subs", "مقاولو الباطن", p.subs.length], ["docs", "المستندات", (p.docs || []).length], ["notes", "ملاحظات التدقيق"]];
   for (const [k, t, n] of T) { const b = el("button", "", t + (n !== undefined ? " (" + n + ")" : "")); b.type = "button"; b.setAttribute("aria-current", String(recTab === k)); b.onclick = () => { recTab = k; draw(); }; st.append(b); }
   m.append(st, panel);
-  if (recTab === "inst") {
+  if (recTab === "ov") overview(p, panel);
+  else if (recTab === "inst") {
     if (!p.contracts.length) panel.append(el("div", "empty", "لا يوجد عقد مسجّل"));
     const ed = canEdit(), lumpOnly = p.contracts.length && p.contracts.every((k) => k.lump);
     if (ed) { const eb = el("div", "ebar2"); eb.append(ebtn(lumpOnly ? "+ إضافة العقد وجدول دفعاته" : "+ عقد", () => editContract(p, null))); panel.append(eb); }
