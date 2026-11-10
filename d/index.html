@@ -2064,8 +2064,30 @@ function adminDialog(p, op) {
 const regEnt = (k) => (REG || []).find((e) => e.key === k) || null;
 const shownElsewhere = (k) => (k === "custody" ? !!sec("custody") : k === "contracts" ? !!sec("subcards") : k === "suppliers");
 function regBtn(k, label, prefill) { const e = regEnt(k); if (!e || !e.canAdd) return null; const b = el("button", "sbtn", label); b.type = "button"; b.onclick = () => openForm(e, null, prefill); return b; }
+// «إرسال رسالة» (owner, 10 Nov 2026): a free message to one registered person, sent the bot's own way (op msg_send): the test
+// guard, the approved invitation when he has not written within 24 h, and translation for English readers.
+function sendMsg(pre) {
+  const e = regEnt("people"), ppl = ((e && e.rows) || []).filter((r) => r.data && r.data.phone && !r.data.disabled);
+  const body = $("dlgBody"); body.replaceChildren(el("h3", "", "إرسال رسالة"));
+  if (!ppl.length) { body.append(el("div", "muted", "لا يوجد أشخاص مسجلون بأرقام جوال — أضفهم من «الأشخاص والأدوار».")); const c = el("button", "sbtn", "إغلاق"); c.type = "button"; c.onclick = () => $("dlg").close(); body.append(c); $("dlg").showModal(); return; }
+  const who = dlgField(body, "إلى", "select");
+  for (const r of ppl) { const o = el("option", "", r.data.name + " — " + r.cells[2] + (r.data.lang === "en" ? " · English" : "")); o.value = r.id; if (pre === r.id) o.selected = true; who.append(o); }
+  const box = el("div", "f"), id = "f" + Math.random().toString(36).slice(2, 8), lab = el("label", "", "الرسالة"), ta = el("textarea");
+  ta.id = id; lab.htmlFor = id; ta.rows = 6; ta.maxLength = 1500; ta.style.width = "100%"; box.append(lab, ta); body.append(box);
+  const hint = el("div", "small muted", ""); body.append(hint);
+  const paint = () => { const r = ppl.find((x) => x.id === who.value); hint.textContent = r && r.data.lang === "en" ? "لغته الإنجليزية: اكتب بالعربي أو بالإنجليزي — تُترجم له تلقائياً." : "إذا لم يكتب للبوت خلال 24 ساعة تصله دعوة للرد، وتُسلَّم الرسالة بعد رده."; };
+  who.onchange = paint; paint();
+  const ab = el("div", "f"), ai = el("input"), al = el("label", "", "اسمح له باستلام رسائل البوت أثناء التجربة"); ai.type = "checkbox"; ai.id = id + "a"; al.htmlFor = ai.id; al.style.display = "inline"; ab.append(ai, document.createTextNode(" "), al); body.append(ab);
+  dlgSave(body, {
+    checks: [{ check: () => (!ta.value.trim() ? (fieldErr(ta, "اكتب نص الرسالة"), true) : (fieldErr(ta, ""), false)) }],
+    review: () => { const r = ppl.find((x) => x.id === who.value); return ["إلى: " + r.data.name + " (" + r.cells[1] + ")", ta.value.trim(), ai.checked ? ["ويُضاف رقمه لمن يستلمون أثناء التجربة", "wv"] : ["وضع التجربة: إن لم يكن مسموحاً له تصلك أنت بدلاً منه", "muted"]]; },
+    send: () => ({ op: "msg_send", pid: who.value, text: ta.value.trim(), allow: ai.checked }),
+  });
+  $("dlg").showModal(); ta.focus();
+}
 function renderData(m) {
   m.append(page("ب", "البيانات", "الأشخاص والأدوار والمشاريع — كل تعديل حساس يُؤكَّد برمزك السري", "var(--out)"));
+  if (regEnt("people")) { const eb = el("div", "ebar2"); eb.append(ebtn("✉ إرسال رسالة", () => sendMsg())); m.append(eb); }
   for (const e of (REG || []).filter((x) => !shownElsewhere(x.key))) {
     const h = secHead(e.title, e.rows.length, "اضغط على أي بطاقة لتعديلها." + (e.confirm ? " تراجع التعديل ثم تؤكده برمزك السري." : ""));
     if (e.canAdd) { const b = el("button", "sbtn", "+ إضافة"); b.type = "button"; b.onclick = () => openForm(e, null); h.insertBefore(b, h.querySelector(".note")); }
