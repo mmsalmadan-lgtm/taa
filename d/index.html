@@ -143,6 +143,7 @@ button.card{cursor:pointer}button.card:hover{border-color:var(--ui-2)}
 .sp .bar.over i{background:var(--crit)}
 .sp .ln{font-size:12.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 12px}.sp .ln b{color:var(--ink);font-weight:600}
 .sp.oth .pn{color:var(--warn)}
+.ltools{align-items:center;gap:10px}.srch{flex:1 1 220px;min-width:0;font:inherit;font-size:15px;padding:9px 11px;border:1px solid var(--field-in);border-radius:4px;background:var(--surface);color:var(--ink)}
 .sc .src{font-size:12.5px;color:var(--muted);margin-top:8px}
 @media (max-width:560px){.sc .nums{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
 .skel{height:110px;border-radius:8px;background:linear-gradient(90deg,var(--line),var(--surface),var(--line))}
@@ -470,24 +471,47 @@ function buyView(m) {
   const cur = avail.find((x) => x.k === BT);
   if (cur.sups && canEdit()) supsBox(m);
   if (cur.sups) supDetails(m);
+  if (cur.sups && sec("supcards")) supCards(m);
   for (const id of cur.ids) { const s = sec(id); if (!s) continue; m.append(secHead(s.title, s.table ? s.table.rows.length : undefined, noteOf(s)), ...cards(s, "acc")); }
 }
 // one card per subcontractor: his projects inside, where he reached, what he received, and every gap as an alert
+// search and folding of quiet accounts (kept across redraws); a card is «active» with an agreement, a balance, or a movement
+// in the last 12 months
+let SUBQ = "", SUBALL = false, SUPQ = "", SUPALL = false;
+const yearAgo = () => new Date(Date.now() - 365 * 864e5).toISOString().slice(0, 10);
+function listTools(m, all, live, place, getQ, setQ, getAll, setAll, render) {
+  const tools = el("div", "acts ltools"), q = el("input", "srch"); q.type = "search"; q.placeholder = place; q.value = getQ(); q.setAttribute("aria-label", place);
+  const tg = el("button", "lnk"); tg.type = "button";
+  const g = el("div", "scs");
+  const paint = () => {
+    const t = getQ().trim(), quiet = all.filter((c) => !live(c)).length;
+    const list = all.filter((c) => (getAll() || t || live(c)) && (!t || c.name.includes(t)));
+    tg.hidden = !quiet || !!t; tg.textContent = getAll() ? "إخفاء الحسابات الخاملة" : "إظهار الحسابات الخاملة (" + quiet + ")";
+    g.replaceChildren(...list.map(render));
+    if (!list.length) g.append(el("div", "empty", t ? "لا يوجد اسم يحتوي «" + t + "»" : "لا شيء"));
+  };
+  q.oninput = () => { setQ(q.value); paint(); };
+  tg.onclick = () => { setAll(!getAll()); paint(); };
+  tools.append(q, tg); m.append(tools, g); paint();
+}
 function subCards(m) {
   const S = sec("subcards"), C = (S.data && S.data.cards) || [];
   m.append(secHead(S.title, C.length, S.note));
   if (!C.length) { m.append(el("div", "empty", "لا يوجد مقاولو باطن بعد")); return; }
-  const g = el("div", "scs");
-  for (const c of C) {
+  const live = (c) => !c.noAgreement || (c.last && c.last >= yearAgo()) || Math.abs(c.balance) >= 1;
+  listTools(m, C, live, "ابحث باسم المقاول", () => SUBQ, (v) => (SUBQ = v), () => SUBALL, (v) => (SUBALL = v), subCard);
+}
+function subCard(c) {
+  {
     const bad = c.alerts.some((a) => a.tone === "bad") || c.projects.some((p) => p.alerts.some((a) => a.tone === "bad"));
-    const warn = !bad && (c.alerts.some((a) => a.tone === "warn") || c.projects.some((p) => p.alerts.length) || c.other.length);
+    const warn = !bad && (c.alerts.some((a) => a.tone === "warn") || c.projects.some((p) => p.alerts.length) || c.other.some((o) => o.alerts.length));
     const d = el("details", "sc" + (bad ? " bad" : warn ? " warn" : "")), su = el("summary");
-    const hd = el("div", "hd"); hd.append(el("b", "", c.name), el("span", "", [c.trades.join("، "), c.projects.length ? arN(c.projects.length, "مشروع واحد", "مشروعان", "مشاريع", "مشروعًا") : ""].filter(Boolean).join(" · ")), el("span", "tg", "التفاصيل"));
+    const hd = el("div", "hd"); hd.append(el("b", "", c.name), el("span", "", [c.trades.join("، "), c.projects.length ? arN(c.projects.length, "مشروع واحد", "مشروعان", "مشاريع", "مشروعًا") : c.other.length ? arN(c.other.length, "مشروع واحد", "مشروعان", "مشاريع", "مشروعًا") : "", c.noAgreement ? "بلا اتفاقية في اللوحة" : "", c.last ? "آخر حركة " + c.last : ""].filter(Boolean).join(" · ")), el("span", "tg", "التفاصيل"));
     const nums = el("div", "nums");
     const n = (label, v, cls) => { const x = el("div"); x.append(el("small", "", label), el("b", cls || "", v)); nums.append(x); };
     // Qoyod unreadable → unknown, never 0; paid ahead of the proven work is a normal advance (the alert says when it is not)
     const known = c.loaded !== false, kf = (v) => (known ? fmt(v) : "—");
-    n("الاتفاقيات", fmt(c.agreed)); n("الأعمال المثبتة", kf(c.work)); n("المصروف له", kf(c.paid));
+    n("الاتفاقيات", c.noAgreement ? "—" : fmt(c.agreed)); n("الأعمال المثبتة", kf(c.work)); n("المصروف له", kf(c.paid));
     n(!known ? "مستحق له" : c.balance > 1 ? "دفعة مقدمة" : c.balance < -1 ? "مستحق له" : "الفرق", kf(Math.abs(c.balance)), known && c.balance < -1 ? "pos" : "");
     su.append(hd, nums);
     const badP = c.projects.filter((p) => p.alerts.some((a) => a.tone === "bad")).length;
@@ -518,13 +542,13 @@ function subCards(m) {
       const row = el("div", "sp oth"); row.append(el("div", "pn", o.name));
       const ln = el("div", "ln"), x = el("span"); x.append(document.createTextNode("أعمال مثبتة في قيود "), el("b", "", fmt(o.work))); ln.append(x); row.append(ln);
       const al = el("div", "al"); for (const a of o.alerts) al.append(el("p", a.tone, sym(a.t))); row.append(al);
-      const ab = regBtn("contracts", "+ اتفاقية لهذا المشروع", { sub: c.name, project: o.name }); if (ab) { const ka = el("div", "acts"); ab.className = "lnk"; ka.append(ab); row.append(ka); }
+      const ab = regBtn("contracts", "+ اتفاقية لهذا المشروع", { sub: c.name, project: o.name, qoyodAccount: c.account }); if (ab) { const ka = el("div", "acts"); ab.className = "lnk"; ka.append(ab); row.append(ka); }
       body.append(row);
     }
     body.append(el("div", "src", c.source === "qoyod" ? "الأعمال والمصروف من حسابه في قيود (" + c.account + ")؛ المصروف مجموع واحد لأن الدفعات في قيود لا تحمل اسم المشروع غالباً." : "من مستخلصات ودفعات البوت — لا حساب قيود مربوط."));
-    d.append(body); g.append(d);
+    if (c.noAgreement) { const ab = regBtn("contracts", "+ اتفاقية لهذا المقاول", { sub: c.name, qoyodAccount: c.account }); if (ab) { const ka = el("div", "acts"); ka.append(ab); body.append(ka); } }
+    d.append(body); return d;
   }
-  m.append(g);
 }
 function siteView(m) {
   const T = TABS.find((x) => x.v === "site");
@@ -1046,6 +1070,27 @@ function supDetails(m) {
     b.append(t); if (r.edit) b.onclick = () => openForm(e, r); else b.disabled = true; box.append(b);
   }
   m.append(box);
+}
+// every supplier account in Qoyod: bought, paid, owed to him, on which projects (his account number is the link)
+function supCards(m) {
+  const S = sec("supcards"), C = (S.data && S.data.cards) || [];
+  m.append(secHead(S.title, C.length, S.note));
+  if (!C.length) { m.append(el("div", "empty", "لا توجد حسابات موردين")); return; }
+  const live = (c) => (c.last && c.last >= yearAgo()) || Math.abs(c.owed) >= 1 || Math.abs(c.advance) >= 1;
+  listTools(m, C, live, "ابحث باسم المورد", () => SUPQ, (v) => (SUPQ = v), () => SUPALL, (v) => (SUPALL = v), (c) => {
+    const d = el("details", "sc"), su = el("summary"), hd = el("div", "hd");
+    hd.append(el("b", "", c.name), el("span", "", [c.projects.length ? arN(c.projects.length, "مشروع واحد", "مشروعان", "مشاريع", "مشروعًا") : "", c.last ? "آخر حركة " + c.last : ""].filter(Boolean).join(" · ")), el("span", "tg", "التفاصيل"));
+    const nums = el("div", "nums"), n = (l, v, cls) => { const x = el("div"); x.append(el("small", "", l), el("b", cls || "", v)); nums.append(x); };
+    const kf = (v) => (c.loaded ? fmt(v) : "—");
+    n("المشتريات", kf(c.purchased)); n("المدفوع له", kf(c.paid));
+    n(c.advance >= 1 ? "دُفع له مقدماً" : "المستحق له", kf(c.advance >= 1 ? c.advance : c.owed), c.owed >= 1 ? "pos" : "");
+    su.append(hd, nums); d.append(su);
+    const body = el("div", "body");
+    for (const p of c.projects) { const row = el("div", "sp"), pn = el("div", "pn"); if (p.code) pn.append(el("span", "pcode", p.code)); pn.append(document.createTextNode(p.name)); const ln = el("div", "ln"), x = el("span"); x.append(document.createTextNode("مشتريات "), el("b", "", fmt(p.amount))); ln.append(x); row.append(pn, ln); body.append(row); }
+    if (c.untagged >= 1) body.append(el("div", "small muted", "مشتريات بلا مشروع في قيود: " + fmt(c.untagged)));
+    body.append(el("div", "src", "من حسابه في قيود (" + c.account + ")."));
+    d.append(body); return d;
+  });
 }
 async function supsBox(m) {
   const box = el("div", "box"); const h = el("div", "fch2"); h.append(el("b", "", "مستحقات الموردين")); h.append(ebtn("+ مستحق مورد", () => editSupplier(null)));
@@ -1711,7 +1756,7 @@ function openForm(e, r, prefill) {
   const done = async (j) => { step = "done"; save.remove(); rv.hidden = pin.box.hidden = true; close.textContent = "إغلاق"; close.disabled = false; res.className = "res ok"; res.textContent = j.msg || "تم الحفظ ✅"; close.focus(); await loadReg(); draw(); };
   save.onclick = async () => {
     res.className = "res"; res.textContent = "";
-    if (step === "edit") { out = {}; for (const k in get) out[k] = get[k](); }
+    if (step === "edit") { out = {}; for (const k in get) out[k] = get[k](); if (!r && prefill && prefill.qoyodAccount) out.qoyodAccount = prefill.qoyodAccount; }
     save.disabled = close.disabled = true;
     try {
       if (!e.confirm) { // suppliers: no money or access → saved directly
