@@ -121,7 +121,7 @@ button.card{cursor:pointer}button.card:hover{border-color:var(--ui-2)}
 .qc p.bad{background:var(--crit1);color:var(--crit)}.qc p.warn{background:var(--warn1);color:var(--warn)}
 .qa{margin-top:10px}.qa summary{cursor:pointer;font-size:13px;color:var(--ui);font-weight:600;min-height:32px}@media (pointer:coarse){.qa>summary{min-height:44px;padding-top:12px}}
 .qa table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}.qa td{padding:6px 4px;border-bottom:1px solid var(--line)}.qa td:last-child{text-align:left;white-space:nowrap;direction:ltr}
-.qa td.neg{color:var(--crit)}
+.qa td.neg{color:var(--crit)}.qa td.wrap,td.wrap{white-space:normal;text-align:right;direction:rtl}
 .gh-a{display:flex;gap:8px}.gh-a:empty{display:none}
 /* «مقاولو الباطن»: one card per subcontractor, his projects inside */
 .scs{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,520px),1fr));gap:12px;align-items:start}
@@ -140,7 +140,7 @@ button.card{cursor:pointer}button.card:hover{border-color:var(--ui-2)}
 .sp{padding:11px 0;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:6px}.sp:last-child{border-bottom:0}
 .sp .pn{font-weight:600;font-size:14px}.sp .pn .pcode{margin-inline-end:6px}
 .sp .bar{height:7px;border-radius:4px;background:var(--track);overflow:hidden}.sp .bar i{display:block;height:100%;background:var(--acc6)}
-.sp .bar.over i{background:var(--crit)}
+.sp .bar.over i,.bar.over i{background:var(--crit)}
 .sp .ln{font-size:12.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 12px}.sp .ln b{color:var(--ink);font-weight:600}
 .sp.oth .pn{color:var(--warn)}
 .ltools{align-items:center;gap:10px}.srch{flex:1 1 220px;min-width:0;font:inherit;font-size:15px;padding:9px 11px;border:1px solid var(--field-in);border-radius:4px;background:var(--surface);color:var(--ink)}
@@ -457,12 +457,12 @@ let MT = "rcv";
 const STABS = [{ k: "q", t: "الجودة", ids: ["quality", "defects"] }, { k: "p", t: "الصبات", ids: ["pours"] }, { k: "u", t: "بانتظار الاستلام", ids: ["units"] }];
 let ST = "q";
 // «المشتريات»: what the sites asked for, what was bought (and on whose account), and the suppliers with what we owe them
-const BTABS = [{ k: "req", t: "الطلبات المفتوحة", ids: ["reqs"] }, { k: "log", t: "سجل المشتريات", ids: ["purchases"] }, { k: "sups", t: "الموردون", ids: ["sups"], sups: true }];
+const BTABS = [{ k: "req", t: "الطلبات المفتوحة", ids: ["reqs"] }, { k: "log", t: "سجل المشتريات", ids: ["purchases"] }, { k: "mat", t: "المواد مقابل الميزانية", ids: [] }, { k: "sups", t: "الموردون", ids: ["sups"], sups: true }];
 let BT = "req";
 function buyView(m) {
   const T = TABS.find((x) => x.v === "buy");
   m.append(page("ش", T.t, "طلبات المواقع، وسجل الشراء وعلى حساب مين، والموردون ومستحقاتهم", T.fam));
-  const avail = BTABS.filter((x) => x.ids.some((i) => sec(i)) || (x.sups && (canEdit() || !!regEnt("suppliers"))) || (x.k === "log" && canEdit()));
+  const avail = BTABS.filter((x) => x.ids.some((i) => sec(i)) || (x.sups && (canEdit() || !!regEnt("suppliers"))) || ((x.k === "log" || x.k === "mat") && canEdit()));
   if (!avail.length) return;
   if (!avail.some((x) => x.k === BT)) BT = avail[0].k;
   const st = el("div", "sub-tabs mtabs");
@@ -470,6 +470,7 @@ function buyView(m) {
   m.append(st);
   const cur = avail.find((x) => x.k === BT);
   if (cur.k === "log") plogBox(m);
+  if (cur.k === "mat") matBox(m);
   if (cur.sups && canEdit()) supsBox(m);
   if (cur.sups) supDetails(m);
   if (cur.sups && sec("supcards")) supCards(m);
@@ -1126,6 +1127,54 @@ async function plogBox(m) {
   const clr = el("button", "lnk", "كل المشتريات"); clr.type = "button"; clr.onclick = () => { PLOG.f = null; PLOG.q = ""; sq.value = ""; PLOG.n = 100; paint(); };
   tools.append(sq, clr); box.append(el("div", "fg", "السطور"), tools, list, more); paint();
   box.append(el("div", "small muted", "المبالغ بدون ضريبة القيمة المضافة. أسعار الوحدة لا تُسجَّل في قيود (المبلغ فقط)؛ الأسعار الموثوقة تبدأ من أوامر الشراء في النظام."));
+}
+// «المواد مقابل الميزانية» (owner, 11 Nov): per project, the material budget from the take-off of its own drawings (the approved
+// method — not the BuildersFloos BOQ) against what Qoyod says was bought for it. Over budget is said with its amount; a group
+// the take-off did not price says so; what the drawings did not give is listed as «لم يُحصر»; a project with purchases but no
+// take-off yet is listed apart, never as a zero budget.
+function matRow(tb, g) {
+  const tr = el("tr"), bar = el("div", "bar" + (g.over >= 1 ? " over" : "")), fill = el("i");
+  fill.style.width = Math.min(100, g.pct || 0) + "%"; bar.append(fill); bar.setAttribute("role", "img"); bar.setAttribute("aria-label", g.pct === null ? "لا ميزانية" : "مستخدم " + g.pct + "%");
+  const name = el("td"); name.append(document.createTextNode(g.label), bar);
+  if (g.qty) name.append(el("div", "small muted", "الكمية " + Number(g.qty).toLocaleString("en-US", { maximumFractionDigits: 1 }) + " " + g.unit + (g.basis ? " — " + g.basis : "")));
+  else if (g.basis) name.append(el("div", "small muted", g.basis));
+  const val = el("td", "", fmt(g.actual) + (g.noBudget ? "" : " من " + fmt(g.budget)));
+  if (g.noBudget) val.append(el("div", "small wv", "لا ميزانية في الحصر"));
+  else if (g.over >= 1) val.append(el("div", "small neg", "تجاوز " + fmt(g.over)));
+  tr.append(name, val, el("td", g.over >= 1 ? "neg" : "muted", g.pct === null ? "—" : g.pct + "%")); tb.append(tr);
+  if (g.missing && g.missing.length) { const r2 = el("tr"), c = el("td", "wrap"); c.colSpan = 3; c.append(el("div", "small wv", "لم يُحصر بعد: " + g.missing.join("، "))); r2.append(c); tb.append(r2); }
+}
+async function matBox(m) {
+  const box = el("div", "box"), h = el("div", "fch2"); h.append(el("b", "", "المواد مقابل الميزانية")); box.append(h); m.append(box);
+  const wait = el("div", "small muted", "جارٍ قراءة الحصر والمشتريات…"); box.append(wait);
+  const { status, j } = await api({ op: "matbudget" }).catch(() => ({ status: 0, j: {} }));
+  if (status === 403) { box.remove(); return; }
+  if (status !== 200) { wait.replaceWith(el("div", "res bad", j.error || "تعذّر التحميل — اضغط «تحديث»")); return; }
+  wait.remove();
+  box.append(el("div", "small muted", "الميزانية من حصر مخططات كل مشروع بالطريقة المعتمدة، والفعلي من مشتريات قيود المسجّلة على المشروع (بدون الضريبة). النسبة تُقرأ مع مرحلة المشروع: الحديد والخرسانة يُشتريان قبل البلوك."));
+  if (!j.projects.length) box.append(el("p", "res warn", "لا يوجد مشروع محصور من مخططاته بعد"));
+  else {
+    const t = el("table"); for (const g of j.totals) matRow(t, g);
+    box.append(el("div", "fg", arN(j.projects.length, "مشروع واحد محصور", "مشروعان محصوران", "مشاريع محصورة", "مشروعًا محصورًا") + " — " + fmt(j.actual) + " من " + fmt(j.budget)), t);
+    const over = j.projects.filter((p) => p.over >= 1).length;
+    if (over) box.append(el("p", "res warn", arN(over, "مشروع واحد فيه", "مشروعان فيهما", "مشاريع فيها", "مشروعًا فيه") + " مواد تجاوزت ميزانيتها — في أعلى القائمة"));
+    for (const p of j.projects) {
+      const d = el("details", "qa"), su = el("summary"); d.open = j.projects.length === 1 || p.over >= 1;
+      su.append(document.createTextNode((p.code ? p.code + " " : "") + p.name + " — " + fmt(p.actual) + " من " + fmt(p.budget)));
+      if (p.over >= 1) su.append(el("span", "small neg", " · تجاوز " + fmt(p.over)));
+      if (!p.linked) su.append(el("span", "small muted", " · لا مشروع مربوط في قيود"));
+      d.append(su);
+      if (p.source) d.append(el("div", "small muted", p.source + (p.at ? " — " + p.at : "")));
+      const tb = el("table"); for (const g of p.groups) matRow(tb, g); d.append(tb);
+      if (p.missing && p.missing.length) d.append(el("div", "small wv", "خارج الحصر: " + p.missing.join("، ")));
+      box.append(d);
+    }
+  }
+  if (j.noTakeoff && j.noTakeoff.length) {
+    box.append(el("div", "fg", "اشترينا لها مواد ولم تُحصر مخططاتها بعد (" + j.noTakeoff.length + ")"));
+    const t = el("table"); for (const p of j.noTakeoff) { const tr = el("tr"); tr.append(el("td", "", (p.code ? p.code + " " : "") + p.name), el("td", "", fmt(p.actual))); t.append(tr); }
+    box.append(t, el("div", "small muted", "أرسل مخططاتها (الإنشائي والمعماري PDF) لتُحصر وتظهر ميزانيتها هنا."));
+  }
 }
 // every supplier account in Qoyod: bought, paid, owed to him, on which projects (his account number is the link)
 function supCards(m) {
