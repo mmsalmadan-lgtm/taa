@@ -31,6 +31,10 @@ bot's `ORIGINS` (taaa.sa).
 - «المستندات» (`recTab "docs"`, `docsTab`): `p.docs` from the bot (RV / PO / GRN / supplier invoice / PV, newest first), filter
   chips by type (`docF`), one card each; «فتح PDF» → `openDoc` → `api({op:"doc", t, id, i})` → short-lived signed URL (the
   window is opened inside the click so it is not blocked; blocked → same tab). No `p.docs` = bot not yet deployed → a note.
+- «المبيعات» (`salesView`, when `D.leads` comes from the bot; admin/pricing): KPI strip, status chips (`leadF`, `LST`), one card per
+  quote request (`leadCard`): draft packages with net margin (<8% red, <10% amber), the 950–1,050 competitors' check, buttons for
+  the draft quote / sales file / quote sent and, under «التفاصيل والمخططات», each customer drawing (`openDoc` t lf/lq/ls/lsent),
+  facts, conflicts, open points, edit notes, log. Approval and sending stay in the bot card. Extra works follow as before.
 - Project numbers: `S-yy-nnn` structural / `F-yy-nnn` finishing (e.g. S-25-003), made by the bot (`core/projcode.ts`).
 
 ## Editing in place (no separate entry section — owner's rule)

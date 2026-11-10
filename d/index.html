@@ -83,6 +83,7 @@ button.card{cursor:pointer}button.card:hover{border-color:var(--ui-2)}
 .bar{height:6px;background:var(--track);border-radius:3px;overflow:hidden}.bar i{display:block;height:100%;background:var(--acc6)}
 .filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .docf{margin-bottom:12px}.doc .dhd{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:4px 8px}.doc .dhd>*{white-space:nowrap}.doc .dno{font-variant-numeric:tabular-nums;direction:ltr;text-align:right;color:var(--ink)}.doc .sbtn{align-self:flex-start;margin-top:auto}.doc .ref{white-space:nowrap;font-variant-numeric:tabular-nums}
+.lead .dhd{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}.lead .dhd .small{margin-inline-start:auto}.lead .ref{font-variant-numeric:tabular-nums;font-weight:600}.lead .st a{color:var(--ui)}.lbtn{gap:6px}.ldet summary{cursor:pointer;color:var(--ui);font-weight:600;font-size:13px;min-height:32px;display:flex;align-items:center}.ldet .lh{font-size:12px;color:var(--muted);margin:8px 0 2px}.ldet ul{margin:0;padding-inline-start:18px;font-size:13px}.ldet a{color:var(--ui)}.ldet .ref{white-space:nowrap}
 .chip{border:1px solid var(--field);background:var(--surface);color:var(--ink);border-radius:4px;padding:6px 12px;font-size:13px}
 .chip[aria-pressed="true"]{background:var(--ui);border-color:var(--ui);color:var(--on-acc)}
 .search{flex:1 1 200px;min-width:0;font:inherit;border:1px solid var(--field);border-radius:4px;padding:7px 10px;background:var(--surface);color:var(--ink)}
@@ -670,6 +671,7 @@ function drawView() {
   if (view === "buy") return buyView(m);
   if (view === "proj") return rec ? record(m) : projects(m);
   if (view === "data") return renderData(m);
+  if (view === "sales" && D.leads) return salesView(m);
   const T = TABS.find((x) => x.v === view);
   m.append(page(T.t.slice(0, 1), T.t, null, T.fam));
   for (const id of T.ids) { const s = sec(id); if (!s) continue; m.append(secHead(s.title, s.table ? s.table.rows.length : undefined, noteOf(s)), ...cards(s, T.f)); }
@@ -2096,6 +2098,86 @@ function docsTab(p, panel) {
     g.append(c);
   }
   panel.append(g);
+}
+
+// ===== «المبيعات»: quote requests from new customers (D.leads from the bot) — drawings, the draft priced by the pipeline,
+// its packages and margins, the competitors' check, the quote sent. Approval and sending stay in the bot's review card.
+const LST = [["all", "الكل", () => true], ["act", "تحتاج قرارك", (l) => l.draft && ["ready", "failed"].includes(l.draft.state)],
+  ["prep", "قيد التجهيز", (l) => ["new", "files"].includes(l.status) || (l.status === "waiting" && !(l.draft && ["ready", "failed"].includes(l.draft.state)))],
+  ["sent", "أُرسل العرض", (l) => l.status === "sent"], ["won", "وافقوا", (l) => l.status === "won"], ["off", "لم يتم", (l) => ["lost", "cold"].includes(l.status)]];
+let leadF = "all";
+const pct1 = (x) => (Math.round(x * 1000) / 10) + "%";
+const agoT = (iso) => { if (!iso) return ""; const h = (Date.now() - new Date(iso).getTime()) / 36e5; return h < 1 ? "قبل أقل من ساعة" : h < 24 ? "قبل " + arN(Math.floor(h), "ساعة", "ساعتين", "ساعات", "ساعة") : "قبل " + arN(Math.floor(h / 24), "يوم", "يومين", "أيام", "يوماً"); };
+function leadTone(l) {
+  if (l.draft && l.draft.state === "failed") return "bad";
+  if (l.draft && l.draft.state === "ready") return "warn";
+  return l.status === "won" ? "ok" : "";
+}
+function salesView(m) {
+  m.append(page("م", "المبيعات", "طلبات العملاء الجدد ومسودات عروض الأسعار — الاعتماد والإرسال للعميل من بطاقة البوت", "var(--ui)"));
+  const L = D.leads, n = (k) => L.filter(LST.find((x) => x[0] === k)[2]).length;
+  m.append(kpiStrip([{ label: "تحتاج قرارك", value: String(n("act")), tone: n("act") ? "warn" : "" }, { label: "قيد التجهيز", value: String(n("prep")) },
+    { label: "أُرسل العرض — بانتظار الرد", value: String(n("sent")) }, { label: "وافقوا", value: String(n("won")) }]));
+  m.append(secHead("طلبات عروض الأسعار", L.length));
+  if (!L.length) m.append(el("div", "empty", "لا توجد طلبات بعد. العميل الجديد يراسل رقم البوت ويرسل مخططاته، ويظهر طلبه هنا."));
+  else {
+    if (leadF !== "all" && !n(leadF)) leadF = "all";
+    const bar = el("div", "filters docf"); bar.setAttribute("role", "group"); bar.setAttribute("aria-label", "حالة الطلب");
+    for (const [k, t] of LST) { const c = k === "all" ? L.length : n(k); if (!c && k !== "all") continue;
+      const b = el("button", "chip", t + " (" + c + ")"); b.type = "button"; b.setAttribute("aria-pressed", String(leadF === k)); b.onclick = () => { leadF = k; draw(); }; bar.append(b); }
+    m.append(bar);
+    const g = el("div", "grid leads"), f = LST.find((x) => x[0] === leadF)[2];
+    for (const l of L.filter(f)) g.append(leadCard(l));
+    m.append(g);
+  }
+  const ch = sec("changes"); if (ch) m.append(secHead(ch.title, ch.table ? ch.table.rows.length : undefined, noteOf(ch)), ...cards(ch, "ui"));
+}
+// drawing codes and strengths (ST-05, C35, 4500 psi) stay one left-to-right unit inside Arabic text
+function codeText(tag, t) {
+  const e = el(tag);
+  for (const part of String(t).split(/([A-Za-z]{1,5}-?\d[\w./-]*(?: ?psi)?)/)) { if (!part) continue; if (/^[A-Za-z]{1,5}-?\d/.test(part)) { const i = el("bdi", "ref", part); i.dir = "ltr"; e.append(i); } else e.append(document.createTextNode(part)); }
+  return e;
+}
+function leadCard(l) {
+  const tone = leadTone(l), c = el("div", "card lead" + (tone ? " " + tone : ""));
+  const hd = el("div", "dhd"); const no = el("bdi", "ref", l.no); no.dir = "ltr";
+  hd.append(no, el("span", "pill " + tone, l.draft && l.status === "waiting" ? "المسودة: " + l.draft.stateT : l.statusT), el("span", "small muted", agoT(l.updated))); c.append(hd);
+  c.append(el("div", "t", l.name || "عميل بدون اسم"));
+  const st = el("div", "st"); st.append(document.createTextNode(l.kind + (l.loc ? " · " : "")));
+  if (l.loc) { if (l.map) { const a = el("a", "", l.loc); a.href = l.map; a.target = "_blank"; a.rel = "noopener"; st.append(a); } else st.append(document.createTextNode(l.loc)); }
+  c.append(st);
+  const d = l.draft;
+  if (d && d.packages.length) {
+    const kv = el("div", "kv");
+    for (const p of d.packages) { const v = el("b", p.margin !== undefined && p.margin < 0.08 ? "neg" : p.margin !== undefined && p.margin < 0.1 ? "wv" : "", fmt(p.price));
+      if (p.margin !== undefined) { v.append(document.createTextNode(" · ربح ")); const r = el("bdi", "", pct1(p.margin)); r.dir = "ltr"; v.append(r); }
+      kv.append(el("span", "", p.name), v); }
+    c.append(kv);
+    if (d.comp) { const p0 = d.packages[0].price, off = p0 > d.comp.hi * 1.15 ? ["warn", "أعلى من نطاق المنافسين — راجع الحصر"] : p0 < d.comp.lo * 0.85 ? ["bad", "أقل من نطاق المنافسين — راجع الحصر قبل الاعتماد"] : ["ok", "ضمن نطاق المنافسين"];
+      const x = el("div", "small " + (off[0] === "ok" ? "muted" : off[0] === "bad" ? "neg" : "wv"), sar("فحص المعقولية: " + Math.round(d.comp.area).toLocaleString("en-US") + " م² × 950–1,050 = " + fmt(d.comp.lo) + " – " + fmt(d.comp.hi) + " · سعرنا " + Math.round(d.comp.rate).toLocaleString("en-US") + " للمتر — " + off[1])); c.append(x); }
+  }
+  if (d && d.error) c.append(el("div", "small neg", "تعذّر التسعير: " + d.error + " — سعّره يدوياً وأرسله من البوت."));
+  if (l.missing.length && ["new", "files", "waiting"].includes(l.status)) c.append(el("div", "small wv", "ناقص: " + l.missing.join("، ")));
+  if (l.quote) c.append(el("div", "small muted", "أُرسل العرض " + agoT(l.quote.at) + (l.quote.by ? " — " + l.quote.by : "")));
+  if (l.visit) c.append(el("div", "small", "زيارة للمكتب: " + l.visit));
+  if (l.why) c.append(el("div", "small muted", "السبب: " + l.why));
+  // files: the draft quote, the internal sales file, the quote sent, the customer's drawings
+  const btns = el("div", "filters lbtn");
+  const add = (label, open, aria) => { const b = el("button", "sbtn", label); b.type = "button"; b.setAttribute("aria-label", aria || label + " " + l.no); const o = { open }; b.onclick = () => openDoc(o, b); btns.append(b); };
+  if (d && d.quote) add("مسودة العرض", { t: "lq", id: l.id });
+  if (d && d.sales) add("ملف المبيعات", { t: "ls", id: l.id });
+  if (l.quote && l.quote.file) add("العرض المرسل", { t: "lsent", id: l.id });
+  if (btns.children.length) c.append(btns);
+  const more = el("details", "ldet"), sm = el("summary", "", "التفاصيل والمخططات (" + l.files.length + ")"); more.append(sm);
+  const list = (t, xs, cls) => { if (!xs || !xs.length) return; more.append(el("div", "lh " + (cls || ""), t)); const u = el("ul"); for (const x of xs) u.append(codeText("li", sar(x))); more.append(u); };
+  if (l.files.length) { more.append(el("div", "lh", "ملفات العميل")); const fb = el("div", "filters lbtn"); l.files.forEach((x) => { const b = el("button", "sbtn", x.kind); b.type = "button"; b.title = x.name; b.setAttribute("aria-label", "فتح " + x.kind + " — " + x.name); const o = { open: { t: "lf", id: l.id, i: x.i } }; b.onclick = () => openDoc(o, b); fb.append(b); }); more.append(fb); }
+  if (d) { list("بيانات المشروع", d.facts); list("تعارضات في المخططات", d.conflicts, "wv"); list("تحتاج قرارك قبل الإرسال", d.open, "wv");
+    list("ملاحظات التعديل", d.notes.map((x) => x.by + ": " + x.text)); }
+  if (l.note) list("ملاحظة العميل", [l.note]);
+  const ph = el("div", "small"); const wa = el("a", "", "واتساب العميل"); wa.href = "https://wa.me/" + l.phone; wa.target = "_blank"; wa.rel = "noopener"; const pn = el("bdi", "", " +" + l.phone); pn.dir = "ltr"; ph.append(wa, pn); more.append(ph);
+  list("السجل", l.log.map((x) => new Date(x.at).toLocaleDateString("ar-SA-u-nu-latn", { day: "numeric", month: "numeric" }) + " — " + x.a + (x.d ? ": " + x.d : "")));
+  c.append(more);
+  return c;
 }
 
 async function load(keep) {
