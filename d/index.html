@@ -1190,7 +1190,51 @@ const MVT = { handover: "تسليم عهدة", expense: "مصروف", payment: "
 // a difference is shown, never hidden. Loaded only when this tab opens (it is a heavy read).
 const GL_TYPES = [["asset", "الأصول"], ["liability", "الخصوم"], ["equity", "حقوق الملكية"], ["revenue", "الإيرادات"], ["expense", "المصروفات"]];
 const sgn = (v) => (v < -0.005 ? "−" : "") + fmt2(Math.abs(v));
+// «حركة النقد» (owner, 11 Nov: "why don't I see these numbers?"): for a period, where the money in the banks and the cash box
+// came from and where it went, grouped by what the books say; start + in − out = end is checked, not assumed; a movement whose
+// other side the books do not give is listed «تحتاج تفسيراً». Loaded when the tab opens.
+let FLOW = { from: null, to: null };
+async function flowBox(m) {
+  const box = el("div", "box"), h = el("div", "fch2"); h.append(el("b", "", "حركة النقد — البنوك والصندوق")); box.append(h); m.append(box);
+  const today = riyadhToday(), mStart = today.slice(0, 8) + "01";
+  const prevEnd = new Date(Date.parse(mStart + "T00:00:00Z") - 864e5).toISOString().slice(0, 10), prevStart = prevEnd.slice(0, 8) + "01";
+  const last30 = new Date(Date.parse(today + "T00:00:00Z") - 29 * 864e5).toISOString().slice(0, 10);
+  const f = FLOW.from || mStart, t = FLOW.to || today;
+  const ctl = el("div", "acts ltools");
+  for (const [l, a, b] of [["هذا الشهر", mStart, today], ["الشهر الماضي", prevStart, prevEnd], ["آخر 30 يوماً", last30, today]]) {
+    const c = el("button", "sbtn", l); c.type = "button"; c.setAttribute("aria-pressed", String(a === f && b === t)); c.onclick = () => { FLOW = { from: a, to: b }; draw(); }; ctl.append(c);
+  }
+  const fi = el("input", "srch"), ti = el("input", "srch"); fi.type = ti.type = "date"; fi.value = f; ti.value = t; fi.max = ti.max = today;
+  fi.setAttribute("aria-label", "من تاريخ"); ti.setAttribute("aria-label", "إلى تاريخ");
+  const go = el("button", "sbtn", "عرض الفترة"); go.type = "button"; go.onclick = () => { if (fi.value && ti.value) { FLOW = { from: fi.value, to: ti.value }; draw(); } };
+  ctl.append(fi, ti, go); box.append(ctl);
+  const wait = el("div", "small muted", "جارٍ قراءة حركة البنوك والصندوق…"); box.append(wait);
+  const { status, j } = await api({ op: "cashflow", from: f, to: t }).catch(() => ({ status: 0, j: {} }));
+  if (status !== 200) { wait.replaceWith(el("div", "res bad", j.error || "تعذّر التحميل — اضغط «تحديث»")); return; }
+  wait.remove();
+  const g = el("div", "kgrid"), cell = (l, v, sub, cls) => { const d = el("div"); d.append(el("span", "", l), el("b", cls || "", v)); if (sub) d.append(el("small", "", sub)); g.append(d); };
+  cell("الرصيد في البداية", sgn(j.open), j.from); cell("دخل", fmt2(j.in.total)); cell("خرج", fmt2(j.out.total)); cell("الرصيد في النهاية", sgn(j.close), j.to, "pay");
+  box.append(g);
+  const qc = el("div", "qc");
+  qc.append(el("p", j.check.ok ? "" : "bad", j.check.ok ? "البداية + الداخل − الخارج = النهاية ✓ (من حركات قيود نفسها)" : "لا تتطابق: البداية + الداخل − الخارج تختلف عن النهاية بـ" + sgn(j.check.diff)));
+  if (j.unexplained.length) qc.append(el("p", "warn", arN(j.unexplained.length, "حركة واحدة", "حركتان", "حركات", "حركة") + " لا يذكر الدفتر مقابلها — في «تحتاج تفسيراً» أدناه"));
+  box.append(qc);
+  const lines = (list, withRef) => { const tb = el("table"); for (const l of list) { const tr = el("tr"), what = l.counter && l.counter !== "—" ? l.counter + (l.note ? " — " + l.note : "") : l.note || "—"; tr.append(el("td", "muted", l.d), el("td", "", what + (j.accounts.length > 1 ? " · " + l.cash : "") + (withRef && l.ref ? " · قيد رقم " + l.ref + " في قيود" : "")), el("td", "", fmt2(l.amount))); tb.append(tr); } return tb; };
+  const side = (title, S) => {
+    if (!S.groups.length) return;
+    box.append(el("div", "fg", title + " — " + fmt2(S.total)));
+    for (const gr of S.groups) { const d = el("details", "qa"); d.open = gr.key === "unexplained"; d.append(el("summary", "", gr.label + " — " + fmt2(gr.total) + " (" + gr.share + "%)"), lines(gr.lines, gr.key === "unexplained")); box.append(d); }
+  };
+  side("من أين جاء المال", j.in); side("أين ذهب المال", j.out);
+  if (j.internal.lines.length) { const d = el("details", "qa"); d.append(el("summary", "", "تحويلات بين البنوك والصندوق (لا تُحسب دخلاً ولا خرجاً)"), lines(j.internal.lines)); box.append(d); }
+  if (j.accounts.length > 1) {
+    const d = el("details", "qa"), tb = el("table"); d.append(el("summary", "", "حسب الحساب (" + j.accounts.length + ")"));
+    for (const a of j.accounts) { const tr = el("tr"); tr.append(el("td", "", a.name), el("td", "muted", sgn(a.open)), el("td", "", "← " + sgn(a.close))); tb.append(tr); }
+    d.append(tb); box.append(d);
+  }
+}
 async function glBox(m) {
+  flowBox(m);
   const box = el("div", "box"), h = el("div", "fch2"); h.append(el("b", "", "الدفتر العام")); box.append(h);
   const sub = el("div", "small muted", "جارٍ قراءة حركات قيود…"); box.append(sub); m.append(box);
   const { status, j } = await api({ op: "ledger" }).catch(() => ({ status: 0, j: {} }));
