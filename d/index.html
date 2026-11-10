@@ -1641,7 +1641,9 @@ const STG_ORDER = ["dig", "repl", "dewat", "shor", "bdig", "foot", "bwall", "bin
 // the project's subcontractors, one source for the overview and the «مقاولو الباطن» tab: the «مقاولو الباطن» cards
 // (work from each subcontractor's own Qoyod account; the bot's certificates only for one without an account)
 function subsOf(p) {
-  const SC = ((sec("subcards") || {}).data || {}).cards || [];
+  const SD = (sec("subcards") || {}).data || {}, SC = SD.cards || [];
+  // the project's subcontract cost: live from its 5418 lines in Qoyod; the audit's hand-entered figure only when Qoyod is unreadable
+  const live = SD.cost ? +(SD.cost[p.id] || 0) : null, cost = live === null ? p.x.subPaid : live;
   const who = [];
   for (const c of SC) {
     const r = (c.projects || []).find((x) => x.pid === p.id), o = (c.other || []).find((x) => x.pid === p.id);
@@ -1649,9 +1651,17 @@ function subsOf(p) {
     if (r || work >= 1) who.push({ c, r, work });
   }
   who.sort((a, b) => b.work - a.work);
-  const named = who.filter((w) => w.c.source === "qoyod").reduce((t, w) => t + w.work, 0), unnamed = Math.max(0, p.x.subPaid - named);
+  const named = who.filter((w) => w.c.source === "qoyod").reduce((t, w) => t + w.work, 0), unnamed = Math.max(0, cost - named);
+  // his account can carry more than subcontract work (fill, haulage, materials he supplied): said, never zeroed
+  const beyond = Math.max(0, named - cost);
   const owing = who.reduce((t, w) => t + (w.c.loaded !== false ? w.c.owed || 0 : 0), 0);
-  return { who, named, unnamed, owing };
+  const audDiff = live !== null && Math.abs((p.x.subPaid || 0) - live) >= 1 ? p.x.subPaid || 0 : null;
+  // an agreement whose subcontractor has no linked Qoyod account: never merged by name — the page asks, naming the account on
+  // this project whose name starts with the same word as a possible match for the accountant to confirm
+  const first = (n) => String(n || "").trim().split(/[\s·\-]+/)[0];
+  const unlinked = who.filter((w) => w.c.source !== "qoyod" && w.r).map((w) => ({ name: w.c.name,
+    maybe: who.filter((x) => x.c.source === "qoyod" && first(x.c.name) === first(w.c.name)).map((x) => x.c.name + " (" + x.c.account + ")") }));
+  return { who, named, unnamed, owing, cost, live: live !== null, beyond, audDiff, unlinked };
 }
 function ovCard(g, title, src, cls) { const c = el("section", "box" + (cls ? " " + cls : "")), h = el("h3"); h.append(document.createTextNode(title)); if (src) h.append(el("span", "srcc", src)); c.append(h); g.append(c); return c; }
 function overview(p, panel) {
@@ -1713,9 +1723,9 @@ function overview(p, panel) {
   // the account number is the link). Qoyod's sub cost on the project not credited to any subcontractor account (e.g. paid
   // straight from a custody) is the only part left without a name. What is owed to him is per subcontractor (his payments
   // in Qoyod carry no project), so it is shown on his row as his whole balance.
-  const { who, unnamed, owing } = subsOf(p);
+  const { who, unnamed, owing, cost, beyond, audDiff, unlinked } = subsOf(p);
   const sb = ovCard(g, "مقاولو الباطن", "قيود + الاتفاقيات");
-  if (!who.length && p.x.subPaid < 1) sb.append(el("div", "small muted", "لا أعمال باطن مسجّلة على المشروع"));
+  if (!who.length && cost < 1) sb.append(el("div", "small muted", "لا أعمال باطن مسجّلة على المشروع"));
   if (who.length) {
     const tb = el("table", "ovt");
     for (const w of who) {
@@ -1727,7 +1737,9 @@ function overview(p, panel) {
     }
     sb.append(tb);
   }
-  if (unnamed >= 1) sb.append(el("div", "small wv", "مدفوع بلا حساب مقاول في قيود: " + fmt(unnamed) + " — من أصل " + fmt(p.x.subPaid)));
+  if (cost >= 1) sb.append(el("div", "small muted", "تكلفة الباطن على المشروع في قيود: " + fmt(cost) + (audDiff !== null ? " — والتدقيق " + fmt(audDiff) : "")));
+  if (unnamed >= 1) sb.append(el("div", "small wv", "منها بلا حساب مقاول في قيود: " + fmt(unnamed)));
+  if (beyond >= 1) sb.append(el("div", "small muted", "حسابات المقاولين على المشروع أكثر من بند الباطن بـ" + fmt(beyond) + " — مواد أو نقل أو إحلال سُجّلت عليهم"));
   // documents
   const dc = ovCard(g, "المستندات", "");
   const nd = (p.docs || []).length; dc.append(el("div", "", nd ? nd + " مستند (أوامر شراء، استلام، فواتير، سندات)" : "لا مستندات صادرة من البوت بعد"));
@@ -1737,13 +1749,17 @@ function overview(p, panel) {
   if (p.x.dueNow > 0.5) todo.push(["دفعة مستحقة على العميل " + fmt(p.x.dueNow), "استحقت ولم تُحصّل"]);
   if (owing >= 1) todo.push(["مستحق لمقاولي الباطن العاملين هنا " + fmt(owing), "أعمال مثبتة في قيود لم تُصرف (على كل مشاريعهم)"]);
   if (unnamed >= 1) todo.push(["مدفوعات باطن بلا حساب مقاول " + fmt(unnamed), "صُرفت في قيود دون حساب مقاول (غالباً من عهدة) — حدّد المقاول للمحاسب"]);
-  for (const w of who) if (!w.r && w.work >= 1 && w.c.source === "qoyod") todo.push(["لا اتفاقية مع " + w.c.name + " على هذا المشروع", "أعماله في قيود " + fmt(w.work) + " — أضف الاتفاقية من «البيانات»"]);
+  // an account already named as the possible match of an unlinked agreement is that agreement's item, not a second one
+  const cand = new Set(unlinked.flatMap((u) => u.maybe));
+  for (const w of who) if (!w.r && w.work >= 1 && w.c.source === "qoyod" && !cand.has(w.c.name + " (" + w.c.account + ")")) todo.push(["لا اتفاقية مع " + w.c.name + " على هذا المشروع", "أعماله في قيود " + fmt(w.work) + " — أضف الاتفاقية من «البيانات»"]);
   if (MB && (MB.projects || []).find((x) => x.pid === p.id && x.over >= 1)) todo.push(["مواد تجاوزت ميزانية الحصر", "راجع «المواد مقابل الميزانية»"]);
   if (MB && (MB.noTakeoff || []).find((x) => x.pid === p.id)) todo.push(["لا حصر من المخططات لهذا المشروع", "أرسل الإنشائي والمعماري PDF لتُحسب ميزانية المواد"]);
   if (p.links && !p.links.clients && p.status !== "منتهي") todo.push(["لا عميل مربوط بالمشروع في البوت", "لا تصله التقارير اليومية ولا طلبات الاستلام"]);
   if (p.links && !p.links.supervisors && p.status !== "منتهي") todo.push(["لا مشرف ولا مهندس موقع مربوط", "لا تُرفع تقارير يومية من الموقع"]);
   if (p.contracts.length && !nAll) todo.push(["العقد بلا جدول دفعات", "لا يُعرف ما يستحق ومتى"]);
   if (diffs.length) todo.push(["أرقام المواد في قيود تختلف عن التدقيق", "راجع الفرق وحدّث المصروف أو صحّح قيود"]);
+  for (const u of unlinked) todo.push(["اتفاقية «" + u.name + "» غير مربوطة بحساب في قيود", u.maybe.length ? "قد يكون حسابه: " + u.maybe.join("، ") + " — يؤكد المحاسب ويربطه" : "حدّد حسابه في قيود ليُقرأ المنفّذ والمصروف منه"]);
+  if (audDiff !== null) todo.push(["تكلفة الباطن في التدقيق " + fmt(audDiff) + " وفي قيود " + fmt(cost), "حدّث مدفوعات الباطن في التدقيق"]);
   const tc = ovCard(g, "يحتاج متابعة", "", "full ovtodo");
   if (!todo.length) tc.append(el("div", "", "لا شيء يحتاج متابعة الآن ✅"));
   else { const ul = el("ul"); for (const [a, b] of todo) { const li = el("li"); li.append(document.createTextNode(a), el("span", "", b)); ul.append(li); } tc.append(ul); }
@@ -1812,7 +1828,8 @@ function record(m) {
   } else if (recTab === "subs") {
     if (canEdit()) { const eb = el("div", "ebar2"); eb.append(ebtn("تعديل مدفوعات مقاولي الباطن", () => editSubPay(p))); panel.append(eb); }
     const S = subsOf(p);
-    panel.append(kpiStrip([{ label: "تكلفة الباطن على المشروع (قيود)", value: fmt(p.x.subPaid), f: "out" }, { label: "منها بأسماء المقاولين", value: fmt(S.named), f: "out" },
+    panel.append(kpiStrip([{ label: "تكلفة الباطن على المشروع (قيود)", value: fmt(S.cost), sub: S.audDiff !== null ? "التدقيق " + fmt(S.audDiff) : S.live ? "" : "من التدقيق — تعذّر قراءة قيود", f: "out" },
+      { label: "أعمال بأسماء المقاولين", value: fmt(S.named), sub: S.beyond >= 1 ? "تشمل " + fmt(S.beyond) + " مواد أو نقل خارج بند الباطن" : "", f: "out" },
       { label: "بلا حساب مقاول في قيود", value: fmt(S.unnamed), tone: S.unnamed >= 1 ? "warn" : "" }]));
     if (!S.who.length) panel.append(el("div", "empty", "لا أعمال باطن باسم مقاول على هذا المشروع"));
     const g = el("div", "grid fam-acc");
@@ -1824,7 +1841,7 @@ function record(m) {
       for (const [l, v] of [["قيمة الاتفاقية", r ? fmt(r.value) : "—"], ["المنفّذ على المشروع", !known ? "—" : fmt(w.work) + (r && r.value ? " (" + pct(w.work / r.value) + ")" : "")], ["وصل", known ? stage : "—"],
         ["المصروف له (كل مشاريعه)", known ? fmt(w.c.paid) : "—"], [w.c.owed >= 1 ? "مستحق له (كل مشاريعه)" : w.c.advance >= 1 ? "دفعة مقدمة (كل مشاريعه)" : "الرصيد", known ? (w.c.owed >= 1 ? fmt(w.c.owed) : w.c.advance >= 1 ? fmt(w.c.advance) : "—") : "—"]])
         kv.append(el("span", "", l), el("b", "", v));
-      c.append(kv, el("div", "small muted", w.c.source === "qoyod" ? "من حسابه في قيود (" + w.c.account + ") — الصرف في قيود لا يحمل اسم المشروع، فهو على كل مشاريعه" : "من مستخلصات البوت — لا حساب قيود مربوط"));
+      c.append(kv, el("div", w.c.source === "qoyod" ? "small muted" : "small wv", w.c.source === "qoyod" ? "من حسابه في قيود (" + w.c.account + ") — الصرف في قيود لا يحمل اسم المشروع، فهو على كل مشاريعه" : "اتفاقية غير مربوطة بحساب في قيود — الأرقام من مستخلصات البوت فقط"));
       g.append(c);
     }
     if (S.who.length) panel.append(g);
