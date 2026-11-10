@@ -1538,6 +1538,14 @@ function bookBox(box, K) {
       st.append(el("div", "small" + (a.verified ? "" : " wv"), a.counted ? "جُردت " + a.counted.date : "لم تُجرد"));
       const cb = el("button", "lnk", a.counted ? "جرد جديد" : "جرد العهدة"); cb.type = "button"; cb.onclick = () => countForm(a); st.append(cb);
     } else if (a.kind === "custody") st.append(el("div", "small", "المؤسسة مدينة له"));
+    if (a.kind === "custody") { // who holds it (his WhatsApp «عهدتي»), what waits for the accountant, a corrected opening
+      const hn = a.holder && (K.staff || []).find((p) => p.id === a.holder);
+      st.append(el("div", "small" + (a.holder ? "" : " wv"), a.holder ? "صاحبها: " + (hn ? hn.name : "—") : "غير مربوطة بصاحبها"));
+      const hb = el("button", "lnk", a.holder ? "تغيير صاحبها" : "اربطها بصاحبها"); hb.type = "button"; hb.onclick = () => holderForm(K, a); st.append(hb);
+      if (a.pending && a.pending.n) st.append(el("div", "small wv", "بانتظار اعتماد المحاسب: " + a.pending.n + " · " + fmt(a.pending.amount)));
+      const rb = a.opening && (a.opening.rebased || []).at(-1);
+      if (rb) st.append(el("div", "small muted", "صُحّح الافتتاحي " + fmt(rb.from) + " ← " + fmt(rb.to) + ": قيود سجّلت مصروفات بتاريخ قبل فتح الدفتر"));
+    }
     const v = el("td", a.balance < 0 ? "neg" : "", fmt(a.balance));
     if (a.qoyod !== null && a.qoyod !== undefined && Math.abs(a.qoyod - a.balance) >= 1) v.append(el("div", "small muted", "قيود: " + fmt(a.qoyod)));
     tr.append(el("td", "", a.name), st, v); t.append(tr);
@@ -1633,6 +1641,22 @@ function mvForm(K, type) {
     send: () => ({ op: "cashmv", type, from: from && from.value, to: to && to.value, amount: amt.value, date: dt.value, party: party && party.value, project: proj && proj.value, note: note.value }),
   });
   $("dlg").showModal(); (from || to).focus();
+}
+// a custody's holder: he then records his spending from WhatsApp («عهدتي») with the invoice photo, the accountant approves
+function holderForm(K, a) {
+  const body = $("dlgBody"); body.replaceChildren(el("h3", "", "صاحب العهدة — " + a.name));
+  body.append(el("p", "muted small", "يسجّل صاحب العهدة كل مصروف يوم صرفه من «عهدتي» في الواتساب (المبلغ، المشروع، البند، صورة الفاتورة)، ويعتمده المحاسب، ويصله رصيده كل أحد."));
+  const sel = dlgField(body, "صاحب العهدة", "select");
+  sel.append(new Option("— بدون —", ""));
+  for (const p of K.staff || []) sel.append(new Option(p.name, p.id));
+  sel.value = a.holder || "";
+  dlgSave(body, {
+    checks: [],
+    review: () => ["«" + a.name + "» ← " + (sel.value ? sel.options[sel.selectedIndex].text : "بدون صاحب")],
+    send: () => ({ op: "cashholder", acc: a.id, person: sel.value || null }),
+    after: (j) => { load(true).then(() => draw()).catch(() => {}); return j.msg; },
+  });
+  $("dlg").showModal(); sel.focus();
 }
 function countForm(a) {
   const body = $("dlgBody"); body.replaceChildren(el("h3", "", "جرد العهدة — " + a.name));
