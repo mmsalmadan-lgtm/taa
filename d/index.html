@@ -1742,8 +1742,10 @@ function overview(p, panel) {
   if (beyond >= 1) sb.append(el("div", "small muted", "حسابات المقاولين على المشروع أكثر من بند الباطن بـ" + fmt(beyond) + " — مواد أو نقل أو إحلال سُجّلت عليهم"));
   // documents
   const dc = ovCard(g, "المستندات", "");
-  const nd = (p.docs || []).length; dc.append(el("div", "", nd ? nd + " مستند (أوامر شراء، استلام، فواتير، سندات)" : "لا مستندات صادرة من البوت بعد"));
-  if (nd) { const ob = el("button", "sbtn", "عرض المستندات"); ob.type = "button"; ob.onclick = () => { recTab = "docs"; draw(); }; dc.append(ob); }
+  const ds = p.docs || [], nf = ds.filter((x) => x.k === "FILE").length, nb = ds.length - nf, np = ds.filter((x) => x.pending).length;
+  dc.append(el("div", "", ds.length ? [nf ? nf + " عقد ومستند" : "", nb ? nb + " من البوت (أوامر شراء، استلام، فواتير، سندات)" : ""].filter(Boolean).join(" · ") : "لا مستندات بعد"));
+  if (np) dc.append(el("div", "small wv", np + " منها ما زالت في «تدقيق طاء» القديم — تُنقل إلى ملف المشروع"));
+  { const ob = el("button", "sbtn", ds.length ? "عرض المستندات" : "رفع مستند"); ob.type = "button"; ob.onclick = () => { recTab = "docs"; draw(); }; dc.append(ob); }
   // what needs follow-up — derived from the data above, never typed by hand
   const todo = [];
   if (p.x.dueNow > 0.5) todo.push(["دفعة مستحقة على العميل " + fmt(p.x.dueNow), "استحقت ولم تُحصّل"]);
@@ -1856,7 +1858,7 @@ function record(m) {
 
 // «المستندات»: the project's documents from the bot (ProjRec.docs) — purchase orders, receipts of goods, supplier invoices,
 // payment vouchers (PV) and receipt vouchers (RV). PDFs open through POST op "doc" (a short-lived link, money roles only).
-const DOCK = { PO: ["أمر شراء", "أوامر الشراء", "eng"], GRN: ["محضر استلام", "الاستلام", "eng"], INV: ["فاتورة مورد", "الفواتير", ""], PV: ["سند صرف", "سندات الصرف", "warn"], RV: ["سند قبض", "سندات القبض", "ok"] };
+const DOCK = { FILE: ["مستند", "العقود والمستندات", "ok"], PO: ["أمر شراء", "أوامر الشراء", "eng"], GRN: ["محضر استلام", "الاستلام", "eng"], INV: ["فاتورة مورد", "الفواتير", ""], PV: ["سند صرف", "سندات الصرف", "warn"], RV: ["سند قبض", "سندات القبض", "ok"] };
 let docF = "all";
 // documents keep their halalas, but a whole amount is written like everywhere else on the page
 const fmt2 = (v) => unknown(v) ? "—" : Number.isInteger(Math.round(+v * 100) / 100) ? fmt(+v) : (+v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " " + SAR;
@@ -1879,9 +1881,34 @@ async function openDoc(d, btn) {
   } catch (e) { if (w) w.close(); toast("تعذّر الاتصال — حاول مرة أخرى"); }
   btn.disabled = false; btn.textContent = t0;
 }
+// «رفع مستند»: a contract, extra-work agreement, invoice… kept with the project in our storage (money roles; PDF or image ≤ 10 MB)
+const FILE_KINDS = ["عقد", "أعمال إضافية", "فاتورة", "سند", "تقرير", "مخططات", "أخرى"];
+function uploadDoc(p) {
+  const body = $("dlgBody"); body.replaceChildren(el("h3", "", "رفع مستند — " + p.name));
+  const box = el("div", "f"), id = "f" + Math.random().toString(36).slice(2, 8), lab = el("label", "", "الملف (PDF أو صورة، حتى 10 ميغا)"), fi = el("input");
+  fi.type = "file"; fi.id = id; lab.htmlFor = id; fi.accept = "application/pdf,image/png,image/jpeg,image/webp"; box.append(lab, fi); body.append(box);
+  const kind = dlgField(body, "نوع المستند", "select"); for (const k of FILE_KINDS) { const o = el("option", "", k); o.value = k; kind.append(o); }
+  const name = dlgField(body, "اسم المستند", "text"); name.placeholder = "مثال: عقد العظم — موقّع";
+  let file = null, data = "";
+  fi.onchange = () => { file = fi.files && fi.files[0]; data = ""; fieldErr(fi, "");
+    if (!file) return;
+    if (!["application/pdf", "image/png", "image/jpeg", "image/webp"].includes(file.type)) { fieldErr(fi, "ارفع PDF أو صورة"); file = null; return; }
+    if (file.size > 10 * 1024 * 1024) { fieldErr(fi, "الملف أكبر من 10 ميغا"); file = null; return; }
+    if (!name.value.trim()) name.value = file.name.replace(/\.[^.]+$/, "");
+    const r = new FileReader(); r.onload = () => { data = String(r.result).split(",")[1] || ""; }; r.readAsDataURL(file); };
+  dlgSave(body, {
+    checks: [{ check: () => (!file || !data ? (fieldErr(fi, file ? "انتظر لحظة — يُقرأ الملف" : "اختر الملف"), true) : (fieldErr(fi, ""), false)) },
+      { check: () => (!name.value.trim() ? (fieldErr(name, "اكتب اسم المستند"), true) : (fieldErr(name, ""), false)) }],
+    review: () => [name.value.trim() + " · " + kind.value, file.name + " — " + Math.ceil(file.size / 1024) + " ك.ب", "يُحفظ مع ملف المشروع، ويفتحه المدير والمالية والمحاسب."],
+    send: () => ({ op: "doc_put", pid: p.id, name: name.value.trim(), kind: kind.value, type: file.type, data }),
+    after: (j) => { load(true).then(() => draw()).catch(() => {}); return j.msg || "رُفع المستند ✅"; },
+  });
+  $("dlg").showModal(); fi.focus();
+}
 function docsTab(p, panel) {
   const docs = p.docs;
   if (!docs) { panel.append(el("div", "empty", "المستندات تظهر هنا بعد تحديث البوت.")); return; }
+  if (canEdit()) { const eb = el("div", "ebar2"); eb.append(ebtn("+ رفع مستند", () => uploadDoc(p))); panel.append(eb); }
   if (!docs.length) { panel.append(el("div", "empty", "لا توجد مستندات لهذا المشروع بعد — تُصدر من البوت: أوامر الشراء ومحاضر الاستلام وفواتير الموردين وسندات الصرف والقبض.")); return; }
   const n = (k) => docs.filter((d) => d.k === k).length;
   if (docF !== "all" && !n(docF)) docF = "all";
@@ -1893,15 +1920,15 @@ function docsTab(p, panel) {
   panel.append(bar);
   const g = el("div", "grid docs");
   for (const d of docs.filter((x) => docF === "all" || x.k === docF)) {
-    const [lbl, , tone] = DOCK[d.k] || [d.k, "", ""];
+    const [lbl0, , tone] = DOCK[d.k] || [d.k, "", ""], lbl = d.k === "FILE" ? d.note || lbl0 : lbl0;
     const c = el("div", "card doc");
     const hd = el("div", "dhd"); hd.append(el("span", "pill " + tone, lbl), el("span", "small muted", d.date || "")); c.append(hd);
     c.append(el("div", "t dno", d.no));
     const kv = el("div", "kv");
-    for (const [l, v] of [[d.k === "RV" ? "من" : "المورد", d.party], ["المبلغ", d.amount !== undefined ? fmt2(d.amount) : ""], ["البيان", d.note]]) if (v) kv.append(el("span", "", l), refText(v));
+    for (const [l, v] of [[d.k === "RV" ? "من" : "المورد", d.party], ["المبلغ", d.amount !== undefined ? fmt2(d.amount) : ""], ["البيان", d.k === "FILE" ? "" : d.note]]) if (v) kv.append(el("span", "", l), refText(v));
     c.append(kv);
-    if (d.open) { const b = el("button", "sbtn", "فتح PDF"); if (d.k === "INV") b.textContent = "فتح الفاتورة"; b.setAttribute("aria-label", b.textContent + " " + d.no); b.type = "button"; b.onclick = () => openDoc(d, b); c.append(b); }
-    else c.append(el("div", "small muted", "الملف غير محفوظ (صدر قبل حفظ المستندات)"));
+    if (d.open) { const b = el("button", "sbtn", "فتح PDF"); if (d.k === "INV") b.textContent = "فتح الفاتورة"; if (d.k === "FILE") b.textContent = "فتح الملف"; b.setAttribute("aria-label", b.textContent + " " + d.no); b.type = "button"; b.onclick = () => openDoc(d, b); c.append(b); }
+    else c.append(el("div", "small muted", d.pending ? "الملف ما زال في «تدقيق طاء» القديم — يُنقل إلى ملف المشروع" : "الملف غير محفوظ (صدر قبل حفظ المستندات)"));
     g.append(c);
   }
   panel.append(g);
