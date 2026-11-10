@@ -1609,7 +1609,7 @@ function projects(m) {
       if (a && a.unknown && a.contract) tags.append(el("span", "pill", "الربح غير معروف"));
       if (a && a.est) tags.append(el("span", "pill warn", "تقديري"));
       if (p.x.dueNow > 0.5) tags.append(el("span", "pill warn", "مستحق " + fmt(p.x.dueNow)));
-      if (p.x.unnamed > 0.5) tags.append(el("span", "pill", "باطن بلا اسم " + fmt(p.x.unnamed)));
+      { const un = subsOf(p).unnamed; if (un >= 1) tags.append(el("span", "pill", "باطن بلا حساب مقاول " + fmt(un))); }
       if (tags.children.length) c.append(tags);
       c.setAttribute("aria-label", (p.code ? p.code + " " : "") + p.name); c.onclick = () => { rec = p.id; recTab = "ov"; draw(); window.scrollTo(0, 0); };
       g.append(c);
@@ -1638,6 +1638,21 @@ const AUDK = { rebar: "steel", concrete: "concrete", building: "block" };
 // construction order for the stage strip (the edit form keeps its own order): backfill comes after the ground beams
 const STG_ORDER = ["dig", "repl", "dewat", "shor", "bdig", "foot", "bwall", "bins", "bslab", "beam", "fill", "gf", "ff", "xf", "roof", "blkg", "blkf", "blkx", "blkr", "fence",
   "elec", "plmb", "plas", "insu", "tilein", "gyp", "tileout", "pntin", "pntout"];
+// the project's subcontractors, one source for the overview and the «مقاولو الباطن» tab: the «مقاولو الباطن» cards
+// (work from each subcontractor's own Qoyod account; the bot's certificates only for one without an account)
+function subsOf(p) {
+  const SC = ((sec("subcards") || {}).data || {}).cards || [];
+  const who = [];
+  for (const c of SC) {
+    const r = (c.projects || []).find((x) => x.pid === p.id), o = (c.other || []).find((x) => x.pid === p.id);
+    const work = (r ? r.work : 0) + (o ? o.work : 0);
+    if (r || work >= 1) who.push({ c, r, work });
+  }
+  who.sort((a, b) => b.work - a.work);
+  const named = who.filter((w) => w.c.source === "qoyod").reduce((t, w) => t + w.work, 0), unnamed = Math.max(0, p.x.subPaid - named);
+  const owing = who.reduce((t, w) => t + (w.c.loaded !== false ? w.c.owed || 0 : 0), 0);
+  return { who, named, unnamed, owing };
+}
 function ovCard(g, title, src, cls) { const c = el("section", "box" + (cls ? " " + cls : "")), h = el("h3"); h.append(document.createTextNode(title)); if (src) h.append(el("span", "srcc", src)); c.append(h); g.append(c); return c; }
 function overview(p, panel) {
   mbLoad();
@@ -1698,16 +1713,7 @@ function overview(p, panel) {
   // the account number is the link). Qoyod's sub cost on the project not credited to any subcontractor account (e.g. paid
   // straight from a custody) is the only part left without a name. What is owed to him is per subcontractor (his payments
   // in Qoyod carry no project), so it is shown on his row as his whole balance.
-  const SC = ((sec("subcards") || {}).data || {}).cards || [];
-  const who = [];
-  for (const c of SC) {
-    const r = (c.projects || []).find((x) => x.pid === p.id), o = (c.other || []).find((x) => x.pid === p.id);
-    const work = (r ? r.work : 0) + (o ? o.work : 0);
-    if (r || work >= 1) who.push({ c, r, work });
-  }
-  who.sort((a, b) => b.work - a.work);
-  const named = who.filter((w) => w.c.source === "qoyod").reduce((t, w) => t + w.work, 0), unnamed = Math.max(0, p.x.subPaid - named);
-  const owing = who.reduce((t, w) => t + (w.c.loaded !== false ? w.c.owed || 0 : 0), 0);
+  const { who, unnamed, owing } = subsOf(p);
   const sb = ovCard(g, "مقاولو الباطن", "قيود + الاتفاقيات");
   if (!who.length && p.x.subPaid < 1) sb.append(el("div", "small muted", "لا أعمال باطن مسجّلة على المشروع"));
   if (who.length) {
@@ -1757,7 +1763,7 @@ function record(m) {
     { label: "صافي النقد", value: (cash < 0 ? "(" + fmt(-cash) + ")" : fmt(cash)), neg: cash < 0, sub: "المحصّل − المصروف", f: "cash" },
     ...((() => { const a = AUD && AUD.P[p.name]; if (!a || !a.contract) return []; return a.unknown ? [{ label: "الربح المتوقع", value: "—", sub: "حدّث المراحل والمصروف", f: "in" }] : [{ label: "الربح المتوقع", value: acc(a.profit), neg: a.profit < 0, sub: (Math.round(a.margin * 1000) / 10) + "% · الإنجاز " + Math.round(a.prog * 100) + "%", f: "in", flag: a.est ? ["warn", "تقديري — راجع المراحل والمصروف"] : a.margin < 0 ? ["bad", "خاسر"] : a.margin < 0.10 ? ["warn", "أقل من 10%"] : null }]; })())]));
   const st = el("div", "sub-tabs"), panel = el("div", "panel");
-  const T = [["ov", "نظرة عامة"], ["inst", "الدفعات", p.contracts.reduce((t, k) => t + k.inst.length, 0)], ["exp", "المصروف", p.exp.length], ["subs", "مقاولو الباطن", p.subs.length], ["docs", "المستندات", (p.docs || []).length], ["notes", "ملاحظات التدقيق"]];
+  const T = [["ov", "نظرة عامة"], ["inst", "الدفعات", p.contracts.reduce((t, k) => t + k.inst.length, 0)], ["exp", "المصروف", p.exp.length], ["subs", "مقاولو الباطن", subsOf(p).who.length], ["docs", "المستندات", (p.docs || []).length], ["notes", "ملاحظات التدقيق"]];
   for (const [k, t, n] of T) { const b = el("button", "", t + (n !== undefined ? " (" + n + ")" : "")); b.type = "button"; b.setAttribute("aria-current", String(recTab === k)); b.onclick = () => { recTab = k; draw(); }; st.append(b); }
   m.append(st, panel);
   if (recTab === "ov") overview(p, panel);
@@ -1805,16 +1811,23 @@ function record(m) {
     if (rows.length) { const t = el("div", "ebar"); t.style.borderTop = "2px solid var(--ink)"; t.append(el("b", "", "المجموع"), el("span"), el("b", "", fmt(p.x.spent))); panel.append(t); }
   } else if (recTab === "subs") {
     if (canEdit()) { const eb = el("div", "ebar2"); eb.append(ebtn("تعديل مدفوعات مقاولي الباطن", () => editSubPay(p))); panel.append(eb); }
-    panel.append(kpiStrip([{ label: "مدفوع لمقاولي الباطن (قيود)", value: fmt(p.x.subPaid), f: "out" }, { label: "مسجّل بالاسم في المستخلصات", value: fmt(p.x.named), f: "out" },
-      { label: "لم يُسجَّل باسمه بعد", value: fmt(p.x.unnamed), tone: p.x.unnamed < -0.5 ? "bad" : p.x.unnamed > 0.5 ? "warn" : "" }]));
-    if (!p.subs.length) panel.append(el("div", "empty", "لا توجد اتفاقيات مسجّلة بأسماء المقاولين لهذا المشروع"));
+    const S = subsOf(p);
+    panel.append(kpiStrip([{ label: "تكلفة الباطن على المشروع (قيود)", value: fmt(p.x.subPaid), f: "out" }, { label: "منها بأسماء المقاولين", value: fmt(S.named), f: "out" },
+      { label: "بلا حساب مقاول في قيود", value: fmt(S.unnamed), tone: S.unnamed >= 1 ? "warn" : "" }]));
+    if (!S.who.length) panel.append(el("div", "empty", "لا أعمال باطن باسم مقاول على هذا المشروع"));
     const g = el("div", "grid fam-acc");
-    for (const s of p.subs) {
-      const c = el("div", "card" + (s.owing > 0.5 ? " warn" : "")); c.append(el("div", "t", s.sub + (s.trade ? " · " + s.trade : "")));
-      const kv = el("div", "kv"); for (const [l, v] of [["قيمة الاتفاقية", fmt(s.total)], ["المنفّذ", s.exec > 0 ? fmt(s.exec) + " (" + pct(s.pct) + ")" : "لا مستخلص بعد"], ["المصروف له", fmt(s.paid)], ["المتبقي له الآن", s.owing > 0.5 ? fmt(s.owing) : "—"]]) kv.append(el("span", "", l), el("b", "", v));
-      c.append(kv); g.append(c);
+    for (const w of S.who) {
+      const c = el("div", "card" + (w.c.owed >= 1 ? " warn" : "")); c.append(el("div", "t", w.c.name + (w.c.trades && w.c.trades.length ? " · " + w.c.trades.join("، ") : "")));
+      const known = w.c.loaded !== false, r = w.r;
+      const stage = !r ? "بلا اتفاقية على هذا المشروع" : r.work <= 1 ? "لم يبدأ" : r.stages && r.done >= r.stages ? "اكتملت مراحله" : r.exact ? r.stage : "بين «" + r.stage + "» و«" + (r.next || "النهاية") + "»";
+      const kv = el("div", "kv");
+      for (const [l, v] of [["قيمة الاتفاقية", r ? fmt(r.value) : "—"], ["المنفّذ على المشروع", !known ? "—" : fmt(w.work) + (r && r.value ? " (" + pct(w.work / r.value) + ")" : "")], ["وصل", known ? stage : "—"],
+        ["المصروف له (كل مشاريعه)", known ? fmt(w.c.paid) : "—"], [w.c.owed >= 1 ? "مستحق له (كل مشاريعه)" : w.c.advance >= 1 ? "دفعة مقدمة (كل مشاريعه)" : "الرصيد", known ? (w.c.owed >= 1 ? fmt(w.c.owed) : w.c.advance >= 1 ? fmt(w.c.advance) : "—") : "—"]])
+        kv.append(el("span", "", l), el("b", "", v));
+      c.append(kv, el("div", "small muted", w.c.source === "qoyod" ? "من حسابه في قيود (" + w.c.account + ") — الصرف في قيود لا يحمل اسم المشروع، فهو على كل مشاريعه" : "من مستخلصات البوت — لا حساب قيود مربوط"));
+      g.append(c);
     }
-    if (p.subs.length) panel.append(g);
+    if (S.who.length) panel.append(g);
   } else if (recTab === "docs") {
     docsTab(p, panel);
   } else {
