@@ -449,6 +449,7 @@ const MTABS = [
   { k: "subs", t: "مقاولو الباطن", ids: ["subk", "certs"] }, // «مطابقة دفعات مقاولي الباطن» removed 2026-11-09 (owner): the cards read each subcontractor's Qoyod account
   { k: "cash", t: "النقد والمصاريف الثابتة", ids: [], cash: true },
   { k: "prof", t: "الربحية", ids: [], prof: true },
+  { k: "gl", t: "الدفتر العام", ids: [], gl: true },
 ];
 let MT = "rcv";
 // «التنفيذ والجودة»: quality of the works first, then what the sites need (requests, pours)
@@ -561,7 +562,7 @@ function dueBlock(m) {
 function moneyView(m) {
   const T = TABS.find((x) => x.v === "money");
   m.append(page("م", "المالية والمحاسبة", null, T.fam));
-  const avail = MTABS.filter((x) => (x.prof ? !!AUD : x.cash ? canEdit() : x.ids.some((i) => sec(i))));
+  const avail = MTABS.filter((x) => (x.prof ? !!AUD : x.cash || x.gl ? canEdit() : x.ids.some((i) => sec(i))));
   if (!avail.length) return;
   if (!avail.some((x) => x.k === MT)) MT = avail[0].k;
   const st = el("div", "sub-tabs mtabs");
@@ -570,6 +571,7 @@ function moneyView(m) {
   const cur = avail.find((x) => x.k === MT);
   if (cur.prof) return profitCards(m);
   if (cur.cash) return cashBox(m);
+  if (cur.gl) return glBox(m);
   if (cur.k === "rcv") dueBlock(m);
   if (cur.k === "subs" && sec("subcards")) subCards(m);
   if (cur.k === "cus") { const b = regBtn("custody", "+ إيداع عهدة عميل"); if (b) { const a = el("div", "acts"); a.append(b); m.append(a); } }
@@ -1138,6 +1140,42 @@ function openBookDialog(offer) {
   $("dlg").showModal(); close.focus();
 }
 const MVT = { handover: "تسليم عهدة", expense: "مصروف", payment: "صرف", receipt: "قبض", transfer: "تحويل" };
+// «الدفتر العام»: every account, its balance rebuilt from Qoyod's own movements beside the balance Qoyod reports (owner,
+// 11 Nov: "tracking the movements gives the current balance"). A preview until our own ledger opens at its 31 Dec opening;
+// a difference is shown, never hidden. Loaded only when this tab opens (it is a heavy read).
+const GL_TYPES = [["asset", "الأصول"], ["liability", "الخصوم"], ["equity", "حقوق الملكية"], ["revenue", "الإيرادات"], ["expense", "المصروفات"]];
+const sgn = (v) => (v < -0.005 ? "−" : "") + fmt2(Math.abs(v));
+async function glBox(m) {
+  const box = el("div", "box"), h = el("div", "fch2"); h.append(el("b", "", "الدفتر العام")); box.append(h);
+  const sub = el("div", "small muted", "جارٍ قراءة حركات قيود…"); box.append(sub); m.append(box);
+  const { status, j } = await api({ op: "ledger" }).catch(() => ({ status: 0, j: {} }));
+  if (status !== 200) { sub.replaceWith(el("div", "res bad", j.error || "تعذّر التحميل — اضغط «تحديث»")); return; }
+  const rows = j.rows || [], nz = rows.filter((r) => Math.abs(r.qoyod) >= 0.005 || Math.abs(r.rebuilt) >= 0.005);
+  const diff = nz.filter((r) => Math.abs(r.qoyod - r.rebuilt) >= 1);
+  sub.textContent = "معاينة من قيود حتى يُفتح دفترنا برصيده الافتتاحي في " + j.opening + (j.at ? " — آخر مزامنة " + when(j.at) : "");
+  const qc = el("div", "qc");
+  qc.append(el("p", "", (nz.length - diff.length) + " من " + nz.length + " حساباً لها رصيد: رصيدها المبني من حركات قيود يساوي رصيد قيود ✓"));
+  const bal = rows.reduce((t, r) => t + (r.type === "asset" || r.type === "expense" ? r.rebuilt : -r.rebuilt), 0);
+  qc.append(el("p", Math.abs(bal) < 1 ? "" : "bad", Math.abs(bal) < 1 ? "الميزان المبني من الحركات متوازن: المدين يساوي الدائن ✓" : "الميزان المبني من الحركات غير متوازن بفرق " + sgn(bal)));
+  if (diff.length) qc.append(el("p", "warn", diff.length + " حسابات يختلف رصيدها عن قيود — في «الفروقات» أدناه"));
+  box.append(qc);
+  const g = el("div", "kgrid");
+  // revenue and expenses are cumulative since Qoyod's records began (never closed into a year) — said, so they are not read as a year's profit
+  for (const [t, l] of GL_TYPES) { const c = el("div"); c.append(el("span", "", l), el("b", "", sgn(rows.filter((r) => r.type === t).reduce((x, r) => x + r.rebuilt, 0)))); if (t === "revenue" || t === "expense") c.append(el("small", "", "تراكمي منذ بداية سجلات قيود")); g.append(c); }
+  box.append(g);
+  const table = (list, withQ) => { const tb = el("table"); for (const r of list) { const tr = el("tr"), v = el("td", r.rebuilt < -0.005 ? "neg" : "", sgn(r.rebuilt)); if (withQ || Math.abs(r.qoyod - r.rebuilt) >= 1) v.append(el("div", "small wv", "قيود: " + sgn(r.qoyod) + (withQ ? " — الفرق " + sgn(r.rebuilt - r.qoyod) : ""))); tr.append(el("td", "muted", r.code), el("td", "", r.name + (r.active ? "" : " (موقوف)")), v); tb.append(tr); } return tb; };
+  if (diff.length) { const d = el("details", "qa"); d.open = true; d.append(el("summary", "", "الفروقات مع قيود (" + diff.length + ")"), table(diff, true)); box.append(d); }
+  for (const [t, l] of GL_TYPES) {
+    const list = nz.filter((r) => r.type === t); if (!list.length) continue;
+    const d = el("details", "qa"); d.append(el("summary", "", l + " (" + list.length + ")"), table(list, false)); box.append(d);
+  }
+  if ((j.pending || []).length) {
+    const d = el("details", "qa"); d.open = true; d.append(el("summary", "", "بانتظار التصنيف (" + j.pending.length + ")"));
+    const tb = el("table"); for (const p of j.pending) { const tr = el("tr"); tr.append(el("td", "", p.date), el("td", "", p.kind + " — " + p.why), el("td", "", fmt2(p.amount))); tb.append(tr); }
+    d.append(tb); box.append(d);
+  }
+  box.append(el("div", "small muted", j.posting ? "الترحيل التلقائي إلى دفترنا يعمل." : "الترحيل التلقائي إلى دفترنا يبدأ بعد الرصيد الافتتاحي؛ الأرقام هنا من حركات قيود."));
+}
 function bookBox(box, K) {
   const al = el("div", "qc");
   for (const a of K.alerts || []) al.append(el("p", a.tone, sym(a.t)));
