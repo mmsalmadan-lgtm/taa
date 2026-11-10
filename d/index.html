@@ -1694,13 +1694,34 @@ function overview(p, panel) {
       if (diffs.length) mat.append(el("div", "small muted", "يختلف عن التدقيق" + (syncD ? " (آخر تحديث " + syncD + ")" : "") + ": " + diffs.join(" · ")));
     }
   }
-  // subcontractors
-  const owing = (p.subs || []).reduce((t, s) => t + Math.max(0, s.owing || 0), 0);
+  // subcontractors: who did the work on this project comes from their own accounts in Qoyod (the «مقاولو الباطن» cards —
+  // the account number is the link). Qoyod's sub cost on the project not credited to any subcontractor account (e.g. paid
+  // straight from a custody) is the only part left without a name. What is owed to him is per subcontractor (his payments
+  // in Qoyod carry no project), so it is shown on his row as his whole balance.
+  const SC = ((sec("subcards") || {}).data || {}).cards || [];
+  const who = [];
+  for (const c of SC) {
+    const r = (c.projects || []).find((x) => x.pid === p.id), o = (c.other || []).find((x) => x.pid === p.id);
+    const work = (r ? r.work : 0) + (o ? o.work : 0);
+    if (r || work >= 1) who.push({ c, r, work });
+  }
+  who.sort((a, b) => b.work - a.work);
+  const named = who.filter((w) => w.c.source === "qoyod").reduce((t, w) => t + w.work, 0), unnamed = Math.max(0, p.x.subPaid - named);
+  const owing = who.reduce((t, w) => t + (w.c.loaded !== false ? w.c.owed || 0 : 0), 0);
   const sb = ovCard(g, "مقاولو الباطن", "قيود + الاتفاقيات");
-  const kv = el("div", "kgrid");
-  for (const [l, v, c] of [["المصروف لهم", fmt(p.x.subPaid), ""], ["المتبقي لهم الآن", owing > 0.5 ? fmt(owing) : "—", owing > 0.5 ? "wv" : ""], ["اتفاقيات مسجّلة", String((p.subs || []).length), ""]]) { const d = el("div"); d.style.display = "grid"; d.append(el("span", "small muted", l), el("b", c, v)); kv.append(d); }
-  sb.append(kv);
-  if (p.x.unnamed > 0.5) sb.append(el("div", "small wv", "مدفوع بلا اسم مقاول: " + fmt(p.x.unnamed)));
+  if (!who.length && p.x.subPaid < 1) sb.append(el("div", "small muted", "لا أعمال باطن مسجّلة على المشروع"));
+  if (who.length) {
+    const tb = el("table", "ovt");
+    for (const w of who) {
+      const tr = el("tr"), a = el("td"); a.append(el("b", "", w.c.name));
+      a.append(el("div", "small muted", w.r ? (w.r.work <= 1 ? "لم يبدأ" : w.r.stages && w.r.done >= w.r.stages ? "اكتملت مراحله" : w.r.exact ? "وصل: " + w.r.stage : "بين «" + w.r.stage + "» و«" + (w.r.next || "النهاية") + "»") : "بلا اتفاقية على هذا المشروع"));
+      const v = el("td", "n", fmt(w.work) + (w.r ? " من " + fmt(w.r.value) : ""));
+      if (w.c.owed >= 1) v.append(el("div", "small wv", "مستحق له " + fmt(w.c.owed) + " (كل مشاريعه)"));
+      tr.append(a, v); tb.append(tr);
+    }
+    sb.append(tb);
+  }
+  if (unnamed >= 1) sb.append(el("div", "small wv", "مدفوع بلا حساب مقاول في قيود: " + fmt(unnamed) + " — من أصل " + fmt(p.x.subPaid)));
   // documents
   const dc = ovCard(g, "المستندات", "");
   const nd = (p.docs || []).length; dc.append(el("div", "", nd ? nd + " مستند (أوامر شراء، استلام، فواتير، سندات)" : "لا مستندات صادرة من البوت بعد"));
@@ -1708,8 +1729,9 @@ function overview(p, panel) {
   // what needs follow-up — derived from the data above, never typed by hand
   const todo = [];
   if (p.x.dueNow > 0.5) todo.push(["دفعة مستحقة على العميل " + fmt(p.x.dueNow), "استحقت ولم تُحصّل"]);
-  if (owing > 0.5) todo.push(["مستحق لمقاولي الباطن " + fmt(owing), "أعمال مثبتة لم تُصرف"]);
-  if (p.x.unnamed > 0.5) todo.push(["مدفوعات باطن بلا اسم " + fmt(p.x.unnamed), "سجّلها باسم المقاول في «مقاولو الباطن»"]);
+  if (owing >= 1) todo.push(["مستحق لمقاولي الباطن العاملين هنا " + fmt(owing), "أعمال مثبتة في قيود لم تُصرف (على كل مشاريعهم)"]);
+  if (unnamed >= 1) todo.push(["مدفوعات باطن بلا حساب مقاول " + fmt(unnamed), "صُرفت في قيود دون حساب مقاول (غالباً من عهدة) — حدّد المقاول للمحاسب"]);
+  for (const w of who) if (!w.r && w.work >= 1 && w.c.source === "qoyod") todo.push(["لا اتفاقية مع " + w.c.name + " على هذا المشروع", "أعماله في قيود " + fmt(w.work) + " — أضف الاتفاقية من «البيانات»"]);
   if (MB && (MB.projects || []).find((x) => x.pid === p.id && x.over >= 1)) todo.push(["مواد تجاوزت ميزانية الحصر", "راجع «المواد مقابل الميزانية»"]);
   if (MB && (MB.noTakeoff || []).find((x) => x.pid === p.id)) todo.push(["لا حصر من المخططات لهذا المشروع", "أرسل الإنشائي والمعماري PDF لتُحسب ميزانية المواد"]);
   if (p.links && !p.links.clients && p.status !== "منتهي") todo.push(["لا عميل مربوط بالمشروع في البوت", "لا تصله التقارير اليومية ولا طلبات الاستلام"]);
