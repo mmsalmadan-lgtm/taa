@@ -462,13 +462,14 @@ let BT = "req";
 function buyView(m) {
   const T = TABS.find((x) => x.v === "buy");
   m.append(page("ش", T.t, "طلبات المواقع، وسجل الشراء وعلى حساب مين، والموردون ومستحقاتهم", T.fam));
-  const avail = BTABS.filter((x) => x.ids.some((i) => sec(i)) || (x.sups && (canEdit() || !!regEnt("suppliers"))));
+  const avail = BTABS.filter((x) => x.ids.some((i) => sec(i)) || (x.sups && (canEdit() || !!regEnt("suppliers"))) || (x.k === "log" && canEdit()));
   if (!avail.length) return;
   if (!avail.some((x) => x.k === BT)) BT = avail[0].k;
   const st = el("div", "sub-tabs mtabs");
   for (const x of avail) { const b = el("button", "", x.t); b.type = "button"; b.setAttribute("aria-current", String(BT === x.k)); b.onclick = () => { BT = x.k; draw(); }; st.append(b); }
   m.append(st);
   const cur = avail.find((x) => x.k === BT);
+  if (cur.k === "log") plogBox(m);
   if (cur.sups && canEdit()) supsBox(m);
   if (cur.sups) supDetails(m);
   if (cur.sups && sec("supcards")) supCards(m);
@@ -1070,6 +1071,61 @@ function supDetails(m) {
     b.append(t); if (r.edit) b.onclick = () => openForm(e, r); else b.disabled = true; box.append(b);
   }
   m.append(box);
+}
+// «سجل المشتريات» from Qoyod (owner, 11 Nov: purchases management): every site-cost line in a period — what, how much (without
+// VAT), which project, from whom — grouped by material, project and supplier; a row of a group filters the list; a source the
+// entry does not name is said («غير مذكور في القيد»), never guessed. Loaded when the tab opens.
+let PLOG = { from: null, to: null, f: null, q: "", n: 100 };
+async function plogBox(m) {
+  const box = el("div", "box"), h = el("div", "fch2"); h.append(el("b", "", "المشتريات من قيود")); box.append(h); m.append(box);
+  const today = riyadhToday(), mStart = today.slice(0, 8) + "01", yStart = today.slice(0, 4) + "-01-01";
+  const prevEnd = new Date(Date.parse(mStart + "T00:00:00Z") - 864e5).toISOString().slice(0, 10), prevStart = prevEnd.slice(0, 8) + "01";
+  const f = PLOG.from || mStart, t = PLOG.to || today;
+  const ctl = el("div", "acts ltools");
+  for (const [l, a, b] of [["هذا الشهر", mStart, today], ["الشهر الماضي", prevStart, prevEnd], ["هذه السنة", yStart, today]]) {
+    const c = el("button", "sbtn", l); c.type = "button"; c.setAttribute("aria-pressed", String(a === f && b === t)); c.onclick = () => { PLOG = { from: a, to: b, f: null, q: "", n: 100 }; draw(); }; ctl.append(c);
+  }
+  const fi = el("input", "srch"), ti = el("input", "srch"); fi.type = ti.type = "date"; fi.value = f; ti.value = t; fi.max = ti.max = today;
+  fi.setAttribute("aria-label", "من تاريخ"); ti.setAttribute("aria-label", "إلى تاريخ");
+  const go = el("button", "sbtn", "عرض الفترة"); go.type = "button"; go.onclick = () => { if (fi.value && ti.value) { PLOG = { from: fi.value, to: ti.value, f: null, q: "", n: 100 }; draw(); } };
+  ctl.append(fi, ti, go); box.append(ctl);
+  const wait = el("div", "small muted", "جارٍ قراءة المشتريات من قيود…"); box.append(wait);
+  const { status, j } = await api({ op: "purchases", from: f, to: t }).catch(() => ({ status: 0, j: {} }));
+  if (status === 403) { box.remove(); return; }
+  if (status !== 200) { wait.replaceWith(el("div", "res bad", j.error || "تعذّر التحميل — اضغط «تحديث»")); return; }
+  wait.remove();
+  const g = el("div", "kgrid"), cell = (l, v, sub, cls) => { const d = el("div"); d.append(el("span", "", l), el("b", cls || "", v)); if (sub) d.append(el("small", "", sub)); g.append(d); };
+  cell("المشتريات", fmt2(j.total), "بدون الضريبة · " + j.lines.length + " سطراً", "pay");
+  cell("المصدر غير مذكور", fmt2(j.unknown), j.total ? Math.round((j.unknown / j.total) * 100) + "% من المشتريات" : "", j.unknown >= 1 ? "wv" : "");
+  cell("بلا مشروع", fmt2(j.noProject), "", j.noProject >= 1 ? "wv" : "");
+  box.append(g);
+  const list = el("div"), more = el("button", "lnk"); more.type = "button";
+  const paint = () => {
+    const q = PLOG.q.trim(), fl = PLOG.f;
+    const sg = (l) => (l.kind === "supplier" || l.kind === "sub" ? l.source : l.kind === "unknown" ? "غير مذكور في القيد" : "دفع مباشر (بنك / صندوق / عهدة)");
+    const L = j.lines.filter((l) => (!fl || (fl.k === "sgroup" ? sg(l) : l[fl.k]) === fl.v) && (!q || [l.material, l.project, l.source, l.note].some((x) => String(x).includes(q))));
+    const tb = el("table");
+    for (const l of L.slice(0, PLOG.n)) { const tr = el("tr"); tr.append(el("td", "muted", l.d), el("td", "", l.material + " · " + l.project + " · " + l.source + (l.note ? " — " + l.note : "")), el("td", "", fmt2(l.amount))); tb.append(tr); }
+    const sum = L.reduce((x, l) => x + l.amount, 0);
+    list.replaceChildren(el("div", "small muted", (fl ? "«" + fl.v + "» — " : "") + L.length + " سطراً — " + fmt2(sum)), tb);
+    more.hidden = L.length <= PLOG.n; more.textContent = "عرض المزيد (" + (L.length - PLOG.n) + ")";
+  };
+  more.onclick = () => { PLOG.n += 200; paint(); };
+  const groups = [["byMaterial", "حسب المادة", "material"], ["byProject", "حسب المشروع", "project"], ["bySupplier", "حسب المورد", "sgroup"]];
+  for (const [key, title, field] of groups) {
+    const d = el("details", "qa"), tb = el("table"); d.append(el("summary", "", title + " (" + j[key].length + ")"));
+    for (const gr of j[key]) {
+      const tr = el("tr"), b = el("button", "lnk", gr.label); b.type = "button";
+      b.onclick = () => { PLOG.f = { k: field, v: gr.label }; PLOG.n = 100; paint(); list.scrollIntoView({ block: "start" }); };
+      const td = el("td"); td.append(b); tr.append(td, el("td", "", fmt2(gr.total)), el("td", "muted", gr.share + "%")); tb.append(tr);
+    }
+    d.append(tb); box.append(d);
+  }
+  const tools = el("div", "acts ltools"), sq = el("input", "srch"); sq.type = "search"; sq.placeholder = "ابحث: مادة، مشروع، مورد، وصف"; sq.value = PLOG.q; sq.setAttribute("aria-label", "ابحث في المشتريات");
+  sq.oninput = () => { PLOG.q = sq.value; PLOG.n = 100; paint(); };
+  const clr = el("button", "lnk", "كل المشتريات"); clr.type = "button"; clr.onclick = () => { PLOG.f = null; PLOG.q = ""; sq.value = ""; PLOG.n = 100; paint(); };
+  tools.append(sq, clr); box.append(el("div", "fg", "السطور"), tools, list, more); paint();
+  box.append(el("div", "small muted", "المبالغ بدون ضريبة القيمة المضافة. أسعار الوحدة لا تُسجَّل في قيود (المبلغ فقط)؛ الأسعار الموثوقة تبدأ من أوامر الشراء في النظام."));
 }
 // every supplier account in Qoyod: bought, paid, owed to him, on which projects (his account number is the link)
 function supCards(m) {
