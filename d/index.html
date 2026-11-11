@@ -2146,6 +2146,7 @@ function leadCard(l) {
   const st = el("div", "st"); st.append(document.createTextNode(l.kind + (l.loc ? " · " : "")));
   if (l.loc) { if (l.map) { const a = el("a", "", l.loc); a.href = l.map; a.target = "_blank"; a.rel = "noopener"; st.append(a); } else st.append(document.createTextNode(l.loc)); }
   c.append(st);
+  if (l.via) c.append(el("div", "small muted", "عن طريق المبيعات: " + l.via + " — يتابع العميل بنفسه"));
   const d = l.draft;
   if (d && d.packages.length) {
     const kv = el("div", "kv");
