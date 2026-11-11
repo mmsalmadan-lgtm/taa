@@ -2146,6 +2146,7 @@ function leadCard(l) {
   const st = el("div", "st"); st.append(document.createTextNode(l.kind + (l.loc ? " · " : "")));
   if (l.loc) { if (l.map) { const a = el("a", "", l.loc); a.href = l.map; a.target = "_blank"; a.rel = "noopener"; st.append(a); } else st.append(document.createTextNode(l.loc)); }
   c.append(st);
+  if (l.via) c.append(el("div", "small muted", "عن طريق المبيعات: " + l.via + " — يتابع العميل بنفسه"));
   const d = l.draft;
   if (d && d.packages.length) {
     const kv = el("div", "kv");
@@ -2166,6 +2167,8 @@ function leadCard(l) {
   const add = (label, open, aria) => { const b = el("button", "sbtn", label); b.type = "button"; b.setAttribute("aria-label", aria || label + " " + l.no); const o = { open }; b.onclick = () => openDoc(o, b); btns.append(b); };
   if (d && d.quote) add("مسودة العرض", { t: "lq", id: l.id });
   if (d && d.sales) add("ملف المبيعات", { t: "ls", id: l.id });
+  if (d && d.cost) add("ملف التكاليف", { t: "lc", id: l.id });
+  if (d && d.costx) add("التكاليف Excel", { t: "lcx", id: l.id }, "ملف التكاليف Excel " + l.no);
   if (l.quote && l.quote.file) add("العرض المرسل", { t: "lsent", id: l.id });
   if (btns.children.length) c.append(btns);
   const more = el("details", "ldet"), sm = el("summary", "", "التفاصيل والمخططات (" + l.files.length + ")"); more.append(sm);
