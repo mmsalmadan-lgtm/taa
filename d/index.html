@@ -298,6 +298,38 @@ label.chk{display:inline-flex;align-items:center;gap:6px;margin-inline-end:14px;
 .hero h1{margin:0;font-size:clamp(26px,3.4vw,38px);line-height:1.2;font-weight:600}
 .hero p{margin:4px 0 0;font-size:16px;color:var(--muted);max-width:68ch;line-height:1.7}
 .hero p b{color:var(--ink);font-weight:600}.hero p .bad{color:var(--crit)}
+/* Phase 3: the four answers, the 13-week chart, item cards (alert colours only for alerts; money in the ledger colours) */
+.ans{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+@media (max-width:1079px){.ans{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}}
+.aq{position:relative;display:flex;flex-direction:column;gap:5px;min-width:0;text-align:start;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:14px 16px 14px 14px;padding-inline-start:18px;font:inherit;color:var(--ink);cursor:pointer;transition:border-color .15s,transform .1s}
+.aq:hover{border-color:var(--line-2)}.aq:active{transform:scale(.99)}
+.aq::before{content:"";position:absolute;inset-block:14px;inset-inline-start:0;width:3px;border-radius:0 2px 2px 0;background:var(--line-2)}
+.aq.bad::before{background:var(--crit)}.aq.warn::before{background:var(--warn6)}.aq.ok::before{background:var(--acc6)}
+.aq .q{font-size:12.5px;font-weight:500;color:var(--muted)}
+.aq .a{font-family:var(--f-disp);font-size:18px;font-weight:600;line-height:1.35;overflow-wrap:anywhere}
+.aq.bad .a{color:var(--crit)}.aq.warn .a{color:var(--warn)}.aq.ok .a{color:var(--acc9)}
+.aq .d{font-size:12.5px;color:var(--muted);overflow-wrap:anywhere}
+@media (max-width:640px){.aq{padding:12px 12px 12px 14px;padding-inline-start:14px}.aq .a{font-size:15.5px}.aq .q,.aq .d{font-size:12px}}
+.w13box .small.muted{margin-top:2px}
+.w13{position:relative;height:150px;display:grid;grid-template-columns:repeat(13,minmax(0,1fr));gap:4px;margin:14px 0 6px}.w13.big{height:210px}
+.w13 .z{position:absolute;inset-inline:0;height:1.5px;background:var(--line-2)}
+.w13 .c{position:relative}
+.w13 .c i{position:absolute;inset-inline:14%;background:color-mix(in srgb,var(--acc6) 78%,var(--surface));border-radius:3px}
+.w13 .c i.n{background:color-mix(in srgb,var(--crit) 80%,var(--surface))}
+.w13 .c b{position:absolute;left:50%;width:8px;height:8px;margin-left:-4px;border-radius:50%;background:var(--ink);border:1.5px solid var(--surface)}
+.w13x{display:grid;grid-template-columns:repeat(13,minmax(0,1fr));gap:4px;font-size:11px;color:var(--muted);text-align:center;font-variant-numeric:tabular-nums}
+.w13l{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:8px 0 2px}.w13l span{display:inline-flex;align-items:center;gap:6px}
+.w13l .lb::before{content:"";width:10px;height:10px;border-radius:2px;background:color-mix(in srgb,var(--acc6) 78%,var(--surface))}
+.w13l .ld::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--ink)}
+.dgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}@media (max-width:760px){.dgrid{grid-template-columns:1fr}}
+.dcard{position:relative;display:flex;flex-direction:column;gap:8px;padding-inline-start:20px}
+.dcard::before{content:"";position:absolute;inset-block:16px;inset-inline-start:0;width:3px;border-radius:0 2px 2px 0;background:var(--line-2)}
+.dcard.bad::before{background:var(--crit)}.dcard.warn::before{background:var(--warn6)}.dcard.info::before{background:var(--eng6)}
+.dcard .dt{font-weight:600;font-size:14.5px}.dcard .sbtn{align-self:flex-start}
+.dmeta{display:flex;gap:6px;flex-wrap:wrap}
+.why{margin:0;padding-inline-start:18px;font-size:13px}.why li+li{margin-top:2px}
+.wkt th{font-size:12px;font-weight:600;color:var(--muted);text-align:start;padding:6px 2px;border-bottom:1px solid var(--line)}.wkt th:not(:first-child){text-align:end}
+.subh{margin:12px 0 2px;font-weight:600}
 .steps-box{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:16px 18px 10px}
 .steps-box>h2{margin:0;font-size:16px;font-weight:600}.steps-box>p{margin:2px 0 8px;font-size:13px;color:var(--muted)}
 .steps{list-style:none;margin:0;padding:0;counter-reset:step;display:flex;flex-direction:column}
@@ -1391,6 +1423,203 @@ const EN = {
 "ملاحظة تحتاج إلى تحقق: {x}": "Note to verify: {x}",
 "مستحق عند العميل — {x}": "Due from the client — {x}",
 "دفعات استحقت ولم تُحصّل": "Payments due and not collected",
+"هل يكفي النقد للالتزامات القادمة؟": "Will cash cover what is coming due?",
+"لا — عجز من الأسبوع {n}": "No — short from week {n}",
+"فقط إن وصلت الدفعات غير المؤكدة": "Only if uncertain payments arrive",
+"نعم، 13 أسبوعاً": "Yes, for 13 weeks",
+"أدنى رصيد {n}": "Lowest balance {n}",
+"أدنى رصيد {n} في {n}": "Lowest balance {n} on {n}",
+"أي المشاريع معرضة للخسارة؟": "Which projects may lose money?",
+"{n} خاسر حسب التقدير": "{n} losing on the estimate",
+"{n} تحت هدف الربح": "{n} below the profit target",
+"لا مشروع خاسر حسب التقدير": "No project losing on the estimate",
+"{n} غير معروف": "{n} unknown",
+"{n} ربحه غير واقعي": "{n} with an unrealistic margin",
+"كل المشاريع فوق الهدف": "All projects above target",
+"أي المشاريع متأخرة ولماذا؟": "Which projects are behind, and why?",
+"{n} متأخر عن جدوله": "{n} behind schedule",
+"لا تأخير ظاهر": "No visible delay",
+"أين تتوقف الطلبات والاعتمادات؟": "Where are requests and approvals stuck?",
+"{n} متوقف": "{n} stuck",
+"لا شيء متوقف": "Nothing stuck",
+"{n} عليك": "{n} on you",
+"الأقدم {n} يوماً": "oldest {n} days",
+"أسئلة اليوم": "Today's questions",
+"النقد خلال 13 أسبوعاً": "Cash over 13 weeks",
+"أول عجز {n}": "First shortfall {n}",
+"أدناه {n}": "lowest {n}",
+"يكفي إن وصلت غير المؤكدة": "Enough if uncertain money arrives",
+"الافتتاحي {n}": "Opening {n}",
+"قيود: البنوك والصندوق والعهد المؤكدة": "Qoyod: banks, cash box and confirmed custody",
+"دفتر النقد في اللوحة": "The dashboard cash book",
+"أسطر النقد في التدقيق (إدخال يدوي)": "Audit cash lines (entered by hand)",
+"لم يُطابق مع كشف البنك": "Not matched to the bank statement",
+"مفتوح منذ {x}": "Open since {x}",
+"الرصيد آخر الأسبوع": "Balance at week end",
+"بالدفعات المؤكدة فقط": "Confirmed money only",
+"بالدفعات المؤكدة فقط: أدنى رصيد {n} في {n}": "Confirmed money only: lowest balance {n} on {n}",
+"الأسابيع والأسباب والافتراضات ←": "Weeks, causes and assumptions →",
+"أدنى رصيد خلال 13 أسبوعاً": "Lowest balance in 13 weeks",
+"الأسبوع {n}": "Week {n}",
+"{n} بهامش غير واقعي": "{n} with an unrealistic margin",
+"توقع النقد — 13 أسبوعاً": "Cash forecast — 13 weeks",
+"من اليوم: الرصيد الافتتاحي + ما يُتوقع تحصيله − ما يُتوقع دفعه — بدون الضريبة": "From today: opening balance + expected receipts − expected payments — excluding VAT",
+"لماذا العجز في {n} (الأسبوع {n})": "Why the shortfall on {n} (week {n})",
+"حتى ذلك اليوم يدخل {n} ويخرج {n} والافتتاحي {n}": "By that day {n} comes in and {n} goes out; opening {n}",
+"تكلفة إكمال المشاريع": "Cost to finish the projects",
+"المصاريف الثابتة": "Fixed costs",
+"أوامر الشراء": "Purchase orders",
+"مدفوعات أخرى": "Other payments",
+"أكبر تكاليف الإكمال حتى ذلك اليوم: {x}": "Largest completion costs by then: {x}",
+"دفعات غير مؤكدة قريبة لو وصلت تخفف العجز: {x}": "Nearby uncertain payments that would ease it: {x}",
+"الأسابيع": "Weeks",
+"الأسبوع": "Week",
+"يدخل مؤكد": "In, confirmed",
+"غير مؤكد": "Uncertain",
+"يخرج": "Out",
+"الرصيد": "Balance",
+"التحصيل المتوقع": "Expected receipts",
+"مؤكد — مستحق بالعقد أو مطالبة صادرة": "Confirmed — due under the contract, or claim issued",
+"غير مؤكد — ينتظر الإنجاز أو متأخر كثيراً": "Uncertain — waits for progress, or long overdue",
+"مستحقة الآن": "Due now",
+"مرتبطة بالإنجاز": "Linked to progress",
+"متأخرة {n} يوماً": "{n} days late",
+"مطالبة عمل إضافي صادرة": "Extra-work claim issued",
+"مستحق له عن أعمال معتمدة": "Owed for approved work",
+"أمر شراء مفتوح — يُدفع بعد التسليم بأسبوع": "Open PO — paid a week after delivery",
+"المدفوعات المحددة": "Scheduled payments",
+"إضافة إلى تكلفة إكمال المشاريع الموزعة على مددها والمصاريف الثابتة": "On top of project completion costs spread over their time, and fixed costs",
+"خارج التوقع": "Outside the forecast",
+"لا يدخل تحصيلها ولا تكاليفها حتى تُعرف تكلفة إكمالها": "Neither their receipts nor their costs count until their completion cost is known",
+"مستحق الآن {n}": "Due now {n}",
+"باقي {n}": "Remaining {n}",
+"لا عقد مسجل": "No contract recorded",
+"تكلفة الإكمال غير معروفة": "Completion cost unknown",
+"ما ينقص التوقع": "What the forecast is missing",
+"بنود ثابتة بلا مبلغ: {x}": "Fixed-cost lines with no amount: {x}",
+"المصاريف الثابتة الشهرية غير مُدخلة — التوقع بلا رواتب وإيجار": "Monthly fixed costs not entered — the forecast has no salaries or rent",
+"ضريبة القيمة المضافة المستحقة للهيئة غير مخصومة — ضريبة المدخلات والمدفوع غير مسجلين": "VAT owed to ZATCA is not deducted — input VAT and VAT paid are not recorded",
+"{n} مشروع تكلفة إكماله غير معروفة — خارج التوقع (لا ميزانية ولا متبقٍ ولا إنجاز)": "{n} projects with unknown completion cost — outside the forecast (no budget, remaining or progress)",
+"{n} مشروع بلا ميزانية تكلفة معتمدة — المتبقي مقدّر": "{n} projects without an approved cost budget — remaining cost estimated",
+"الرصيد الافتتاحي من أسطر التدقيق اليدوية — قيود لم تُقرأ": "Opening balance from the hand-entered audit lines — Qoyod not read",
+"الافتراضات": "Assumptions",
+"كل المبالغ بدون ضريبة القيمة المضافة (التحصيل ÷ 1.15)، كما في التدقيق.": "All amounts exclude VAT (receipts ÷ 1.15), as in the audit.",
+"الدفعة المستحقة الآن تُتوقع خلال 7 أيام؛ المرتبطة بمرحلة: نهاية المرحلة المتوقعة + 7 أيام.": "A payment due now is expected within 7 days; a stage-linked one at the stage's expected end + 7 days.",
+"مؤكدة = مستحقة بالعقد وتأخرها 30 يوماً أو أقل، أو مطالبة عمل إضافي صادرة. غير مؤكدة = تنتظر الإنجاز أو متأخرة أكثر من 30 يوماً.": "Confirmed = due under the contract and at most 30 days late, or an extra-work claim issued. Uncertain = waits for progress or more than 30 days late.",
+"مستحقات مقاولي الباطن (المعتمد − المصروف) تُدفع خلال 7 أيام؛ مستحقات الموردين حسب موعدها (هذا الشهر 15 يوماً، خلال 3 أشهر 60).": "Subcontractor dues (certified − paid) are paid within 7 days; supplier dues by their date (this month 15 days, within 3 months 60).",
+"تكلفة الإكمال غير الملتزم بها تُوزّع على المدة المتبقية حسب مراحل المشروع؛ أوامر الشراء المفتوحة تُدفع بعد التسليم بأسبوع.": "The uncommitted cost to complete is spread over the remaining time by the project's stages; open POs are paid a week after delivery.",
+"المصاريف الثابتة على مستوى المؤسسة فقط (÷ 30 يومياً) — لا تدخل في تكلفة أي مشروع.": "Fixed costs are company level only (÷ 30 a day) — never inside a project's cost.",
+"مقاولون صُرف لهم أكثر من المعتمد بمجموع {n} — لا يُخصم من التوقع.": "Subcontractors paid more than approved, {n} in total — not deducted from the forecast.",
+"المشاريع المعرضة للخسارة": "Projects that may lose money",
+"التكلفة المتوقعة عند الإكمال = المصروف + الملتزم به + المتبقي غير الملتزم به — بدون الضريبة": "Estimated cost at completion = spent + committed + uncommitted remaining — excluding VAT",
+"خاسر حسب التقدير": "Losing on the estimate",
+"تحت هدف الربح": "Below the profit target",
+"هامش غير واقعي (أكثر من 30%) — تكاليف غير مسجلة غالباً": "Unrealistic margin (over 30%) — costs probably not recorded",
+"الإيراد": "Revenue",
+"غير معروفة": "Unknown",
+"ملتزم به": "Committed",
+"المسؤول: {x}": "Owner: {x}",
+"باقي للتحصيل {n}": "Left to collect {n}",
+"تكلفة المشروع": "Project cost",
+"المصروف {n} ÷ الإنجاز {n} (من حالة المراحل)": "Spent {n} ÷ progress {n} (from the stages)",
+"المصروف {n} ÷ الإنجاز {n} (الإنجاز مقدّر من المصروف)": "Spent {n} ÷ progress {n} (progress estimated from spending)",
+"المصروف {n} ÷ الإنجاز {n}": "Spent {n} ÷ progress {n}",
+"نسبة التكلفة إلى العقد في مشاريع منتهية مشابهة {n}": "Cost-to-contract ratio of similar finished projects {n}",
+"ميزانية ملف التكلفة {n} − المصروف {n}": "Cost-file budget {n} − spent {n}",
+"المتبقي المُدخل {n}": "Remaining entered {n}",
+"لا ميزانية ولا متبقٍ مُدخل ولا نسبة إنجاز يُبنى عليها": "No budget, remaining or progress to build on",
+"لم يبدأ — خارج التوقع": "Not started — outside the forecast",
+"طريقة المتبقي: {x}": "Remaining-cost method: {x}",
+"هامش أعلى من 30% — غالباً تكلفة غير مسجلة بالكامل": "Margin above 30% — cost probably not fully recorded",
+"خاسر حسب التقدير الحالي": "Losing on the current estimate",
+"أقل من هدف الربح {n}": "Below the profit target {n}",
+"قيمة عقد العميل غير مسجلة": "Client contract value not recorded",
+"الالتزامات أكبر من تقدير التكلفة المتبقية — التقدير منخفض": "Commitments exceed the remaining-cost estimate — the estimate is low",
+"تقدير ضعيف: الإنجاز {n} فقط": "Weak estimate: progress only {n}",
+"عمل إضافي معتمد لم يُحدد منفذه أو تكلفته": "Approved extra work with no executor or cost",
+"تحقق: عقد «إضافي» في التدقيق وأعمال إضافية في البوت — لا تُسجَّل مرتين": "Check: an «extra» contract in the audit and extra works in the bot — do not record twice",
+"المشاريع المتأخرة عن جدولها": "Projects behind schedule",
+"الإنجاز الفعلي مقابل المخطط من تاريخ العقد ومدته — والأسباب التي يراها البوت": "Actual vs planned progress from the contract date and duration — and the causes the bot sees",
+"تجاوز موعد التسليم": "Past the handover date",
+"متأخر {n} يوماً": "{n} days behind",
+"الإنجاز {n} والمخطط {n}": "progress {n}, planned {n}",
+"الإنجاز {n}": "progress {n}",
+"التسليم {n}": "handover {n}",
+"لا تقارير يومية في البوت": "No daily reports in the bot",
+"لا تقرير يومي منذ {n} أيام": "No daily report for {n} days",
+"دفعة العميل متأخرة {n} يوماً ({n})": "Client payment {n} days late ({n})",
+"{n} توريد مواد متأخر": "{n} late material deliveries",
+"{n} طلب مواد ينتظر اعتماداً": "{n} material requests awaiting approval",
+"{n} عمل إضافي ينتظر قراراً": "{n} extra works awaiting a decision",
+"السبب غير مسجل — اسأل مهندس المشروع": "Cause not recorded — ask the project engineer",
+"{x}: لا تقارير يومية في البوت": "{x}: no daily reports in the bot",
+"لا مشروع متأخراً أكثر من أسبوعين ✓": "No project more than two weeks behind ✓",
+"افتح المشروع": "Open the project",
+"الطلبات والاعتمادات المتوقفة": "Stuck requests and approvals",
+"كل ما ينتظر أحداً يومين أو أكثر — الأكبر والأقدم أولاً": "Everything waiting on someone for two days or more — largest and oldest first",
+"أُرسلت ولم تُدفع": "Sent, not paid",
+"جاهزة ولم تُرسل للعميل": "Ready, not sent to the client",
+"إثبات تحويل بانتظار التأكيد": "Transfer proof awaiting confirmation",
+"بانتظار اعتماد المدير المالي": "Awaiting the finance manager's approval",
+"بانتظار تحويل العميل لعهدته": "Awaiting the client's custody transfer",
+"بانتظار {x}": "Awaiting {x}",
+"التوريد متأخر عن موعده": "Delivery late",
+"استُلمت ولم تُسجل فاتورة المورد": "Received, supplier invoice not recorded",
+"فرق في فاتورة المورد بانتظار القرار": "Supplier invoice difference awaiting a decision",
+"لم يُسعّر": "Not priced",
+"معتمد ولم يُحدد منفذه": "Approved, no executor",
+"بانتظار دفعة العميل": "Awaiting the client's payment",
+"قيمة المطالبة {n}": "Claim amount {n}",
+"قيمة الطلب {n}": "Request amount {n}",
+"قيمة العمل {n}": "Work value {n}",
+"المستحق {n}": "Due {n}",
+"منذ {n} يوماً": "for {n} days",
+"لا شيء متوقف الآن ✓": "Nothing stuck now ✓",
+"قرارات اليوم": "Today's decisions",
+"بالترتيب: المبلغ × الاستعجال": "In order: amount × urgency",
+"عجز نقدي متوقع من {n} (الأسبوع {n})": "Cash shortfall expected from {n} (week {n})",
+"النقد {n} ويخرج حتى ذلك اليوم {n} ويدخل {n}": "Cash {n}; by then {n} goes out and {n} comes in",
+"النقد {n} ويخرج حتى ذلك اليوم {n} ويدخل {n} — أكبر دفعة: {x}": "Cash {n}; by then {n} goes out and {n} comes in — largest payment: {x}",
+"النقد يكفي فقط إن وصلت دفعات غير مؤكدة — وإلا عجز من {n}": "Cash is enough only if uncertain payments arrive — otherwise short from {n}",
+"بدون الدفعات المرتبطة بالإنجاز أو المتأخرة يظهر عجز": "Without progress-linked or overdue payments there is a shortfall",
+"أدنى رصيد متوقع {n}": "Lowest expected balance {n}",
+"أدنى رصيد بالمؤكد فقط {n}": "Lowest, confirmed only {n}",
+"الإدارة والمدير المالي": "Management and finance manager",
+"{x} — خاسر حسب التقدير": "{x} — losing on the estimate",
+"التكلفة المتوقعة {n} أكبر من الإيراد {n} ({x})": "Expected cost {n} above revenue {n} ({x})",
+"تقدير خطي من الإنجاز": "linear estimate from progress",
+"من ملف التكلفة": "from the cost file",
+"متبقٍ مُدخل": "remaining entered",
+"الخسارة المتوقعة {n}": "Expected loss {n}",
+"أنت": "You",
+"افتح": "Open",
+"افتح واعتمد": "Open and approve",
+"افتح البند": "Open the item",
+"افتح توقع النقد": "Open the cash forecast",
+"كل القرارات": "All decisions",
+"التكلفة حتى الإكمال": "Cost to complete",
+"التدقيق + قيود + البوت": "Audit + Qoyod + bot",
+"شامل الضريبة": "incl. VAT",
+"أعمال إضافية معتمدة": "Approved extra works",
+"{n} عمل": "{n} works",
+"بدون الضريبة": "excl. VAT",
+"ميزانية التكلفة": "Cost budget",
+"غير معتمدة": "Not approved",
+"ملف التكلفة": "Cost file",
+"لا تعديلات مسجلة": "No revisions recorded",
+"{n} تعديل": "{n} revisions",
+"قيود {n} + مستخلصات الباطن {n}": "Qoyod {n} + subcontract certificates {n}",
+"ملتزم به ولم يُصرف": "Committed, not spent",
+"باطن {n}": "Subcontracts {n}",
+"أوامر شراء {n}": "POs {n}",
+"إضافي {n}": "Extras {n}",
+"متبقٍ غير ملتزم به": "Uncommitted remaining",
+"غير معروف": "Unknown",
+"التكلفة المتوقعة عند الإكمال": "Estimated cost at completion",
+"الربح المتوقع": "Expected profit",
+"{n} ألف": "{n}k",
+"{n} مليون": "{n}m",
+"المدير المالي": "Finance manager",
 "صباح الخير، {x}": "Good morning, {x}",
 "مساء الخير، {x}": "Good evening, {x}"
 };
@@ -1930,6 +2159,7 @@ function backHome(m, title, sub) {
 }
 // The home page is a short overview; every block opens its own page for the detail.
 function home(m) {
+  if (D && D.home && D.fc) return home3(m);
   if (!AUD) return homeBasic(m);
   const A = AUD;
   const W = [];
@@ -1946,29 +2176,7 @@ function home(m) {
   m.append(startHere([...(!A.cashDone ? [["أدخل الرصيد النقدي", "أدخل", toCash, "الفائض والرصيد المتوقع محسوبان من صفر حتى تُدخل رصيد كل حساب والعهدة"]] : []), ...W]));
   const coll = A.contracts ? A.received / A.contracts : 0;
   const neg = A.FC && A.FC.min < 0;
-  // one strip: the audit's figures + the bot's actual ones (cash, spending, obligations), no repeats
-  const BK = [...(sec("fin") ? sec("fin").kpis : []), ...(sec("money") ? sec("money").kpis : [])];
-  const bk = (l) => BK.find((k) => k.label === l);
-  const K = [];
-  // one name and one VAT basis for what clients still owe; the collected KPI no longer repeats it as «باقي X»
-  K.push({ label: "الباقي عند العملاء", est: "collections", value: fmt(A.toCollect), f: "in", sub: "من العقود، شامل الضريبة", flag: A.overdue ? ["bad", "متأخر " + fmt(A.overdue)] : null });
-  const kc = bk("المحصّل"); if (kc) K.push({ ...kc, est: "collections", f: "in", tone: "", sub: pct(coll) + " من العقود" });
-  const ke = bk("المصروف حتى الآن"); if (ke) K.push({ ...ke, f: "out", tone: "" });
-  // obligations are known only once subcontractor or supplier dues were entered in the audit; before that a 0 is not a fact
-  const oweKnown = !!(A.done && (A.done.subs || A.done.sups)) || A.owe > 0;
-  K.push(oweKnown ? { label: "الالتزامات", value: fmt(A.owe), f: "out", sub: "خلال 3 أشهر " + fmt(A.pay3), flag: A.cashDone && A.owe > A.cash ? ["bad", "أكبر من النقد"] : null }
-    : { label: "الالتزامات", value: "—", f: "out", flag: ["warn", "مستحقات الموردين والمقاولين لم تُدخل"] });
-  // cash: the audit's own figure (the same one the forecast and the funding page use) — an unknown balance is «—», never 0
-  K.push({ label: "الرصيد النقدي اليوم", est: "cash", value: A.cashDone ? fmt(A.cash) : "—", f: "cash", sub: A.over ? "مصاريف ثابتة " + fmt(A.over) + " شهرياً" : "", flag: A.cashDone ? null : ["warn", "لم يُدخل"] });
-  const k30 = bk("صُرف آخر 30 يوماً"); if (k30) K.push({ ...k30, f: "out", tone: "" });
-  const ks = bk("مستحق لمقاولي الباطن"); if (ks && (ks.value === "—" || parseFloat(String(ks.value).replace(/,/g, "")) > 0)) K.push({ ...ks, f: "out", flag: ks.value === "—" ? ["warn", ks.sub || "لم يُقرأ"] : null, sub: ks.value === "—" ? "" : ks.sub });
-  const kp = bk("مشتريات بانتظار المدير المالي"); if (kp && +kp.value > 0) K.push({ ...kp, f: "out" });
-  K.push({ label: "الضريبة المستحقة", est: "vat", value: fmt(A.vat), f: "out", flag: A.vat && !A.vatIn ? ["warn", "تحتاج تأكيد"] : null });
-  K.push({ label: "ربح المشاريع المتوقع", est: "profit", value: A.unkN === A.nP && A.nP ? "—" : fmt(A.projProfit), f: "in", sub: A.unkN ? arN(A.unkN, "مشروع واحد غير محسوب", "مشروعان غير محسوبين", "مشاريع غير محسوبة", "مشروعًا غير محسوب") : "", flag: A.estN ? ["warn", "تقديري"] : null });
-  // without the cash balance the forecast starts from 0: say so instead of showing a calm surplus (dimmed until cash is in)
-  if (!A.cashDone) K.push({ label: "الفائض قبل إضافة النقد", est: "forecast", value: acc(A.fund), neg: A.fund < 0, f: "cash", flag: ["warn", "ينقصه الرصيد النقدي"], dep: true });
-  else K.push(neg ? { label: "أكبر عجز قادم", est: "forecast", value: acc(A.FC.min), neg: true, f: "cash", sub: "يوم " + A.FC.minD }
-    : { label: A.fund < 0 ? "العجز المتوقع" : "الفائض المتوقع", est: "forecast", value: acc(A.fund), neg: A.fund < 0, f: "cash", flag: A.unkF ? ["warn", "تقديري — " + arN(A.unkF, "مشروع واحد غير محسوب", "مشروعان غير محسوبين", "مشاريع غير محسوبة", "مشروعًا غير محسوب")] : null });
+  const K = homeK(A);
   m.append(ledger(K));
   if (D.prov) m.append(provBox());
   // الرصيد المتوقع: the audit's own weekly chart
@@ -2004,6 +2212,243 @@ function home(m) {
     g2.append(box);
   }
   m.append(g2);
+}
+// the money ledger on home: the audit's figures + the bot's actual ones (cash, spending, obligations), no repeats
+function homeK(A) {
+  const coll = A.contracts ? A.received / A.contracts : 0;
+  const neg = A.FC && A.FC.min < 0;
+  // one strip: the audit's figures + the bot's actual ones (cash, spending, obligations), no repeats
+  const BK = [...(sec("fin") ? sec("fin").kpis : []), ...(sec("money") ? sec("money").kpis : [])];
+  const bk = (l) => BK.find((k) => k.label === l);
+  const K = [];
+  // one name and one VAT basis for what clients still owe; the collected KPI no longer repeats it as «باقي X»
+  K.push({ label: "الباقي عند العملاء", est: "collections", value: fmt(A.toCollect), f: "in", sub: "من العقود، شامل الضريبة", flag: A.overdue ? ["bad", "متأخر " + fmt(A.overdue)] : null });
+  const kc = bk("المحصّل"); if (kc) K.push({ ...kc, est: "collections", f: "in", tone: "", sub: pct(coll) + " من العقود" });
+  const ke = bk("المصروف حتى الآن"); if (ke) K.push({ ...ke, f: "out", tone: "" });
+  // obligations are known only once subcontractor or supplier dues were entered in the audit; before that a 0 is not a fact
+  const oweKnown = !!(A.done && (A.done.subs || A.done.sups)) || A.owe > 0;
+  K.push(oweKnown ? { label: "الالتزامات", value: fmt(A.owe), f: "out", sub: "خلال 3 أشهر " + fmt(A.pay3), flag: A.cashDone && A.owe > A.cash ? ["bad", "أكبر من النقد"] : null }
+    : { label: "الالتزامات", value: "—", f: "out", flag: ["warn", "مستحقات الموردين والمقاولين لم تُدخل"] });
+  // cash: the audit's own figure (the same one the forecast and the funding page use) — an unknown balance is «—», never 0
+  K.push({ label: "الرصيد النقدي اليوم", est: "cash", value: A.cashDone ? fmt(A.cash) : "—", f: "cash", sub: A.over ? "مصاريف ثابتة " + fmt(A.over) + " شهرياً" : "", flag: A.cashDone ? null : ["warn", "لم يُدخل"] });
+  const k30 = bk("صُرف آخر 30 يوماً"); if (k30) K.push({ ...k30, f: "out", tone: "" });
+  const ks = bk("مستحق لمقاولي الباطن"); if (ks && (ks.value === "—" || parseFloat(String(ks.value).replace(/,/g, "")) > 0)) K.push({ ...ks, f: "out", flag: ks.value === "—" ? ["warn", ks.sub || "لم يُقرأ"] : null, sub: ks.value === "—" ? "" : ks.sub });
+  const kp = bk("مشتريات بانتظار المدير المالي"); if (kp && +kp.value > 0) K.push({ ...kp, f: "out" });
+  K.push({ label: "الضريبة المستحقة", est: "vat", value: fmt(A.vat), f: "out", flag: A.vat && !A.vatIn ? ["warn", "تحتاج تأكيد"] : null });
+  K.push({ label: "ربح المشاريع المتوقع", est: "profit", value: A.unkN === A.nP && A.nP ? "—" : fmt(A.projProfit), f: "in", sub: A.unkN ? arN(A.unkN, "مشروع واحد غير محسوب", "مشروعان غير محسوبين", "مشاريع غير محسوبة", "مشروعًا غير محسوب") : "", flag: A.estN ? ["warn", "تقديري"] : null });
+  // without the cash balance the forecast starts from 0: say so instead of showing a calm surplus (dimmed until cash is in)
+  if (!A.cashDone) K.push({ label: "الفائض قبل إضافة النقد", est: "forecast", value: acc(A.fund), neg: A.fund < 0, f: "cash", flag: ["warn", "ينقصه الرصيد النقدي"], dep: true });
+  else K.push(neg ? { label: "أكبر عجز قادم", est: "forecast", value: acc(A.FC.min), neg: true, f: "cash", sub: "يوم " + A.FC.minD }
+    : { label: A.fund < 0 ? "العجز المتوقع" : "الفائض المتوقع", est: "forecast", value: acc(A.fund), neg: A.fund < 0, f: "cash", flag: A.unkF ? ["warn", "تقديري — " + arN(A.unkF, "مشروع واحد غير محسوب", "مشروعان غير محسوبين", "مشاريع غير محسوبة", "مشروعًا غير محسوب")] : null });
+  return K;
+}
+// ===== Phase 3 (owner's brief §5, §7): the home page answers five questions — the bot computes them (core/forecast.ts,
+// core/owner.ts) and sends D.fc + D.home to the money roles. Every item opens its records and says the cause, the money at
+// stake, who holds it and the next step this person may take.
+const kf = (v) => { const a = Math.abs(+v || 0), t = a >= 1e6 ? (Math.round(a / 1e5) / 10) + " مليون" : a >= 1000 ? Math.round(a / 1000) + " ألف" : String(Math.round(a)); return (v < 0 ? "−" : "") + t; };
+const dmy = (iso) => { if (!iso) return "—"; const d = new Date(String(iso).slice(0, 10) + "T12:00:00"), y = d.getFullYear(); return d.getDate() + "/" + (d.getMonth() + 1) + (Math.abs(d - Date.now()) > 200 * 864e5 ? "/" + y : ""); };
+function doAct(a, x) {
+  if (!a) return;
+  if (a.t === "chat") return openChat(a.id, x && x.title);
+  if (a.t === "dq") { const it = (D.items || []).find((i) => i.id === a.id); return it ? dqDialog(it) : more("dq"); }
+  if (a.t === "fc") return more("fc13");
+  if (a.t === "cost" || a.t === "proj") {
+    const p = (D.projects || []).find((q) => (a.t === "cost" ? q.aid === a.id : q.id === a.id));
+    if (!p) return more(a.t === "cost" ? "risk" : "blocked");
+    view = "proj"; rec = p.id; recTab = "ov"; draw(); window.scrollTo(0, 0); return;
+  }
+}
+const ACT_T = { chat: "افتح واعتمد", dq: "افتح البند", fc: "افتح توقع النقد", cost: "تكلفة المشروع", proj: "افتح المشروع" };
+function home3(m) {
+  const H = D.home, F = D.fc, C = H.cash;
+  m.append(hero());
+  // «ابدأ من هنا»: today's decisions, money × urgency first; then the data the figures still miss
+  const cut = (t) => (t.length > 90 ? t.slice(0, 88).replace(/\s+\S*$/, "") + "…" : t);
+  const steps = H.decide.slice(0, 5).map((x) => [x.title, x.impact ? kf(x.impact) : "افتح", () => doAct(x.act, x), cut([x.owner, x.cause].filter(Boolean).join(" · "))]);
+  const dqN = dqOpen().length;
+  if (dqN) steps.push(["بيانات ناقصة أو غير مطابقة تؤثر على الأرقام", dqN, () => more("dq"), dqMine() ? dqMine() + " منها عليك" : ""]);
+  if (H.decide.length > 5) steps.push(["كل القرارات", H.decide.length, () => more("decide"), ""]);
+  m.append(startHere(steps));
+  m.append(answers(H, F));
+  m.append(w13Box(F, false));
+  // the key figures (the audit's, with the forecast row from the same engine as above) and where each comes from
+  if (AUD) {
+    const K = homeK(AUD).map((k) => {
+      if (k.est === "forecast") return { label: "أدنى رصيد خلال 13 أسبوعاً", est: "forecast", value: acc(F.cash.lowest.amount), neg: F.cash.lowest.amount < 0, f: "cash", sub: "الأسبوع " + F.cash.lowest.week + " · " + dmy(F.cash.lowest.date) };
+      if (k.est === "profit") return { ...k, value: fmt(F.totals.profit), sub: H.counts.unknown ? arN(H.counts.unknown, "مشروع واحد غير محسوب", "مشروعان غير محسوبين", "مشاريع غير محسوبة", "مشروعًا غير محسوب") : "", flag: H.counts.suspect ? ["warn", H.counts.suspect + " بهامش غير واقعي"] : null };
+      return k;
+    });
+    m.append(ledger(K));
+    if (D.prov) m.append(provBox());
+  }
+}
+// the four answers next to the decisions: one line each, the detail one tap away
+function answers(H, F) {
+  const g = el("section", "ans"); g.setAttribute("aria-label", "أسئلة اليوم");
+  const tile = (q, a, d, tone, go) => { const b = el("button", "aq " + tone); b.type = "button"; b.append(el("span", "q", q), el("b", "a", a)); if (d) b.append(el("span", "d", sar(d))); b.onclick = go; g.append(b); };
+  const C = H.cash, n = H.counts;
+  tile("هل يكفي النقد للالتزامات القادمة؟",
+    C.covered === "no" ? "لا — عجز من الأسبوع " + C.firstShort.week : C.covered === "only_if_uncertain" ? "فقط إن وصلت الدفعات غير المؤكدة" : "نعم، 13 أسبوعاً",
+    C.covered === "yes" ? "أدنى رصيد " + acc(C.lowest.amount) : "أدنى رصيد " + acc(C.lowest.amount) + " في " + dmy(C.lowest.date),
+    C.covered === "no" ? "bad" : C.covered === "yes" ? "ok" : "warn", () => more("fc13"));
+  const unsure = n.unknown + n.suspect;
+  tile("أي المشاريع معرضة للخسارة؟",
+    n.loss ? n.loss + " خاسر حسب التقدير" : n.weak ? n.weak + " تحت هدف الربح" : "لا مشروع خاسر حسب التقدير",
+    unsure ? [n.unknown ? n.unknown + " غير معروف" : "", n.suspect ? n.suspect + " ربحه غير واقعي" : ""].filter(Boolean).join(" · ") : "كل المشاريع فوق الهدف",
+    n.loss ? "bad" : n.weak || unsure ? "warn" : "ok", () => more("risk"));
+  const b0 = H.behind[0];
+  tile("أي المشاريع متأخرة ولماذا؟", n.behind ? n.behind + " متأخر عن جدوله" : "لا تأخير ظاهر",
+    b0 ? (b0.code || b0.name) + ": " + b0.why[0] : "", n.behind ? "warn" : "ok", () => more("behind"));
+  const k0 = H.blocked.reduce((mx, x) => Math.max(mx, x.since || 0), 0);
+  tile("أين تتوقف الطلبات والاعتمادات؟", n.blocked ? n.blocked + " متوقف" : "لا شيء متوقف",
+    n.blocked ? [n.blockedMine ? n.blockedMine + " عليك" : "", "الأقدم " + k0 + " يوماً"].filter(Boolean).join(" · ") : "", n.blocked ? (n.blockedMine ? "bad" : "warn") : "ok", () => more("blocked"));
+  return g;
+}
+// 13 weeks: the balance at the end of each week (bars) and the same with confirmed money only (dots)
+function w13Box(F, big) {
+  const W = F.cash.weeks, box = el("section", "box w13box");
+  const hd = el("div", "fch2"); hd.append(el("b", "", "النقد خلال 13 أسبوعاً"));
+  const fs = F.cash.firstShort;
+  hd.append(el("span", fs ? "pill bad" : F.cash.firstShortConf ? "pill warn" : "pill ok", fs ? "أول عجز " + dmy(fs.date) + " · أدناه " + acc(F.cash.lowest.amount) : F.cash.firstShortConf ? "يكفي إن وصلت غير المؤكدة" : "لا عجز متوقع"));
+  box.append(hd);
+  const o = F.cash.opening;
+  box.append(el("div", "small muted", sar(["الافتتاحي " + fmt(o.amount), o.source, o.at ? dWhen(o.at) : "", o.note || ""].filter(Boolean).join(" · "))));
+  // home: the balance bars only; the forecast page adds the confirmed-only dots (they can sit far lower and would flatten the bars)
+  const vals = W.flatMap((w) => (big ? [w.close, w.closeConf] : [w.close])).concat([0, o.amount]), mx = Math.max(...vals), mn = Math.min(...vals), span = (mx - mn) || 1;
+  const y = (v) => ((mx - v) / span) * 100;
+  const ch = el("div", "w13" + (big ? " big" : "")), z = el("i", "z"); z.style.top = y(0) + "%"; ch.append(z);
+  W.forEach((w) => {
+    const c = el("div", "c"), bar = el("i", w.close < 0 ? "n" : ""), top = Math.min(y(0), y(w.close)), h = Math.abs(y(0) - y(w.close));
+    bar.style.top = top + "%"; bar.style.height = Math.max(0.8, h) + "%";
+    c.title = "الأسبوع " + w.i + " (" + dmy(w.from) + "): " + acc(w.close) + " · بالمؤكد فقط " + acc(w.closeConf);
+    c.append(bar);
+    if (big) { const dot = el("b"); dot.style.top = "calc(" + y(w.closeConf) + "% - 4px)"; c.append(dot); }
+    ch.append(c);
+  });
+  ch.setAttribute("role", "img");
+  ch.setAttribute("aria-label", "الرصيد آخر كل أسبوع لـ13 أسبوعاً: أدنى رصيد " + acc(F.cash.lowest.amount) + " في " + dmy(F.cash.lowest.date) + "، وبالمؤكد فقط " + acc(F.cash.lowestConf.amount));
+  box.append(ch);
+  const ax = el("div", "w13x"); W.forEach((w, i) => ax.append(el("span", "", i % 3 === 0 || i === W.length - 1 ? dmy(w.from) : ""))); box.append(ax);
+  const lg = el("div", "w13l"); lg.append(el("span", "lb", "الرصيد آخر الأسبوع")); if (big) lg.append(el("span", "ld", "بالدفعات المؤكدة فقط")); box.append(lg);
+  if (!big && F.cash.firstShortConf) box.append(el("div", "small muted", sar("بالدفعات المؤكدة فقط: أدنى رصيد " + acc(F.cash.lowestConf.amount) + " في " + dmy(F.cash.lowestConf.date))));
+  if (!big) { const b = el("button", "lnk", "الأسابيع والأسباب والافتراضات ←"); b.type = "button"; b.onclick = () => more("fc13"); box.append(b); }
+  return box;
+}
+// one card per item of the answers: what, cause, impact, who, since — and the next permitted step
+function itemCard(x) {
+  const c = el("div", "box dcard " + (x.tone || ""));
+  c.append(el("b", "dt", x.title));
+  if (x.cause) c.append(el("div", "small", x.cause));
+  const meta = el("div", "dmeta");
+  if (x.impact) meta.append(el("span", "pill", (x.impactT || "المبلغ") + " " + fmt(x.impact)));
+  if (x.owner) meta.append(el("span", "pill", "المسؤول: " + x.owner));
+  if (x.since !== null && x.since !== undefined) meta.append(el("span", "pill", "منذ " + x.since + " يوماً"));
+  c.append(meta);
+  if (x.act && x.act.t !== "none") { const b = el("button", "sbtn", ACT_T[x.act.t] || "افتح"); b.type = "button"; b.onclick = () => doAct(x.act, x); c.append(b); }
+  return c;
+}
+function p3Page(m, k) {
+  const H = D.home, F = D.fc;
+  if (k === "decide") { backHome(m, "قرارات اليوم", "بالترتيب: المبلغ × الاستعجال"); const g = el("div", "dgrid"); H.decide.forEach((x) => g.append(itemCard(x))); m.append(g); return true; }
+  if (k === "blocked") {
+    backHome(m, "الطلبات والاعتمادات المتوقفة", "كل ما ينتظر أحداً يومين أو أكثر — الأكبر والأقدم أولاً");
+    if (!H.blocked.length) { m.append(el("div", "box small muted", "لا شيء متوقف الآن ✓")); return true; }
+    const g = el("div", "dgrid"); H.blocked.forEach((x) => g.append(itemCard(x))); m.append(g); return true;
+  }
+  if (k === "behind") {
+    backHome(m, "المشاريع المتأخرة عن جدولها", "الإنجاز الفعلي مقابل المخطط من تاريخ العقد ومدته — والأسباب التي يراها البوت");
+    if (!H.behind.length) { m.append(el("div", "box small muted", "لا مشروع متأخراً أكثر من أسبوعين ✓")); return true; }
+    const g = el("div", "dgrid");
+    for (const x of H.behind) {
+      const c = el("div", "box dcard warn"); c.append(el("b", "dt", (x.code ? x.code + " · " : "") + x.name));
+      c.append(el("div", "small", (x.over ? "تجاوز موعد التسليم" : "متأخر " + x.behind + " يوماً") + " · الإنجاز " + pct(x.progress) + (x.planned !== null ? " والمخطط " + pct(x.planned) : "") + (x.end ? " · التسليم " + dmy(x.end) : "")));
+      const ul = el("ul", "why"); x.why.forEach((w) => ul.append(el("li", "", sar(w)))); c.append(ul);
+      const meta = el("div", "dmeta"); meta.append(el("span", "pill", "المسؤول: " + x.owner)); c.append(meta);
+      const b = el("button", "sbtn", "افتح المشروع"); b.type = "button"; b.onclick = () => doAct({ t: "cost", id: x.aid }, x); c.append(b);
+      g.append(c);
+    }
+    m.append(g); return true;
+  }
+  if (k === "risk") {
+    backHome(m, "المشاريع المعرضة للخسارة", "التكلفة المتوقعة عند الإكمال = المصروف + الملتزم به + المتبقي غير الملتزم به — بدون الضريبة");
+    const CAT = { loss: ["خاسر حسب التقدير", "bad"], weak: ["تحت هدف الربح", "warn"], unknown: ["تكلفة الإكمال غير معروفة", "warn"], suspect: ["هامش غير واقعي (أكثر من 30%) — تكاليف غير مسجلة غالباً", "warn"] };
+    if (!H.risk.length) { m.append(el("div", "box small muted", "كل المشاريع فوق هدف الربح حسب التقدير ✓")); return true; }
+    for (const ck of ["loss", "weak", "unknown", "suspect"]) {
+      const L = H.risk.filter((x) => x.cat === ck); if (!L.length) continue;
+      m.append(secHead(CAT[ck][0], L.length));
+      const g = el("div", "dgrid");
+      for (const x of L) {
+        const c = el("div", "box dcard " + CAT[ck][1]); c.append(el("b", "dt", (x.code ? x.code + " · " : "") + x.name));
+        const t = el("table", "ovt");
+        const row = (l, v, cls) => { const tr = el("tr"); tr.append(el("td", "", l), el("td", "n" + (cls ? " " + cls : ""), v)); t.append(tr); };
+        row("الإيراد", fmt(x.revenue));
+        if (x.eac !== null) { row("التكلفة المتوقعة", fmt(x.eac)); row("الربح", fmt(x.profit) + " · " + pct(x.margin), x.profit < 0 ? "neg" : ""); }
+        else row("التكلفة المتوقعة", "غير معروفة");
+        row("المصروف حتى الآن", fmt(x.actual));
+        if (x.committed) row("ملتزم به", fmt(x.committed));
+        c.append(t, el("div", "small muted", x.assumption || ""));
+        if (x.flags && x.flags.length) { const ul = el("ul", "why"); x.flags.forEach((f) => ul.append(el("li", "", f))); c.append(ul); }
+        const meta = el("div", "dmeta"); meta.append(el("span", "pill", "المسؤول: " + x.owner)); if (x.cat === "unknown" && x.toCollect) meta.append(el("span", "pill", "باقي للتحصيل " + fmt(x.toCollect))); c.append(meta);
+        const b = el("button", "sbtn", "تكلفة المشروع"); b.type = "button"; b.onclick = () => doAct({ t: "cost", id: x.aid }, x); c.append(b);
+        g.append(c);
+      }
+      m.append(g);
+    }
+    return true;
+  }
+  if (k === "fc13") {
+    const C = F.cash, fs = C.firstShort;
+    backHome(m, "توقع النقد — 13 أسبوعاً", "من اليوم: الرصيد الافتتاحي + ما يُتوقع تحصيله − ما يُتوقع دفعه — بدون الضريبة");
+    m.append(w13Box(F, true));
+    if (fs) {
+      const b = el("section", "box dcard bad"); b.append(el("b", "dt", "لماذا العجز في " + dmy(fs.date) + " (الأسبوع " + fs.week + ")"));
+      b.append(el("div", "small", sar("حتى ذلك اليوم يدخل " + fmt(fs.in) + " ويخرج " + fmt(fs.out) + " والافتتاحي " + fmt(C.opening.amount))));
+      const GL = { subs: "مقاولو الباطن", sups: "الموردون", project: "تكلفة إكمال المشاريع", overhead: "المصاريف الثابتة", pos: "أوامر الشراء", other: "مدفوعات أخرى" };
+      const t = el("table", "ovt"); Object.entries(fs.groups).sort((a, b2) => b2[1] - a[1]).forEach(([g, v]) => { const tr = el("tr"); tr.append(el("td", "", GL[g] || g), el("td", "n pay", fmt(v))); t.append(tr); }); b.append(t);
+      if (fs.projects && fs.projects.length) b.append(el("div", "small muted", "أكبر تكاليف الإكمال حتى ذلك اليوم: " + fs.projects.map((x) => x.name + " " + kf(x.amount)).join("، ")));
+      if (fs.waiting && fs.waiting.length) b.append(el("div", "small muted", "دفعات غير مؤكدة قريبة لو وصلت تخفف العجز: " + fs.waiting.map((x) => x.label + " " + kf(x.amount) + " (" + x.why + ")").join("، ")));
+      m.append(b);
+    }
+    // the weeks
+    const wb = el("section", "box"); wb.append(el("b", "", "الأسابيع"));
+    const t = el("table", "ovt wkt"); const hr = el("tr"); ["الأسبوع", "يدخل مؤكد", "غير مؤكد", "يخرج", "الرصيد"].forEach((h) => hr.append(el("th", "", h))); t.append(hr);
+    for (const w of C.weeks) { const tr = el("tr"); tr.append(el("td", "", w.i + " · " + dmy(w.from)), el("td", "n rcv", w.inConf ? kf(w.inConf) : "—"), el("td", "n", w.inUnc ? kf(w.inUnc) : "—"), el("td", "n pay", kf(w.outTotal)), el("td", "n" + (w.close < 0 ? " neg" : ""), kf(w.close))); t.append(tr); }
+    wb.append(t); m.append(wb);
+    // receipts: confirmed and uncertain, each with its reason
+    const rb = el("section", "box"); rb.append(el("b", "", "التحصيل المتوقع"));
+    for (const [cf, title] of [["confirmed", "مؤكد — مستحق بالعقد أو مطالبة صادرة"], ["uncertain", "غير مؤكد — ينتظر الإنجاز أو متأخر كثيراً"]]) {
+      const L = C.receipts.filter((e) => e.conf === cf); rb.append(el("div", "small muted subh", title + " · " + fmt(L.reduce((a, e) => a + e.amount, 0))));
+      const t2 = el("table", "ovt"); L.slice(0, 40).forEach((e) => { const tr = el("tr"); const a = el("td", "", e.label); a.append(el("div", "small muted", dmy(e.date) + " · " + e.why)); tr.append(a, el("td", "n rcv", fmt(e.amount))); t2.append(tr); }); rb.append(t2);
+    }
+    m.append(rb);
+    const pb = el("section", "box"); pb.append(el("b", "", "المدفوعات المحددة"), el("div", "small muted", "إضافة إلى تكلفة إكمال المشاريع الموزعة على مددها والمصاريف الثابتة"));
+    const t3 = el("table", "ovt"); C.payments.forEach((e) => { const tr = el("tr"); const a = el("td", "", e.label); a.append(el("div", "small muted", dmy(e.date) + (e.why ? " · " + e.why : ""))); tr.append(a, el("td", "n pay", fmt(e.amount))); t3.append(tr); }); pb.append(t3); m.append(pb);
+    // left out, missing, assumptions — never hidden
+    if (C.excluded.length) { const xb = el("section", "box"); xb.append(el("b", "", "خارج التوقع"), el("div", "small muted", "لا يدخل تحصيلها ولا تكاليفها حتى تُعرف تكلفة إكمالها")); const t4 = el("table", "ovt"); C.excluded.forEach((x) => { const tr = el("tr"); const a = el("td", "", x.name); a.append(el("div", "small muted", x.why)); tr.append(a, el("td", "n", x.dueNow ? "مستحق الآن " + fmt(x.dueNow) : "باقي " + fmt(x.toCollect))); t4.append(tr); }); xb.append(t4); m.append(xb); }
+    if (C.missing.length) { const mb = el("section", "box ovtodo"); mb.append(el("b", "", "ما ينقص التوقع")); const ul = el("ul"); C.missing.forEach((x) => { const li = el("li"); if (x.id && (D.items || []).some((i) => i.id === x.id)) { const b = el("button", "lnk", x.t); b.type = "button"; b.onclick = () => doAct({ t: "dq", id: x.id }); li.append(b); } else li.append(document.createTextNode(x.t)); ul.append(li); }); mb.append(ul); m.append(mb); }
+    const det = el("details", "box"); det.append(el("summary", "", "الافتراضات")); const ul = el("ul"); C.assumptions.forEach((a) => ul.append(el("li", "small", a))); det.append(ul); m.append(det);
+    return true;
+  }
+  return false;
+}
+// the project's cost to complete, on its overview — the same figures as the risk page
+function costCard(p, g) {
+  const F = D && D.fc; if (!F) return;
+  const x = (F.projects || []).find((q) => q.aid === p.aid); if (!x) return;
+  const c = ovCard(g, "التكلفة حتى الإكمال", "التدقيق + قيود + البوت", "full");
+  const t = el("table", "ovt");
+  const row = (l, v, cls, sub) => { const tr = el("tr"), a = el("td", "", l); if (sub) a.append(el("div", "small muted", sub)); tr.append(a, el("td", "n" + (cls ? " " + cls : ""), v)); t.append(tr); };
+  row("قيمة العقد", fmt(x.contract), "", "شامل الضريبة");
+  if (x.variations.items.length) row("أعمال إضافية معتمدة", fmt(x.variations.net), "", x.variations.items.length + " عمل · بدون الضريبة");
+  row("الإيراد", fmt(x.revenue), "rcv", "بدون الضريبة");
+  row("ميزانية التكلفة", x.budget.original !== null ? fmt(x.budget.original) : "غير معتمدة", "", x.budget.original !== null ? x.budget.source + (x.budget.revisions ? " · " + x.budget.revisions + " تعديل" : " · لا تعديلات مسجلة") : "");
+  row("المصروف حتى الآن", fmt(x.actual), "pay", "قيود " + kf(x.actualParts.exp) + " + مستخلصات الباطن " + kf(x.actualParts.subCert));
+  row("ملتزم به ولم يُصرف", fmt(x.committed.total), "pay", [x.committed.subs ? "باطن " + kf(x.committed.subs) : "", x.committed.pos ? "أوامر شراء " + kf(x.committed.pos) : "", x.committed.extras ? "إضافي " + kf(x.committed.extras) : ""].filter(Boolean).join(" · "));
+  row("متبقٍ غير ملتزم به", x.uncommitted === null ? "غير معروف" : fmt(x.uncommitted), "pay");
+  row("التكلفة المتوقعة عند الإكمال", x.eac === null ? "غير معروفة" : fmt(x.eac), "");
+  row("الربح المتوقع", x.profit === null ? "—" : fmt(x.profit) + " · " + pct(x.margin), x.profit !== null && x.profit < 0 ? "neg" : "rcv");
+  c.append(t, el("div", "small muted", "طريقة المتبقي: " + x.assumption));
+  if (x.flags.length) { const ul = el("ul", "why"); x.flags.forEach((f) => ul.append(el("li", "", f))); c.append(ul); }
 }
 let introDone = false;
 // home: the date and a greeting — the figures follow once, below (nothing on home is said twice)
@@ -2210,6 +2655,7 @@ async function histDialog(tbl, id, title) {
 function morePage(m) {
   const A = AUD, k = MORE || "";
   if (k === "dq" || k.startsWith("dq:")) return dqPage(m, k.slice(3));
+  if (D && D.home && D.fc && ["decide", "blocked", "behind", "risk", "fc13"].includes(k) && p3Page(m, k)) return;
   if (!A && k !== "wait") return go("home");
   if (k === "wait") { const w = sec("wait"); backHome(m, "بانتظارك", w && w.note); if (w) m.append(...cards({ ...w, kpis: null }, "ui")); return; }
   if (k === "fc") {
@@ -3389,6 +3835,7 @@ function overview(p, panel) {
     });
     sc.append(row);
   }
+  costCard(p, g);
   // money: what comes next from the client
   const mc = ovCard(g, "الدفعة القادمة", "العقد");
   const nx = p.contracts.flatMap((k) => k.inst.map((i) => ({ ...i, k: k.name }))).find((i) => i.st !== "محصّلة");
