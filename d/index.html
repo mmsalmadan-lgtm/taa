@@ -6,6 +6,12 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#F1F3F4">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="طاء">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>طاء — لوحة المتابعة</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -225,6 +231,7 @@ button.inst.ed{width:100%;background:none;border:0;border-bottom:1px solid var(-
 .msg h1{font-size:22px;margin:0 0 8px}.muted{color:var(--muted)}.small{font-size:13px}
 .login{display:inline-block;margin:14px 0 6px;background:var(--ui);color:#fff;text-decoration:none;font-weight:600;font-size:16px;padding:12px 22px;border-radius:var(--r-s)}
 .authw{max-width:420px;margin:clamp(24px,8vh,80px) auto 24px;display:flex;flex-direction:column;gap:18px}
+.isteps{margin:6px 0 4px;padding-inline-start:22px;display:grid;gap:6px;line-height:1.6}.isteps li::marker{font-family:var(--f-disp);font-weight:700;color:var(--ui)}
 .abrand{display:flex;align-items:center;gap:12px;padding-inline:4px}.abrand .logo{width:44px;height:44px;font-size:23px;border-radius:12px}
 .abrand b{display:block;font-family:var(--f-disp);font-size:17px;font-weight:600}.abrand span{font-size:12.5px;color:var(--muted)}
 .auth{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:26px 22px 20px;box-shadow:0 1px 0 rgb(29 37 51/.03)}
@@ -470,7 +477,7 @@ body.chatonly footer{display:none}
   <div class="brand"><div class="logo" aria-hidden="true">ط</div>
   <div class="gh-t"><b id="who">لوحة المتابعة</b><span id="roles">مؤسسة طاء الرائدة للمقاولات العامة</span></div></div>
   <span class="badge" id="mode" hidden></span>
-  <div class="gh-a"><button type="button" class="ibtn lang" id="langBtn" lang="en">English</button><button type="button" class="ibtn" id="reload" hidden>تحديث</button><button type="button" class="ibtn" id="pinBtn" hidden>تغيير الرمز السري</button><button type="button" class="ibtn" id="outBtn" hidden>خروج</button></div>
+  <div class="gh-a"><button type="button" class="ibtn lang" id="langBtn" lang="en">English</button><button type="button" class="ibtn" id="bellBtn" hidden>التنبيهات</button><button type="button" class="ibtn" id="reload" hidden>تحديث</button><button type="button" class="ibtn" id="pinBtn" hidden>تغيير الرمز السري</button><button type="button" class="ibtn" id="outBtn" hidden>خروج</button></div>
 </div></header>
 <nav class="tabs" id="tabs" hidden aria-label="الأقسام"><div class="wrapx" id="tabRow"></div></nav>
 </aside>
@@ -503,6 +510,41 @@ const pct = (f) => Math.round((f || 0) * 100) + "%";
 const LK = "taa.dash.lang";
 let LANG = (() => { try { return localStorage.getItem(LK) === "en" ? "en" : "ar"; } catch { return "ar"; } })();
 const EN = {
+"التنبيهات على هذا الجوال": "Alerts on this phone",
+"يصلك تنبيه على هذا الجوال لما يرسل لك البوت شيئاً يحتاج منك إجراء: طلب اعتماد، مستخلص، تقرير متأخر. الضغط عليه يفتح المساعد على الرسالة نفسها، بأزرارها.": "This phone gets an alert when the bot sends you something that needs your action: an approval, a payment certificate, a late report. Tapping it opens the assistant on that message, with its buttons.",
+"في الآيفون تعمل التنبيهات من أيقونة اللوحة على الشاشة الرئيسية:": "On iPhone, alerts work from the dashboard icon on the home screen:",
+"في سفاري اضغط زر المشاركة (المربع والسهم)": "In Safari, tap the Share button (the square with the arrow)",
+"اختر «إضافة إلى الشاشة الرئيسية» ثم «إضافة»": "Choose “Add to Home Screen”, then “Add”",
+"افتح «طاء» من الأيقونة الجديدة وسجّل الدخول برمزك السري": "Open “طاء” from the new icon and sign in with your PIN",
+"اضغط «التنبيهات» ثم «تفعيل التنبيهات»": "Tap “Alerts”, then “Turn on alerts”",
+"حدّث الآيفون إلى iOS 16.4 أو أحدث لتعمل التنبيهات.": "Update the iPhone to iOS 16.4 or later for alerts to work.",
+"هذا المتصفح لا يدعم التنبيهات — استخدم كروم أو سفاري أو إيدج حديثاً.": "This browser does not support alerts — use a recent Chrome, Safari or Edge.",
+"التنبيهات محظورة لهذه اللوحة على هذا الجهاز.": "Alerts are blocked for this dashboard on this device.",
+"افتح الإعدادات ← الإشعارات ← طاء": "Open Settings → Notifications → طاء",
+"فعّل «السماح بالإشعارات»": "Turn on “Allow Notifications”",
+"ارجع هنا واضغط «التنبيهات» مرة ثانية": "Come back and tap “Alerts” again",
+"اضغط رمز القفل بجانب عنوان الموقع": "Tap the lock icon next to the site address",
+"اختر الإشعارات ← السماح": "Choose Notifications → Allow",
+"حدّث الصفحة واضغط «التنبيهات» مرة ثانية": "Reload the page and tap “Alerts” again",
+"أرسل تنبيه تجربة": "Send a test alert",
+"جارٍ الإرسال…": "Sending…",
+"أُرسل — يظهر خلال ثوانٍ. إن لم يظهر فتأكد أن الجوال ليس على «عدم الإزعاج».": "Sent — it shows within seconds. If it doesn't, check the phone is not on Do Not Disturb.",
+"لم يصل التنبيه — أوقفها وفعّلها مرة ثانية": "The alert did not arrive — turn alerts off and on again",
+"إيقاف على هذا الجوال": "Turn off on this phone",
+"أُوقفت التنبيهات على هذا الجوال.": "Alerts are off on this phone.",
+"تعذّر الإيقاف — حاول مرة أخرى": "Could not turn off — try again",
+"التنبيهات مفعّلة على هذا الجوال ✓": "Alerts are on for this phone ✓",
+"تفعيل التنبيهات": "Turn on alerts",
+"رفضت الإذن — فعّله من إعدادات الجوال ثم ارجع هنا.": "Permission was refused — allow it in the phone's settings, then come back.",
+"لم يُعطَ الإذن — اضغط مرة ثانية واختر «السماح».": "Permission was not given — tap again and choose “Allow”.",
+"جارٍ التفعيل…": "Turning on…",
+"تعذّر التفعيل": "Could not turn on",
+"فُعّلت التنبيهات على هذا الجوال ✓": "Alerts are on for this phone ✓",
+"تعذّر التفعيل — حاول مرة أخرى": "Could not turn on — try again",
+"وصلتك هذه الرسالة من البوت": "The bot sent you this message",
+"وصلتك {n} رسائل من البوت": "The bot sent you {n} messages",
+"وصلتك رسالتان من البوت": "The bot sent you 2 messages",
+"التنبيهات غير مفعّلة على هذا الجوال": "Alerts are not on for this phone",
 "↑ رسائل كانت بانتظارك ولم تصلك في واتساب": "↑ Messages that were waiting for you and did not reach you on WhatsApp",
 "المساعد": "Assistant",
 "كل ما يقدّمه البوت في واتساب، من هنا: طلبات المواد والمعدات، التقرير اليومي، تسليم الأعمال، النماذج": "Everything the WhatsApp bot offers, from here: material and equipment requests, the daily report, work hand-over, forms",
@@ -1312,7 +1354,7 @@ function fail(title, text) {
 const clearHash = () => { if (location.hash) history.replaceState(history.state, "", location.pathname + location.search); };
 function signedOut() {
   token = ""; store.clear(); clearHash(); D = null; REG = null; AUTHL = null;
-  for (const id of ["reload", "pinBtn", "outBtn", "mode"]) $(id).hidden = true;
+  for (const id of ["reload", "pinBtn", "outBtn", "bellBtn", "mode"]) $(id).hidden = true;
   $("who").textContent = "لوحة المتابعة"; $("roles").textContent = "مؤسسة طاء الرائدة للمقاولات العامة";
 }
 function field(label, type, ac, hint) {
@@ -2015,8 +2057,20 @@ function chatPanel(first, opts = {}) {
   };
   form.onsubmit = (e) => { e.preventDefault(); const t = ti.value.trim(); if (!t) return; ti.value = ""; send({ text: t }, t); };
   ti.onkeydown = (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); } };
-  if (first) send(/^[a-z]+\./.test(first) ? { reply: first } : { text: first });
-  return { el: wrap, st, restart: () => { log.replaceChildren(); send({ text: "قائمة" }); } };
+  // messages the bot sent you that WhatsApp may not have delivered (alerts on): shown once, with their buttons
+  async function pull() {
+    try {
+      const { status, j } = await api({ op: "inbox" });
+      if (status !== 200 || !(j.msgs || []).length) return 0;
+      const n = j.msgs.length, mark = el("div", "bnote", n === 1 ? "وصلتك هذه الرسالة من البوت" : n === 2 ? "وصلتك رسالتان من البوت" : "وصلتك " + n + " رسائل من البوت");
+      log.append(mark); for (const m of j.msgs) say(m);
+      if (opts.page) mark.scrollIntoView({ block: "start", behavior: "smooth" }); else log.scrollTop = mark.offsetTop - log.offsetTop;
+      return j.msgs.length;
+    } catch { return 0; }
+  }
+  if (first === "inbox") pull().then((n) => { if (!n) send({ text: "قائمة" }); });
+  else if (first) send(/^[a-z]+\./.test(first) ? { reply: first } : { text: first });
+  return { el: wrap, st, pull, restart: () => { log.replaceChildren(); send({ text: "قائمة" }); } };
 }
 function openChat(first, title) {
   const body = $("dlgBody"); body.replaceChildren();
@@ -2030,7 +2084,8 @@ function assistView(m) {
   const ph = page("م", "المساعد", "كل ما يقدّمه البوت في واتساب، من هنا: طلبات المواد والمعدات، التقرير اليومي، تسليم الأعمال، النماذج", "var(--ui)");
   const eb = el("div", "ebar2"), again = el("button", "sbtn ebtn", "القائمة من البداية"); again.type = "button"; eb.append(again); ph.querySelector(".grow").append(eb);
   m.append(ph);
-  if (!ASSIST) ASSIST = chatPanel("قائمة", { page: true, placeholder: "اكتب للبوت أو اختر من القائمة" });
+  // first visit: what the bot sent you (if anything is new), otherwise its menu; later visits add anything new at the end
+  if (!ASSIST) ASSIST = chatPanel("inbox", { page: true, placeholder: "اكتب للبوت أو اختر من القائمة" }); else ASSIST.pull();
   again.onclick = () => ASSIST.restart();
   const box = el("section", "panel assist"); box.append(ASSIST.el); m.append(box);
 }
@@ -3362,7 +3417,7 @@ async function load(keep) {
     D = j;
     $("who").textContent = D.name; $("roles").textContent = D.roles.join(" · ") + " · آخر تحديث " + new Date(D.at).toLocaleTimeString(LANG === "en" ? "en-GB" : "ar-SA-u-nu-latn", { hour: "2-digit", minute: "2-digit" });
     const mo = $("mode"); mo.hidden = false; mo.replaceChildren(el("span", "bl", "الوضع: "), document.createTextNode(D.mode)); mo.className = "badge" + (D.mode === "فعلي" ? " ok" : D.mode === "إيقاف آمن" ? " bad" : "");
-    $("reload").hidden = $("pinBtn").hidden = $("outBtn").hidden = false;
+    $("reload").hidden = $("pinBtn").hidden = $("outBtn").hidden = $("bellBtn").hidden = false; pushSync();
     if (!keep) view = "home";
     draw();
     if (!D.chatOnly && (!keep || !AUD)) refreshAud();
@@ -3558,12 +3613,95 @@ function openForm(e, r, prefill) {
   $("dlg").showModal();
 }
 
+// ===== Phone alerts (Web Push): the bot alerts this phone when it sends you something; tapping opens «المساعد».
+// iPhone: only from the dashboard added to the home screen (iOS 16.4+). The page registers sw.js (alerts only, no cache).
+const PUSH = { ok: "serviceWorker" in navigator && "PushManager" in window && "Notification" in window, reg: null };
+const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const standalone = () => window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+const keyBytes = (k) => { const t = k.replace(/-/g, "+").replace(/_/g, "/"); return Uint8Array.from(atob(t + "===".slice((t.length + 3) % 4)), (c) => c.charCodeAt(0)); };
+const device = () => { const u = navigator.userAgent; return (/iPhone/.test(u) ? "iPhone" : /iPad/.test(u) ? "iPad" : /Android/.test(u) ? "Android" : /Mac/.test(u) ? "Mac" : /Windows/.test(u) ? "Windows" : "متصفح") + (standalone() ? " · الشاشة الرئيسية" : ""); };
+if (PUSH.ok) navigator.serviceWorker.register("sw.js", { scope: "./" }).then((r) => { PUSH.reg = r; }).catch(() => { PUSH.ok = false; });
+async function pushSub() { if (!PUSH.ok) return null; const r = PUSH.reg || await navigator.serviceWorker.ready; PUSH.reg = r; return r.pushManager.getSubscription(); }
+// the server keeps one copy per phone: re-sent once per day so a renewed browser subscription is never lost
+async function pushSync() {
+  try {
+    if (!PUSH.ok || Notification.permission !== "granted") return;
+    const s = await pushSub(); if (!s) return;
+    const k = "taa.push.sync", day = new Date().toISOString().slice(0, 10), was = (() => { try { return localStorage.getItem(k); } catch { return ""; } })();
+    if (was === s.endpoint + day) return;
+    const { status } = await api({ op: "push_sub", sub: s.toJSON(), ua: device() });
+    if (status === 200) try { localStorage.setItem(k, s.endpoint + day); } catch { /* fine */ }
+  } catch { /* the next load tries again */ }
+}
+async function pushDialog() {
+  const body = $("dlgBody"), res = el("div", "res"), bar = el("div", "dbar"), close = el("button", "sbtn", "إغلاق");
+  res.setAttribute("role", "status"); close.type = "button"; close.onclick = () => $("dlg").close();
+  const what = el("p", "muted", "يصلك تنبيه على هذا الجوال لما يرسل لك البوت شيئاً يحتاج منك إجراء: طلب اعتماد، مستخلص، تقرير متأخر. الضغط عليه يفتح المساعد على الرسالة نفسها، بأزرارها.");
+  body.replaceChildren(el("h3", "", "التنبيهات على هذا الجوال"), what);
+  const btn = (t, cls, fn) => { const b = el("button", cls, t); b.type = "button"; b.onclick = fn; return b; };
+  const done = (t, cls) => { res.className = "res " + (cls || ""); res.textContent = t; };
+  const steps = (xs) => { const o = el("ol", "isteps"); for (const x of xs) o.append(el("li", "", x)); return o; };
+  $("dlg").showModal();
+  if (!PUSH.ok) {
+    if (isIOS() && !standalone()) body.append(el("b", "", "في الآيفون تعمل التنبيهات من أيقونة اللوحة على الشاشة الرئيسية:"),
+      steps(["في سفاري اضغط زر المشاركة (المربع والسهم)", "اختر «إضافة إلى الشاشة الرئيسية» ثم «إضافة»", "افتح «طاء» من الأيقونة الجديدة وسجّل الدخول برمزك السري", "اضغط «التنبيهات» ثم «تفعيل التنبيهات»"]));
+    else body.append(el("div", "res bad", isIOS() ? "حدّث الآيفون إلى iOS 16.4 أو أحدث لتعمل التنبيهات." : "هذا المتصفح لا يدعم التنبيهات — استخدم كروم أو سفاري أو إيدج حديثاً."));
+    body.append(bar); bar.append(close); return;
+  }
+  if (Notification.permission === "denied") {
+    body.append(el("div", "res bad", "التنبيهات محظورة لهذه اللوحة على هذا الجهاز."), steps(isIOS() ? ["افتح الإعدادات ← الإشعارات ← طاء", "فعّل «السماح بالإشعارات»", "ارجع هنا واضغط «التنبيهات» مرة ثانية"] : ["اضغط رمز القفل بجانب عنوان الموقع", "اختر الإشعارات ← السماح", "حدّث الصفحة واضغط «التنبيهات» مرة ثانية"]));
+    body.append(bar); bar.append(close); return;
+  }
+  let sub = null; try { sub = await pushSub(); } catch { /* treated as off */ }
+  const test = btn("أرسل تنبيه تجربة", "sbtn", async () => {
+    test.disabled = true; done("جارٍ الإرسال…");
+    try { const { status, j } = await api({ op: "push_test" }); status === 200 && j.ok ? done("أُرسل — يظهر خلال ثوانٍ. إن لم يظهر فتأكد أن الجوال ليس على «عدم الإزعاج».", "ok") : done(j.error || "لم يصل التنبيه — أوقفها وفعّلها مرة ثانية", "bad"); }
+    catch { done("تعذّر الاتصال", "bad"); }
+    test.disabled = false;
+  });
+  if (sub) {
+    const off = btn("إيقاف على هذا الجوال", "sbtn", async () => {
+      off.disabled = true;
+      try { const s = await pushSub(); if (s) { await api({ op: "push_unsub", sub: { endpoint: s.endpoint } }); await s.unsubscribe(); } try { localStorage.removeItem("taa.push.sync"); } catch { /* fine */ } done("أُوقفت التنبيهات على هذا الجوال.", "ok"); test.remove(); off.remove(); }
+      catch { done("تعذّر الإيقاف — حاول مرة أخرى", "bad"); off.disabled = false; }
+    });
+    body.append(el("div", "res ok", "التنبيهات مفعّلة على هذا الجوال ✓"), res, bar); bar.append(test, off, close); pushSync(); return;
+  }
+  const on = btn("تفعيل التنبيهات", "pbtn", async () => {
+    on.disabled = true;
+    // the permission question must come straight from the tap (Safari)
+    let perm = "default"; try { perm = await Notification.requestPermission(); } catch { /* old Safari */ }
+    if (perm !== "granted") { done(perm === "denied" ? "رفضت الإذن — فعّله من إعدادات الجوال ثم ارجع هنا." : "لم يُعطَ الإذن — اضغط مرة ثانية واختر «السماح».", "bad"); on.disabled = false; return; }
+    done("جارٍ التفعيل…");
+    try {
+      const k = await api({ op: "push_key" }); if (k.status !== 200) throw new Error(k.j.error || "تعذّر التفعيل");
+      const r = PUSH.reg || await navigator.serviceWorker.ready;
+      const s = (await r.pushManager.getSubscription()) || await r.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyBytes(k.j.key) });
+      const x = await api({ op: "push_sub", sub: s.toJSON(), ua: device() }); if (x.status !== 200) throw new Error(x.j.error || "تعذّر التفعيل");
+      try { localStorage.setItem("taa.push.sync", s.endpoint + new Date().toISOString().slice(0, 10)); } catch { /* fine */ }
+      done("فُعّلت التنبيهات على هذا الجوال ✓", "ok"); on.remove(); bar.prepend(test);
+    } catch (e) { done(e.message || "تعذّر التفعيل — حاول مرة أخرى", "bad"); on.disabled = false; }
+  });
+  body.append(res, bar); bar.append(on, close);
+}
+$("bellBtn").addEventListener("click", pushDialog);
+// an alert tapped while the dashboard is open: the service worker asks this page to show «المساعد»
+if (PUSH.ok) navigator.serviceWorker.addEventListener("message", (e) => { if (e.data && e.data.go === "bot" && D) { if ($("dlg").open) $("dlg").close(); go("bot"); } });
 $("reload").addEventListener("click", async () => { if (view === "data") await loadReg(); load(true); });
 $("pinBtn").addEventListener("click", pinDialog);
 $("langBtn").addEventListener("click", () => setLang(LANG === "en" ? "ar" : "en"));
 applyLang();
-$("outBtn").addEventListener("click", () => signIn("", "خرجت من اللوحة على هذا الجهاز."));
-function boot() { return load().then(() => token && D && loadReg().then(() => D && renderTabs())).catch(() => {}); }
+// signing out of this device also stops its alerts (the server drops the subscription at the next alert)
+$("outBtn").addEventListener("click", () => { pushSub().then((x) => x && x.unsubscribe()).catch(() => {}); try { localStorage.removeItem("taa.push.sync"); } catch { /* fine */ } signIn("", "خرجت من اللوحة على هذا الجهاز."); });
+// ?go=bot (a tapped alert): open «المساعد» once the dashboard is loaded, then drop the parameter
+const GO = new URLSearchParams(location.search).get("go");
+function boot() {
+  return load().then(() => {
+    if (!token || !D) return;
+    if (GO === "bot") { history.replaceState(history.state, "", location.pathname + location.hash); go("bot"); }
+    return loadReg().then(() => D && renderTabs());
+  }).catch(() => {});
+}
 boot();
 setInterval(() => { if (token && D && document.visibilityState === "visible" && view !== "data" && !$("dlg").open) load(true); }, 120000);
 </script>
