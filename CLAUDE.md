@@ -130,21 +130,23 @@ card or page · finance things live under المالية, purchases under الم
   «الميزانية» column (exception / within budget with what is left / no approved budget); rendered by the generic `cards()`.
   New statuses: partial (استلام جزئي), cancelled, closed (مغلق ✓). Checked with `scratchpad rd/p2.cjs` (mock `merge/dash_p2.json`).
 
-## Phase 3: the home page answers five questions (2026-11-14)
-- When GET /dash carries `D.fc` (bot `core/forecast.ts`) and `D.home` (`core/owner.ts`) — the money roles — `home()` hands over to
-  `home3()`: `hero()`, «ابدأ من هنا» = today's decisions ranked by money × urgency (`D.home.decide`, each step's count slot = the
-  money at stake via `kf()`), then `answers()` (four tiles `.aq`: cash cover · projects at risk · behind and why · stuck), then
-  `w13Box()` (13 weekly closing balances; the forecast page adds the confirmed-only dots), then the ledger from `homeK(AUD)` with
-  the forecast row = «أدنى رصيد خلال 13 أسبوعاً» and the profit row = the bot's totals, then `provBox()`. Without `D.home` the old
-  home (audit chart, alerts, health) is unchanged.
-- `doAct(act)`: chat → `openChat(row id)` (the bot's own card), dq → `dqDialog`, fc → `more("fc13")`, cost/proj → the project record
-  «نظرة عامة», where `costCard()` shows contract, variations, revenue, cost budget, actual, committed, uncommitted, EAC, margin,
-  the remaining-cost method and flags.
-- Detail pages `p3Page`: `more("fc13")` (chart with both series, why the first shortfall, weeks table, receipts confirmed /
-  uncertain with reasons, scheduled payments, excluded projects, missing inputs linked to «اكتمال البيانات», assumptions),
-  `risk` (loss / weak / unknown / suspect >30 %), `behind` (with the bot's reasons), `blocked`, `decide` — cards `itemCard()`.
-- Checked with `scratchpad rd/p3.cjs` (mock `p3/dash_p3.json` built by `p3/gen.mts` from the real engine on the 9 Nov state):
-  390/1280/EN, no horizontal scroll, no console errors; `rd/oldhome.cjs` = the old home without `D.home`.
+## Phase 3: the home page answers five questions (2026-11-14, corrected after the owner's review)
+- With `D.fc`, `D.home`, `D.fcMe` (money roles) `home()` → `home3()`: «ابدأ من هنا» = decisions ranked by money × urgency, the data
+  queue step and «تحديث توقعات المشاريع» (`more("fcq")`); `answers()` (cash per scenario, risk by class, documented delays vs
+  unverified progress vs missing reports, stuck items — forecast tiles carry «تقديري»); `w13Box()` (base scenario bars; the forecast
+  page adds evidence-only dots and a scenario switch `FCS`); the ledger from `homeK(AUD)` with the base-scenario lowest and the
+  estimated projects' profit; `provBox()`.
+- Pages `p3Page`: fc13 (scenarios table, basis share bar `.bsb`, first-shortfall causes, weeks, receipts by class with entitlement/
+  overdue/claim/evidence, payments with basis — spread work summed per project, excluded, missing → dq, assumptions, «إعدادات
+  التوقع» `setDialog` → op fc_set), risk (one section per class with evidence and limits; how remaining cost was estimated and the
+  benchmark's projects), behind (delays / unverified / no plan / reporting gaps / bottlenecks), blocked, decide, fcq (completion queue).
+- Project overview `costCard()`: revenue, actual (parts), unpaid, committed (incl. blank sub agreements), uncommitted or «غير مقدّرة»,
+  EAC («على الأقل» when a floor), profit; budget original / approved revisions / current + pending revision (approve/reject for an
+  admin who did not ask: `budgetDec`); last forecast update; classes with evidence; buttons «تحديث التوقع» (`revDialog`: items
+  «الوصف | الكمية | الوحدة | السعر» or one amount + basis, execution dates, payment days, collection date + evidence per instalment,
+  reason, owner, review date → op fc_rev with `base` = docV) and «طلب تعديل الميزانية» (`budgetDialog` → op budget_rev).
+- Checked with `scratchpad rd/p3.cjs` (mock `p3/dash_p3b.json` from `p3/gen2.mts`) at 390/1280/EN — no errors, no horizontal scroll;
+  `rd/p3rev.cjs` fills and saves the revision sheet (mocked API) and checks the request body.
 
 ## How to change and verify (the owner expects Claude to check its own work)
 1. `git fetch && git checkout -B <branch> origin/main` (always from a fresh main — PRs are squash-merged).
