@@ -76,6 +76,16 @@ card or page · finance things live under المالية, purchases under الم
   and the funding page is identical to the previous version, and the edit-in-place saves (stages, installment, contract, cash
   and fixed costs) produce the same audit state.
 
+## English (2026-11-13)
+- «English / العربية» button in the header (and on the sign-in card); the choice is kept per device (`localStorage taa.dash.lang`).
+  English sets `<html dir="ltr" lang="en">`; layout uses logical properties (`text-align:start/end`, `inset-inline-*`).
+- Only the interface is translated: `EN` (Arabic → English; `{n}` = a number/amount, `{x}` = any text such as a name) applied to
+  every text node and placeholder/aria-label/title by a MutationObserver (`trTree`), the Arabic kept on the node and put back
+  when switching back (`unTree`). Names, notes, installment names and other data stay as written.
+- A new Arabic UI string shows in Arabic in English mode until it is added to `EN`. To find them: render every view with
+  `taa.dash.lang=en` and list text nodes still containing Arabic (names and notes are expected to stay).
+- Never put program logic on displayed text (option values, checks): the text may be English.
+
 ## How to change and verify (the owner expects Claude to check its own work)
 1. `git fetch && git checkout -B <branch> origin/main` (always from a fresh main — PRs are squash-merged).
 2. Test locally: `python3 -m http.server 8765` in the repo + Playwright (Chromium is pre-installed), routing the API to mock
