@@ -130,6 +130,22 @@ card or page · finance things live under المالية, purchases under الم
   «الميزانية» column (exception / within budget with what is left / no approved budget); rendered by the generic `cards()`.
   New statuses: partial (استلام جزئي), cancelled, closed (مغلق ✓). Checked with `scratchpad rd/p2.cjs` (mock `merge/dash_p2.json`).
 
+## Phase 3: the home page answers five questions (2026-11-14)
+- When GET /dash carries `D.fc` (bot `core/forecast.ts`) and `D.home` (`core/owner.ts`) — the money roles — `home()` hands over to
+  `home3()`: `hero()`, «ابدأ من هنا» = today's decisions ranked by money × urgency (`D.home.decide`, each step's count slot = the
+  money at stake via `kf()`), then `answers()` (four tiles `.aq`: cash cover · projects at risk · behind and why · stuck), then
+  `w13Box()` (13 weekly closing balances; the forecast page adds the confirmed-only dots), then the ledger from `homeK(AUD)` with
+  the forecast row = «أدنى رصيد خلال 13 أسبوعاً» and the profit row = the bot's totals, then `provBox()`. Without `D.home` the old
+  home (audit chart, alerts, health) is unchanged.
+- `doAct(act)`: chat → `openChat(row id)` (the bot's own card), dq → `dqDialog`, fc → `more("fc13")`, cost/proj → the project record
+  «نظرة عامة», where `costCard()` shows contract, variations, revenue, cost budget, actual, committed, uncommitted, EAC, margin,
+  the remaining-cost method and flags.
+- Detail pages `p3Page`: `more("fc13")` (chart with both series, why the first shortfall, weeks table, receipts confirmed /
+  uncertain with reasons, scheduled payments, excluded projects, missing inputs linked to «اكتمال البيانات», assumptions),
+  `risk` (loss / weak / unknown / suspect >30 %), `behind` (with the bot's reasons), `blocked`, `decide` — cards `itemCard()`.
+- Checked with `scratchpad rd/p3.cjs` (mock `p3/dash_p3.json` built by `p3/gen.mts` from the real engine on the 9 Nov state):
+  390/1280/EN, no horizontal scroll, no console errors; `rd/oldhome.cjs` = the old home without `D.home`.
+
 ## How to change and verify (the owner expects Claude to check its own work)
 1. `git fetch && git checkout -B <branch> origin/main` (always from a fresh main — PRs are squash-merged).
 2. Test locally: `python3 -m http.server 8765` in the repo + Playwright (Chromium is pre-installed), routing the API to mock
