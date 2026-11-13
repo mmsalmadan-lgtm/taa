@@ -112,6 +112,19 @@ card or page · finance things live under المالية, purchases under الم
 - Checked: `scratchpad rd/push.cjs` (mocked API, subscribe stubbed — headless Chromium has no push service) and a real
   push event delivered to sw.js through CDP (`ServiceWorker.deliverPushMessage`, needs `chromium.launch({channel:"chromium"})`).
 
+## Phase 1: sources, data completion, recorded money (2026-11-13)
+- Home ledger rows carry `est` (cash / collections / forecast / profit / vat): when `D.prov.missing[est]` is not empty the row shows
+  «تقديري — ينقصه N بنود» (`.estm`, opens `more("dq:<cat>")`) and a warn flag it covers is not repeated. Under the ledger,
+  `provBox()` («مصدر الأرقام ودقتها», a `<details>`): per figure its source and freshness (audit last save, Qoyod last sync, cash
+  book), actual vs forecast, reconciled or not, and what it lacks. Source parts are joined by « · » so each part translates.
+- «اكتمال البيانات» = `more("dq")` / `dqPage`: chips (not done / I can act / done), one card per item (kind, title, status, owner
+  role), `dqDialog` (detail, evidence, owner names, affects, status select + note when `it.can`; admin sets the custody fee rate),
+  `dqAdd` (admin/accountant), `histDialog(tbl,id)` (op history). The step «بيانات ناقصة أو غير مطابقة…» sits in «ابدأ من هنا».
+- `edSave`: a 428 `{pin, reason, changes}` opens `moneyConfirm` inside the edit sheet (the changes, the reason when correcting, the
+  PIN; the sheet's own buttons hidden meanwhile); 401 `{badPin}` asks again keeping the reason; «رجوع» cancels with nothing saved.
+- The chat treats 401 `{badPin}` as a wrong PIN (asks again), not as a lost session.
+- Checked with `scratchpad rd/p1.cjs` (mock `merge/dash_p1.json`).
+
 ## How to change and verify (the owner expects Claude to check its own work)
 1. `git fetch && git checkout -B <branch> origin/main` (always from a fresh main — PRs are squash-merged).
 2. Test locally: `python3 -m http.server 8765` in the repo + Playwright (Chromium is pre-installed), routing the API to mock
@@ -127,6 +140,6 @@ Known good totals (2026-11-09): contracts 14,259,433.75 · collected 7,751,477.4
 - GET /dash is slow (~25 s) — cache or trim.
 - Data still missing in the audit: salaries/fixed costs, input VAT and paid VAT (VAT due is inflated), petty-cash balance,
   existing client custody deposits.
-- To confirm with the owner: custody fee % (10% default), VAT on custody purchases (ask Amr).
+- Custody fee %: set by management from the data-completion list (no fee until then); VAT on custody purchases (ask Amr).
 - 8 projects have no contract date (year 2025 assumed for their numbers).
-- Ahmed Zaki (S-25-003): 150k collected but not invoiced in Qoyod.
+- Ahmed Zaki (S-25-003): see the reconciliation item in «اكتمال البيانات» (audit 600k vs Qoyod 450k).

@@ -231,6 +231,15 @@ button.inst.ed{width:100%;background:none;border:0;border-bottom:1px solid var(-
 .msg h1{font-size:22px;margin:0 0 8px}.muted{color:var(--muted)}.small{font-size:13px}
 .login{display:inline-block;margin:14px 0 6px;background:var(--ui);color:#fff;text-decoration:none;font-weight:600;font-size:16px;padding:12px 22px;border-radius:var(--r-s)}
 .authw{max-width:420px;margin:clamp(24px,8vh,80px) auto 24px;display:flex;flex-direction:column;gap:18px}
+.estm{grid-column:1/-1;justify-self:start;margin-top:4px;font:inherit;font-size:12px;font-weight:600;color:var(--warn);background:var(--warn1);border:1px dashed var(--warn6);border-radius:999px;padding:1px 10px;cursor:pointer}.estm:hover{border-style:solid}
+.prov{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);padding:12px 16px}.prov>summary{cursor:pointer;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;list-style-position:inside}.prov>summary b{font-family:var(--f-disp);font-weight:600}
+.provl{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:10px;margin:12px 0 8px}.prow{border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:3px}.ph2{display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}
+.pill.ok{background:var(--acc1);color:var(--acc9);border-color:transparent}.pill.warn{background:var(--warn1);color:var(--warn);border-color:transparent}.pill.bad{background:var(--crit1);color:var(--crit);border-color:transparent}
+.dqc .kind,.dqk{font-size:11.5px;font-weight:600;color:var(--muted)}.dqc .meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:auto}.dqc.decision{border-inline-start:3px solid var(--warn6)}.dqc.review{border-inline-start:3px solid var(--crit)}.dqc.reconcile{border-inline-start:3px solid var(--acc6)}.dqc.done{opacity:.7}
+.mconf{border-top:1px solid var(--line);margin-top:12px;padding-top:12px;display:flex;flex-direction:column;gap:8px}.mconf h4{margin:0;font-family:var(--f-disp);font-size:15px}
+.mlist{margin:4px 0;padding-inline-start:20px;display:grid;gap:4px;font-size:13px;max-height:220px;overflow:auto}
+.hist{list-style:none;margin:0;padding:0;display:grid;gap:10px}.hist li{border-top:1px solid var(--line);padding-top:8px;display:grid;gap:2px}
+label.chk{display:inline-flex;align-items:center;gap:6px;margin-inline-end:14px;font-size:13px;min-height:32px}
 .isteps{margin:6px 0 4px;padding-inline-start:22px;display:grid;gap:6px;line-height:1.6}.isteps li::marker{font-family:var(--f-disp);font-weight:700;color:var(--ui)}
 .abrand{display:flex;align-items:center;gap:12px;padding-inline:4px}.abrand .logo{width:44px;height:44px;font-size:23px;border-radius:12px}
 .abrand b{display:block;font-family:var(--f-disp);font-size:17px;font-weight:600}.abrand span{font-size:12.5px;color:var(--muted)}
@@ -545,6 +554,119 @@ const EN = {
 "وصلتك {n} رسائل من البوت": "The bot sent you {n} messages",
 "وصلتك رسالتان من البوت": "The bot sent you 2 messages",
 "التنبيهات غير مفعّلة على هذا الجوال": "Alerts are not on for this phone",
+"بيانات ناقصة أو غير مطابقة تؤثر على الأرقام": "Missing or unreconciled data behind the figures",
+"{n} منها عليك": "{n} of them are yours",
+"تقديري — ينقصه بند": "Estimate — 1 input missing",
+"تقديري — ينقصه {n} بنود": "Estimate — {n} inputs missing",
+"مصدر الأرقام ودقتها": "Where the figures come from",
+"{n} بنود ناقصة أو غير مطابقة": "{n} missing or unreconciled items",
+"لا بنود ناقصة": "Nothing missing",
+"غير مطابق": "Not reconciled",
+"من دفتر النقد": "From the cash book",
+"إدخال يدوي": "Entered by hand",
+"غير مطابق مع قيود": "Not reconciled with Qoyod",
+"إدخال يدوي + قيود": "By hand + Qoyod",
+"توقع": "Forecast",
+"المحصّل والباقي عند العملاء": "Collected and still due from clients",
+"المصروف والالتزامات": "Spending and obligations",
+"ربح المشاريع والرصيد المتوقع": "Project profit and expected balance",
+"المحصّل فعلي · الباقي تعاقدي": "Collected: actual · Still due: per contract",
+"توقع، ليس نتيجة مؤكدة": "Forecast, not a confirmed result",
+"المصدر:": "Source:",
+"التدقيق (إدخال يدوي)": "Audit (entered by hand)",
+"آخر حفظ {x}": "last saved {x}",
+"مستحق المقاولين من قيود": "subcontractor dues from Qoyod",
+"آخر مزامنة {x}": "last synced {x}",
+"لم تُقرأ حالة المزامنة": "sync status not read",
+"دفتر النقد": "Cash book",
+"فُتح {x}": "opened {x}",
+"{n} حركة": "{n} movements",
+"نموذج التدقيق: العقود والمراحل والمصروف": "Audit model: contracts, stages and spending",
+"ينقصه بند ←": "1 input missing →",
+"ينقصه {n} بنود ←": "{n} inputs missing →",
+"قائمة اكتمال البيانات ←": "Data completion list →",
+"اكتمال البيانات": "Data completion",
+"كل بند ناقص يبقى ظاهراً كناقص — لا يُحسب صفراً — حتى يُدخل أو يُطابق": "A missing input stays visible as missing — never counted as zero — until it is entered or reconciled",
+"ما ينقص «{x}» حتى يكون رقماً فعلياً": "What «{x}» needs before it is an actual figure",
+"غير منتهية": "Not done",
+"أستطيع تحريكها": "I can act on",
+"منتهية": "Done",
+"كل البنود": "All items",
+"لا بنود منتهية بعد": "Nothing done yet",
+"لا بنود هنا ✓": "Nothing here ✓",
+"بيانات ناقصة": "Missing data",
+"مطابقة": "Reconciliation",
+"قرار للإدارة": "Management decision",
+"مراجعة تصحيح": "Correction review",
+"الدخول": "Access",
+"مفتوح": "Open",
+"قيد العمل": "In progress",
+"بانتظار قرار": "Awaiting decision",
+"منتهٍ": "Done",
+"التوقع": "Forecast",
+"الربح": "Profit",
+"الضريبة": "VAT",
+"الفوترة": "Billing",
+"المالية": "Finance",
+"المحاسب": "Accountant",
+"أضف بنداً للمطابقة ←": "Add a reconciliation item →",
+"سجل تعديلات أرقام التدقيق ←": "Change history of the audit figures →",
+"سجل تعديلات أرقام التدقيق": "Change history of the audit figures",
+"التعديلات": "Changes",
+"الأدلة": "Evidence",
+"المسؤول": "Owner",
+"يؤثر على": "Affects",
+"ملاحظة": "Note",
+"النسبة المعتمدة %": "Approved rate %",
+"من 0 إلى 50. تُطبَّق على المشتريات القادمة من عهد العملاء فقط؛ المشتريات السابقة تبقى «رسوم معلّقة».": "0 to 50. Applies to future purchases from client funds only; earlier purchases keep a pending fee.",
+"يُغلق هذا البند وحده عند إدخال البيانات الناقصة.": "This item closes by itself when the missing data is entered.",
+"يحرّكه {x} أو الإدارة.": "Moved by {x} or management.",
+"اكتب رقماً فقط في النسبة": "Type a number only in the rate",
+"بند للمطابقة": "Reconciliation item",
+"سؤال أو فرق وجدته في الأرقام مع دليله — يبقى ظاهراً حتى يغلقه المسؤول.": "A question or a difference you found in the figures, with its evidence — it stays visible until its owner closes it.",
+"الأدلة (سطر لكل دليل)": "Evidence (one per line)",
+"إضافة": "Add",
+"اكتب البند": "Write the item",
+"أُضيف البند ✓": "Item added ✓",
+"لا تعديلات مسجّلة بعد — يبدأ السجل من تاريخ تفعيله.": "No changes recorded yet — the history starts when it was switched on.",
+"تصحيح مبالغ مسجّلة": "Correction of recorded amounts",
+"إدخال مبالغ": "Amounts entered",
+"السبب: {x}": "Reason: {x}",
+"و{n} أخرى": "and {n} more",
+"إنشاء": "Created",
+"حفظ نسخة جديدة — النسخة السابقة محفوظة": "New version saved — the previous one is kept",
+"حذف — النسخة الأخيرة محفوظة": "Deleted — the last version is kept",
+"لا تظهر هذه القائمة لدورك.": "This list is not shown for your role.",
+"للإدارة والمالية والمحاسب": "Management, finance and the accountant",
+"تعديل على مبالغ مسجّلة": "Change to recorded amounts",
+"تسجيل مبالغ": "Recording amounts",
+"تغيّر مبالغ سبق تسجيلها: اكتب السبب وأكّد برمزك السري. يبقى الرقم الأصلي والسبب واسمك في سجل التعديلات.": "You are changing amounts already recorded: give the reason and confirm with your PIN. The original figure, the reason and your name stay in the change history.",
+"هذه مبالغ تُسجَّل في الحسابات: أكّد برمزك السري.": "These amounts are recorded in the accounts: confirm with your PIN.",
+"و{n} تعديلات أخرى": "and {n} more changes",
+"سبب التعديل": "Reason for the change",
+"مثال: سُجّلت الدفعة خطأ — التحويل لم يصل البنك": "e.g. the payment was recorded by mistake — the transfer never reached the bank",
+"رمزك السري": "Your PIN",
+"رجوع": "Back",
+"اكتب سبب التعديل (5 أحرف على الأقل)": "Write the reason (at least 5 characters)",
+"اكتب رمزك السري": "Type your PIN",
+"لم يُحفظ شيء — أُلغي التأكيد": "Nothing was saved — confirmation cancelled",
+"رمزك السري غير صحيح": "Wrong PIN",
+"التحصيل غير مطابق مع قيود — {n} من {n} مشروعاً غير مربوط بعميله في قيود": "Collections not reconciled with Qoyod — {n} of {n} projects not linked to their Qoyod customer",
+"{n} أرصدة عهد للموظفين مأخوذة من قيود ولم تُعدّ": "{n} staff custody balances taken from Qoyod and never counted",
+"دفتر النقد بلا حركات منذ فتحه": "No movements in the cash book since it was opened",
+"مصاريف ثابتة شهرية غير مُدخلة: {x}": "Monthly fixed costs not entered: {x}",
+"ضريبة المدخلات غير مُدخلة": "Input VAT not entered",
+"الضريبة المدفوعة للهيئة غير مُدخلة": "VAT paid to ZATCA not entered",
+"{n} مشاريع بلا تاريخ عقد و{n} عقود إضافية بلا تاريخ": "{n} projects and {n} extra contracts without a contract date",
+"{n} مشاريع بلا تاريخ عقد": "{n} projects without a contract date",
+"لا توجد عهد عملاء مسجّلة": "No client funds on account recorded",
+"نسبة «رسوم الإدارة والتوريد» على عهد العملاء غير معتمدة": "The administration and procurement fee on client funds is not approved",
+"حدود الاعتماد المالي": "Financial approval limits",
+"وضع التجربة يرسل مباشرة إلى {n} أشخاص غير الإدارة": "Test mode sends directly to {n} people outside management",
+"{n} من فريق المكتب والمواقع لم يدخلوا اللوحة بعد": "{n} office and site staff have not signed in yet",
+"أرقام التدقيق آخر تحديث قبل {n} أيام": "Audit figures last updated {n} days ago",
+"تعديل على مبالغ مسجّلة بانتظار مراجعتك — {x}": "A change to recorded amounts awaits your review — {x}",
+"أرصدة نقد غير مُدخلة: {x}": "Cash balances not entered: {x}",
 "↑ رسائل كانت بانتظارك ولم تصلك في واتساب": "↑ Messages that were waiting for you and did not reach you on WhatsApp",
 "المساعد": "Assistant",
 "كل ما يقدّمه البوت في واتساب، من هنا: طلبات المواد والمعدات، التقرير اليومي، تسليم الأعمال، النماذج": "Everything the WhatsApp bot offers, from here: material and equipment requests, the daily report, work hand-over, forms",
@@ -1804,6 +1926,8 @@ function home(m) {
   if (A.advN) W.push(["مقاول صُرف له أكثر من المعتمد", A.advN, () => go("subs")]);
   const toCash = () => { MT = "cash"; go("money"); };
   // cash first: until the balance is entered, half the figures below are not real yet — say so before them
+  const dqN = dqOpen().length;
+  if (dqN) W.splice(bw && bw.table.rows.length ? 1 : 0, 0, ["بيانات ناقصة أو غير مطابقة تؤثر على الأرقام", dqN, () => more("dq"), dqMine() ? dqMine() + " منها عليك" : ""]);
   m.append(startHere([...(!A.cashDone ? [["أدخل الرصيد النقدي", "أدخل", toCash, "الفائض والرصيد المتوقع محسوبان من صفر حتى تُدخل رصيد كل حساب والعهدة"]] : []), ...W]));
   const coll = A.contracts ? A.received / A.contracts : 0;
   const neg = A.FC && A.FC.min < 0;
@@ -1812,25 +1936,26 @@ function home(m) {
   const bk = (l) => BK.find((k) => k.label === l);
   const K = [];
   // one name and one VAT basis for what clients still owe; the collected KPI no longer repeats it as «باقي X»
-  K.push({ label: "الباقي عند العملاء", value: fmt(A.toCollect), f: "in", sub: "من العقود، شامل الضريبة", flag: A.overdue ? ["bad", "متأخر " + fmt(A.overdue)] : null });
-  const kc = bk("المحصّل"); if (kc) K.push({ ...kc, f: "in", tone: "", sub: pct(coll) + " من العقود" });
+  K.push({ label: "الباقي عند العملاء", est: "collections", value: fmt(A.toCollect), f: "in", sub: "من العقود، شامل الضريبة", flag: A.overdue ? ["bad", "متأخر " + fmt(A.overdue)] : null });
+  const kc = bk("المحصّل"); if (kc) K.push({ ...kc, est: "collections", f: "in", tone: "", sub: pct(coll) + " من العقود" });
   const ke = bk("المصروف حتى الآن"); if (ke) K.push({ ...ke, f: "out", tone: "" });
   // obligations are known only once subcontractor or supplier dues were entered in the audit; before that a 0 is not a fact
   const oweKnown = !!(A.done && (A.done.subs || A.done.sups)) || A.owe > 0;
   K.push(oweKnown ? { label: "الالتزامات", value: fmt(A.owe), f: "out", sub: "خلال 3 أشهر " + fmt(A.pay3), flag: A.cashDone && A.owe > A.cash ? ["bad", "أكبر من النقد"] : null }
     : { label: "الالتزامات", value: "—", f: "out", flag: ["warn", "مستحقات الموردين والمقاولين لم تُدخل"] });
   // cash: the audit's own figure (the same one the forecast and the funding page use) — an unknown balance is «—», never 0
-  K.push({ label: "الرصيد النقدي اليوم", value: A.cashDone ? fmt(A.cash) : "—", f: "cash", sub: A.over ? "مصاريف ثابتة " + fmt(A.over) + " شهرياً" : "", flag: A.cashDone ? null : ["warn", "لم يُدخل"] });
+  K.push({ label: "الرصيد النقدي اليوم", est: "cash", value: A.cashDone ? fmt(A.cash) : "—", f: "cash", sub: A.over ? "مصاريف ثابتة " + fmt(A.over) + " شهرياً" : "", flag: A.cashDone ? null : ["warn", "لم يُدخل"] });
   const k30 = bk("صُرف آخر 30 يوماً"); if (k30) K.push({ ...k30, f: "out", tone: "" });
   const ks = bk("مستحق لمقاولي الباطن"); if (ks && (ks.value === "—" || parseFloat(String(ks.value).replace(/,/g, "")) > 0)) K.push({ ...ks, f: "out", flag: ks.value === "—" ? ["warn", ks.sub || "لم يُقرأ"] : null, sub: ks.value === "—" ? "" : ks.sub });
   const kp = bk("مشتريات بانتظار المدير المالي"); if (kp && +kp.value > 0) K.push({ ...kp, f: "out" });
-  K.push({ label: "الضريبة المستحقة", value: fmt(A.vat), f: "out", flag: A.vat && !A.vatIn ? ["warn", "تحتاج تأكيد"] : null });
-  K.push({ label: "ربح المشاريع المتوقع", value: A.unkN === A.nP && A.nP ? "—" : fmt(A.projProfit), f: "in", sub: A.unkN ? arN(A.unkN, "مشروع واحد غير محسوب", "مشروعان غير محسوبين", "مشاريع غير محسوبة", "مشروعًا غير محسوب") : "", flag: A.estN ? ["warn", "تقديري"] : null });
+  K.push({ label: "الضريبة المستحقة", est: "vat", value: fmt(A.vat), f: "out", flag: A.vat && !A.vatIn ? ["warn", "تحتاج تأكيد"] : null });
+  K.push({ label: "ربح المشاريع المتوقع", est: "profit", value: A.unkN === A.nP && A.nP ? "—" : fmt(A.projProfit), f: "in", sub: A.unkN ? arN(A.unkN, "مشروع واحد غير محسوب", "مشروعان غير محسوبين", "مشاريع غير محسوبة", "مشروعًا غير محسوب") : "", flag: A.estN ? ["warn", "تقديري"] : null });
   // without the cash balance the forecast starts from 0: say so instead of showing a calm surplus (dimmed until cash is in)
-  if (!A.cashDone) K.push({ label: "الفائض قبل إضافة النقد", value: acc(A.fund), neg: A.fund < 0, f: "cash", flag: ["warn", "ينقصه الرصيد النقدي"], dep: true });
-  else K.push(neg ? { label: "أكبر عجز قادم", value: acc(A.FC.min), neg: true, f: "cash", sub: "يوم " + A.FC.minD }
-    : { label: A.fund < 0 ? "العجز المتوقع" : "الفائض المتوقع", value: acc(A.fund), neg: A.fund < 0, f: "cash", flag: A.unkF ? ["warn", "تقديري — " + arN(A.unkF, "مشروع واحد غير محسوب", "مشروعان غير محسوبين", "مشاريع غير محسوبة", "مشروعًا غير محسوب")] : null });
+  if (!A.cashDone) K.push({ label: "الفائض قبل إضافة النقد", est: "forecast", value: acc(A.fund), neg: A.fund < 0, f: "cash", flag: ["warn", "ينقصه الرصيد النقدي"], dep: true });
+  else K.push(neg ? { label: "أكبر عجز قادم", est: "forecast", value: acc(A.FC.min), neg: true, f: "cash", sub: "يوم " + A.FC.minD }
+    : { label: A.fund < 0 ? "العجز المتوقع" : "الفائض المتوقع", est: "forecast", value: acc(A.fund), neg: A.fund < 0, f: "cash", flag: A.unkF ? ["warn", "تقديري — " + arN(A.unkF, "مشروع واحد غير محسوب", "مشروعان غير محسوبين", "مشاريع غير محسوبة", "مشروعًا غير محسوب")] : null });
   m.append(ledger(K));
+  if (D.prov) m.append(provBox());
   // الرصيد المتوقع: the audit's own weekly chart
   if (A.FC) {
     const box = el("div", "box fcbox" + (A.cashDone ? "" : " dep"));
@@ -1900,8 +2025,12 @@ function ledger(K) {
       const r = el("div", "lrow" + (i === 0 ? " lead" : "") + (k.dep ? " dep" : ""));
       r.append(el("span", "l", k.label), el("span", "v" + (k.neg ? " neg" : ""), sar(k.value)));
       if (k.sub) r.append(el("span", "s", sar(k.sub)));
-      if (k.flag) r.append(el("span", "flag " + k.flag[0], k.flag[1]));
-      else if (k.tone === "warn" || k.tone === "bad") r.append(el("span", "flag " + k.tone, k.tone === "bad" ? "يحتاج إجراء" : "يحتاج متابعة"));
+      const miss = k.est ? missingFor(k.est) : [];
+      // a warning that the estimate marker below already covers is not said twice
+      if (k.flag && !(miss.length && k.flag[0] === "warn")) r.append(el("span", "flag " + k.flag[0], k.flag[1]));
+      else if (!k.flag && (k.tone === "warn" || k.tone === "bad")) r.append(el("span", "flag " + k.tone, k.tone === "bad" ? "يحتاج إجراء" : "يحتاج متابعة"));
+      // an estimate: the inputs it still misses, one tap away (never shown as a confirmed figure)
+      if (miss.length) { const b = el("button", "estm", "تقديري — " + (miss.length === 1 ? "ينقصه بند" : "ينقصه " + miss.length + " بنود")); b.type = "button"; b.title = miss.map((x) => x.title).join("\n"); b.onclick = () => more("dq:" + k.est); r.append(b); }
       c.append(r);
     });
     g.append(c);
@@ -1923,8 +2052,149 @@ function chartTips(c) {
   pl.addEventListener("pointerdown", (e) => show(e.clientX));
   pl.addEventListener("pointerleave", () => { tip.hidden = true; pl.querySelectorAll(".wk.on").forEach((c2) => c2.classList.remove("on")); });
 }
+// ===== «اكتمال البيانات» (Phase 1): every input a money figure still misses, every reconciliation not done, every decision
+// management owes — with an owner and a status. D.items / D.prov / D.dqMe come with GET for the money roles; the rules live in
+// the bot (core/dataq.ts): computed items close themselves when the data arrives, the rest when their owner marks them done.
+const DQ_KIND = { data: "بيانات ناقصة", reconcile: "مطابقة", decision: "قرار للإدارة", review: "مراجعة تصحيح", access: "الدخول" };
+const DQ_ST = { open: "مفتوح", in_progress: "قيد العمل", waiting: "بانتظار قرار", done: "منتهٍ" };
+const DQ_AFF = { cash: "النقد", collections: "التحصيل", forecast: "التوقع", profit: "الربح", vat: "الضريبة", billing: "الفوترة", access: "الدخول" };
+const DQ_ROLE = { admin: "الإدارة", finance: "المالية", accountant: "المحاسب", procurement: "المشتريات" };
+const dqOpen = () => (D && D.items ? D.items.filter((i) => i.status !== "done") : []);
+const dqMine = () => dqOpen().filter((i) => i.can && !(D.dqMe && D.dqMe.admin && i.owner.role !== "admin")).length;
+const missingFor = (cat) => (D && D.prov && D.prov.missing && D.prov.missing[cat]) || [];
+const dWhen = (iso) => (iso ? new Date(iso).toLocaleString(LANG === "en" ? "en-GB" : "ar-SA-u-nu-latn-ca-gregory", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "—");
+// «مصدر الأرقام»: where each home figure comes from, how fresh it is, actual or forecast, reconciled or not, what it lacks
+function provBox() {
+  const P = D.prov, open = dqOpen().length;
+  const det = el("details", "prov"), sm = el("summary");
+  sm.append(el("b", "", "مصدر الأرقام ودقتها"), el("span", "small muted", open ? open + " بنود ناقصة أو غير مطابقة" : "لا بنود ناقصة")); det.append(sm);
+  const aud = ["التدقيق (إدخال يدوي)", ...(P.audit && P.audit.at ? ["آخر حفظ " + dWhen(P.audit.at)] : []), ...(P.audit && P.audit.by ? [P.audit.by] : [])].join(" · ");
+  const qy = ["مستحق المقاولين من قيود", P.qoyod && P.qoyod.at ? "آخر مزامنة " + dWhen(P.qoyod.at) : "لم تُقرأ حالة المزامنة"].join(" · ");
+  const book = P.book ? ["دفتر النقد", "فُتح " + (P.book.opened || "—"), P.book.moves + " حركة"].join(" · ") : null;
+  const rec = (cat, ok) => (missingFor(cat).some((x) => /^recon\.|^cash\.custody/.test(x.id)) ? ["bad", "غير مطابق"] : ok);
+  const rows = [
+    ["النقد", book || aud, "فعلي", rec("cash", book ? ["ok", "من دفتر النقد"] : ["warn", "إدخال يدوي"]), "cash"],
+    ["المحصّل والباقي عند العملاء", aud, "المحصّل فعلي · الباقي تعاقدي", rec("collections", ["warn", "غير مطابق مع قيود"]), "collections"],
+    ["المصروف والالتزامات", aud + " · " + qy, "فعلي", ["warn", "إدخال يدوي + قيود"], null],
+    ["الضريبة المستحقة", aud, "تقدير", ["warn", "تقدير"], "vat"],
+    ["ربح المشاريع والرصيد المتوقع", "نموذج التدقيق: العقود والمراحل والمصروف", "توقع، ليس نتيجة مؤكدة", ["warn", "توقع"], "forecast"],
+  ];
+  const L = el("div", "provl");
+  for (const [t, src, kind, [tone, rs], cat] of rows) {
+    const r = el("div", "prow"), h = el("div", "ph2"); h.append(el("b", "", t), el("span", "pill " + tone, rs)); r.append(h);
+    const sl = el("div", "small"); sl.append(el("span", "muted", "المصدر: "), el("span", "", src)); r.append(sl, el("div", "small muted", kind));
+    const miss = cat ? [...missingFor(cat), ...(cat === "forecast" ? missingFor("profit").filter((x) => !missingFor("forecast").some((y) => y.id === x.id)) : [])] : [];
+    if (miss.length) { const b = el("button", "lnk", miss.length === 1 ? "ينقصه بند ←" : "ينقصه " + miss.length + " بنود ←"); b.type = "button"; b.title = miss.map((x) => x.title).join("\n"); b.onclick = () => more("dq:" + cat); r.append(b); }
+    L.append(r);
+  }
+  det.append(L);
+  const all = el("button", "lnk", "قائمة اكتمال البيانات ←"); all.type = "button"; all.onclick = () => more("dq"); det.append(all);
+  return det;
+}
+let DQF = "open";
+function dqPage(m, cat) {
+  if (!D.items) { backHome(m, "اكتمال البيانات", "للإدارة والمالية والمحاسب"); m.append(el("div", "box small muted", "لا تظهر هذه القائمة لدورك.")); return; }
+  const items = D.items.filter((i) => !cat || (i.affects || []).includes(cat));
+  backHome(m, "اكتمال البيانات", cat ? "ما ينقص «" + (DQ_AFF[cat] || cat) + "» حتى يكون رقماً فعلياً" : "كل بند ناقص يبقى ظاهراً كناقص — لا يُحسب صفراً — حتى يُدخل أو يُطابق");
+  const counts = { open: items.filter((i) => i.status !== "done").length, mine: items.filter((i) => i.status !== "done" && i.can).length, done: items.filter((i) => i.status === "done").length };
+  const fl = el("div", "filters");
+  for (const [k, t] of [["open", "غير منتهية"], ["mine", "أستطيع تحريكها"], ["done", "منتهية"]]) {
+    const c = el("button", "chip"); c.type = "button"; c.setAttribute("aria-pressed", String(DQF === k)); c.append(document.createTextNode(t), el("span", "k", String(counts[k])));
+    c.onclick = () => { DQF = k; draw(); }; fl.append(c);
+  }
+  if (cat) { const c = el("button", "chip"); c.type = "button"; c.textContent = "كل البنود"; c.onclick = () => more("dq"); fl.append(c); }
+  m.append(fl);
+  const L = items.filter((i) => (DQF === "done" ? i.status === "done" : i.status !== "done" && (DQF !== "mine" || i.can)));
+  if (!L.length) m.append(el("div", "box small muted", DQF === "done" ? "لا بنود منتهية بعد" : "لا بنود هنا ✓"));
+  const g = el("div", "grid dq");
+  for (const it of L) {
+    const c = el("button", "card dqc " + it.kind + (it.status === "done" ? " done" : "")); c.type = "button";
+    c.append(el("span", "kind", DQ_KIND[it.kind] || it.kind), el("div", "t", sar(it.title)));
+    const meta = el("div", "meta"); meta.append(el("span", "pill " + (it.status === "done" ? "ok" : it.status === "waiting" ? "warn" : ""), DQ_ST[it.status] || it.status), el("span", "small muted", DQ_ROLE[it.owner.role] || it.owner.role));
+    c.append(meta); c.onclick = () => dqDialog(it); g.append(c);
+  }
+  m.append(g);
+  const foot = el("div", "links");
+  if (D.dqMe && D.dqMe.add) { const b = el("button", "lnk", "أضف بنداً للمطابقة ←"); b.type = "button"; b.onclick = dqAdd; foot.append(b); }
+  const hb = el("button", "lnk", "سجل تعديلات أرقام التدقيق ←"); hb.type = "button"; hb.onclick = () => histDialog("bot_settings", "audit", "سجل تعديلات أرقام التدقيق"); foot.append(hb);
+  m.append(foot);
+}
+function dqDialog(it) {
+  const body = $("dlgBody"); body.replaceChildren(el("span", "kind dqk", DQ_KIND[it.kind] || it.kind), el("h3", "", sar(it.title)));
+  if (it.detail) body.append(el("p", "", sar(it.detail)));
+  if ((it.evidence || []).length) { const d = el("div", "f"); d.append(el("b", "", it.kind === "review" ? "التعديلات" : "الأدلة")); const ul = el("ul", "mlist"); for (const x of it.evidence) ul.append(el("li", "", sar(x))); d.append(ul); body.append(d); }
+  const kv = el("div", "kv");
+  kv.append(el("span", "", "المسؤول"), el("b", "", (DQ_ROLE[it.owner.role] || it.owner.role) + ((it.owner.names || []).length ? " — " + it.owner.names.join("، ") : "")));
+  if ((it.affects || []).length) kv.append(el("span", "", "يؤثر على"), el("b", "", it.affects.map((a) => DQ_AFF[a] || a).join("، ")));
+  kv.append(el("span", "", "الحالة"), el("b", "", (DQ_ST[it.status] || it.status) + (it.by ? " — " + it.by + "، " + dWhen(it.at) : "")));
+  if (it.note) kv.append(el("span", "", "ملاحظة"), el("b", "", it.note));
+  body.append(kv);
+  const res = el("div", "res"); res.setAttribute("role", "status");
+  const bar = el("div", "dbar"), close = el("button", "sbtn", "إغلاق"); close.type = "button"; close.onclick = () => $("dlg").close();
+  if (it.can && it.status !== "done") {
+    const fs = el("div", "f"), sl = el("label", "", "الحالة"), sel = el("select"); sel.id = "dq-st"; sl.htmlFor = sel.id;
+    for (const [k, t] of Object.entries(DQ_ST)) { if (k === "done" && !it.closable && it.id !== "custody.fee") continue; const o = el("option", "", t); o.value = k; if (k === it.status) o.selected = true; sel.append(o); }
+    fs.append(sl, sel); body.append(fs);
+    let rate = null;
+    if (it.id === "custody.fee" && D.dqMe && D.dqMe.admin) { const f = el("div", "f"), l = el("label", "", "النسبة المعتمدة %"); rate = el("input"); rate.id = "dq-rate"; l.htmlFor = rate.id; rate.inputMode = "decimal"; rate.dir = "ltr"; f.append(l, rate, el("div", "hint", "من 0 إلى 50. تُطبَّق على المشتريات القادمة من عهد العملاء فقط؛ المشتريات السابقة تبقى «رسوم معلّقة».")); body.append(f); }
+    const fn = el("div", "f"), nl = el("label", "", "ملاحظة"), na = el("textarea"); na.id = "dq-note"; nl.htmlFor = na.id; na.rows = 2; na.value = it.note || ""; fn.append(nl, na); body.append(fn);
+    if (!it.closable && it.id !== "custody.fee") body.append(el("div", "hint", "يُغلق هذا البند وحده عند إدخال البيانات الناقصة."));
+    const save = el("button", "pbtn", "حفظ"); save.type = "button"; bar.append(save);
+    save.onclick = async () => {
+      const v = rate && rate.value.trim() ? numIn(rate.value) : null;
+      if (rate && rate.value.trim() && numBad(rate.value)) { res.className = "res bad"; res.textContent = "اكتب رقماً فقط في النسبة"; return; }
+      save.disabled = true; res.className = "res"; res.textContent = "جارٍ الحفظ…";
+      try {
+        const { status, j } = await api({ op: "dataq_set", id: it.id, status: sel.value, note: na.value, ...(v !== null ? { value: v } : {}) });
+        if (status !== 200) { res.className = "res bad"; res.textContent = j.error || "تعذّر الحفظ"; save.disabled = false; return; }
+        $("dlg").close(); toast("تم ✓"); load(true);
+      } catch { res.className = "res bad"; res.textContent = "تعذّر الاتصال"; save.disabled = false; }
+    };
+  } else if (!it.can && it.status !== "done") body.append(el("div", "hint", "يحرّكه " + (DQ_ROLE[it.owner.role] || it.owner.role) + " أو الإدارة."));
+  bar.append(close); body.append(res, bar); $("dlg").showModal();
+}
+function dqAdd() {
+  const body = $("dlgBody"); body.replaceChildren(el("h3", "", "بند للمطابقة"), el("p", "small muted", "سؤال أو فرق وجدته في الأرقام مع دليله — يبقى ظاهراً حتى يغلقه المسؤول."));
+  const mk = (lab, tag) => { const f = el("div", "f"), l = el("label", "", lab), i = el(tag); i.id = "dqa" + Math.random().toString(36).slice(2, 7); l.htmlFor = i.id; f.append(l, i); body.append(f); return i; };
+  const t = mk("البند", "input"), dt = mk("التفاصيل", "textarea"), ev = mk("الأدلة (سطر لكل دليل)", "textarea");
+  const r = mk("المسؤول", "select"); for (const [k, v] of [["accountant", "المحاسب"], ["finance", "المالية"], ["admin", "الإدارة"]]) { const o = el("option", "", v); o.value = k; r.append(o); }
+  const af = el("fieldset", "f"); af.append(el("legend", "", "يؤثر على")); const boxes = [];
+  for (const k of ["cash", "collections", "forecast", "profit", "vat", "billing"]) { const lb = el("label", "chk"), c = el("input"); c.type = "checkbox"; c.value = k; lb.append(c, document.createTextNode(" " + DQ_AFF[k])); af.append(lb); boxes.push(c); }
+  body.append(af);
+  const res = el("div", "res"), bar = el("div", "dbar"), save = el("button", "pbtn", "إضافة"), close = el("button", "sbtn", "إلغاء"); res.setAttribute("role", "status");
+  save.type = close.type = "button"; bar.append(save, close); body.append(res, bar); close.onclick = () => $("dlg").close();
+  save.onclick = async () => {
+    if (t.value.trim().length < 5) { res.className = "res bad"; res.textContent = "اكتب البند"; t.focus(); return; }
+    save.disabled = true;
+    const { status, j } = await api({ op: "dataq_add", title: t.value, detail: dt.value, role: r.value, evidence: ev.value.split("\n").map((x) => x.trim()).filter(Boolean), affects: boxes.filter((c) => c.checked).map((c) => c.value) }).catch(() => ({ status: 0, j: {} }));
+    if (status !== 200) { res.className = "res bad"; res.textContent = j.error || "تعذّر الحفظ"; save.disabled = false; return; }
+    $("dlg").close(); toast("أُضيف البند ✓"); load(true);
+  };
+  $("dlg").showModal(); t.focus();
+}
+// who changed a record and when (bot_audit — kept where no one can rewrite it); the stored copies stay on the server
+async function histDialog(tbl, id, title) {
+  const body = $("dlgBody"); body.replaceChildren(el("h3", "", title), el("div", "muted", "جارٍ التحميل…")); $("dlg").showModal();
+  const { status, j } = await api({ op: "history", tbl, id }).catch(() => ({ status: 0, j: {} }));
+  body.replaceChildren(el("h3", "", title));
+  if (status !== 200) { body.append(el("div", "res bad", j.error || "تعذّر التحميل")); }
+  else if (!(j.rows || []).length) body.append(el("div", "small muted", "لا تعديلات مسجّلة بعد — يبدأ السجل من تاريخ تفعيله."));
+  else {
+    const L = el("ol", "hist");
+    for (const r of j.rows) {
+      const li = el("li"), h = el("div", "ph2"); h.append(el("b", "", r.who || r.actor), el("span", "small muted", dWhen(r.at))); li.append(h);
+      const n = r.note || null;
+      if (r.op === "note" && n) { li.append(el("div", "small", n.kind === "correction" ? "تصحيح مبالغ مسجّلة" : "إدخال مبالغ")); if (n.reason) li.append(el("div", "small", "السبب: " + n.reason)); for (const x of (n.lines || []).slice(0, 6)) li.append(el("div", "small muted", sar(x))); if ((n.lines || []).length > 6) li.append(el("div", "small muted", "و" + (n.lines.length - 6) + " أخرى")); }
+      else li.append(el("div", "small muted", { insert: "إنشاء", update: "حفظ نسخة جديدة — النسخة السابقة محفوظة", delete: "حذف — النسخة الأخيرة محفوظة" }[r.op] || r.op));
+      L.append(li);
+    }
+    body.append(L);
+  }
+  const bar = el("div", "dbar"), close = el("button", "sbtn", "إغلاق"); close.type = "button"; close.onclick = () => $("dlg").close(); bar.append(close); body.append(bar);
+}
 function morePage(m) {
   const A = AUD, k = MORE || "";
+  if (k === "dq" || k.startsWith("dq:")) return dqPage(m, k.slice(3));
   if (!A && k !== "wait") return go("home");
   if (k === "wait") { const w = sec("wait"); backHome(m, "بانتظارك", w && w.note); if (w) m.append(...cards({ ...w, kpis: null }, "ui")); return; }
   if (k === "fc") {
@@ -2021,6 +2291,7 @@ function chatPanel(first, opts = {}) {
       const { status, j } = await api({ op: "chat", ...msg, ...(pin ? { pin } : {}) });
       wait.remove();
       if (status === 428 && j.pin) return askPin(msg, acts);
+      if (status === 401 && j.badPin) { note(j.error || "رمزك السري غير صحيح", "bad"); return askPin(msg, acts); } // a wrong PIN, not a lost session
       if (status === 401) { if ($("dlg").open) $("dlg").close(); return signIn("", j.error || "انتهت الجلسة — سجّل الدخول من جديد"); }
       if (status !== 200) { note(j.error || "تعذّر التنفيذ", "bad"); enable(acts, true); return; }
       if (msg.reply !== first) st.moved = true;
@@ -2108,11 +2379,41 @@ const rid = () => Math.random().toString(36).slice(2, 8) + Math.random().toStrin
 const canEdit = () => !!(D && D.projects);
 let ED = null;
 async function edLoad() { const { status, j } = await api({ op: "audit" }); if (status !== 200 || !j.state) throw new Error(j.error || "تعذّر تحميل البيانات"); ED = { S: JSON.parse(j.state), at: j.at }; return ED.S; }
-async function edSave(note) {
-  const { status, j } = await api({ op: "audit_save", state: JSON.stringify(ED.S), base: ED.at });
+async function edSave(note, ok) {
+  const { status, j } = await api({ op: "audit_save", state: JSON.stringify(ED.S), base: ED.at, ...(ok || {}) });
+  // recorded money (a contract value, a collected instalment, cash, VAT, dues): the bot asks for the PIN, and for a correction
+  // of an amount already recorded also the reason — both kept in the change history with the original value
+  if (status === 428 && j.pin) { ED.need = j; return edSave(note, await moneyConfirm(j, "", ok)); }
+  if (status === 401 && j.badPin && ED.need) return edSave(note, await moneyConfirm(ED.need, j.error, ok));
   if (status === 409) { ED = null; throw new Error("عدّل شخص آخر البيانات قبل لحظات — افتح التعديل مرة ثانية"); }
   if (status !== 200) throw new Error(j.error || "تعذّر الحفظ");
   ED.at = j.at; toast(note || "تم الحفظ ✓ — الأرقام تتحدث خلال ثوانٍ"); load(true); refreshAud();
+}
+// the confirmation shown inside the open edit sheet: what changes, the reason (corrections only), the PIN
+function moneyConfirm(need, err, prev) {
+  return new Promise((resolve, reject) => {
+    const body = $("dlgBody"), bars = [...body.querySelectorAll(":scope > .dbar")];
+    bars.forEach((b) => (b.hidden = true));
+    const old = body.querySelector(".mconf"); if (old) old.remove();
+    const box = el("section", "mconf"); box.setAttribute("aria-labelledby", "mconf-h");
+    const h = el("h4", "", need.reason ? "تعديل على مبالغ مسجّلة" : "تسجيل مبالغ"); h.id = "mconf-h"; box.append(h);
+    box.append(el("p", "small", need.reason ? "تغيّر مبالغ سبق تسجيلها: اكتب السبب وأكّد برمزك السري. يبقى الرقم الأصلي والسبب واسمك في سجل التعديلات." : "هذه مبالغ تُسجَّل في الحسابات: أكّد برمزك السري."));
+    const ul = el("ul", "mlist"); for (const t of need.changes || []) ul.append(el("li", "", sar(t))); if (need.more) ul.append(el("li", "muted", "و" + need.more + " تعديلات أخرى")); box.append(ul);
+    let rs = null;
+    if (need.reason) { const f = el("div", "f"), lab = el("label", "", "سبب التعديل"); rs = el("textarea"); rs.id = "mconf-r"; lab.htmlFor = rs.id; rs.rows = 2; rs.value = (prev && prev.reason) || ""; rs.placeholder = "مثال: سُجّلت الدفعة خطأ — التحويل لم يصل البنك"; f.append(lab, rs); box.append(f); }
+    const pf = field("رمزك السري", "password", "current-password"); box.append(pf.box);
+    const e = el("div", "res" + (err ? " bad" : ""), err || ""); e.setAttribute("role", "status"); box.append(e);
+    const bar = el("div", "dbar"), go2 = el("button", "pbtn", "تأكيد وحفظ"), back = el("button", "sbtn", "رجوع"); go2.type = back.type = "button"; bar.append(go2, back); box.append(bar);
+    body.append(box); (rs && !rs.value ? rs : pf.i).focus();
+    const done = () => { box.remove(); bars.forEach((b) => (b.hidden = false)); };
+    back.onclick = () => { done(); reject(new Error("لم يُحفظ شيء — أُلغي التأكيد")); };
+    go2.onclick = () => {
+      const reason = rs ? rs.value.trim() : "";
+      if (rs && reason.length < 5) { e.className = "res bad"; e.textContent = "اكتب سبب التعديل (5 أحرف على الأقل)"; rs.focus(); return; }
+      if (!pf.i.value) { e.className = "res bad"; e.textContent = "اكتب رمزك السري"; pf.i.focus(); return; }
+      done(); resolve({ pin: pf.i.value, ...(reason ? { reason } : {}) });
+    };
+  });
 }
 function toast(t) { let d = document.getElementById("toast"); if (!d) { d = el("div", "toast"); d.id = "toast"; d.setAttribute("role", "status"); document.body.append(d); } d.textContent = t; d.hidden = false; clearTimeout(d._t); d._t = setTimeout(() => (d.hidden = true), 4000); }
 // opens a fresh copy of the data, then the form; fields: {key,label,type:text|num|select|area|seg,opts:[[v,t]],hint,show:(vals)=>bool}
