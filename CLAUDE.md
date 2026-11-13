@@ -125,6 +125,11 @@ card or page · finance things live under المالية, purchases under الم
 - The chat treats 401 `{badPin}` as a wrong PIN (asks again), not as a lost session.
 - Checked with `scratchpad rd/p1.cjs` (mock `merge/dash_p1.json`).
 
+## Phase 2: purchases and the budget (2026-11-13)
+- The purchases section (bot `dash.ts`) now carries KPIs «التزامات مفتوحة», «مستحق للموردين», «طلبات باستثناء على الميزانية» and a
+  «الميزانية» column (exception / within budget with what is left / no approved budget); rendered by the generic `cards()`.
+  New statuses: partial (استلام جزئي), cancelled, closed (مغلق ✓). Checked with `scratchpad rd/p2.cjs` (mock `merge/dash_p2.json`).
+
 ## How to change and verify (the owner expects Claude to check its own work)
 1. `git fetch && git checkout -B <branch> origin/main` (always from a fresh main — PRs are squash-merged).
 2. Test locally: `python3 -m http.server 8765` in the repo + Playwright (Chromium is pre-installed), routing the API to mock
