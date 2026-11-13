@@ -1109,6 +1109,46 @@ const EN = {
 "ملاحظات مفتوحة": "Open notes",
 "لا توجد ملاحظات مفتوحة": "No open notes",
 "الفحوصات": "Inspections",
+"تقدير بنسبة غير موثّقة — خارج الربح المتوقع": "Estimated on an unvalidated ratio — left out of expected profit",
+"{n} على نسبة غير موثّقة": "{n} on an unvalidated ratio",
+"كل مرحلة تُغطّى بعدها أعمال: فحص مهندس الموقع ← قبول المراجع الفني ← الاستشاري ومفتش التأمين حسب خطة المشروع ← الإفراج لكل منطقة. الصبات من مسار الصب نفسه.": "Every stage that later work covers: site engineer's check → technical reviewer's acceptance → consultant and insurance inspector as the project's plan requires → release per area. Pours come from the pour workflow itself.",
+"بانتظار المراجع الفني": "Awaiting technical reviewer",
+"{n} بلا مراجع معيّن": "{n} with no reviewer assigned",
+"بانتظار اعتماد المتطلبات": "Requirements awaiting approval",
+"{n} مانعة": "{n} blocking",
+"مناطق أُفرج عنها آخر {n} يوماً": "Areas released in the last {n} days",
+"{n} من {n} مناطق": "{n} of {n} areas",
+"النطاق": "Scope",
+"كل ملاحظة: الجهة، المنطقة، مانعة أو لا، المسؤول، المهلة التي حددها المراجع، دليل الإصلاح، التحقق الداخلي من غير من أصلحها، والإغلاق — المانعة يغلقها فحص الجهة التي سجّلتها.": "Each finding: issuer, area, blocking or not, owner, the deadline the reviewer set, fix evidence, internal verification by someone other than the fixer, and closure — a blocking one is closed by the issuer's next inspection.",
+"نقاط التوقف في خطة المشروع مانعة: لا إذن بدء ولا طلب فحص ولا تسليم أعمال قبل الإفراج عن المرحلة التي تغطيها في نفس النطاق. البوت لا يرى بدء العمل فعلياً: يراه من إذن البدء وتقرير «بداية العمل» اليومي.": "The project plan's hold points block: no start permit, inspection request or hand-over before the stage it covers is released in the same scope. The bot cannot see work physically start: it sees the start permit and the daily «start of work» report.",
+"أذونات بدء سارية": "Active start permits",
+"بدء عمل بلا إذن": "Work started without a permit",
+"من تقارير بداية العمل": "From start-of-day reports",
+"تسليم بتحذير": "Hand-over with a warning",
+"بلا إذن بدء أو مع ملاحظات غير مانعة": "No start permit, or open non-blocking findings",
+"فحوصات سابقة للنظام": "Inspections before the system",
+"تراجعها الإدارة": "For management review",
+"ما حدث": "What happened",
+"خطط الفحص للمشاريع": "Project inspection plans",
+"لكل مشروع: نقاط التوقف ومن يفحصها (الاستشاري، مفتش التأمين) بمرجعها، والمراجعون الفنيون. تعتمدها الإدارة من البوت («خطط الفحص»)، وكل تعديل يُسجَّل بإصدار.": "Per project: the hold points and who inspects them (consultant, insurance inspector) with their source, and the technical reviewers. Management approves them in the bot («خطط الفحص»); every change is a new version.",
+"بانتظار الاعتماد": "Awaiting approval",
+"معتمدة": "Approved",
+"المراجعون": "Reviewers",
+"الإصدار": "Version",
+"بانتظار قبول المراجع الفني": "Awaiting the technical reviewer's acceptance",
+"بانتظار تعيين مراجع فني": "Awaiting a technical reviewer assignment",
+"ملاحظات مانعة — بانتظار الإصلاح والتحقق": "Blocking findings — awaiting fix and verification",
+"متطلبات الفحص بانتظار الاعتماد": "Inspection requirements awaiting approval",
+"تحقق داخلياً — بانتظار إعادة فحص الجهة": "Verified internally — awaiting the issuer's re-inspection",
+"المراجع الفني": "Technical reviewer",
+"سابق للنظام": "Before the system",
+"القبول الفني الداخلي": "Internal technical acceptance",
+"ملاحظات الفحص (مسؤول، مهلة، إصلاح، تحقق، إغلاق)": "Inspection findings (owner, due date, fix, verification, closure)",
+"المناطق والإفراج الجزئي": "Areas and partial release",
+"لا يوجد — المرحلة كلها أو لا شيء": "None — the whole stage or nothing",
+"إصدارات خطة الفحص": "Inspection plan versions",
+"قراءة فقط — لا يُكتب شيء في التطبيق. النقل موقوف حتى يحمل التطبيق: القبول الفني الداخلي، نتائج الاستشاري، فحوصات مفتش التأمين، الملاحظات، إصدارات خطة الفحص، المناطق، وسجل الإفراج — ثم ربط المشاريع والمراحل ومطابقة السجلات وموافقة بشرية.": "Read only — nothing is written to the app. The move is paused until the app can hold internal acceptance, consultant results, insurance inspections, findings, plan versions, areas and release history — then project and stage mapping, reconciliation and a person's approval.",
+"أعمال غير ملتزم بها خارج التوقع: {n}": "Uncommitted work left out of the forecast: {n}",
 "الدور": "Floor",
 "منذ": "Since",
 "من": "From",
@@ -1871,7 +1911,7 @@ const TABS = [
   { v: "proj", t: "المشاريع", fam: "var(--acc6)" },
   { v: "money", t: "المالية والمحاسبة", ids: ["receipts", "claims", "custody", "subk", "subrec", "certs"], fam: "var(--acc6)", f: "acc", g: "الأقسام" },
   { v: "buy", t: "المشتريات", ids: ["reqs", "purchases", "sups"], fam: "var(--acc6)", f: "acc", g: "الأقسام" },
-  { v: "site", t: "التنفيذ والجودة", ids: ["quality", "defects", "insp", "findings", "gates", "bfqa", "pours", "units"], fam: "var(--eng6)", f: "eng", g: "الأقسام" },
+  { v: "site", t: "التنفيذ والجودة", ids: ["quality", "defects", "insp", "findings", "gates", "qaplan", "bfqa", "pours", "units"], fam: "var(--eng6)", f: "eng", g: "الأقسام" },
   { v: "sales", t: "المبيعات", ids: ["changes", "leads"], fam: "var(--ui)", g: "الأقسام" },
   { v: "rat", t: "Rent a Tool", ids: ["rat"], fam: "var(--ui)", g: "الأقسام" },
   { v: "sys", t: "النظام", ids: ["health"], fam: "var(--out)", g: "الإدارة" },
@@ -2083,7 +2123,7 @@ const MTABS = [
 ];
 let MT = "rcv";
 // «التنفيذ والجودة»: quality of the works first, then what the sites need (requests, pours)
-const STABS = [{ k: "q", t: "الجودة", ids: ["quality", "defects"] }, { k: "i", t: "الفحوصات", ids: ["insp", "findings", "gates", "bfqa"] }, { k: "p", t: "الصبات", ids: ["pours"] }, { k: "u", t: "بانتظار الاستلام", ids: ["units"] }];
+const STABS = [{ k: "q", t: "الجودة", ids: ["quality", "defects"] }, { k: "i", t: "الفحوصات", ids: ["insp", "findings", "gates", "qaplan", "bfqa"] }, { k: "p", t: "الصبات", ids: ["pours"] }, { k: "u", t: "بانتظار الاستلام", ids: ["units"] }];
 let ST = "q";
 // «المشتريات»: what the sites asked for, what was bought (and on whose account), and the suppliers with what we owe them
 // owner, 10 Nov 2026 («ادارة المشتريات مبعثرة»): three questions, three tabs — who do we owe (one card per supplier = his Qoyod
@@ -2467,7 +2507,7 @@ function home3(m) {
     const B = F.cash.scenarios.base;
     const K = homeK(AUD).map((k) => {
       if (k.est === "forecast") return { label: "أدنى رصيد خلال 13 أسبوعاً (الأساسي)", est: "forecast", value: acc(B.lowest.amount), neg: B.lowest.amount < 0, f: "cash", sub: "تقديري · " + dmy(B.lowest.date) };
-      if (k.est === "profit") return { ...k, label: "ربح المشاريع المقدّرة", value: fmt(F.totals.profit), sub: "تقديري · بلا " + (F.totals.unavailable + F.totals.loss) + " مشاريع بلا تقدير كامل", flag: F.totals.high ? ["warn", F.totals.high + " بهامش يحتاج تحقق"] : null };
+      if (k.est === "profit") { const bm = F.totals.benchmark || { n: 0 }; return { ...k, label: "ربح المشاريع المقدّرة", value: fmt(F.totals.profit), sub: "تقديري · بلا " + (F.totals.unavailable + F.totals.loss) + " مشاريع بلا تقدير كامل" + (bm.n ? " · بلا " + bm.n + " على نسبة غير موثّقة" : ""), flag: bm.n ? ["warn", bm.n + " مشاريع ربحها من نسبة غير موثّقة: " + fmt(bm.profit) + " خارج المجموع"] : F.totals.high ? ["warn", F.totals.high + " بهامش يحتاج تحقق"] : null }; }
       return k;
     });
     m.append(ledger(K));
@@ -2484,8 +2524,8 @@ function answers(H, F) {
     S.base.firstShort ? "bad" : S.evidence.firstShort ? "warn" : "ok", () => more("fc13"), true);
   tile("أي المشاريع قد تخسر؟",
     n.loss ? n.loss + " خسارة متوقعة" : n.low ? n.low + " هامش منخفض" : "لا خسارة متوقعة بالتقدير الحالي",
-    [n.unavailable ? n.unavailable + " بلا تقدير" : "", n.high ? n.high + " هامش مرتفع يحتاج تحقق" : "", n.completeness ? n.completeness + " تكاليف ناقصة بدليل" : ""].filter(Boolean).join(" · "),
-    n.loss ? "bad" : n.low || n.unavailable || n.high || n.completeness ? "warn" : "ok", () => more("risk"), true);
+    [n.unavailable ? n.unavailable + " بلا تقدير" : "", n.benchmark ? n.benchmark + " على نسبة غير موثّقة" : "", n.high ? n.high + " هامش مرتفع يحتاج تحقق" : "", n.completeness ? n.completeness + " تكاليف ناقصة بدليل" : ""].filter(Boolean).join(" · "),
+    n.loss ? "bad" : n.low || n.unavailable || n.benchmark || n.high || n.completeness ? "warn" : "ok", () => more("risk"), true);
   tile("أي المشاريع متأخرة ولماذا؟", n.delays ? n.delays + " متأخر بدليل" : "لا تأخير موثّق",
     [n.unverified ? n.unverified + " إنجازها غير محقق" : "", n.reporting ? n.reporting + " بلا تقارير يومية" : ""].filter(Boolean).join(" · "),
     n.delays ? "bad" : n.unverified ? "warn" : "ok", () => more("behind"));
@@ -2558,7 +2598,7 @@ function p3Page(m, k) {
   }
   if (k === "risk") {
     backHome(m, "المشاريع والربحية — تقديري", "كل تصنيف مستقل بأدلته وحدوده؛ المشروع قد يحمل أكثر من تصنيف");
-    const CAT = [["loss", "خسارة متوقعة", "bad"], ["low", "هامش أقل من الحد", "warn"], ["unavailable", "تكلفة الإكمال غير متاحة", "warn"], ["completeness", "اكتمال التكاليف يحتاج مراجعة (بدليل)", "warn"], ["high", "هامش مرتفع يحتاج تحقق", "info"]];
+    const CAT = [["loss", "خسارة متوقعة", "bad"], ["low", "هامش أقل من الحد", "warn"], ["unavailable", "تكلفة الإكمال غير متاحة", "warn"], ["completeness", "اكتمال التكاليف يحتاج مراجعة (بدليل)", "warn"], ["benchmark", "تقدير بنسبة غير موثّقة — خارج الربح المتوقع", "warn"], ["high", "هامش مرتفع يحتاج تحقق", "info"]];
     for (const [ck, title, tone] of CAT) {
       const L = H.risk.filter((x) => x.cls.some((c) => c.key === ck)); m.append(secHead(title, L.length));
       if (!L.length) { m.append(el("div", "box small muted", "لا يوجد")); continue; }
@@ -2578,6 +2618,7 @@ function p3Page(m, k) {
     const ML = { revised: "تقدير محدَّث مُدخل", file: "الميزانية المعتمدة − المصروف", manual: "متبقٍ مُدخل في التدقيق", bench: "نسبة المؤسسة (مشاريع إنجازها أقل من 50%)", linear: "المصروف ÷ الإنجاز (إنجاز 50% فأكثر، أو لا نسبة للمؤسسة)", done: "منتهي", unknown: "لا تقدير" };
     const t = el("table", "ovt"); Object.entries(F.methods).forEach(([k2, v]) => { const tr = el("tr"); tr.append(el("td", "", ML[k2] || k2), el("td", "n", String(v))); t.append(tr); });
     mb.append(t, el("div", "small muted", "طريقة واحدة لكل مشروع بالترتيب: تحديث مُدخل، ثم الميزانية، ثم المتبقي المُدخل، ثم نسبة المؤسسة إن كان الإنجاز أقل من 50%، ثم المصروف ÷ الإنجاز. المجموعات منفصلة ومجموعها عدد المشاريع القائمة."));
+    for (const [kind, b] of Object.entries(F.bench || {})) if (b.validated === false) mb.append(el("div", "small neg", "نسبة «" + kind + "» غير موثّقة ولا يُبنى عليها ربح: " + (b.why || []).join(" · ")));
     for (const [kind, b] of Object.entries(F.bench || {})) mb.append(el("div", "small", "نسبة المؤسسة لـ«" + kind + "»: هامش " + Math.round(b.margin * 100) + "% من " + b.projects.length + " مشاريع منتهية (" + b.projects.map((p) => p.name.split(" - ")[0] + " " + Math.round((1 - p.ratio) * 100) + "%").join("، ") + ") — قد تكون تكاليف هذه المشاريع نفسها غير مكتملة."));
     m.append(mb);
     return true;
@@ -2648,7 +2689,7 @@ function p3Page(m, k) {
     }
     [...grp.values()].sort((x, y) => y.amount - x.amount).forEach((g) => { const tr = el("tr"), a = el("td", "", g.label); a.append(el("div", "small muted", dmy(g.first) + " → " + dmy(g.last) + " · " + BASIS[g.basis] + " · " + g.src)); tr.append(a, el("td", "n pay", fmt(g.amount))); t3.append(tr); });
     pb.append(t3); m.append(pb);
-    if (C.excluded.length) { const xb = el("section", "box"); xb.append(el("b", "", "خارج التوقع"), el("div", "small muted", "التزاماتها ومستحقاتها القائمة داخل التوقع؛ أعمالها غير المقدّرة ودفعات مراحلها القادمة خارجه")); const t4 = el("table", "ovt"); C.excluded.forEach((x) => { const tr = el("tr"); const a = el("td", "", x.name); a.append(el("div", "small muted", x.why)); tr.append(a, el("td", "n", x.dueNow ? "مستحق الآن " + fmt(x.dueNow) : "باقي " + fmt(x.toCollect))); t4.append(tr); }); xb.append(t4); m.append(xb); }
+    if (C.excluded.length) { const xb = el("section", "box"); xb.append(el("b", "", "خارج التوقع"), el("div", "small muted", "التزاماتها ومستحقاتها القائمة داخل التوقع؛ أعمالها غير المقدّرة ودفعات مراحلها القادمة خارجه")); const t4 = el("table", "ovt"); C.excluded.forEach((x) => { const tr = el("tr"); const a = el("td", "", x.name); a.append(el("div", "small muted", x.why)); if (x.amount) a.append(el("div", "small", "أعمال غير ملتزم بها خارج التوقع: " + fmt(x.amount))); tr.append(a, el("td", "n", x.dueNow ? "مستحق الآن " + fmt(x.dueNow) : "باقي " + fmt(x.toCollect))); t4.append(tr); }); xb.append(t4); m.append(xb); }
     if (C.missing.length) { const mb = el("section", "box ovtodo"); mb.append(el("b", "", "ما ينقص التوقع")); const u = el("ul"); C.missing.forEach((x) => { const li = el("li"); if (x.id && (D.items || []).some((i) => i.id === x.id)) { const b = el("button", "lnk", x.t); b.type = "button"; b.onclick = () => doAct({ t: "dq", id: x.id }); li.append(b); } else li.append(document.createTextNode(x.t)); u.append(li); }); mb.append(u); m.append(mb); }
     const det = el("details", "box"); det.append(el("summary", "", "الافتراضات")); det.append(ul(C.assumptions, "why")); m.append(det);
     if (D.fcMe && D.fcMe.set) { const b = el("button", "sbtn", "إعدادات التوقع (شروط الدفع والحدود)"); b.type = "button"; b.onclick = setDialog; m.append(b); }
