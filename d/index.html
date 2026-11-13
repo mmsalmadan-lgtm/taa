@@ -667,6 +667,21 @@ const EN = {
 "أرقام التدقيق آخر تحديث قبل {n} أيام": "Audit figures last updated {n} days ago",
 "تعديل على مبالغ مسجّلة بانتظار مراجعتك — {x}": "A change to recorded amounts awaits your review — {x}",
 "أرصدة نقد غير مُدخلة: {x}": "Cash balances not entered: {x}",
+"دورة الشراء: الطلب ← المراجعة الفنية ← التسعير والميزانية ← الاعتماد ← أمر الشراء ← الاستلام ← الفاتورة ← الدفع ← الإغلاق": "Purchase cycle: request → technical review → pricing and budget → approval → purchase order → receipt → invoice → payment → closure",
+"التزامات مفتوحة": "Open commitments",
+"أوامر شراء لم تصل فاتورتها": "Purchase orders not yet invoiced",
+"فواتير مسجّلة لم تُدفع كاملة": "Recorded invoices not fully paid",
+"طلبات باستثناء على الميزانية": "Requests with a budget exception",
+"الميزانية": "Budget",
+"لا ميزانية معتمدة": "No approved budget",
+"استثناء: {x}": "Exception: {x}",
+"ضمن الميزانية — يتبقى {x}": "Within budget — {x} left",
+"استلام جزئي — بانتظار الباقي": "Partly received — rest awaited",
+"أُلغي أمر الشراء": "Purchase order cancelled",
+"مغلق ✓": "Closed ✓",
+"مرتجع للمورد — بانتظار إشعار دائن": "Returned to supplier — awaiting credit note",
+"مدفوعة — بانتظار باقي الكميات": "Paid — rest of the quantities awaited",
+"{n} مشاريع عظم قائمة بلا ميزانية مواد معتمدة": "{n} active structural projects without an approved materials budget",
 "↑ رسائل كانت بانتظارك ولم تصلك في واتساب": "↑ Messages that were waiting for you and did not reach you on WhatsApp",
 "المساعد": "Assistant",
 "كل ما يقدّمه البوت في واتساب، من هنا: طلبات المواد والمعدات، التقرير اليومي، تسليم الأعمال، النماذج": "Everything the WhatsApp bot offers, from here: material and equipment requests, the daily report, work hand-over, forms",
@@ -1673,7 +1688,7 @@ function buyView(m) {
   if (cur.k === "log") { plogBox(m); matBox(m); }
   if (cur.sups) supsView(m);
   if (cur.k === "req" && !cur.ids.some((i) => sec(i))) m.append(el("div", "empty", "لا توجد طلبات من المواقع — تصل من البوت: طلب الموقع ← أمر الشراء ← الاستلام ← الفاتورة ← الدفع."));
-  for (const id of cur.ids) { const s = sec(id); if (!s) continue; m.append(secHead(id === "purchases" ? "دورة الشراء: أمر الشراء ← الاستلام ← الفاتورة ← الدفع" : s.title, s.table ? s.table.rows.length : undefined, noteOf(s)), ...cards(s, "acc")); }
+  for (const id of cur.ids) { const s = sec(id); if (!s) continue; m.append(secHead(id === "purchases" ? "دورة الشراء: الطلب ← المراجعة الفنية ← التسعير والميزانية ← الاعتماد ← أمر الشراء ← الاستلام ← الفاتورة ← الدفع ← الإغلاق" : s.title, s.table ? s.table.rows.length : undefined, noteOf(s)), ...cards(s, "acc")); }
 }
 // one card per subcontractor: his projects inside, where he reached, what he received, and every gap as an alert
 // search and folding of quiet accounts (kept across redraws); a card is «active» with an agreement, a balance, or a movement
