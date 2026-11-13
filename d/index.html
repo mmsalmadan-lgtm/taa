@@ -451,6 +451,16 @@ button.card.act{cursor:pointer;font:inherit}
 .chatin textarea:focus{outline:0;border-color:var(--ink);box-shadow:0 0 0 4px var(--ui-1)}.chatin .pbtn{min-height:44px}
 .bpin{align-self:stretch;display:flex;flex-direction:column;gap:6px;border:1px solid var(--ui-2);border-radius:var(--r-m);padding:12px 14px;background:var(--surface)}
 .bpin input{font:inherit;font-size:17px;padding:10px 12px;border:1px solid var(--field-in);border-radius:var(--r-s);letter-spacing:.08em;text-align:end}
+
+/* «المساعد»: the bot as a page */
+.chatw{display:flex;flex-direction:column;gap:6px}
+.assist .chat{max-height:none;min-height:260px;overflow:visible}
+.chatin .attach{display:inline-flex;align-items:center;gap:4px;min-height:44px;cursor:pointer;white-space:nowrap}
+.chatin .attach:focus-within{outline:2px solid var(--ui);outline-offset:2px}
+@media (max-width:560px){.chatin .atl{display:none}.chatin .attach{padding-inline:12px}}
+body.chatonly footer{display:none}
+.assist{position:relative;max-width:860px}
+.assist .chatin{position:sticky;bottom:0;background:var(--surface);padding:10px 0 calc(6px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);margin-top:6px}
 </style>
 </head>
 <body>
@@ -493,6 +503,13 @@ const pct = (f) => Math.round((f || 0) * 100) + "%";
 const LK = "taa.dash.lang";
 let LANG = (() => { try { return localStorage.getItem(LK) === "en" ? "en" : "ar"; } catch { return "ar"; } })();
 const EN = {
+"المساعد": "Assistant",
+"كل ما يقدّمه البوت في واتساب، من هنا: طلبات المواد والمعدات، التقرير اليومي، تسليم الأعمال، النماذج": "Everything the WhatsApp bot offers, from here: material and equipment requests, the daily report, work hand-over, forms",
+"القائمة من البداية": "Menu from the start",
+"اكتب للبوت أو اختر من القائمة": "Write to the bot or choose from the menu",
+"صورة أو ملف": "Photo or file",
+"أرسل صورة أو فيديو أو PDF": "Send a photo, video or PDF",
+"الملف أكبر من 15 ميغا — صوّر فيديو أقصر": "The file is over 15 MB — record a shorter video",
 "جارٍ التنفيذ…": "Working…",
 "افتح واعتمد": "Open and act",
 "بانتظارك — اعتمد من هنا": "Waiting for you — act here",
@@ -1255,6 +1272,7 @@ function setLang(l) {
 // app tabs: which sections live where, and their colour family
 const TABS = [
   { v: "home", t: "الرئيسية", fam: "var(--ui)" },
+  { v: "bot", t: "المساعد", fam: "var(--ui)" },
   { v: "proj", t: "المشاريع", fam: "var(--acc6)" },
   { v: "money", t: "المالية والمحاسبة", ids: ["receipts", "claims", "custody", "subk", "subrec", "certs"], fam: "var(--acc6)", f: "acc", g: "الأقسام" },
   { v: "buy", t: "المشتريات", ids: ["reqs", "purchases", "sups"], fam: "var(--acc6)", f: "acc", g: "الأقسام" },
@@ -1274,6 +1292,7 @@ const ICO = {
   sales: '<path d="M4 19V5M4 19h16M7.5 15l3.5-4 3 2.5L19 8"/><path d="M15.5 8H19v3.5"/>',
   rat: '<path d="M14.5 6.5a4 4 0 0 0-5.3 5.3L4.5 16.5a1.6 1.6 0 0 0 2.3 2.3l4.7-4.7a4 4 0 0 0 5.3-5.3l-2.4 2.4-2.3-.6-.6-2.3z"/>',
   sys: '<path d="M3.5 12h4l2-5 4 10 2-5h5"/>',
+  bot: '<path d="M4.5 5.5h15a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H10l-4.5 3.5V16.5h-1a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1z"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01"/>',
   data: '<ellipse cx="12" cy="6.5" rx="7" ry="2.5"/><path d="M5 6.5v11c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-11M5 12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5"/>',
 };
 const icon = (k) => { const w = el("span"); w.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + (ICO[k] || ICO.home) + "</svg>"; return w.firstChild; };
@@ -1445,7 +1464,8 @@ function page(icon, title, sub, fam) {
 function renderTabs() {
   const row = $("tabRow"); row.replaceChildren(); delete row.dataset.g;
   for (const T of TABS) {
-    let show = T.v === "home" || (T.v === "proj" ? !!(D.projects && D.projects.length) : T.v === "audit" ? !!D.projects : T.v === "money" ? !!(AUD || MTABS.some((x) => x.ids.some((i) => sec(i)))) : T.v === "data" ? !!(REG && REG.length) : T.v === "buy" ? canEdit() || T.ids.some((x) => sec(x)) : (T.ids || []).some((x) => sec(x)));
+    if (D.chatOnly && T.v !== "bot") continue; // an executor: the assistant only
+    let show = T.v === "home" || T.v === "bot" || (T.v === "proj" ? !!(D.projects && D.projects.length) : T.v === "audit" ? !!D.projects : T.v === "money" ? !!(AUD || MTABS.some((x) => x.ids.some((i) => sec(i)))) : T.v === "data" ? !!(REG && REG.length) : T.v === "buy" ? canEdit() || T.ids.some((x) => sec(x)) : (T.ids || []).some((x) => sec(x)));
     if (!show) continue;
     if (T.g && row.dataset.g !== T.g) { row.dataset.g = T.g; row.append(el("div", "tgrp", T.g)); }
     const b = el("button", "tab"); b.type = "button"; b.style.setProperty("--fam", T.fam);
@@ -1671,6 +1691,9 @@ function linkLabels(root) {
 function drawView() {
   renderTabs();
   const m = $("main"); m.replaceChildren(); m.classList.remove("full");
+  document.body.classList.toggle("chatonly", !!D.chatOnly);
+  if (D.chatOnly && view !== "bot") view = "bot";
+  if (view === "bot") return assistView(m);
   if (view === "home") return home(m);
   if (view === "more") return morePage(m);
   if (view === "money") return moneyView(m);
@@ -1918,20 +1941,20 @@ function morePage(m) {
   }
 }
 
-// ===== «بانتظارك» acted on here (POST op chat): the bot's own card, buttons and questions, in a sheet. Every tap or answer is
-// handled by the bot exactly as from WhatsApp (same rights and steps); what it says back to you shows here, and the people who
-// act next are told as usual. A «تأكيد» of a sensitive action asks for your PIN. Closing the sheet refreshes the dashboard.
-let CHAT = null;
-function openChat(first, title) {
-  const body = $("dlgBody"); body.replaceChildren();
-  const h = el("h3", "", title || "بانتظارك"), log = el("div", "chat"), form = el("form", "chatin"), ti = el("textarea"), sb = el("button", "pbtn", "إرسال");
-  log.setAttribute("aria-live", "polite"); ti.rows = 1; ti.placeholder = "اكتب ردك إن طلبه البوت"; ti.setAttribute("aria-label", "ردك"); sb.type = "submit";
-  form.append(ti, sb);
-  const bar = el("div", "dbar"), close = el("button", "sbtn", "إغلاق"); close.type = "button"; close.onclick = () => $("dlg").close(); bar.append(close);
-  body.append(h, log, form, bar);
-  CHAT = { log, busy: false, moved: false };
-  const scroll = () => { log.scrollTop = log.scrollHeight; };
-  const mine = (t) => { const m = el("div", "bub me", t); log.append(m); scroll(); };
+// ===== The bot from the dashboard (POST op chat). One chat component used twice: «المساعد» (a page that starts at the bot's
+// menu — requests, daily reports, hand-overs, forms, for everyone while WhatsApp is unreachable) and the sheet a waiting item
+// opens. Every tap, answer or photo is handled by the bot exactly as from WhatsApp (same rights and steps); what it says back
+// shows here, the people who act next are told as usual. A «تأكيد» of a sensitive action asks for the PIN.
+let CHAT = null, ASSIST = null;
+function chatPanel(first, opts = {}) {
+  const wrap = el("div", "chatw"), log = el("div", "chat"), form = el("form", "chatin"), ti = el("textarea"), sb = el("button", "pbtn", "إرسال");
+  const att = el("label", "sbtn attach"), fi = el("input"); fi.type = "file"; fi.accept = "image/*,video/*,application/pdf"; fi.className = "sr-only";
+  att.append(fi, document.createTextNode("📎"), el("span", "atl", " صورة أو ملف")); att.title = "أرسل صورة أو فيديو أو PDF";
+  log.setAttribute("aria-live", "polite"); log.setAttribute("role", "log"); ti.rows = 1; ti.placeholder = opts.placeholder || "اكتب ردك إن طلبه البوت"; ti.setAttribute("aria-label", "ردك"); sb.type = "submit";
+  form.append(att, ti, sb); wrap.append(log, form);
+  const st = { busy: false, moved: false };
+  const scroll = () => { log.scrollTop = log.scrollHeight; if (opts.page) wrap.scrollIntoView({ block: "end", behavior: "smooth" }); };
+  const mine = (t) => { log.append(el("div", "bub me", t)); scroll(); };
   const say = (m) => {
     const b = el("div", "bub");
     // WhatsApp's *bold* shown as bold; the text itself is never parsed as HTML
@@ -1946,22 +1969,22 @@ function openChat(first, title) {
     log.append(b); scroll();
   };
   const note = (t, cls) => { log.append(el("div", "bnote " + (cls || ""), t)); scroll(); };
+  const enable = (acts, on) => { if (acts) for (const k of acts.querySelectorAll("button")) k.disabled = !on; };
   async function send(msg, label, acts, pin) {
-    if (CHAT.busy) return; CHAT.busy = true;
-    if (acts) for (const k of acts.querySelectorAll("button")) k.disabled = true;
+    if (st.busy) return; st.busy = true; enable(acts, false);
     if (label) mine(label);
     const wait = el("div", "bnote", "جارٍ التنفيذ…"); log.append(wait); scroll();
     try {
       const { status, j } = await api({ op: "chat", ...msg, ...(pin ? { pin } : {}) });
       wait.remove();
       if (status === 428 && j.pin) return askPin(msg, acts);
-      if (status === 401) { $("dlg").close(); return signIn("", j.error || "انتهت الجلسة — سجّل الدخول من جديد"); }
-      if (status !== 200) { note(j.error || "تعذّر التنفيذ", "bad"); if (acts) for (const k of acts.querySelectorAll("button")) k.disabled = false; return; }
-      if (msg.reply !== first) CHAT.moved = true;
+      if (status === 401) { if ($("dlg").open) $("dlg").close(); return signIn("", j.error || "انتهت الجلسة — سجّل الدخول من جديد"); }
+      if (status !== 200) { note(j.error || "تعذّر التنفيذ", "bad"); enable(acts, true); return; }
+      if (msg.reply !== first) st.moved = true;
       if (!(j.msgs || []).length) note("تم ✅");
       for (const m of j.msgs || []) say(m);
-    } catch { wait.remove(); note("تعذّر الاتصال — حاول مرة أخرى", "bad"); if (acts) for (const k of acts.querySelectorAll("button")) k.disabled = false; }
-    finally { CHAT.busy = false; }
+    } catch { wait.remove(); note("تعذّر الاتصال — حاول مرة أخرى", "bad"); enable(acts, true); }
+    finally { st.busy = false; }
   }
   function askPin(msg, acts) {
     const box = el("div", "bpin"), p = el("input"), ok = el("button", "pbtn", "تأكيد"), err = el("div", "ferr");
@@ -1969,12 +1992,45 @@ function openChat(first, title) {
     box.append(el("b", "", "رمزك السري للتأكيد"), el("div", "small muted", "التعديل لا يُنفَّذ إلا برمزك أنت"), p, ok, err); log.append(box); scroll(); p.focus();
     ok.onclick = async () => { if (!p.value) { err.textContent = "اكتب الرمز السري"; return; } box.remove(); await send(msg, null, acts, p.value); };
   }
+  // a photo is made smaller on the phone before it is sent (long side 2000 px); videos and PDFs go as they are (≤15 MB)
+  async function prep(f) {
+    if (/^image\/(jpeg|png|webp)$/.test(f.type) && f.size > 1.5e6) {
+      try {
+        const bmp = await createImageBitmap(f), k = Math.min(1, 2000 / Math.max(bmp.width, bmp.height)), c = document.createElement("canvas");
+        c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k); c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+        const bl = await new Promise((r) => c.toBlob(r, "image/jpeg", 0.85)); if (bl) return { type: "image/jpeg", blob: bl, name: f.name.replace(/\.\w+$/, ".jpg") };
+      } catch { /* sent as it is */ }
+    }
+    return { type: f.type, blob: f, name: f.name };
+  }
+  fi.onchange = async () => {
+    const f = fi.files && fi.files[0]; fi.value = ""; if (!f) return;
+    const x = await prep(f);
+    if (x.blob.size > 15 * 1024 * 1024) { note("الملف أكبر من 15 ميغا — صوّر فيديو أقصر", "bad"); return; }
+    const data = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(",")[1] || ""); r.onerror = rej; r.readAsDataURL(x.blob); });
+    send({ file: { type: x.type, data, name: x.name } }, "📎 " + x.name);
+  };
   form.onsubmit = (e) => { e.preventDefault(); const t = ti.value.trim(); if (!t) return; ti.value = ""; send({ text: t }, t); };
   ti.onkeydown = (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); } };
-  $("dlg").showModal();
-  send({ reply: first });
+  if (first) send(/^[a-z]+\./.test(first) ? { reply: first } : { text: first });
+  return { el: wrap, st, restart: () => { log.replaceChildren(); send({ text: "قائمة" }); } };
+}
+function openChat(first, title) {
+  const body = $("dlgBody"); body.replaceChildren();
+  const c = chatPanel(first), bar = el("div", "dbar"), close = el("button", "sbtn", "إغلاق"); close.type = "button"; close.onclick = () => $("dlg").close(); bar.append(close);
+  body.append(el("h3", "", title || "بانتظارك"), c.el, bar);
+  CHAT = c.st; $("dlg").showModal();
 }
 $("dlg").addEventListener("close", () => { if (CHAT && CHAT.moved) { CHAT = null; load(true); } else CHAT = null; });
+// «المساعد»: the bot's menu as a page; the conversation stays while you move between pages
+function assistView(m) {
+  const ph = page("م", "المساعد", "كل ما يقدّمه البوت في واتساب، من هنا: طلبات المواد والمعدات، التقرير اليومي، تسليم الأعمال، النماذج", "var(--ui)");
+  const eb = el("div", "ebar2"), again = el("button", "sbtn ebtn", "القائمة من البداية"); again.type = "button"; eb.append(again); ph.querySelector(".grow").append(eb);
+  m.append(ph);
+  if (!ASSIST) ASSIST = chatPanel("قائمة", { page: true, placeholder: "اكتب للبوت أو اختر من القائمة" });
+  again.onclick = () => ASSIST.restart();
+  const box = el("section", "panel assist"); box.append(ASSIST.el); m.append(box);
+}
 // ===== Editing in place: every figure is edited where it is shown. The data lives in the audit state (settings/audit),
 // saved through the bot (op audit_save), which writes it back into the projects, suppliers and finance settings.
 const ELEMENTS = {
@@ -3306,7 +3362,7 @@ async function load(keep) {
     $("reload").hidden = $("pinBtn").hidden = $("outBtn").hidden = false;
     if (!keep) view = "home";
     draw();
-    if (!keep || !AUD) refreshAud();
+    if (!D.chatOnly && (!keep || !AUD)) refreshAud();
   } catch (e) { fail("تعذّر الاتصال", "تحقق من الإنترنت ثم اضغط تحديث."); $("reload").hidden = false; }
 }
 
