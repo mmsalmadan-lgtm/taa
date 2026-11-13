@@ -126,14 +126,14 @@ body:has(#tabs[hidden]) .gh{display:none}body:has(#tabs[hidden]) main{padding-to
 .lrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;align-items:baseline;padding:11px 0;border-top:1px solid var(--line)}
 .ldg>h2+.lrow{border-top:0}
 .lrow .l{font-size:13.5px}.lrow .s{grid-column:1/-1;font-size:12px;color:var(--muted)}
-.lrow .v{font-family:var(--f-disp);font-size:20px;font-weight:600;color:var(--vc);white-space:nowrap;font-variant-numeric:tabular-nums;text-align:left}
+.lrow .v{font-family:var(--f-disp);font-size:20px;font-weight:600;color:var(--vc);white-space:nowrap;font-variant-numeric:tabular-nums;text-align:end}
 .lrow .flag{grid-column:1/-1;justify-self:start;margin-top:2px}
 .lrow.lead .v{font-size:27px}
 @media (max-width:640px){.ledger{grid-template-columns:1fr}}@media (min-width:641px) and (max-width:1279px){.ldg{padding:14px 14px 6px}.lrow .v{font-size:17px}.lrow.lead .v{font-size:21px}}
 
 /* ===== record cards ===== */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:12px;align-items:stretch}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0;text-align:right;color:var(--ink);position:relative;transition:border-color .18s,box-shadow .22s var(--ease),transform .22s var(--ease)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0;text-align:start;color:var(--ink);position:relative;transition:border-color .18s,box-shadow .22s var(--ease),transform .22s var(--ease)}
 button.card{cursor:pointer;font:inherit}
 @media (hover:hover){button.card:hover,.sc>summary:hover,.tl:hover,.al1:hover,.hc:hover,.step:hover{border-color:var(--line-2);box-shadow:var(--sh-lift)}}
 button.card:active,.tl:active,.al1:active,.step:active{transform:scale(.985)}
@@ -141,7 +141,7 @@ button.card:active,.tl:active,.al1:active,.step:active{transform:scale(.985)}
 .card.bad::after,.sc.bad::after{background:var(--crit)}
 .card .t{font-family:var(--f-disp);font-weight:600;font-size:15.5px;color:var(--ink);line-height:1.4;overflow-wrap:anywhere}
 .card .st{font-size:12.5px;color:var(--muted);margin-top:-7px}
-.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 12px;font-size:13px}.kv span{color:var(--muted)}.kv b{font-weight:600;text-align:left;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 12px;font-size:13px}.kv span{color:var(--muted)}.kv b{font-weight:600;text-align:end;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 .fam-acc .kv b{color:var(--acc9)}.fam-eng .kv b{color:var(--eng9)}
 .pill{display:inline-block;font-size:12px;font-weight:600;padding:2px 10px;border-radius:999px;background:var(--sunk);color:var(--muted);max-width:100%;overflow-wrap:anywhere;line-height:1.55;border:1px solid var(--line)}
 .pill.ok{background:var(--acc1);color:var(--acc9);border-color:transparent}.pill.warn{background:var(--warn1);color:var(--warn);border-color:transparent}.pill.bad{background:var(--crit1);color:var(--crit);border-color:transparent}.pill.eng{background:var(--eng1);color:var(--eng9);border-color:transparent}
@@ -173,7 +173,7 @@ button.card:active,.tl:active,.al1:active,.step:active{transform:scale(.985)}
 .search,.srch{flex:1 1 220px;min-width:0;font:inherit;font-size:15px;border:1px solid var(--line-2);border-radius:999px;padding:9px 16px;background:var(--surface);color:var(--ink);transition:border-color .15s,box-shadow .2s}
 .search:focus,.srch:focus{outline:0;border-color:var(--ink);box-shadow:0 0 0 4px var(--ui-1)}
 .ltools{align-items:center;gap:10px}
-.docf{margin-bottom:12px}.doc .dhd{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:4px 8px}.doc .dhd>*{white-space:nowrap}.doc .dno{font-variant-numeric:tabular-nums;direction:ltr;text-align:right;color:var(--ink)}.doc .sbtn{align-self:flex-start;margin-top:auto}.doc .ref{white-space:nowrap;font-variant-numeric:tabular-nums}
+.docf{margin-bottom:12px}.doc .dhd{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:4px 8px}.doc .dhd>*{white-space:nowrap}.doc .dno{font-variant-numeric:tabular-nums;direction:ltr;text-align:start;color:var(--ink)}.doc .sbtn{align-self:flex-start;margin-top:auto}.doc .ref{white-space:nowrap;font-variant-numeric:tabular-nums}
 .lead .dhd{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}.lead .dhd .small{margin-inline-start:auto}.lead .ref{font-variant-numeric:tabular-nums;font-weight:600}.lead .st a{color:var(--ink)}.lbtn{gap:6px}
 .ldet summary{cursor:pointer;color:var(--ink);font-weight:600;font-size:13px;min-height:32px;display:flex;align-items:center;text-decoration:underline;text-decoration-color:var(--line-2);text-underline-offset:4px}.ldet .lh{font-size:12px;color:var(--muted);margin:8px 0 2px}.ldet ul{margin:0;padding-inline-start:18px;font-size:13px}.ldet a{color:var(--ink)}.ldet .ref{white-space:nowrap}
 
@@ -191,12 +191,12 @@ button.card:active,.tl:active,.al1:active,.step:active{transform:scale(.985)}
 .panel .box{border-color:var(--line)}
 .inst{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:4px 12px;align-items:center;padding:10px 4px;border-bottom:1px solid var(--line);font-size:13.5px}
 .inst:last-child{border-bottom:0}.inst .a{font-weight:600;font-variant-numeric:tabular-nums;color:var(--acc9);white-space:nowrap}
-button.inst.ed{width:100%;background:none;border:0;border-bottom:1px solid var(--line);font:inherit;color:inherit;text-align:right;cursor:pointer;border-radius:6px;transition:background .15s}button.inst.ed:hover{background:var(--sunk)}
+button.inst.ed{width:100%;background:none;border:0;border-bottom:1px solid var(--line);font:inherit;color:inherit;text-align:start;cursor:pointer;border-radius:6px;transition:background .15s}button.inst.ed:hover{background:var(--sunk)}
 .ebar{display:grid;grid-template-columns:150px minmax(0,1fr) auto;gap:12px;align-items:center;font-size:13px;padding:5px 0}
 .ebar .bar{height:10px;border-radius:5px}.ebar .bar i{background:var(--out)}.ebar b{font-variant-numeric:tabular-nums;white-space:nowrap}
 .notes{white-space:pre-wrap;font-size:14px;line-height:1.85;background:var(--sunk);border-radius:var(--r-m);padding:14px 16px;max-width:82ch}
 .alerts{display:flex;flex-direction:column}
-.al{display:grid;grid-template-columns:4px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 4px;border-bottom:1px solid var(--line);background:none;border-inline:0;border-top:0;text-align:right;color:var(--ink)}
+.al{display:grid;grid-template-columns:4px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 4px;border-bottom:1px solid var(--line);background:none;border-inline:0;border-top:0;text-align:start;color:var(--ink)}
 .al:last-child{border-bottom:0}.al i{align-self:stretch;border-radius:2px;background:var(--warn6)}.al.bad i{background:var(--crit)}
 .al .x{font-size:12px;color:var(--muted)}.al b{font-weight:600;white-space:nowrap}
 .box{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:16px 18px;min-width:0}.box .kv{max-width:440px}
@@ -213,12 +213,12 @@ button.inst.ed{width:100%;background:none;border:0;border-bottom:1px solid var(-
 .stg div{font-size:12px;line-height:1.45;color:var(--muted);text-align:center}.stg i{display:block;height:6px;border-radius:3px;background:var(--track);margin-bottom:6px}
 .stg .done{color:var(--acc9)}.stg .done i{background:var(--acc6)}.stg .now{color:var(--eng9);font-weight:600}.stg .now i{background:linear-gradient(to left,var(--eng6) 50%,var(--track) 50%)}
 .ovt{width:100%;border-collapse:collapse;font-size:13px}.ovt td{padding:9px 2px;border-bottom:1px solid var(--line);vertical-align:top}.ovt tr:last-child td{border-bottom:0}
-.ovt td.n{text-align:left;white-space:nowrap;font-variant-numeric:tabular-nums}
+.ovt td.n{text-align:end;white-space:nowrap;font-variant-numeric:tabular-nums}
 .ovnext{margin-top:4px;padding:12px 14px;background:var(--eng1);border-radius:var(--r-s);font-size:13.5px}.ovnext b{font-family:var(--f-disp);font-weight:600}
 .ovtodo{position:relative;overflow:hidden}.ovtodo::before{content:"";position:absolute;inset-block:0;inset-inline-start:0;width:3px;background:var(--warn6)}
 .ovtodo ul{margin:0;padding-inline-start:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px 28px}.ovtodo li{font-weight:500}.ovtodo li span{display:block;font-size:12px;color:var(--muted);font-weight:400}
 @media (max-width:760px){.ovg{grid-template-columns:1fr}}
-.qa td.wrap,td.wrap{white-space:normal;text-align:right;direction:rtl}
+.qa td.wrap,td.wrap{white-space:normal;text-align:start;direction:rtl}
 
 /* ===== sign-in: one calm card, step by step the first time ===== */
 .msg{max-width:520px;margin:64px auto;text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:32px 24px}
@@ -235,7 +235,7 @@ button.inst.ed{width:100%;background:none;border:0;border-bottom:1px solid var(-
 .auth.stepped{counter-reset:st}.auth.stepped .f>label{display:flex;align-items:center;gap:8px;color:var(--ink);font-weight:500}
 .auth.stepped .f>label::before{counter-increment:st;content:counter(st);width:22px;height:22px;border-radius:50%;background:var(--ui-1);color:var(--ui-2);font-size:12px;font-weight:700;display:inline-grid;place-items:center;transition:background .25s,color .25s}
 .auth.stepped .f.ok>label::before{content:"✓";background:var(--acc6);color:#fff}
-.auth .f input,.dlg .f input[type=password]{width:100%;font:inherit;font-size:17px;padding:12px 14px;border:1px solid var(--field-in);border-radius:var(--r-s);background:var(--surface);color:var(--ink);direction:ltr;text-align:right;letter-spacing:.06em;transition:border-color .15s,box-shadow .2s}
+.auth .f input,.dlg .f input[type=password]{width:100%;font:inherit;font-size:17px;padding:12px 14px;border:1px solid var(--field-in);border-radius:var(--r-s);background:var(--surface);color:var(--ink);direction:ltr;text-align:start;letter-spacing:.06em;transition:border-color .15s,box-shadow .2s}
 .auth .f input:focus,.dlg .f input:focus,.f select:focus,.dlg textarea:focus{outline:0;border-color:var(--ink);box-shadow:0 0 0 4px var(--ui-1)}
 .auth .pbtn{width:100%;min-height:48px;font-size:16px;margin-top:6px}
 .auth .alt{display:block;width:100%;margin-top:12px;background:none;border:0;color:var(--ink);font:inherit;font-weight:600;font-size:14px;min-height:44px;cursor:pointer;text-decoration:underline;text-decoration-color:var(--line-2);text-underline-offset:5px}
@@ -247,7 +247,7 @@ button.inst.ed{width:100%;background:none;border:0;border-bottom:1px solid var(-
 .qc{margin-top:12px;display:flex;flex-direction:column;gap:6px}.qc p{margin:0;font-size:12.5px;padding:7px 11px;border-radius:var(--r-s);background:var(--sunk)}
 .qc p.bad{background:var(--crit1);color:var(--crit)}.qc p.warn{background:var(--warn1);color:var(--warn)}
 .qa{margin-top:10px}.qa summary{cursor:pointer;font-size:13px;color:var(--ink);font-weight:600;min-height:32px;text-decoration:underline;text-decoration-color:var(--line-2);text-underline-offset:4px}@media (pointer:coarse){.qa>summary{min-height:44px;padding-top:12px}}
-.qa table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}.qa td{padding:7px 4px;border-bottom:1px solid var(--line)}.qa td:last-child{text-align:left;white-space:nowrap;direction:ltr;font-variant-numeric:tabular-nums}
+.qa table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}.qa td{padding:7px 4px;border-bottom:1px solid var(--line)}.qa td:last-child{text-align:end;white-space:nowrap;direction:ltr;font-variant-numeric:tabular-nums}
 .qa td.neg{color:var(--crit)}
 .scs{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,520px),1fr));gap:12px;align-items:start}
 .sc{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);min-width:0;position:relative}
@@ -259,7 +259,7 @@ button.inst.ed{width:100%;background:none;border:0;border-bottom:1px solid var(-
 .sc .nums{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .sc .nums div{background:var(--sunk);border-radius:var(--r-s);padding:8px 10px;min-width:0}.sc .nums small{display:block;font-size:11.5px;color:var(--muted)}
 .sc .nums b{font-family:var(--f-disp);font-size:15px;font-weight:600;white-space:nowrap}.sc .nums .pos{color:var(--acc9)}
-.sc .al{display:flex;flex-direction:column;align-items:stretch;gap:5px;padding:0;border:0}.sc .al p{text-align:right}
+.sc .al{display:flex;flex-direction:column;align-items:stretch;gap:5px;padding:0;border:0}.sc .al p{text-align:start}
 .sc .al p{margin:0;font-size:12.5px;padding:6px 10px;border-radius:var(--r-s);background:var(--sunk);color:var(--ink)}
 .sc .al p.bad{background:var(--crit1);color:var(--crit)}.sc .al p.warn{background:var(--warn1);color:var(--warn)}
 .sc .body{border-top:1px solid var(--line);padding:6px 18px 16px;display:flex;flex-direction:column}
@@ -285,7 +285,7 @@ button.inst.ed{width:100%;background:none;border:0;border-bottom:1px solid var(-
 .steps-box{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:16px 18px 10px}
 .steps-box>h2{margin:0;font-size:16px;font-weight:600}.steps-box>p{margin:2px 0 8px;font-size:13px;color:var(--muted)}
 .steps{list-style:none;margin:0;padding:0;counter-reset:step;display:flex;flex-direction:column}
-.step{display:grid;grid-template-columns:30px minmax(0,1fr) auto 14px;gap:12px;align-items:center;padding:12px 6px;margin:0 -6px;border:1px solid transparent;border-radius:var(--r-m);background:none;text-align:right;color:var(--ink);font:inherit;cursor:pointer;transition:background .15s,box-shadow .22s var(--ease),border-color .18s,transform .2s var(--ease);width:calc(100% + 12px)}
+.step{display:grid;grid-template-columns:30px minmax(0,1fr) auto 14px;gap:12px;align-items:center;padding:12px 6px;margin:0 -6px;border:1px solid transparent;border-radius:var(--r-m);background:none;text-align:start;color:var(--ink);font:inherit;cursor:pointer;transition:background .15s,box-shadow .22s var(--ease),border-color .18s,transform .2s var(--ease);width:calc(100% + 12px)}
 .steps li+li{border-top:1px solid var(--line)}
 .step::before{counter-increment:step;content:counter(step);width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;background:var(--ui-1);color:var(--ui-2)}
 .step.first::before{background:var(--ui);color:var(--on-acc)}
@@ -296,14 +296,14 @@ button.inst.ed{width:100%;background:none;border:0;border-bottom:1px solid var(-
 .steps-done{display:flex;align-items:center;gap:10px;color:var(--acc9);font-weight:500;padding:6px 0 8px}
 .fcbox{display:flex;flex-direction:column;gap:8px}.fch2{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}.fch2>b:first-child{font-family:var(--f-disp);font-size:17px;font-weight:600}
 .links{display:flex;gap:6px 22px;flex-wrap:wrap;margin-top:2px}
-.lnk{border:0;background:none;color:var(--ink);font:inherit;font-size:13.5px;font-weight:600;padding:6px 0;cursor:pointer;text-align:right;text-decoration:underline;text-decoration-color:var(--line-2);text-decoration-thickness:1.5px;text-underline-offset:5px;transition:text-decoration-color .15s}
+.lnk{border:0;background:none;color:var(--ink);font:inherit;font-size:13.5px;font-weight:600;padding:6px 0;cursor:pointer;text-align:start;text-decoration:underline;text-decoration-color:var(--line-2);text-decoration-thickness:1.5px;text-underline-offset:5px;transition:text-decoration-color .15s}
 .lnk:hover{text-decoration-color:var(--ink)}
-.al1{display:grid;grid-template-columns:4px minmax(0,1fr) auto;gap:12px;align-items:center;width:100%;padding:11px 10px;margin-top:8px;border:1px solid var(--line);border-radius:var(--r-m);background:var(--surface);color:var(--ink);text-align:right;font:inherit;font-size:13.5px;cursor:pointer;transition:box-shadow .22s var(--ease),border-color .18s,transform .2s var(--ease)}
+.al1{display:grid;grid-template-columns:4px minmax(0,1fr) auto;gap:12px;align-items:center;width:100%;padding:11px 10px;margin-top:8px;border:1px solid var(--line);border-radius:var(--r-m);background:var(--surface);color:var(--ink);text-align:start;font:inherit;font-size:13.5px;cursor:pointer;transition:box-shadow .22s var(--ease),border-color .18s,transform .2s var(--ease)}
 .al1 i{align-self:stretch;border-radius:2px;background:var(--warn6)}.al1.bad i{background:var(--crit)}.al1 span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.al1 b{white-space:nowrap;font-variant-numeric:tabular-nums}
 .alx{position:relative;overflow:hidden;display:flex;flex-direction:column;gap:8px}.alx::before{content:"";position:absolute;inset-block:0;inset-inline-start:0;width:3px;background:var(--warn6)}.alx.bad::before{background:var(--crit)}
 .fc-tip{position:absolute;top:-6px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-s);padding:5px 10px;font-size:12px;box-shadow:var(--sh-lift);pointer-events:none;white-space:nowrap;display:flex;flex-direction:column;gap:2px;line-height:1.5;direction:rtl;z-index:3}.fc-tip[hidden]{display:none}.fc-tip .tt-h{color:var(--muted);font-size:11px}.fc-tip small{color:var(--muted)}
 .wc{display:grid;grid-template-columns:56px minmax(0,1fr);grid-template-rows:200px auto;column-gap:8px;margin-top:6px}
-.wc-y{position:relative;font-size:11px;color:var(--faint);text-align:right}.wc-y span{position:absolute;right:0;transform:translateY(-50%);white-space:nowrap;font-variant-numeric:tabular-nums}
+.wc-y{position:relative;font-size:11px;color:var(--faint);text-align:start}.wc-y span{position:absolute;right:0;transform:translateY(-50%);white-space:nowrap;font-variant-numeric:tabular-nums}
 .wc-plot{position:relative;touch-action:pan-y}
 .wc-g{position:absolute;left:0;right:0;height:0;border-top:1px dashed var(--line)}.wc-g.z{border-top:1px solid var(--muted)}
 .wc-cols{position:absolute;inset:0;display:flex}.wk{flex:1;position:relative;min-width:0}
@@ -337,7 +337,7 @@ button.inst.ed{width:100%;background:none;border:0;border-bottom:1px solid var(-
 .fr{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px}.fr small{display:block;font-size:12px;color:var(--muted)}.fr b{font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
 .fr.tot{border-bottom:0;border-top:2px solid var(--ink);margin-top:4px;padding-top:11px;font-weight:600}.fr.tot b{font-family:var(--f-disp);font-size:21px}
 .warnline{color:var(--warn);margin-top:6px}
-.tl{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;width:100%;padding:10px 12px;margin-top:8px;border:1px solid var(--line);border-radius:var(--r-m);background:var(--surface);color:var(--ink);text-align:right;font:inherit;cursor:pointer;transition:box-shadow .22s var(--ease),border-color .18s,transform .2s var(--ease)}
+.tl{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;width:100%;padding:10px 12px;margin-top:8px;border:1px solid var(--line);border-radius:var(--r-m);background:var(--surface);color:var(--ink);text-align:start;font:inherit;cursor:pointer;transition:box-shadow .22s var(--ease),border-color .18s,transform .2s var(--ease)}
 .tl .tn{display:flex;flex-direction:column;font-size:13.5px;font-weight:500;min-width:0}.tl .tn small{color:var(--muted);font-weight:400;font-size:12px}.tl b{font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
 .hrow{display:flex;justify-content:space-between;gap:8px;font-size:13.5px;margin-bottom:6px;flex-wrap:wrap}.hrow b{font-weight:600}
 .bar.big{height:10px;border-radius:5px}
@@ -378,7 +378,7 @@ dialog[open]::backdrop{animation:fade .25s ease}
 .f .hint{font-size:12px;color:var(--muted);margin-top:4px}
 .multi{display:flex;flex-wrap:wrap;gap:6px}.multi label{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line-2);border-radius:999px;padding:6px 13px;color:var(--ink);font-size:14px;margin:0;cursor:pointer;transition:background .15s,border-color .15s}
 .multi label:has(input:checked){background:var(--ui-1);border-color:var(--ui-2)}
-.items{width:100%;border-collapse:collapse}.items td,.items th{padding:3px;text-align:right;font-weight:500;color:var(--muted);font-size:12px}
+.items{width:100%;border-collapse:collapse}.items td,.items th{padding:3px;text-align:start;font-weight:500;color:var(--muted);font-size:12px}
 .items input:disabled{background:var(--sunk);color:var(--muted)}
 .dbar{display:flex;gap:8px;margin:18px -22px 0;position:sticky;bottom:0;background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:12px 22px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);z-index:1}
 .dbar .pbtn{min-width:110px}
@@ -406,7 +406,7 @@ main.enter>*:nth-child(2){animation-delay:30ms}main.enter>*:nth-child(3){animati
  body{font-size:14px}
  main{padding-top:16px;gap:14px}
  .grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}.grid>.card{padding:11px;gap:8px;border-radius:10px}
- .card .t{font-size:13.5px}.card .st{margin-top:-6px}.kv{font-size:12.5px;grid-template-columns:1fr;gap:1px}.kv b{text-align:right;margin-bottom:4px}
+ .card .t{font-size:13.5px}.card .st{margin-top:-6px}.kv{font-size:12.5px;grid-template-columns:1fr;gap:1px}.kv b{text-align:start;margin-bottom:4px}
  .amt{font-size:15.5px}.ring{width:44px;height:44px}.pc .mid{gap:8px}
  .kpis{border-radius:var(--r-m)}.kpi{flex-basis:140px}
  .pill{font-size:11px;padding:1px 8px}.kpi{padding:12px 13px}.kpi .v{font-size:17px}.kpi::before{top:14px}
@@ -417,11 +417,19 @@ main.enter>*:nth-child(2){animation-delay:30ms}main.enter>*:nth-child(3){animati
  .box{padding:14px;border-radius:var(--r-m)}
  .ldg{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:14px;padding:14px 14px 6px}.ldg>h2{grid-column:1/-1}
  .lrow{grid-template-columns:1fr;align-content:start;padding:10px 0}.lrow.lead{grid-column:1/-1}.ldg>h2+.lrow{border-top:0}
- .lrow .v{font-size:17px;text-align:right;order:2}.lrow .l{font-size:12.5px;color:var(--muted)}.lrow .s{order:3}.lrow .flag{order:4}.lrow.lead{grid-template-columns:minmax(0,1fr) auto}.lrow.lead .v{font-size:23px;text-align:left}.lrow.lead .l{color:var(--ink);font-size:13.5px}
+ .lrow .v{font-size:17px;text-align:start;order:2}.lrow .l{font-size:12.5px;color:var(--muted)}.lrow .s{order:3}.lrow .flag{order:4}.lrow.lead{grid-template-columns:minmax(0,1fr) auto}.lrow.lead .v{font-size:23px;text-align:end}.lrow.lead .l{color:var(--ink);font-size:13.5px}
  .hero p{font-size:15px}
  .sub-tabs{align-self:stretch}
  .finder{border-radius:var(--r-m);padding:8px}
 }
+
+/* English (left to right): only what logical properties cannot say */
+[dir=ltr] .step .chev{transform:rotate(-135deg)}
+[dir=ltr] .auth .f input,[dir=ltr] .dlg .f input[type=password]{text-align:left}
+[dir=ltr] .card.warn::after,[dir=ltr] .card.bad::after,[dir=ltr] .sc.warn::after,[dir=ltr] .sc.bad::after,[dir=ltr] .kpi::before{border-radius:0 3px 3px 0}
+[dir=ltr] .fc-tip{direction:ltr}
+[dir=ltr] body{font-family:"SAR","IBM Plex Sans Arabic","Segoe UI",system-ui,sans-serif}
+.lang{font-weight:600;color:var(--ink)}
 </style>
 </head>
 <body>
@@ -431,7 +439,7 @@ main.enter>*:nth-child(2){animation-delay:30ms}main.enter>*:nth-child(3){animati
   <div class="brand"><div class="logo" aria-hidden="true">ط</div>
   <div class="gh-t"><b id="who">لوحة المتابعة</b><span id="roles">مؤسسة طاء الرائدة للمقاولات العامة</span></div></div>
   <span class="badge" id="mode" hidden></span>
-  <div class="gh-a"><button type="button" class="ibtn" id="reload" hidden>تحديث</button><button type="button" class="ibtn" id="pinBtn" hidden>تغيير الرمز السري</button><button type="button" class="ibtn" id="outBtn" hidden>خروج</button></div>
+  <div class="gh-a"><button type="button" class="ibtn lang" id="langBtn" lang="en">English</button><button type="button" class="ibtn" id="reload" hidden>تحديث</button><button type="button" class="ibtn" id="pinBtn" hidden>تغيير الرمز السري</button><button type="button" class="ibtn" id="outBtn" hidden>خروج</button></div>
 </div></header>
 <nav class="tabs" id="tabs" hidden aria-label="الأقسام"><div class="wrapx" id="tabRow"></div></nav>
 </aside>
@@ -457,6 +465,761 @@ const sym = (t) => String(t ?? "").replace(/﷼/g, SAR); // the official riyal s
 // Arabic counts: «مشروع واحد» · «مشروعان» · «3 مشاريع» · «11 مشروعًا»
 const arN = (n, one, two, few, many) => (n === 1 ? one : n === 2 ? two : n <= 10 ? n + " " + few : n + " " + many);
 const pct = (f) => Math.round((f || 0) * 100) + "%";
+// ===== English (owner, 2026-11-09: some staff need it). Arabic stays the default and right to left; the choice is kept on
+// this device. Only the interface is translated — names, notes and other data stay as they were written. A text node is
+// translated in place (its Arabic kept on the node) whenever it appears, so every page and dialog follows without changes
+// to the code that builds it; back to Arabic puts the kept text back.
+const LK = "taa.dash.lang";
+let LANG = (() => { try { return localStorage.getItem(LK) === "en" ? "en" : "ar"; } catch { return "ar"; } })();
+const EN = {
+"مستحقة الآن: {x}": "Due now: {x}",
+"محصّل {n} من {n} دفعات": "{n} of {n} payments collected",
+"محصّل {n} من {n} دفعة": "{n} of {n} payments collected",
+"ملاحظة المشروع": "Project note",
+"معاينة من قيود حتى يُفتح دفترنا برصيده الافتتاحي": "Preview from Qoyod until our book is opened with its opening balance",
+"معاينة من قيود حتى يُفتح دفترنا برصيده الافتتاحي في {n}": "Preview from Qoyod until our book is opened with its opening balance on {n}",
+"تخطَّ إلى المحتوى": "Skip to content",
+"لوحة المتابعة": "Dashboard",
+"لوحة متابعة طاء": "Taa dashboard",
+"مؤسسة طاء الرائدة للمقاولات العامة": "Taa Al Raeda General Contracting",
+"طاء": "Taa",
+"تحديث": "Refresh",
+"تغيير الرمز السري": "Change PIN",
+"خروج": "Sign out",
+"الوضع:": "Mode:",
+"تجربة": "Test",
+"الأقسام": "Sections",
+"الإدارة": "Admin",
+"الرئيسية": "Home",
+"المشاريع": "Projects",
+"المالية والمحاسبة": "Finance & accounting",
+"المشتريات": "Purchasing",
+"التنفيذ والجودة": "Site & quality",
+"المبيعات": "Sales",
+"النظام": "System",
+"البيانات": "Data",
+"صباح الخير": "Good morning",
+"مساء الخير": "Good evening",
+"ابدأ من هنا": "Start here",
+"بالترتيب: الأهم أولاً": "In order: most important first",
+"لا شيء بانتظارك الآن ✓": "Nothing is waiting for you ✓",
+"لا شيء بانتظارك الآن": "Nothing is waiting for you",
+"لا يوجد شيء بانتظارك الآن ✅": "Nothing is waiting for you ✅",
+"بانتظارك": "Waiting for you",
+"بانتظارك في البوت": "Waiting for you in the bot",
+"أدخل الرصيد النقدي": "Enter the cash balance",
+"أدخل": "Enter",
+"الفائض والرصيد المتوقع محسوبان من صفر حتى تُدخل رصيد كل حساب والعهدة": "The surplus and forecast start from zero until each account and custody balance is entered",
+"مشروع ربحه غير معروف": "Projects with unknown profit",
+"مشروع ربحه أقل من 10%": "Projects with profit under 10%",
+"دفعة متأخرة لدى عميل": "Late client payments",
+"مقاول صُرف له أكثر من المعتمد": "Subcontractors paid above approved work",
+"الأرقام الرئيسية": "Key figures",
+"يدخل": "Coming in",
+"يخرج": "Going out",
+"النقد": "Cash",
+"الباقي عند العملاء": "Still owed by clients",
+"من العقود، شامل الضريبة": "Of contracts, incl. VAT",
+"المحصّل": "Collected",
+"{n} من العقود": "{n} of contracts",
+"{n} من العقد": "{n} of the contract",
+"ربح المشاريع المتوقع": "Expected project profit",
+"{n} مشروعًا غير محسوب": "{n} projects not calculated",
+"{n} مشاريع غير محسوبة": "{n} projects not calculated",
+"مشروع واحد غير محسوب": "1 project not calculated",
+"مشروعان غير محسوبين": "2 projects not calculated",
+"تقديري": "Estimate",
+"تقدير": "Estimate",
+"المصروف حتى الآن": "Spent so far",
+"منها مقاولو الباطن {n}": "Of which subcontractors {n}",
+"منها باطن {n}": "Of which subcontract {n}",
+"الالتزامات": "Obligations",
+"خلال {n} أشهر {n}": "Within {n} months {n}",
+"أكبر من النقد": "More than cash",
+"صُرف آخر {n} يوماً": "Spent in the last {n} days",
+"الضريبة المستحقة": "VAT due",
+"تحتاج تأكيد": "Needs confirming",
+"الرصيد النقدي اليوم": "Cash today",
+"مصاريف ثابتة {n} شهرياً": "Fixed costs {n} a month",
+"أكبر عجز قادم": "Largest coming deficit",
+"يوم {n}": "On {n}",
+"الفائض المتوقع": "Expected surplus",
+"العجز المتوقع": "Expected deficit",
+"الفائض قبل إضافة النقد": "Surplus before cash is added",
+"ينقصه الرصيد النقدي": "Missing the cash balance",
+"مستحقات الموردين والمقاولين لم تُدخل": "Supplier and subcontractor dues not entered",
+"مشتريات بانتظار المدير المالي": "Purchases waiting for the finance manager",
+"مستحق لمقاولي الباطن": "Owed to subcontractors",
+"مستحق للموردين": "Owed to suppliers",
+"لم يُدخل": "Not entered",
+"— لم يُدخل": "— not entered",
+"— لم تُدخل": "— not entered",
+"لم يُقرأ": "Not read",
+"يحتاج إجراء": "Needs action",
+"يحتاج متابعة": "Needs follow-up",
+"الرصيد المتوقع": "Cash forecast",
+"لا عجز متوقع": "No deficit expected",
+"أول عجز بعد {n} أيام · أكبره {n}": "First deficit in {n} days · largest {n}",
+"أول عجز اليوم · أكبره {n}": "First deficit today · largest {n}",
+"يبدأ من رصيد صفر — أدخل الرصيد النقدي": "Starts from a zero balance — enter the cash balance",
+"كيف تتفادى العجز ←": "How to avoid the deficit →",
+"كيف تتفادى العجز": "How to avoid the deficit",
+"تفاصيل تمويل إكمال المشاريع ←": "Funding to finish the projects →",
+"كل عمود = أقل رصيد في الأسبوع، للأشهر الستة القادمة. بعدها: أقل رصيد": "Each bar = lowest balance in the week, for the next six months. After that: lowest balance",
+"يوم {n}، وبنهاية المشاريع {n}.": "on {n}, and at the end of the projects {n}.",
+"أقل رصيد": "Lowest balance",
+"نهاية الأسبوع": "End of week",
+"أهم التنبيهات": "Top alerts",
+"لا تنبيهات": "No alerts",
+"كل التنبيهات {n} ←": "All alerts {n} →",
+"كل التنبيهات ({n}) ←": "All alerts ({n}) →",
+"صحة المشاريع": "Project health",
+"{n} محصّل من العقود": "{n} collected of contracts",
+"سليم": "Healthy",
+"ربح ضعيف": "Weak profit",
+"خاسر": "Loss-making",
+"غير معروف": "Unknown",
+"أكبر المبالغ عند العملاء ←": "Largest amounts with clients →",
+"أكبر المبالغ عند العملاء": "Largest amounts with clients",
+"الباقي من العقود حسب العميل": "Remaining on contracts, by client",
+"→ الرئيسية": "← Home",
+"→ كل المشاريع": "← All projects",
+"التنبيهات": "Alerts",
+"تنبيه": "Alert",
+"{n} تنبيهات، مرتبة بالمبلغ": "{n} alerts, largest amount first",
+"افتح المشروع ←": "Open the project →",
+"افتح المشاريع ←": "Open projects →",
+"افتح الموردين ←": "Open suppliers →",
+"افتح مقاولي الباطن ←": "Open subcontractors →",
+"افتح النقد والمصاريف الثابتة ←": "Open cash & fixed costs →",
+"أكبر عجز {n} يوم {n} · {n} فترات عجز": "Largest deficit {n} on {n} · {n} deficit periods",
+"عجز {n} من {n} إلى {n}": "Deficit {n} from {n} to {n}",
+"عجز {n} يوم {n}": "Deficit {n} on {n}",
+"قدّم المراحل اللي تفتح دفعات قريبة، عشان تستحق قبل {n}:": "Bring forward the stages that unlock payments, so they fall due before {n}:",
+"أخّر شراء المواد غير العاجلة في مشاريع دفعتها القادمة بعيدة:": "Delay non-urgent material purchases on projects whose next payment is far off:",
+"اتفق مع الموردين على تأجيل المستحق لما بعد {n}:": "Agree with suppliers to defer what is due until after {n}:",
+"متوقعة حاليًا {n}": "Currently expected {n}",
+"دفعته القادمة {n}": "Next payment {n}",
+"لا دفعة متوقعة": "No payment expected",
+"التوقع يفترض تحصيل المستحق الآن {n} بدون الضريبة) خلال أسبوع؛ إذا تأخر يكبر العجز.": "The forecast assumes what is due now {n} excl. VAT) is collected within a week; if it is late the deficit grows.",
+"تمويل إكمال المشاريع الحالية": "Funding to finish current projects",
+"تكلفة الإكمال محسوبة من المصروف ونسبة الإنجاز": "Cost to finish is worked out from spending and progress",
+"النقد اليوم": "Cash today",
+"بدون الضريبة": "Excl. VAT",
+"شامل الضريبة": "Incl. VAT",
+"تكلفة إكمال المشاريع": "Cost to finish the projects",
+"المستحق للموردين والمقاولين": "Owed to suppliers and subcontractors",
+"النتيجة قبل إضافة النقد": "Result before cash is added",
+"أدخل الرصيد النقدي ←": "Enter the cash balance →",
+"مشاريع تكلفة إكمالها أكبر من الباقي عند العميل": "Projects that cost more to finish than the client still owes",
+"الإنجاز {n} · التحصيل {n}": "Progress {n} · collected {n}",
+"لا يشمل {n} مشاريع لم تبدأ.": "Excludes {n} projects not started.",
+"لا يشمل مشروعًا واحدًا لم يبدأ.": "Excludes 1 project not started.",
+"{n} مشاريع غير داخلة في الحساب: حدّد مراحل إنجازها": "{n} projects not counted: set their progress stages",
+"{n} محصّل": "{n} collected",
+"{n} مشروع · المصدر: تدقيق طاء وقيود": "{n} projects · source: Taa audit and Qoyod",
+"قيمة العقود": "Contract value",
+"باقي {n}": "{n} left",
+"مستحق الآن": "Due now",
+"المصروف": "Spent",
+"بحث في المشاريع": "Search projects",
+"ابحث برقم المشروع أو اسمه أو العميل": "Search by project number, name or client",
+"تصفية المشاريع": "Filter projects",
+"الكل": "All",
+"عظم": "Structure",
+"تشطيب": "Finishing",
+"عليها مستحق": "With payments due",
+"كل المشاريع، الأعلى مستحقًا أولاً": "All projects, most due first",
+"{n} مشاريع من {n}": "{n} projects of {n}",
+"{n} مشروعًا من {n}": "{n} projects of {n}",
+"مشروع واحد من {n}": "1 project of {n}",
+"مشروعان من {n}": "2 projects of {n}",
+"لا توجد مشاريع بهذا البحث — جرّب رقم المشروع مثل S-25-003": "No projects match — try a project number such as S-25-003",
+"قائم": "Ongoing",
+"منتهي": "Finished",
+"لم يبدأ": "Not started",
+"جاري": "In progress",
+"غير مشمول": "Not included",
+"محصّل من {n}": "Collected of {n}",
+"الربح المتوقع": "Expected profit",
+"الربح المتوقع {n}": "Expected profit {n}",
+"الربح غير معروف": "Profit unknown",
+"ربح أقل من 10%": "Profit under 10%",
+"مستحق {n}": "Due {n}",
+"باطن بلا حساب مقاول {n}": "Subcontract with no subcontractor account {n}",
+"تعديل المشروع": "Edit project",
+"مراحل التنفيذ": "Execution stages",
+"صافي النقد": "Net cash",
+"المحصّل − المصروف": "Collected − spent",
+"الباقي عند العميل": "Still owed by the client",
+"كل الباقي من العقد": "All that is left on the contract",
+"{n} · الإنجاز {n}": "{n} · progress {n}",
+"حدّث المراحل والمصروف": "Update stages and spending",
+"أقل من 10%": "Under 10%",
+"تقديري — راجع المراحل والمصروف": "Estimate — check stages and spending",
+"نظرة عامة": "Overview",
+"الدفعات": "Payments",
+"الدفعات {n}": "Payments {n}",
+"المصروف {n}": "Spending {n}",
+"مقاولو الباطن": "Subcontractors",
+"مقاولو الباطن {n}": "Subcontractors {n}",
+"المستندات": "Documents",
+"المستندات {n}": "Documents {n}",
+"ملاحظات التدقيق": "Audit notes",
+"التدقيق": "Audit",
+"العقد": "Contract",
+"الدفعة القادمة": "Next payment",
+"لم تستحق بعد": "not due yet",
+"— لم تستحق بعد": "— not due yet",
+"كل الدفعات محصّلة ✅": "All payments collected ✅",
+"العقد مسجّل بدون جدول دفعات": "The contract has no payment schedule",
+"لا يوجد عقد مسجّل": "No contract recorded",
+"المراحل غير مسجّلة بعد — «مراحل التنفيذ» أعلى الصفحة": "Stages not recorded yet — «Execution stages» at the top",
+"المراحل غير مسجّلة بعد": "Stages not recorded yet",
+"المواد مقابل الميزانية": "Materials vs budget",
+"حصر المخططات + قيود الآن": "Drawings take-off + Qoyod now",
+"جارٍ القراءة…": "Reading…",
+"تعذّرت قراءة المشتريات الآن": "Could not read purchases now",
+"لا مشتريات مواد مسجّلة على المشروع في قيود": "No material purchases recorded on the project in Qoyod",
+"قيود + الاتفاقيات": "Qoyod + agreements",
+"لا أعمال باطن مسجّلة على المشروع": "No subcontract work recorded on the project",
+"تكلفة الباطن على المشروع في قيود: {n}": "Subcontract cost on the project in Qoyod: {n}",
+"منها بلا حساب مقاول في قيود: {n}": "Of which with no subcontractor account in Qoyod: {n}",
+"لا مستندات بعد": "No documents yet",
+"عرض المستندات": "View documents",
+"رفع مستند": "Upload document",
+"+ رفع مستند": "+ Upload document",
+"لا شيء يحتاج متابعة الآن ✅": "Nothing needs follow-up ✅",
+"مدفوعات باطن بلا حساب مقاول {n}": "Subcontract payments with no subcontractor account {n}",
+"صُرفت في قيود دون حساب مقاول (غالباً من عهدة) — حدّد المقاول للمحاسب": "Paid in Qoyod without a subcontractor account (usually from a custody) — tell the accountant who it was",
+"دفعة مستحقة على العميل {n}": "Payment due from the client {n}",
+"استحقت ولم تُحصّل": "Due and not collected",
+"العقد بلا جدول دفعات": "Contract without a payment schedule",
+"لا يُعرف ما يستحق ومتى": "What falls due, and when, is unknown",
+"لا عميل مربوط بالمشروع في البوت": "No client linked to the project in the bot",
+"لا تصله التقارير اليومية ولا طلبات الاستلام": "He gets no daily reports or hand-over requests",
+"لا مشرف ولا مهندس موقع مربوط": "No supervisor or site engineer linked",
+"لا تُرفع تقارير يومية من الموقع": "No daily reports come from the site",
+"لا حصر من المخططات لهذا المشروع": "No drawings take-off for this project",
+"أرسل الإنشائي والمعماري PDF لتُحسب ميزانية المواد": "Send the structural and architectural PDFs to get a materials budget",
+"مواد تجاوزت ميزانية الحصر": "Materials over the take-off budget",
+"راجع «المواد مقابل الميزانية»": "Check «Materials vs budget»",
+"+ عقد": "+ Contract",
+"+ إضافة العقد وجدول دفعاته": "+ Add the contract and its payment schedule",
+"+ دفعة": "+ Payment",
+"تعديل العقد": "Edit contract",
+"تعديل الدفعة": "Edit payment",
+"تاريخ العقد {n}": "Contract date {n}",
+"قيمة العقد": "Contract value",
+"الباقي": "Left",
+"مدة التنفيذ": "Duration",
+"جدول الدفعات: {n} دفعة · محصّلة {n}": "Schedule: {n} payments · {n} collected",
+"جدول الدفعات: {n} دفعة · محصّلة {n} · مستحقة {n}": "Schedule: {n} payments · {n} collected · {n} due",
+"محصّلة": "Collected",
+"مستحقة": "Due",
+"لم تستحق": "Not due",
+"جزئية — باقي {n}": "Partial — {n} left",
+"تعديل المصروف": "Edit spending",
+"المجموع": "Total",
+"لا يوجد مصروف مسجّل": "No spending recorded",
+"تعديل مدفوعات مقاولي الباطن": "Edit subcontractor payments",
+"تكلفة الباطن على المشروع (قيود)": "Subcontract cost on the project (Qoyod)",
+"أعمال بأسماء المقاولين": "Work under subcontractor names",
+"بلا حساب مقاول في قيود": "No subcontractor account in Qoyod",
+"من التدقيق — تعذّر قراءة قيود": "From the audit — Qoyod could not be read",
+"لا أعمال باطن باسم مقاول على هذا المشروع": "No subcontract work under a subcontractor's name on this project",
+"قيمة الاتفاقية": "Agreement value",
+"المنفّذ على المشروع": "Done on the project",
+"وصل": "Reached",
+"المصروف له (كل مشاريعه)": "Paid to him (all his projects)",
+"مستحق له (كل مشاريعه)": "Owed to him (all his projects)",
+"دفعة مقدمة (كل مشاريعه)": "Advance (all his projects)",
+"الرصيد": "Balance",
+"لا توجد ملاحظات": "No notes",
+"المستندات تظهر هنا بعد تحديث البوت.": "Documents appear here once the bot is updated.",
+"فتح PDF": "Open PDF",
+"التحصيل": "Collections",
+"عهدات العملاء": "Client custody",
+"النقد والمصاريف الثابتة": "Cash & fixed costs",
+"الربحية": "Profitability",
+"الدفتر العام": "General ledger",
+"المستحق الآن عند العملاء": "Due now from clients",
+"دفعات وصلت مرحلتها ولم تُحصّل بعد — اضغط على المشروع لتفاصيل دفعاته": "Payments whose stage is reached and not yet collected — tap a project for its payments",
+"إجمالي المستحق الآن": "Total due now",
+"منه متأخر": "Of which late",
+"متأخر": "Late",
+"لا يوجد مستحق الآن": "Nothing due now",
+"التحصيل من العملاء": "Collections from clients",
+"كل دفعة يؤكدها المحاسب في البوت: كم وصل كاش وكم تحويل. الكاش يُضاف للعهدة النقدية تلقائياً.": "Each payment the accountant confirms in the bot: how much came in cash and by transfer. Cash goes to petty cash automatically.",
+"محصّل هذا الشهر": "Collected this month",
+"منه تحويل": "Of which transfer",
+"منه كاش": "Of which cash",
+"رصيد العهدة النقدية": "Petty cash balance",
+"الدفعة": "Payment",
+"المبلغ": "Amount",
+"تحويل": "Transfer",
+"كاش": "Cash",
+"التاريخ": "Date",
+"مطالبات العملاء": "Client claims",
+"لا توجد مطالبات مفتوحة": "No open claims",
+"+ إيداع عهدة عميل": "+ Client custody deposit",
+"مبالغ يحوّلها العميل ونشتري له منها. على كل شراء رسوم إدارة وتوريد {n} + ضريبتها.": "Amounts the client transfers for us to buy from. Each purchase carries a management & supply fee {n} + its VAT.",
+"اتفاقيات مقاولي الباطن": "Subcontract agreements",
+"المنفّذ": "Done",
+"المصروف له": "Paid to him",
+"المتبقي له الآن: {n}": "Left for him now: {n}",
+"مستخلصات مقاولي الباطن": "Subcontractor certificates",
+"لا توجد مستخلصات مفتوحة": "No open certificates",
+"ابحث باسم المقاول": "Search by subcontractor name",
+"إخفاء الحسابات الخاملة": "Hide quiet accounts",
+"إظهار الحسابات الخاملة ({n})": "Show quiet accounts ({n})",
+"التفاصيل": "Details",
+"الاتفاقيات": "Agreements",
+"الأعمال المثبتة": "Proven work",
+"مستحق له": "Owed to him",
+"دفعة مقدمة": "Advance",
+"الفرق": "Difference",
+"فتح المشروع": "Open project",
+"تعديل الاتفاقية": "Edit agreement",
+"+ اتفاقية لهذا المشروع": "+ Agreement for this project",
+"+ اتفاقية لهذا المقاول": "+ Agreement for this subcontractor",
+"النقد والمصاريف الثابتة والضريبة": "Cash, fixed costs and VAT",
+"تعديل": "Edit",
+"الحساب البنكي الرئيسي": "Main bank account",
+"العهدة النقدية": "Petty cash",
+"المصاريف الثابتة شهرياً": "Fixed costs a month",
+"ضريبة المدخلات": "Input VAT",
+"المدفوع للهيئة": "Paid to ZATCA",
+"ناقص: الرواتب، الإقامات والتأشيرات، التأمينات، السيارات والوقود، الجوالات والإنترنت، التسويق": "Missing: salaries, residency and visas, insurance, cars and fuel, phones and internet, marketing",
+"ربحية المشاريع": "Project profitability",
+"الربح المتوقع عند الإكمال بنفس حساب التدقيق: الهدف صافي ربح {n}–{n}": "Expected profit at completion, same maths as the audit: target net profit {n}–{n}",
+"التكلفة المتوقعة": "Expected cost",
+"الإنجاز": "Progress",
+"هامش {n}": "Margin {n}",
+"الربح غير معروف — حدّث المراحل والمصروف": "Profit unknown — update stages and spending",
+"الموردون": "Suppliers",
+"طلبات المواقع": "Site requests",
+"لمن ندين؟ وش اشترينا ومن مين؟ ووش تطلب المواقع؟": "Who do we owe? What did we buy, and from whom? What are the sites asking for?",
+"مستحقات الموردين": "Supplier dues",
+"+ مستحق مورد": "+ Supplier due",
+"اضغط على المورد لتعديل المستحق وموعد السداد": "Tap a supplier to edit what is owed and when",
+"هذا الشهر": "This month",
+"تأجير معدات · هذا الشهر": "Equipment rental · this month",
+"المشتريات من قيود": "Purchases from Qoyod",
+"من تاريخ": "From",
+"إلى تاريخ": "To",
+"عرض الفترة": "Show period",
+"الشهر الماضي": "Last month",
+"هذه السنة": "This year",
+"آخر {n} يوماً": "Last {n} days",
+"مشتريات آخر {n} يوماً": "Purchases in the last {n} days",
+"ابحث في المشتريات": "Search purchases",
+"ابحث: مادة، مشروع، مورد، وصف": "Search: material, project, supplier, description",
+"حسب المادة": "By material",
+"حسب المشروع": "By project",
+"حسب المورد": "By supplier",
+"كل المشتريات": "All purchases",
+"الميزانية من حصر مخططات كل مشروع بالطريقة المعتمدة، والفعلي من مشتريات قيود المسجّلة على المشروع (بدون الضريبة). النسبة تُقرأ مع مرحلة المشروع: الحديد والخرسانة يُشتريان قبل البلوك.": "The budget comes from each project's drawings take-off; actuals from Qoyod purchases on the project (excl. VAT). Read the percentage with the project's stage: steel and concrete are bought before blocks.",
+"طلبات المواد والمعدات": "Material and equipment requests",
+"طلبات المواد من الموقع: المفتوحة وآخر {n} يوماً": "Material requests from site: open and the last {n} days",
+"طلبات مفتوحة": "Open requests",
+"لا توجد طلبات مفتوحة": "No open requests",
+"دورة الشراء: أمر الشراء ← الاستلام ← الفاتورة ← الدفع": "Purchase cycle: order → delivery → invoice → payment",
+"لا توجد طلبات من المواقع — تصل من البوت: طلب الموقع ← أمر الشراء ← الاستلام ← الفاتورة ← الدفع.": "No site requests — they come from the bot: site request → order → delivery → invoice → payment.",
+"الجودة": "Quality",
+"الصبات": "Pours",
+"بانتظار الاستلام": "Awaiting hand-over",
+"استلام الأعمال بقوائم التحقق، ملاحظات العملاء والضمان، وما تحتاجه المواقع": "Work hand-over with checklists, client and warranty notes, and what the sites need",
+"الجودة — استلام الأعمال": "Quality — work hand-over",
+"كل عمل يسلّمه المنفذ في البوت بقائمة التحقق والصور، ثم يقيسه مهندس الموقع ويستلمه العميل أو المشرف.": "Every piece of work is handed over in the bot with its checklist and photos, measured by the site engineer and accepted by the client or supervisor.",
+"مستلمة من أول مرة": "Accepted first time",
+"مرفوضة / إصلاح": "Rejected / repair",
+"تحت الفحص الآن": "Under inspection now",
+"مستلمة آخر {n} يوماً": "Accepted in the last {n} days",
+"ملاحظات الاستلام والضمان": "Hand-over and warranty notes",
+"عيوب واستلام وضمان وملاحظات": "Defects, hand-over, warranty and notes",
+"ملاحظات مفتوحة": "Open notes",
+"لا توجد ملاحظات مفتوحة": "No open notes",
+"لا توجد صبات قادمة": "No pours coming up",
+"الحالة": "Status",
+"الفحص": "Inspection",
+"الدور / المنطقة": "Floor / area",
+"المرة": "Attempt",
+"العملاء الجدد وعروض الأسعار": "New clients and quotes",
+"لا يوجد عملاء جدد": "No new clients",
+"الأعمال الإضافية": "Extra works",
+"لا توجد أعمال إضافية مفتوحة": "No open extra works",
+"طلبات عروض الأسعار": "Quote requests",
+"تحتاج قرارك": "Needs your decision",
+"المعدات المؤجرة": "Rented equipment",
+"لا يوجد تأجير جارٍ": "No active rentals",
+"تأجير جارٍ": "Active rentals",
+"في الصيانة": "In maintenance",
+"صحة البوت": "Bot health",
+"وضع التشغيل": "Operating mode",
+"رسائل واردة تنتظر المعالجة": "Incoming messages waiting",
+"رسائل صادرة في الطابور": "Outgoing messages queued",
+"رسائل بلا رد من واتساب": "Messages with no reply from WhatsApp",
+"أكثر من {n} دقائق": "More than {n} minutes",
+"إيقاف آمن": "Safe stop",
+"فعلي": "Live",
+"للتنفيذ افتح البوت في واتساب — اللوحة للمتابعة فقط": "To act, open the bot in WhatsApp — the dashboard is for following up",
+"الأشخاص والأدوار والمشاريع — كل تعديل حساس يُؤكَّد برمزك السري": "People, roles and projects — every sensitive change is confirmed with your PIN",
+"تسجيل الدخول": "Sign in",
+"تفعيل الدخول": "Activate sign-in",
+"لموظفي مؤسسة طاء الرائدة للمقاولات العامة. ادخل برقم جوالك المسجل ورمزك السري.": "For Taa Al Raeda staff. Sign in with your registered mobile number and PIN.",
+"اكتب رقم جوالك ورمز التفعيل الذي أعطتك إياه الإدارة، ثم اختر رمزك السري.": "Enter your mobile number and the activation code the office gave you, then choose your PIN.",
+"رقم الجوال": "Mobile number",
+"مثال: 05xxxxxxxx": "Example: 05xxxxxxxx",
+"رمز التفعيل (10 أرقام)": "Activation code (10 digits)",
+"رمز التفعيل {n} أرقام)": "Activation code {n} digits)",
+"الرمز السري": "PIN",
+"رمزك السري الجديد": "Your new PIN",
+"أعد كتابة الرمز السري": "Repeat the PIN",
+"من 6 إلى 12 رقماً، لا رقماً مكرراً ولا أرقاماً متتالية": "6 to 12 digits, no repeated or consecutive digits",
+"من {n} إلى {n} رقماً، لا رقماً مكرراً ولا أرقاماً متتالية": "{n} to {n} digits, no repeated or consecutive digits",
+"من 6 إلى 12 رقماً": "6 to 12 digits",
+"دخول": "Sign in",
+"تفعيل ودخول": "Activate and sign in",
+"أول مرة؟ عندي رمز تفعيل": "First time? I have an activation code",
+"عندي رمز سري — تسجيل الدخول": "I have a PIN — sign in",
+"أو اطلب رابط الدخول من البوت في واتساب": "Or ask the bot in WhatsApp for a sign-in link",
+"جارٍ التحقق…": "Checking…",
+"اكتب رقم جوالك": "Enter your mobile number",
+"اكتب رمز التفعيل": "Enter the activation code",
+"اكتب الرمز السري": "Enter your PIN",
+"الرمزان غير متطابقين": "The two PINs do not match",
+"تعذّر الدخول — حاول مرة أخرى": "Could not sign in — try again",
+"تعذّر الاتصال — تحقق من الإنترنت": "Could not connect — check the internet",
+"الرمز السري الحالي": "Current PIN",
+"اتركه فارغاً إن لم يكن لك رمز سري بعد (دخلت برابط واتساب)": "Leave empty if you have no PIN yet (you came in by a WhatsApp link)",
+"الرمز السري الجديد": "New PIN",
+"أعد كتابة الرمز الجديد": "Repeat the new PIN",
+"حفظ": "Save",
+"إغلاق": "Close",
+"إلغاء": "Cancel",
+"خروج من كل الأجهزة": "Sign out on every device",
+"يُخرجك فوراً من هذا الجهاز وكل جهاز دخلت منه، وتحتاج بعدها الرمز السري لتدخل من جديد.": "Signs you out of this and every other device at once; you will need your PIN to sign in again.",
+"تأكيد: اخرج من كل الأجهزة": "Confirm: sign out everywhere",
+"خرجت من كل الأجهزة. سجّل الدخول من جديد.": "You are signed out everywhere. Sign in again.",
+"خرجت من اللوحة على هذا الجهاز.": "You are signed out on this device.",
+"انتهت الجلسة — سجّل الدخول من جديد": "Session ended — sign in again",
+"انتهت صلاحية الرابط — اطلب «لوحة المتابعة» من البوت من جديد": "The link has expired — ask the bot for «لوحة المتابعة» again",
+"تعذّر تحميل البيانات": "Could not load the data",
+"تحقق من الإنترنت ثم اضغط تحديث.": "Check the internet, then press Refresh.",
+"حاول مرة أخرى بعد قليل.": "Try again in a moment.",
+"غير مصرح": "Not allowed",
+"تم الحفظ ✅": "Saved ✅",
+"تم الحفظ ✓ — الأرقام تتحدث خلال ثوانٍ": "Saved ✓ — figures update in seconds",
+"تم الحذف ✓": "Deleted ✓",
+"تم ✅": "Done ✅",
+"جارٍ الحفظ…": "Saving…",
+"جارٍ التحميل…": "Loading…",
+"جارٍ الفتح…": "Opening…",
+"تعذّر الحفظ": "Could not save",
+"تعذّر الاتصال": "Could not connect",
+"تعذّر الاتصال — حاول مرة أخرى": "Could not connect — try again",
+"عدّل شخص آخر البيانات قبل لحظات — افتح التعديل مرة ثانية": "Someone else changed the data a moment ago — open the editor again",
+"راجع قبل الحفظ": "Review before saving",
+"رجوع للتعديل": "Back to editing",
+"تأكيد وحفظ": "Confirm and save",
+"رمزك السري للتأكيد": "Your PIN to confirm",
+"التعديل لا يُنفَّذ إلا برمزك أنت": "The change is made only with your own PIN",
+"حذف": "Delete",
+"تأكيد الحذف؟": "Confirm delete?",
+"حذف الدفعة": "Delete payment",
+"حذف العقد": "Delete contract",
+"حذف المورد": "Delete supplier",
+"حالة كل مرحلة تحدد الدفعات المستحقة وتكلفة الإكمال والرصيد المتوقع.": "Each stage's state sets the payments due, the cost to finish and the cash forecast.",
+"بيانات المشروع": "Project details",
+"اسم العقد": "Contract name",
+"اسم الدفعة": "Payment name",
+"قيمة العقد شامل الضريبة (﷼)": "Contract value incl. VAT (﷼)",
+"المبلغ شامل الضريبة (﷼)": "Amount incl. VAT (﷼)",
+"المحصّل منها (﷼)": "Collected of it (﷼)",
+"مدة التنفيذ (يوم)": "Duration (days)",
+"تستحق مع مرحلة": "Falls due with stage",
+"عند بدء المرحلة": "When the stage starts",
+"عند انتهاء المرحلة": "When the stage ends",
+"بدون مرحلة (أحدد الاستحقاق يدوياً)": "No stage (I set the due date by hand)",
+"توقيع العقد": "Contract signing",
+"التسليم / انتهاء الأعمال": "Hand-over / end of works",
+"ملاحظة العقد": "Contract note",
+"أرقام فقط، مثل 5,000": "Numbers only, e.g. 5,000",
+"اكتب المبلغ": "Enter the amount",
+"اكتب قيمة العقد": "Enter the contract value",
+"اكتب اسم العقد": "Enter the contract name",
+"اكتب اسم الدفعة": "Enter the payment name",
+"المحصّل الجزئي لازم يكون أقل من المبلغ": "A partial collection must be less than the amount",
+"في الحقول المعلّمة نص بدل رقم — صحّحها ثم احفظ.": "The marked fields have text instead of a number — fix them, then save.",
+"المشروع غير موجود في التدقيق": "The project is not in the audit",
+"أعمال إضافية": "Extra works",
+"عقد إضافي": "Additional contract",
+"محصّلة جزئيًا": "Partly collected",
+"غير محصّلة": "Not collected",
+"الحفر": "Excavation",
+"الإحلال": "Soil replacement",
+"الدفان": "Backfill",
+"نزح المياه": "Dewatering",
+"الإسناد": "Shoring",
+"حفر القبو": "Basement excavation",
+"القواعد والرقاب": "Footings and necks",
+"أرضية وجدران القبو": "Basement floor and walls",
+"عزل القبو": "Basement waterproofing",
+"أعمدة وسقف القبو": "Basement columns and slab",
+"الميدات وسباكة العظم الأرضية": "Ground beams and structure plumbing",
+"أعمدة وسقف الدور الأرضي": "Ground floor columns and slab",
+"أعمدة وسقف الدور الأول": "First floor columns and slab",
+"أعمدة وسقف دور إضافي": "Extra floor columns and slab",
+"الملحق وسترة السطح والوارش": "Roof annex, parapet and screen wall",
+"طابوق الدور الأرضي": "Ground floor blockwork",
+"طابوق الدور الأول": "First floor blockwork",
+"طابوق الدور الإضافي": "Extra floor blockwork",
+"طابوق الملحق": "Annex blockwork",
+"السور": "Boundary wall",
+"الكهرباء (تأسيس وتشطيب)": "Electrical (rough-in and finish)",
+"السباكة (تأسيس وتشطيب)": "Plumbing (rough-in and finish)",
+"اللياسة": "Plaster",
+"العزل": "Insulation",
+"البلاط الداخلي": "Interior tiling",
+"البلاط الخارجي": "Exterior tiling",
+"الجبس": "Gypsum",
+"الدهان الداخلي": "Interior painting",
+"الدهان الخارجي": "Exterior painting",
+"حديد": "Steel",
+"خرسانة": "Concrete",
+"طابوق": "Blocks",
+"مواد مساعدة (مسامير، شنبر، بسكوت، شبك، زوايا)": "Sundries (nails, strapping, spacers, mesh, angles)",
+"مواد سباكة وكهرباء العظم": "Structure plumbing & electrical materials",
+"مواد سباكة وكهرباء": "Plumbing & electrical materials",
+"مواد عزل القواعد والرقاب": "Footing and neck waterproofing materials",
+"معدات (Rent a Tool)": "Equipment (Rent a Tool)",
+"ماء وكهرباء الموقع": "Site water and power",
+"سياج مؤقت ولوحة": "Temporary fence and sign",
+"حفر وإحلال ودفان": "Excavation, replacement and backfill",
+"إسناد ونزح مياه": "Shoring and dewatering",
+"عمالة يومية": "Daily labour",
+"أخرى": "Other",
+"مواد لياسة": "Plaster materials",
+"بلاط": "Tiles",
+"جبس": "Gypsum",
+"عزل": "Insulation",
+"دهانات": "Paint",
+"مقاولو الباطن (قيود)": "Subcontractors (Qoyod)",
+"حديد {n}": "Steel {n}",
+"خرسانة {n}": "Concrete {n}",
+"طابوق {n}": "Blocks {n}",
+"عزل {n}": "Insulation {n}",
+"جبس {n}": "Gypsum {n}",
+"دهانات {n}": "Paint {n}",
+"أخرى {n}": "Other {n}",
+"عمالة يومية {n}": "Daily labour {n}",
+"ماء وكهرباء الموقع {n}": "Site water and power {n}",
+"حفر وإحلال ودفان {n}": "Excavation, replacement and backfill {n}",
+"معدات (Rent a Tool) {n}": "Equipment (Rent a Tool) {n}",
+"مواد سباكة وكهرباء {n}": "Plumbing & electrical materials {n}",
+"مواد لياسة {n}": "Plaster materials {n}",
+"مقاولو الباطن (قيود) {n}": "Subcontractors (Qoyod) {n}",
+"بلاط {n} م²": "Tiles {n} m²",
+"يناير": "January",
+"فبراير": "February",
+"مارس": "March",
+"أبريل": "April",
+"مايو": "May",
+"يونيو": "June",
+"يوليو": "July",
+"أغسطس": "August",
+"سبتمبر": "September",
+"أكتوبر": "October",
+"نوفمبر": "November",
+"ديسمبر": "December",
+"{n} ألف": "{n}k",
+"{n} ألف)": "{n}k)",
+"{n} يوم": "{n} days",
+"{n} دفعة": "{n} payments",
+"{n} طلب": "{n} requests",
+"{n} عهدة": "{n} custodies",
+"{n} من {n}": "{n} of {n}",
+"{n} مشاريع": "{n} projects",
+"{n} مشروعًا": "{n} projects",
+"مشروع واحد": "1 project",
+"مشروعان": "2 projects",
+"{n} مشاريع ربحها غير معروف": "{n} projects with unknown profit",
+"آخر حركة": "Last movement",
+"آخر إثبات": "Last proven",
+"بلا اتفاقية في اللوحة": "No agreement in the dashboard",
+"بلا اتفاقية على هذا المشروع": "No agreement on this project",
+"اكتملت كل المراحل": "All stages complete",
+"اكتملت مراحله": "His stages are complete",
+"لم تبدأ": "Not started",
+"المثبت": "Proven",
+"لا يوجد مقاولو باطن بعد": "No subcontractors yet",
+"ابحث باسم المورد": "Search by supplier name",
+"لا توجد حسابات موردين": "No supplier accounts",
+"لا يوجد موردون مسجّلون بعد": "No suppliers recorded yet",
+"طلب كشف حساب": "Request a statement",
+"إعادة طلب كشف الحساب": "Request the statement again",
+"إرسال رسالة": "Send a message",
+"✉ إرسال رسالة": "✉ Send a message",
+"الرسالة": "Message",
+"اكتب نص الرسالة": "Write the message",
+"تعذّر الإرسال": "Could not send",
+"فتح الملف": "Open file",
+"تعذّر فتح الملف": "Could not open the file",
+"اسم المستند": "Document name",
+"نوع المستند": "Document type",
+"الملف (PDF أو صورة، حتى 10 ميغا)": "File (PDF or image, up to 10 MB)",
+"الملف أكبر من 10 ميغا": "The file is larger than 10 MB",
+"رُفع المستند ✅": "Document uploaded ✅",
+"عقد": "Contract",
+"فاتورة": "Invoice",
+"سند": "Voucher",
+"تقرير": "Report",
+"مخططات": "Drawings",
+"أمر شراء": "Purchase order",
+"محضر استلام": "Delivery record",
+"فاتورة مورد": "Supplier invoice",
+"سند صرف": "Payment voucher",
+"سند قبض": "Receipt voucher",
+"مستند": "Document",
+"العقود والمستندات": "Contracts and documents",
+"أوامر الشراء": "Purchase orders",
+"الاستلام": "Deliveries",
+"الفواتير": "Invoices",
+"سندات الصرف": "Payment vouchers",
+"سندات القبض": "Receipt vouchers",
+"لا توجد مستندات لهذا المشروع بعد — تُصدر من البوت: أوامر الشراء ومحاضر الاستلام وفواتير الموردين وسندات الصرف والقبض.": "No documents for this project yet — the bot issues them: purchase orders, delivery records, supplier invoices, payment and receipt vouchers.",
+"حركة النقد — البنوك والصندوق": "Cash movement — banks and cash box",
+"تراكمي منذ بداية سجلات قيود": "Cumulative since Qoyod records began",
+"الأصول": "Assets",
+"الخصوم": "Liabilities",
+"حقوق الملكية": "Equity",
+"الإيرادات": "Revenue",
+"المصروفات": "Expenses",
+"البنوك": "Banks",
+"الصندوق": "Cash box",
+"دخل": "In",
+"خرج": "Out",
+"الرصيد في البداية": "Opening balance",
+"الرصيد في النهاية": "Closing balance",
+"فتح دفتر النقد": "Open the cash book",
+"مطابق ✅": "Matches ✅",
+"مطابق": "Matches",
+"اليوم": "Today",
+"الوحدة": "Unit",
+"الكمية": "Quantity",
+"السعر": "Price",
+"البند": "Item",
+"البيان": "Description",
+"المورد": "Supplier",
+"العميل": "Client",
+"على حساب": "Billed to",
+"نحن": "Us",
+"تم الاستلام": "Received",
+"بانتظار الدفع": "Awaiting payment",
+"داخل مستخلص": "In a certificate",
+"صُرف عليها مواد": "Materials bought for it",
+"الرسوم": "Fees",
+"المستلم": "Received",
+"المستلم من العملاء": "Received from clients",
+"رسوم الإدارة والتوريد": "Management & supply fees",
+"التكلفة": "Cost",
+"المواد": "Materials",
+"حالة الطلب": "Request status",
+"تقديري — الهامش {n} أعلى من المعقول، راجع المراحل والمصروف": "Estimate — the {n} margin is higher than realistic, check stages and spending",
+"مسجّل بدون جدول دفعات (المحصّل رقم إجمالي — ظاهر أعلى الصفحة). أضف العقد وجدول دفعاته من الزر أعلاه، والمحصّل السابق يُنقل له.": "Recorded without a payment schedule (collected is one total — shown at the top). Add the contract and its schedule with the button above; what was collected moves into it.",
+"لا شيء": "Nothing",
+"لا يوجد": "None",
+"لا يوجد شيء الآن": "Nothing right now",
+"مثال: عقد العظم — موقّع": "Example: structure contract — signed",
+"تعذّر التحميل": "Could not load",
+"تعذّر التحميل — اضغط «تحديث»": "Could not load — press «Refresh»",
+"إعادة المحاولة": "Try again",
+"آخر تحديث {n}": "updated {n}",
+"آخر تحديث {n} ص": "updated {n} am",
+"آخر تحديث {n} م": "updated {n} pm",
+"{n} عهدة بالسالب": "{n} custodies in the negative",
+"{n} من {n} حساباً لها رصيد: رصيدها المبني من حركات قيود يساوي رصيد قيود ✓": "{n} of {n} accounts with a balance: rebuilt from Qoyod movements, equal to Qoyod's balance ✓",
+"الرصيد المتوقع أسبوعيًا: أقل رصيد {n} يوم {n}": "Weekly cash forecast: lowest balance {n} on {n}",
+"الرصيد المتوقع أسبوعيًا: أقل رصيد {n} يوم {n}، محسوب من رصيد نقدي صفر لأنه لم يُدخل": "Weekly cash forecast: lowest balance {n} on {n}, worked out from a zero cash balance because it was not entered",
+"الباقي من العقد {n}": "Left on the contract {n}",
+"المستحق الآن": "Due now",
+"الرصيد عند الشركة": "Balance with the company",
+"القواعد": "Footings",
+"أعمال منفّذة لم تُحصّل (فوترة متأخرة)": "Work done, not collected (late invoicing)",
+"المنفذ ✓ {n}": "Executor ✓ {n}",
+"{n} نقطة توقف": "{n} hold points",
+"مهندس الموقع ✓": "Site engineer ✓",
+"الميزان المبني من الحركات متوازن: المدين يساوي الدائن ✓": "The balance rebuilt from the movements is even: debit equals credit ✓",
+"الترحيل التلقائي إلى دفترنا يبدأ بعد الرصيد الافتتاحي؛ الأرقام هنا من حركات قيود.": "Automatic posting to our book starts after the opening balance; these figures come from Qoyod movements.",
+"تسجّل هنا النقد والعهد والاتفاقيات والموردين والأشخاص والمشاريع — التعديل الحساس يُؤكَّد برمزك السري. اعتماد المستخلصات والمشتريات والصرف ما زال من البوت في واتساب. رمزك السري لك وحدك، لا تعطه لأحد.": "Cash, custody, agreements, suppliers, people and projects are entered here — sensitive changes are confirmed with your PIN. Approving certificates, purchases and payments is still done in the WhatsApp bot. Your PIN is yours alone; never share it.",
+"تكلفة الإكمال قبل منتصف المشروع = متوسط مشاريعكم المنتهية (عظم {n}، تشطيب {n} من صافي العقد)، وبعده حسب صرف المشروع": "Cost to finish before mid-project = the average of your finished projects (structure {n}, finishing {n} of the net contract); after that, by the project's own spending",
+"حدّث البنود المنتهية ومصروف كل مشروع لمعرفة ربحه.": "Update the finished items and each project's spending to know its profit.",
+"{n} مشاريع إنجازها متقدّم على تحصيلها: {x}": "{n} projects whose progress is ahead of their collections: {x}",
+"عجز نقدي متوقع بعد {n} أيام {n}": "Cash deficit expected in {n} days {n}",
+"عجز نقدي متوقع بعد {n} يومًا {n}": "Cash deficit expected in {n} days {n}",
+"أقرب مرحلة تفتح دفعة: {x}. التفاصيل في «كيف تتفادى العجز».": "Nearest stage that unlocks a payment: {x}. Details in «How to avoid the deficit».",
+"{n} — يحتاج تحويل": "{n} — needs a transfer",
+"ملاحظة تحتاج إلى تحقق: {x}": "Note to verify: {x}",
+"مستحق عند العميل — {x}": "Due from the client — {x}",
+"دفعات استحقت ولم تُحصّل": "Payments due and not collected",
+"صباح الخير، {x}": "Good morning, {x}",
+"مساء الخير، {x}": "Good evening, {x}"
+};
+const EN_X = new Map(), EN_P = [];
+{
+  const NUM = "([−\\-+]?\\(?\\d[\\d,./:]*%?(?:\\s?⃁)?\\)?)";
+  for (const [a, e] of Object.entries(EN)) {
+    if (!/\{[nx]\}/.test(a)) { EN_X.set(a, e); continue; }
+    const src = a.replace(/[.*+?^$()|[\]\\]/g, "\\$&").replace(/\{n\}/g, NUM).replace(/\{x\}/g, "(.+?)");
+    EN_P.push([new RegExp("^" + src + "$"), e]);
+  }
+}
+function trOne(s) {
+  const t = String(s).trim(); if (!t || !/[؀-ۿ]/.test(t)) return null;
+  let r = EN_X.get(t);
+  if (r === undefined) for (const [re, e] of EN_P) { const m = re.exec(t); if (m) { let i = 1; r = e.replace(/\{[nx]\}/g, () => m[i++]); break; } }
+  if (r === undefined && t.includes(" · ")) { const ps = t.split(" · "), out = ps.map((p) => trOne(p) ?? p); if (out.some((p, i) => p !== ps[i])) r = out.join(" · "); }
+  return r === undefined ? null : String(s).replace(t, r);
+}
+const TR_ATTR = ["placeholder", "aria-label", "title"];
+function trTree(root) {
+  if (!root) return;
+  if (root.nodeType === 3) { const r = trOne(root.nodeValue); if (r !== null) { if (root.__ar === undefined) root.__ar = root.nodeValue; root.nodeValue = r; } return; }
+  if (root.nodeType !== 1 || root.closest && root.closest("script,style")) return;
+  const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT); let n; const list = [];
+  while ((n = w.nextNode())) if (!n.parentElement || !n.parentElement.closest("script,style")) list.push(n);
+  for (const t of list) trTree(t);
+  for (const e of [root, ...root.querySelectorAll("[placeholder],[aria-label],[title]")]) for (const a of TR_ATTR) {
+    const v = e.getAttribute && e.getAttribute(a); if (!v) continue; const r = trOne(v);
+    if (r !== null) { if (!e.hasAttribute("data-ar-" + a)) e.setAttribute("data-ar-" + a, v); e.setAttribute(a, r); }
+  }
+}
+function unTree(root) {
+  const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT); let n;
+  while ((n = w.nextNode())) if (n.__ar !== undefined) { n.nodeValue = n.__ar; delete n.__ar; }
+  for (const a of TR_ATTR) for (const e of root.querySelectorAll("[data-ar-" + a + "]")) { e.setAttribute(a, e.getAttribute("data-ar-" + a)); e.removeAttribute("data-ar-" + a); }
+}
+const TRO = new MutationObserver((ms) => {
+  if (LANG !== "en") return;
+  TRO.disconnect();
+  try { for (const m of ms) { if (m.type === "characterData") trTree(m.target); else for (const x of m.addedNodes) trTree(x); if (m.type === "attributes") trTree(m.target); } }
+  finally { TRO.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: TR_ATTR }); }
+});
+function applyLang() {
+  const en = LANG === "en", h = document.documentElement;
+  h.lang = en ? "en" : "ar"; h.dir = en ? "ltr" : "rtl";
+  const b = $("langBtn"); b.textContent = en ? "العربية" : "English"; b.lang = en ? "ar" : "en"; b.setAttribute("aria-label", en ? "العربية" : "English");
+  if (en) { trTree(document.body); TRO.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: TR_ATTR }); }
+  else { TRO.disconnect(); unTree(document.body); }
+}
+function setLang(l) {
+  LANG = l; try { localStorage.setItem(LK, l); } catch {}
+  if (l === "ar") applyLang();
+  if (D && !$("tabs").hidden) draw(); // dates and greetings are rebuilt in the chosen language
+  if (l === "en") applyLang();
+}
+
 
 // app tabs: which sections live where, and their colour family
 const TABS = [
@@ -536,7 +1299,9 @@ function signIn(mode, msg) {
   const go = el("button", "pbtn", first ? "تفعيل ودخول" : "دخول"); go.type = "submit";
   const alt = el("button", "alt", first ? "عندي رمز سري — تسجيل الدخول" : "أول مرة؟ عندي رمز تفعيل"); alt.type = "button"; alt.onclick = () => signIn(first ? "" : "activate");
   const wa = el("a", "wa", "أو اطلب رابط الدخول من البوت في واتساب"); wa.href = "https://wa.me/" + BOT + "?text=" + encodeURIComponent("لوحة المتابعة");
-  box.append(res, go, alt, wa);
+  const lb = el("button", "alt lang", LANG === "en" ? "العربية" : "English"); lb.type = "button"; lb.lang = LANG === "en" ? "ar" : "en";
+  lb.onclick = () => { setLang(LANG === "en" ? "ar" : "en"); lb.textContent = LANG === "en" ? "العربية" : "English"; lb.lang = LANG === "en" ? "ar" : "en"; };
+  box.append(res, go, alt, wa, lb);
   box.onsubmit = async (ev) => {
     ev.preventDefault(); res.className = "res"; res.textContent = "";
     const bad = (t, at) => { res.className = "res bad"; res.textContent = t; if (at) at.focus(); };
@@ -1004,7 +1769,7 @@ let introDone = false;
 function hero() {
   const h = el("header", "hero"), now = new Date(), hr = now.getHours();
   const first = String((D && D.name) || "").trim().split(/\s+/)[0];
-  h.append(el("div", "date", now.toLocaleDateString("ar-SA-u-nu-latn-ca-gregory", { weekday: "long", day: "numeric", month: "long", year: "numeric" })));
+  h.append(el("div", "date", now.toLocaleDateString(LANG === "en" ? "en-GB" : "ar-SA-u-nu-latn-ca-gregory", { weekday: "long", day: "numeric", month: "long", year: "numeric" })));
   h.append(el("h1", "", (hr < 12 ? "صباح الخير" : "مساء الخير") + (first ? "، " + first : "")));
   return h;
 }
@@ -1744,7 +2509,7 @@ async function glBox(m) {
   if (status !== 200) { sub.replaceWith(el("div", "res bad", j.error || "تعذّر التحميل — اضغط «تحديث»")); return; }
   const rows = j.rows || [], nz = rows.filter((r) => Math.abs(r.qoyod) >= 0.005 || Math.abs(r.rebuilt) >= 0.005);
   const diff = nz.filter((r) => Math.abs(r.qoyod - r.rebuilt) >= 1);
-  sub.textContent = "معاينة من قيود حتى يُفتح دفترنا برصيده الافتتاحي في " + j.opening + (j.at ? " — آخر مزامنة " + when(j.at) : "");
+  sub.textContent = "معاينة من قيود حتى يُفتح دفترنا برصيده الافتتاحي" + (j.opening ? " في " + j.opening : "") + (j.at ? " — آخر مزامنة " + when(j.at) : "");
   const qc = el("div", "qc");
   qc.append(el("p", "", (nz.length - diff.length) + " من " + nz.length + " حساباً لها رصيد: رصيدها المبني من حركات قيود يساوي رصيد قيود ✓"));
   const bal = rows.reduce((t, r) => t + (r.type === "asset" || r.type === "expense" ? r.rebuilt : -r.rebuilt), 0);
@@ -2443,7 +3208,7 @@ async function load(keep) {
     if (r.status === 401) return signIn("", j.error || "انتهت الجلسة — سجّل الدخول من جديد");
     if (!r.ok) return fail(r.status === 403 ? "غير مصرح" : "تعذّر التحميل", j.error || "حاول مرة أخرى بعد قليل.");
     D = j;
-    $("who").textContent = D.name; $("roles").textContent = D.roles.join(" · ") + " · آخر تحديث " + new Date(D.at).toLocaleTimeString("ar-SA-u-nu-latn", { hour: "2-digit", minute: "2-digit" });
+    $("who").textContent = D.name; $("roles").textContent = D.roles.join(" · ") + " · آخر تحديث " + new Date(D.at).toLocaleTimeString(LANG === "en" ? "en-GB" : "ar-SA-u-nu-latn", { hour: "2-digit", minute: "2-digit" });
     const mo = $("mode"); mo.hidden = false; mo.replaceChildren(el("span", "bl", "الوضع: "), document.createTextNode(D.mode)); mo.className = "badge" + (D.mode === "فعلي" ? " ok" : D.mode === "إيقاف آمن" ? " bad" : "");
     $("reload").hidden = $("pinBtn").hidden = $("outBtn").hidden = false;
     if (!keep) view = "home";
@@ -2643,6 +3408,8 @@ function openForm(e, r, prefill) {
 
 $("reload").addEventListener("click", async () => { if (view === "data") await loadReg(); load(true); });
 $("pinBtn").addEventListener("click", pinDialog);
+$("langBtn").addEventListener("click", () => setLang(LANG === "en" ? "ar" : "en"));
+applyLang();
 $("outBtn").addEventListener("click", () => signIn("", "خرجت من اللوحة على هذا الجهاز."));
 function boot() { return load().then(() => token && D && loadReg().then(() => D && renderTabs())).catch(() => {}); }
 boot();
