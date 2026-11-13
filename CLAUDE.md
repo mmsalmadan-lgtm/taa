@@ -23,7 +23,7 @@ bot's `ORIGINS` (taaa.sa).
 ## Dashboard structure (d/index.html)
 - `TABS`: home · proj (projects) · money «المالية والمحاسبة» (`MTABS`: rcv receipts+claims+`dueBlock`, cus custody, subs,
   cash `cashBox`, prof `profitCards`) · buy «المشتريات» (`BTABS`: req, log, sups `supsBox`) · site «التنفيذ والجودة» (`STABS`:
-  q quality+defects, p pours, u units) · sales · rat · sys · data.
+  q quality+defects, i inspections «الفحوصات» (insp, findings, gates, bfqa — Phase 4), p pours, u units) · sales · rat · sys · data.
 - Home = a brief overview only (owner's rule): waiting chips, KPI strip, forecast chart (`fcbox`, tips), top-3 alerts, health.
   Detail opens on click via `morePage` (fc / fund / alerts / coll / wait). Don't add long lists to home.
 - Project record: header buttons (تعديل المشروع، مراحل التنفيذ), tabs inst (contracts + installments; a single contract does
@@ -147,6 +147,10 @@ card or page · finance things live under المالية, purchases under الم
   reason, owner, review date → op fc_rev with `base` = docV) and «طلب تعديل الميزانية» (`budgetDialog` → op budget_rev).
 - Checked with `scratchpad rd/p3.cjs` (mock `p3/dash_p3b.json` from `p3/gen2.mts`) at 390/1280/EN — no errors, no horizontal scroll;
   `rd/p3rev.cjs` fills and saves the revision sheet (mocked API) and checks the request body.
+
+## Phase 4: inspections (2026-11-14)
+- Sub-tab «الفحوصات» under «التنفيذ والجودة»: the bot's sections `insp`, `findings`, `gates`, `bfqa`, drawn by the generic
+  section cards (no special code). EN strings added. Checked with `scratchpad rd/p4.cjs` (mock `p4/dash_p4.json` from `p4/gen.mts`).
 
 ## How to change and verify (the owner expects Claude to check its own work)
 1. `git fetch && git checkout -B <branch> origin/main` (always from a fresh main — PRs are squash-merged).
