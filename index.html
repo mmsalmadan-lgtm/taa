@@ -8,7 +8,7 @@
 <meta name="description" content="مؤسسة طاء الرائدة للمقاولات العامة — أعمال العظم والتشطيبات للفلل والمباني السكنية في المملكة العربية السعودية. Taa Al Raeda General Contracting Establishment — structural and finishing works in Saudi Arabia.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Readex+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --navy: #1d2533; --red: #c62026; --ink: #1d2533; --muted: #5b6474;
@@ -89,6 +89,40 @@
     section { padding: 48px 0; }
     body { font-size: 16px; }
   }
+
+  /* «طاولة الرسم» — the same visual language as the office dashboard: company navy, the red only in the mark and the one
+     call to action, a cool concrete grey for quiet sections, Readex Pro for headlines, IBM Plex Sans Arabic for reading. */
+  :root { --soft: #f1f3f4; --line: #e3e7ea; --muted: #5b6474; --ease: cubic-bezier(.2,.8,.2,1); }
+  h1, h2, h3, .brand b, .ft-name { font-family: "Readex Pro", "IBM Plex Sans Arabic", system-ui, sans-serif; font-weight: 600; }
+  header { background: var(--navy); }
+  header::after { width: 22%; height: 4px; }
+  .hero { padding: 72px 0 88px; }
+  .hero h1 { font-size: clamp(32px, 5.4vw, 54px); line-height: 1.22; letter-spacing: 0; margin-bottom: 18px; }
+  .hero p { font-size: 19px; line-height: 1.85; opacity: .82; max-width: 60ch; }
+  .btn { border-radius: 8px; padding: 13px 22px; transition: transform .15s var(--ease), background .15s; }
+  .btn:hover { background: #a91b20; } .btn.ghost:hover { background: rgba(255,255,255,.08); }
+  .btn:active { transform: scale(.97); }
+  section { padding: 80px 0; }
+  h2 { font-size: clamp(26px, 3vw, 34px); line-height: 1.3; margin-bottom: 10px; }
+  .lead { font-size: 17.5px; max-width: 62ch; margin-bottom: 36px; }
+  .grid { gap: 16px; }
+  .card { border-radius: 16px; padding: 26px 24px; transition: border-color .18s, box-shadow .22s var(--ease); }
+  @media (hover: hover) { .grid .card:hover { border-color: #d4dae0; box-shadow: 0 10px 24px -14px rgb(29 37 51 / .28); } }
+  .card h3 { font-size: 20px; }
+  .card h3::before { width: 3px; height: 18px; border-radius: 2px; vertical-align: -3px; }
+  .chip { background: #fff; border-color: #d4dae0; font-size: 13.5px; padding: 4px 13px; }
+  section.soft .chip { background: var(--soft); }
+  ol.steps { gap: 0; background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 6px 22px; }
+  ol.steps li { border: 0; border-radius: 0; padding: 20px 0; background: none; }
+  ol.steps li + li { border-top: 1px solid var(--line); }
+  ol.steps li::before { width: 32px; height: 32px; font-size: 14px; }
+  ol.steps li:first-child::before { background: var(--red); }
+  ol.steps b { font-family: "Readex Pro", "IBM Plex Sans Arabic", system-ui, sans-serif; font-weight: 600; font-size: 18px; margin-bottom: 2px; }
+  .contact .card a { text-decoration: underline; text-decoration-color: #d4dae0; text-underline-offset: 5px; }
+  footer { background: var(--navy); }
+  :focus-visible { outline: 2px solid currentColor; outline-offset: 3px; border-radius: 4px; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+  @media (max-width: 640px) { section { padding: 56px 0; } .hero { padding: 48px 0 64px; } ol.steps { padding: 4px 16px; } }
 </style>
 </head>
 <body>
