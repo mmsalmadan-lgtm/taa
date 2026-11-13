@@ -52,8 +52,29 @@ card or page · finance things live under المالية, purchases under الم
   the same figure as the funding page and the forecast.
 - Navigation is in the browser history (`navSync` after every `draw`, `popstate` restores; same URL because the hash is the
   token): the phone's back gesture goes one step back. An open dialog is its own step (wrapped `showModal`/`close`).
-- Colours on accent surfaces use `--on-acc` (white in light, dark ink in dark mode); inputs use `--field-in` (≥3:1). Touch
-  targets ≥44px on `pointer:coarse`. Run `impeccable detect --json d/index.html` before a PR (side-tab is a sanctioned ignore).
+- Touch targets ≥44px on `pointer:coarse`. Run `npx impeccable detect --json d/index.html` before a PR (must come back `[]`).
+
+## Visual language «طاولة الرسم» (redesign 2026-11-13, owner asked for one coherent language)
+- Light only (owner: light background). Cool concrete page `--bg #F1F3F4`, white surfaces, the company navy `#1D2533` for text
+  and actions (`--ui`), the logo red `--brand #C62026` only in the mark. Colour = meaning: ledger green, blueprint blue,
+  red/amber alerts. `--faint` is the lightest text allowed (4.5:1 on the page).
+- Type: Readex Pro (`--f-disp`) for titles and large figures, IBM Plex Sans Arabic (`--f-text`) for reading; both start with
+  the "SAR" face so the riyal sign renders everywhere.
+- Shell: `<aside class="side">` holds the header and the nav. ≥1080px it is a sticky side navigation (groups «الأقسام» /
+  «الإدارة» from `TABS[].g`, icons from `ICO`); below that it is `display:contents` → top bar + sticky sideways pill strip.
+- Page head `page(icon, title, sub, fam)` → `header.ph` with the family colour as the rule beside the title (title may be a
+  node, e.g. the project number badge). Sub-tabs are a segmented control; `.panel` is a separate surface under it.
+- Home: `hero()` (date + greeting only, no figures), `startHere()` («ابدأ من هنا»: the waiting items in order, cash first while
+  it is not entered), `ledger(K)` (the same KPI list grouped يدخل / يخرج / النقد), the forecast, then alerts + health.
+- Projects: `.finder` (one search field + filter chips with counts) and a live result count.
+- Motion: `main.enter` fades each new place in (set in `draw()` when the place changes; focus moves to `main`); the forecast
+  bars rise once per session (`.intro`); dialogs are a bottom sheet on phones; buttons answer presses. All off under
+  `prefers-reduced-motion`.
+- Sign-in: brand above one card; activation shows numbered steps and a progress bar (`.auth.stepped`, not `.steps` — that
+  class is the home step list).
+- Verified on this redesign: every thousand-separated figure on home, projects, finance, subcontractors, a project's payments
+  and the funding page is identical to the previous version, and the edit-in-place saves (stages, installment, contract, cash
+  and fixed costs) produce the same audit state.
 
 ## How to change and verify (the owner expects Claude to check its own work)
 1. `git fetch && git checkout -B <branch> origin/main` (always from a fresh main — PRs are squash-merged).
