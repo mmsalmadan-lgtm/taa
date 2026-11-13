@@ -86,6 +86,12 @@ card or page · finance things live under المالية, purchases under الم
   `taa.dash.lang=en` and list text nodes still containing Arabic (names and notes are expected to stay).
 - Never put program logic on displayed text (option values, checks): the text may be English.
 
+## Acting from the dashboard (2026-11-13)
+- «بانتظارك» rows carry the bot's row ids (`sec("wait").data.ids`): each card is a button that opens `openChat(id, title)`, a sheet
+  that talks to the bot through `POST op chat` — bot messages as bubbles (WhatsApp *bold* rendered, attachments as links),
+  its buttons, list options and form links as controls, a text box for answers it asks for. A 428 `{pin:true}` asks for the PIN
+  and resends. Closing the sheet after any action reloads the dashboard (`load(true)`). The rules live in the bot only.
+
 ## How to change and verify (the owner expects Claude to check its own work)
 1. `git fetch && git checkout -B <branch> origin/main` (always from a fresh main — PRs are squash-merged).
 2. Test locally: `python3 -m http.server 8765` in the repo + Playwright (Chromium is pre-installed), routing the API to mock

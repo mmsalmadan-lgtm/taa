@@ -430,6 +430,27 @@ main.enter>*:nth-child(2){animation-delay:30ms}main.enter>*:nth-child(3){animati
 [dir=ltr] .fc-tip{direction:ltr}
 [dir=ltr] body{font-family:"SAR","IBM Plex Sans Arabic","Segoe UI",system-ui,sans-serif}
 .lang{font-weight:600;color:var(--ink)}
+
+/* «بانتظارك» from the dashboard: a waiting item opens the bot's card in a sheet */
+button.card.act{cursor:pointer;font:inherit}
+.card .go{align-self:flex-start;font-size:12.5px;font-weight:600;color:var(--ink);text-decoration:underline;text-decoration-color:var(--line-2);text-underline-offset:4px;margin-top:auto}
+.chat{display:flex;flex-direction:column;gap:10px;max-height:min(58vh,560px);overflow-y:auto;padding:4px 2px 10px;scroll-behavior:smooth}
+.bub{align-self:flex-start;max-width:min(92%,560px);background:var(--sunk);border:1px solid var(--line);border-radius:16px 16px 16px 4px;padding:11px 14px;font-size:14px;line-height:1.75;animation:reveal .25s var(--ease)}
+[dir=rtl] .bub{border-radius:16px 16px 4px 16px}
+.bub .bt{white-space:pre-wrap;overflow-wrap:anywhere}
+.bub.me{align-self:flex-end;background:var(--ui);color:var(--on-acc);border-color:var(--ui);border-radius:16px 16px 4px 16px;font-weight:500}
+[dir=rtl] .bub.me{border-radius:16px 16px 16px 4px}
+.bfile{display:inline-block;margin-top:8px;color:var(--ink);font-weight:600;font-size:13px;text-decoration:underline;text-underline-offset:4px}
+.bacts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.bacts .opt{display:flex;flex-direction:column;align-items:flex-start;text-align:start;border:1px solid var(--line-2);background:var(--surface);border-radius:var(--r-s);padding:8px 12px;font:inherit;font-size:13.5px;flex:1 1 100%;transition:border-color .15s}
+.bacts .opt:hover{border-color:var(--ink)}.bacts .opt small{color:var(--muted);font-size:12px}
+.bacts a.pbtn{text-decoration:none;display:inline-block}
+.bacts button:disabled{opacity:.5}
+.bnote{align-self:center;font-size:12.5px;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:3px 12px}.bnote.bad{color:var(--crit);background:var(--crit1);border-color:transparent}
+.chatin{display:flex;gap:8px;align-items:flex-end;margin-top:6px}.chatin textarea{flex:1;min-height:44px;max-height:140px;resize:vertical;font:inherit;font-size:15px;border:1px solid var(--field-in);border-radius:var(--r-s);padding:10px 12px;color:var(--ink);background:var(--surface)}
+.chatin textarea:focus{outline:0;border-color:var(--ink);box-shadow:0 0 0 4px var(--ui-1)}.chatin .pbtn{min-height:44px}
+.bpin{align-self:stretch;display:flex;flex-direction:column;gap:6px;border:1px solid var(--ui-2);border-radius:var(--r-m);padding:12px 14px;background:var(--surface)}
+.bpin input{font:inherit;font-size:17px;padding:10px 12px;border:1px solid var(--field-in);border-radius:var(--r-s);letter-spacing:.08em;text-align:end}
 </style>
 </head>
 <body>
@@ -445,7 +466,7 @@ main.enter>*:nth-child(2){animation-delay:30ms}main.enter>*:nth-child(3){animati
 </aside>
 <main class="wrapx" id="main" tabindex="-1"><div class="skel"></div><div class="skel"></div><div class="skel"></div></main>
 <dialog id="dlg"><div class="dlg" id="dlgBody"></div></dialog>
-<footer>تسجّل هنا النقد والعهد والاتفاقيات والموردين والأشخاص والمشاريع — التعديل الحساس يُؤكَّد برمزك السري. اعتماد المستخلصات والمشتريات والصرف ما زال من البوت في واتساب. رمزك السري لك وحدك، لا تعطه لأحد.</footer>
+<footer>تسجّل هنا النقد والعهد والاتفاقيات والموردين والأشخاص والمشاريع، وتعتمد ما بانتظارك من «بانتظارك» بنفس خطوات البوت — التعديل والتأكيد الحساس برمزك السري. رمزك السري لك وحدك، لا تعطه لأحد.</footer>
 <script>
 const API = "https://zkbwrgulnsycqqfbwkee.supabase.co/functions/v1/bird-webhook/dash";
 const BOT = "966551313729";
@@ -472,6 +493,16 @@ const pct = (f) => Math.round((f || 0) * 100) + "%";
 const LK = "taa.dash.lang";
 let LANG = (() => { try { return localStorage.getItem(LK) === "en" ? "en" : "ar"; } catch { return "ar"; } })();
 const EN = {
+"جارٍ التنفيذ…": "Working…",
+"افتح واعتمد": "Open and act",
+"بانتظارك — اعتمد من هنا": "Waiting for you — act here",
+"اكتب ردك إن طلبه البوت": "Type your answer if the bot asks",
+"ردك": "Your answer",
+"إرسال": "Send",
+"تعذّر التنفيذ": "Could not do it",
+"اضغط على البند لتعتمده أو ترفضه من هنا — نفس خطوات البوت": "Tap an item to approve or reject it here — the same steps as the bot",
+"تأكيد": "Confirm",
+"اكتب رمزك السري لتأكيد هذا الإجراء": "Enter your PIN to confirm this action",
 "مستحقة الآن: {x}": "Due now: {x}",
 "محصّل {n} من {n} دفعات": "{n} of {n} payments collected",
 "محصّل {n} من {n} دفعة": "{n} of {n} payments collected",
@@ -1152,7 +1183,7 @@ const EN = {
 "مهندس الموقع ✓": "Site engineer ✓",
 "الميزان المبني من الحركات متوازن: المدين يساوي الدائن ✓": "The balance rebuilt from the movements is even: debit equals credit ✓",
 "الترحيل التلقائي إلى دفترنا يبدأ بعد الرصيد الافتتاحي؛ الأرقام هنا من حركات قيود.": "Automatic posting to our book starts after the opening balance; these figures come from Qoyod movements.",
-"تسجّل هنا النقد والعهد والاتفاقيات والموردين والأشخاص والمشاريع — التعديل الحساس يُؤكَّد برمزك السري. اعتماد المستخلصات والمشتريات والصرف ما زال من البوت في واتساب. رمزك السري لك وحدك، لا تعطه لأحد.": "Cash, custody, agreements, suppliers, people and projects are entered here — sensitive changes are confirmed with your PIN. Approving certificates, purchases and payments is still done in the WhatsApp bot. Your PIN is yours alone; never share it.",
+"تسجّل هنا النقد والعهد والاتفاقيات والموردين والأشخاص والمشاريع، وتعتمد ما بانتظارك من «بانتظارك» بنفس خطوات البوت — التعديل والتأكيد الحساس برمزك السري. رمزك السري لك وحدك، لا تعطه لأحد.": "Cash, custody, agreements, suppliers, people and projects are entered here, and what waits for you is approved from «Waiting for you» with the bot's own steps — sensitive changes and confirmations need your PIN. Your PIN is yours alone; never share it.",
 "تكلفة الإكمال قبل منتصف المشروع = متوسط مشاريعكم المنتهية (عظم {n}، تشطيب {n} من صافي العقد)، وبعده حسب صرف المشروع": "Cost to finish before mid-project = the average of your finished projects (structure {n}, finishing {n} of the net contract); after that, by the project's own spending",
 "حدّث البنود المنتهية ومصروف كل مشروع لمعرفة ربحه.": "Update the finished items and each project's spending to know its profit.",
 "{n} مشاريع إنجازها متقدّم على تحصيلها: {x}": "{n} projects whose progress is ahead of their collections: {x}",
@@ -1382,9 +1413,12 @@ function cards(s, f) {
   if (!s.table) return out;
   if (!s.table.rows.length) { out.push(el("div", "empty", s.empty || "لا شيء")); return out; }
   const g = el("div", "grid fam-" + (f || "ui"));
-  for (const r of s.table.rows) {
+  const ids = s.id === "wait" && s.data && s.data.ids;
+  s.table.rows.forEach((r, ri) => {
     const tone = r.map((c) => c && c.tone).find((t) => t === "bad") || r.map((c) => c && c.tone).find((t) => t === "warn") || "";
-    const c = el("div", "card" + (tone ? " " + tone : ""));
+    const act = ids && ids[ri];
+    const c = el(act ? "button" : "div", "card" + (tone ? " " + tone : "") + (act ? " act" : ""));
+    if (act) { c.type = "button"; c.onclick = () => openChat(act, txt(r[0])); }
     c.append(el("div", "t", txt(r[0])));
     let i = 1; if (r.length > 2 && typeof r[1] !== "object" && !/\d/.test(txt(r[1]))) { c.append(el("div", "st", txt(r[1]))); i = 2; }
     const kv = el("div", "kv"), tags = el("div", "tags");
@@ -1395,8 +1429,9 @@ function cards(s, f) {
       kv.append(el("span", "", s.table.cols[i]), el("b", tn === "bad" || /^[−-]\d/.test(txt(r[i])) ? "neg" : tn === "warn" ? "wv" : "", txt(r[i])));
     }
     c.append(kv); if (tags.children.length) c.append(tags);
+    if (act) c.append(el("span", "go", "افتح واعتمد"));
     g.append(c);
-  }
+  });
   out.push(g); return out;
 }
 function page(icon, title, sub, fam) {
@@ -1695,7 +1730,7 @@ function home(m) {
   if (!AUD) return homeBasic(m);
   const A = AUD;
   const W = [];
-  const bw = sec("wait"); if (bw && bw.table.rows.length) W.push(["بانتظارك في البوت", bw.table.rows.length, () => more("wait")]);
+  const bw = sec("wait"); if (bw && bw.table.rows.length) W.push(["بانتظارك — اعتمد من هنا", bw.table.rows.length, () => more("wait")]);
   if (A.unkN) W.push(["مشروع ربحه غير معروف", A.unkN, () => go("proj")]);
   if (A.lossN + A.weakN) W.push(["مشروع ربحه أقل من 10%", A.lossN + A.weakN, () => { MT = "prof"; go("money"); }]);
   if (A.lateN) W.push(["دفعة متأخرة لدى عميل", A.lateN, () => go("proj")]);
@@ -1825,7 +1860,7 @@ function chartTips(c) {
 function morePage(m) {
   const A = AUD, k = MORE || "";
   if (!A && k !== "wait") return go("home");
-  if (k === "wait") { const w = sec("wait"); backHome(m, "بانتظارك في البوت", w && w.note); if (w) m.append(...cards({ ...w, kpis: null }, "ui")); return; }
+  if (k === "wait") { const w = sec("wait"); backHome(m, "بانتظارك", w && w.note); if (w) m.append(...cards({ ...w, kpis: null }, "ui")); return; }
   if (k === "fc") {
     const F = A.FC; backHome(m, "كيف تتفادى العجز", "أكبر عجز " + acc(F.min) + " يوم " + F.minD + " · " + F.nW + " فترات عجز");
     for (const w of F.win) {
@@ -1882,6 +1917,64 @@ function morePage(m) {
     if (one !== null && A.F.length > 1) { const a = el("button", "lnk", "كل التنبيهات (" + A.F.length + ") ←"); a.type = "button"; a.onclick = () => more("alerts"); m.append(a); }
   }
 }
+
+// ===== «بانتظارك» acted on here (POST op chat): the bot's own card, buttons and questions, in a sheet. Every tap or answer is
+// handled by the bot exactly as from WhatsApp (same rights and steps); what it says back to you shows here, and the people who
+// act next are told as usual. A «تأكيد» of a sensitive action asks for your PIN. Closing the sheet refreshes the dashboard.
+let CHAT = null;
+function openChat(first, title) {
+  const body = $("dlgBody"); body.replaceChildren();
+  const h = el("h3", "", title || "بانتظارك"), log = el("div", "chat"), form = el("form", "chatin"), ti = el("textarea"), sb = el("button", "pbtn", "إرسال");
+  log.setAttribute("aria-live", "polite"); ti.rows = 1; ti.placeholder = "اكتب ردك إن طلبه البوت"; ti.setAttribute("aria-label", "ردك"); sb.type = "submit";
+  form.append(ti, sb);
+  const bar = el("div", "dbar"), close = el("button", "sbtn", "إغلاق"); close.type = "button"; close.onclick = () => $("dlg").close(); bar.append(close);
+  body.append(h, log, form, bar);
+  CHAT = { log, busy: false, moved: false };
+  const scroll = () => { log.scrollTop = log.scrollHeight; };
+  const mine = (t) => { const m = el("div", "bub me", t); log.append(m); scroll(); };
+  const say = (m) => {
+    const b = el("div", "bub");
+    // WhatsApp's *bold* shown as bold; the text itself is never parsed as HTML
+    const bt = el("div", "bt"); String(sar(m.text || "")).split(/(\*[^*\n]+\*)/).forEach((part) => bt.append(/^\*[^*\n]+\*$/.test(part) ? el("b", "", part.slice(1, -1)) : document.createTextNode(part)));
+    b.append(bt);
+    for (const f of m.files || []) { const a = el("a", "bfile", "📎 " + f.name); a.href = f.url; a.target = "_blank"; a.rel = "noopener"; b.append(a); }
+    const acts = el("div", "bacts");
+    for (const x of m.buttons || []) { const k = el("button", /رفض|إلغاء|لا\b/.test(x.title) ? "sbtn" : "pbtn", x.title); k.type = "button"; k.onclick = () => send({ reply: x.id }, x.title, acts); acts.append(k); }
+    if (m.list) for (const sec of m.list.sections || []) for (const r of sec.rows || []) { const k = el("button", "opt"); k.type = "button"; k.append(el("b", "", r.title)); if (r.desc) k.append(el("small", "", r.desc)); k.onclick = () => send({ reply: r.id }, r.title, acts); acts.append(k); }
+    if (m.cta) { const a = el("a", "pbtn", m.cta.text); a.href = m.cta.url; a.target = "_blank"; a.rel = "noopener"; acts.append(a); }
+    if (acts.children.length) b.append(acts);
+    log.append(b); scroll();
+  };
+  const note = (t, cls) => { log.append(el("div", "bnote " + (cls || ""), t)); scroll(); };
+  async function send(msg, label, acts, pin) {
+    if (CHAT.busy) return; CHAT.busy = true;
+    if (acts) for (const k of acts.querySelectorAll("button")) k.disabled = true;
+    if (label) mine(label);
+    const wait = el("div", "bnote", "جارٍ التنفيذ…"); log.append(wait); scroll();
+    try {
+      const { status, j } = await api({ op: "chat", ...msg, ...(pin ? { pin } : {}) });
+      wait.remove();
+      if (status === 428 && j.pin) return askPin(msg, acts);
+      if (status === 401) { $("dlg").close(); return signIn("", j.error || "انتهت الجلسة — سجّل الدخول من جديد"); }
+      if (status !== 200) { note(j.error || "تعذّر التنفيذ", "bad"); if (acts) for (const k of acts.querySelectorAll("button")) k.disabled = false; return; }
+      if (msg.reply !== first) CHAT.moved = true;
+      if (!(j.msgs || []).length) note("تم ✅");
+      for (const m of j.msgs || []) say(m);
+    } catch { wait.remove(); note("تعذّر الاتصال — حاول مرة أخرى", "bad"); if (acts) for (const k of acts.querySelectorAll("button")) k.disabled = false; }
+    finally { CHAT.busy = false; }
+  }
+  function askPin(msg, acts) {
+    const box = el("div", "bpin"), p = el("input"), ok = el("button", "pbtn", "تأكيد"), err = el("div", "ferr");
+    p.type = "password"; p.inputMode = "numeric"; p.autocomplete = "current-password"; p.dir = "ltr"; p.setAttribute("aria-label", "رمزك السري للتأكيد"); ok.type = "button";
+    box.append(el("b", "", "رمزك السري للتأكيد"), el("div", "small muted", "التعديل لا يُنفَّذ إلا برمزك أنت"), p, ok, err); log.append(box); scroll(); p.focus();
+    ok.onclick = async () => { if (!p.value) { err.textContent = "اكتب الرمز السري"; return; } box.remove(); await send(msg, null, acts, p.value); };
+  }
+  form.onsubmit = (e) => { e.preventDefault(); const t = ti.value.trim(); if (!t) return; ti.value = ""; send({ text: t }, t); };
+  ti.onkeydown = (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); } };
+  $("dlg").showModal();
+  send({ reply: first });
+}
+$("dlg").addEventListener("close", () => { if (CHAT && CHAT.moved) { CHAT = null; load(true); } else CHAT = null; });
 // ===== Editing in place: every figure is edited where it is shown. The data lives in the audit state (settings/audit),
 // saved through the bot (op audit_save), which writes it back into the projects, suppliers and finance settings.
 const ELEMENTS = {
