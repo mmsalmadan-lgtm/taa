@@ -92,6 +92,12 @@ card or page · finance things live under المالية, purchases under الم
   its buttons, list options and form links as controls, a text box for answers it asks for. A 428 `{pin:true}` asks for the PIN
   and resends. Closing the sheet after any action reloads the dashboard (`load(true)`). The rules live in the bot only.
 
+## «المساعد» (2026-11-13)
+- Tab `bot`: the bot as a page — `chatPanel("قائمة", {page:true})` starts at the bot's menu, kept in `ASSIST` while you move
+  between pages; «القائمة من البداية» restarts. The same `chatPanel` is the sheet a «بانتظارك» item opens (`openChat`).
+- 📎 sends a photo/video/PDF (`op chat {file}`); photos over 1.5 MB are shrunk on the device (long side 2000 px, JPEG 0.85).
+- Executors sign in for this only: GET returns `chatOnly:true` → only the «المساعد» tab, no figures, office footer hidden.
+
 ## How to change and verify (the owner expects Claude to check its own work)
 1. `git fetch && git checkout -B <branch> origin/main` (always from a fresh main — PRs are squash-merged).
 2. Test locally: `python3 -m http.server 8765` in the repo + Playwright (Chromium is pre-installed), routing the API to mock
