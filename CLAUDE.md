@@ -98,6 +98,20 @@ card or page · finance things live under المالية, purchases under الم
 - 📎 sends a photo/video/PDF (`op chat {file}`); photos over 1.5 MB are shrunk on the device (long side 2000 px, JPEG 0.85).
 - Executors sign in for this only: GET returns `chatOnly:true` → only the «المساعد» tab, no figures, office footer hidden.
 
+## Phone alerts (web push, 2026-11-13)
+- Header button «التنبيهات» → `pushDialog()`: turn on (`Notification.requestPermission` straight from the tap → `op push_key`
+  → `pushManager.subscribe` → `op push_sub {sub, ua}`), test (`op push_test`), turn off (`push_unsub` + unsubscribe). iPhone
+  without home-screen install gets the add-to-home-screen steps (`.isteps`); blocked permission gets the settings steps.
+  `pushSync()` re-sends the subscription once a day per device; signing out unsubscribes the device.
+- `d/sw.js` (scope /d/): shows the alert (icon-192, badge-96, tag "taa"), a tap focuses an open dashboard (postMessage
+  `{go:"bot"}`) or opens `/d/?go=bot`. It caches nothing. `d/manifest.webmanifest` + `apple-touch-icon.png` make the
+  dashboard installable (iOS 16.4+ needs that for alerts). Home-screen apps on iPhone have their own storage → sign in again
+  there with the PIN.
+- «المساعد» first asks `op inbox` (messages the bot sent while alerts were on, shown once, with their buttons) and shows the
+  menu only when there is nothing new; each later visit appends anything new (`ASSIST.pull()`).
+- Checked: `scratchpad rd/push.cjs` (mocked API, subscribe stubbed — headless Chromium has no push service) and a real
+  push event delivered to sw.js through CDP (`ServiceWorker.deliverPushMessage`, needs `chromium.launch({channel:"chromium"})`).
+
 ## How to change and verify (the owner expects Claude to check its own work)
 1. `git fetch && git checkout -B <branch> origin/main` (always from a fresh main — PRs are squash-merged).
 2. Test locally: `python3 -m http.server 8765` in the repo + Playwright (Chromium is pre-installed), routing the API to mock
