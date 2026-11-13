@@ -503,6 +503,7 @@ const pct = (f) => Math.round((f || 0) * 100) + "%";
 const LK = "taa.dash.lang";
 let LANG = (() => { try { return localStorage.getItem(LK) === "en" ? "en" : "ar"; } catch { return "ar"; } })();
 const EN = {
+"↑ رسائل كانت بانتظارك ولم تصلك في واتساب": "↑ Messages that were waiting for you and did not reach you on WhatsApp",
 "المساعد": "Assistant",
 "كل ما يقدّمه البوت في واتساب، من هنا: طلبات المواد والمعدات، التقرير اليومي، تسليم الأعمال، النماذج": "Everything the WhatsApp bot offers, from here: material and equipment requests, the daily report, work hand-over, forms",
 "القائمة من البداية": "Menu from the start",
@@ -1983,6 +1984,8 @@ function chatPanel(first, opts = {}) {
       if (msg.reply !== first) st.moved = true;
       if (!(j.msgs || []).length) note("تم ✅");
       for (const m of j.msgs || []) say(m);
+      // messages that were waiting for you (WhatsApp could not deliver them) come first; then the menu you asked for
+      if (msg.text === "قائمة" && (j.msgs || []).length && !j.msgs.some((m) => m.list) && !st.again) { st.again = true; note("↑ رسائل كانت بانتظارك ولم تصلك في واتساب"); st.busy = false; await send({ text: "قائمة" }); return; }
     } catch { wait.remove(); note("تعذّر الاتصال — حاول مرة أخرى", "bad"); enable(acts, true); }
     finally { st.busy = false; }
   }
