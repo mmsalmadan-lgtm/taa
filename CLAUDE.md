@@ -225,6 +225,12 @@ card or page · finance things live under المالية, purchases under الم
 - Checked with `scratchpad rd/co.cjs` (mocks `p7/dash_co_cc*.json` from `p7/gen_co.mts`: the bot's coord.ts on controlled records): 390/1280/EN,
   engineer view without amounts, a filter, a rating posted (body checked), the policy form prefilled, no errors, no horizontal scroll.
 
+## Agent team (spec 14 Nov 2026, stage 1)
+- With `D.cmd.agents` (the bot's core/agents.ts) the Command Center gets «فريق المساعدين» (`cmdAgents`): service health (last scheduler run, failed
+  jobs) apart from the work's state, assignment issues, one card per agent (health glyph + word `AGH`, built status `AGB`, open cases by state,
+  what it lacks, permissions in a `<details>`), the restricted list, and for an admin the controls (stop / resume / pause a scope / AI limit →
+  acts `agents.*`, PIN) with the last changes. Agent texts come from the bot in Arabic.
+
 ## How to change and verify (the owner expects Claude to check its own work)
 1. `git fetch && git checkout -B <branch> origin/main` (always from a fresh main — PRs are squash-merged).
 2. Test locally: `python3 -m http.server 8765` in the repo + Playwright (Chromium is pre-installed), routing the API to mock

@@ -534,6 +534,8 @@ body.chatonly footer{display:none}
 .cptop{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:space-between}
 .fresh{font-size:12px;color:var(--muted);margin-top:-6px}.fresh.stale,.fresh.none{color:var(--warn);font-weight:600}
 .mapnote{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--muted);background:var(--sunk);border:1px dashed var(--line-2);border-radius:var(--r-m);padding:10px 14px;max-width:96ch}
+.banner{font-size:13.5px;font-weight:500;border:1px solid var(--line-2);border-inline-start:4px solid var(--muted);border-radius:var(--r-m);background:var(--surface);padding:10px 14px;margin:8px 0;max-width:96ch}
+.banner.bad{border-inline-start-color:var(--crit);color:var(--crit)}
 .mapnote svg{flex:none;width:18px;height:18px;stroke:var(--muted);fill:none;stroke-width:1.6;margin-top:2px}
 .ivl{display:flex;flex-direction:column;gap:6px;font-size:13px}
 .ivl .pr,.ivl .ac{background:var(--sunk);border-radius:var(--r-s);padding:7px 10px;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center}
@@ -2412,6 +2414,41 @@ const EN = {
 "مدفوعة": "Paid",
 "لا فواتير": "No invoices",
 "لا مورد عمالة مسجل": "No labour supplier recorded",
+"فريق المساعدين": "Agent team",
+"يعمل": "Running",
+"عند الطلب — بلا مهمة مجدولة": "On demand \u2014 no scheduled job",
+"موقوف": "Paused",
+"مهمة فشلت": "A job failed",
+"لم يعمل منذ مدة": "Not run for a while",
+"لا سجل تشغيل بعد": "No run recorded yet",
+"لم يُبنَ": "Not built",
+"مبني ويعمل": "Built and running",
+"مبني جزئياً": "Partly built",
+"إيقاف طارئ مفعّل: لا متابعة ولا رسائل يبادر بها النظام ولا نداءات ذكاء اصطناعي. الرسائل الواردة تُعالج كالمعتاد.": "Emergency stop is on: no follow-up, no system-initiated messages and no AI calls. Incoming messages are processed as usual.",
+"آخر تشغيل للخدمة": "Last service run",
+"كل 15 دقيقة في الخادم": "Every 15 minutes on the server",
+"تحقق من المجدول": "Check the scheduler",
+"مهام فشلت": "Failed jobs",
+"مشاكل إسناد": "Assignment issues",
+"نداءات الذكاء الاصطناعي اليوم": "AI calls today",
+"متابعة المنسّق اليومية مفعّلة.": "The coordinator's daily follow-up is on.",
+"متابعة المنسّق اليومية متوقفة (تُفعَّل من «مخاطر قادمة ← سياسة المتابعة»).": "The coordinator's daily follow-up is off (turn it on under Upcoming risks \u2192 Follow-up policy).",
+"بند بلا مسؤول محدد أو بأكثر من مرشح: يحسمه مخوّل، ولا يخمّن النظام اسماً": "An item with no named owner or several candidates: an authorised person decides; the system never guesses a name",
+"يحتاج إسناداً": "Needs assignment",
+"المساعدون": "Agents",
+"كل مساعد مسؤولية فوق النظام نفسه، لا روبوت مستقل. «يعمل» حالة تقنية؛ تقدّم العمل يظهر في الحالات.": "Each agent is a responsibility over the one system, not a separate bot. Running is a technical state; progress shows in the cases.",
+"حالات مفتوحة": "Open cases",
+"آخر تشغيل ناجح": "Last successful run",
+"ما ينقصه": "What it lacks",
+"الصلاحيات والحدود": "Permissions and limits",
+"ممنوع على أي مساعد": "Restricted for every agent",
+"تبقى للمخوّلين بإجراءاتهم الحالية مهما كانت سياسة التشغيل": "Stays with authorised people through their existing actions, whatever the operating policy",
+"سجل الإيقاف والتشغيل": "Stop and resume log",
+"إيقاف طارئ لكل المساعدين": "Emergency stop for all agents",
+"استئناف المساعدين": "Resume agents",
+"إيقاف / استئناف جزئي": "Pause / resume a scope",
+"حد نداءات الذكاء الاصطناعي": "AI call limit",
+"الآن": "Now",
 "متابعة جارية": "Following up",
 "بانتظار رد": "Awaiting reply",
 "بانتظار دليل": "Awaiting evidence",
@@ -3031,11 +3068,12 @@ function cmdView(m) {
   m.append(page("", "مركز القيادة", "كل المشاريع معاً: ما يجري اليوم، ما يعيقه، ما يحتاج تدخلاً، وما يلزم للوصول إلى كل تحصيل. يقترح النظام، والقرار للمخوّلين.", "var(--eng6)"));
   m.append(syncBar(C));
   const st = el("div", "sub-tabs mtabs");
-  const tabs = [...CTABS.slice(0, 1), ...(C.coord ? [{ k: "coord", t: "المنسّق" }, { k: "risk", t: "مخاطر قادمة" }] : []), ...CTABS.slice(1), ...(D.quality ? [{ k: "dq", t: "جودة البيانات" }] : [])]; if (!tabs.some((x) => x.k === CT)) CT = "now";
+  const tabs = [...CTABS.slice(0, 1), ...(C.coord ? [{ k: "coord", t: "المنسّق" }, { k: "risk", t: "مخاطر قادمة" }] : []), ...(C.agents ? [{ k: "agents", t: "فريق المساعدين" }] : []), ...CTABS.slice(1), ...(D.quality ? [{ k: "dq", t: "جودة البيانات" }] : [])]; if (!tabs.some((x) => x.k === CT)) CT = "now";
   for (const x of tabs) { const b = el("button", "", x.t); b.type = "button"; b.setAttribute("aria-current", String(CT === x.k)); b.onclick = () => { CT = x.k; draw(); }; st.append(b); }
   m.append(st);
   if (CT === "dq") return cmdQuality(m, D.quality);
   if (CT === "coord") return cmdCoord(m, C.coord);
+  if (CT === "agents") return cmdAgents(m, C.agents);
   if (CT === "risk") return cmdRisks(m, C.coord, money);
   if (CT === "now") return cmdNow(m, C, money);
   if (CT === "week") return cmdWeek(m, C);
@@ -3151,6 +3189,39 @@ function cmdCoord(m, K) {
     c.append(kv); g.append(c);
   }
   m.append(g); if (list.length > 80) m.append(el("div", "small muted", "يظهر أول 80 بنداً — استخدم التصنيف"));
+}
+// «فريق المساعدين» (the bot's core/agents.ts): the responsibility map, the health of the scheduled jobs apart from the state of the work,
+// assignment issues, controls and AI usage. Statuses carry a glyph and a word; the page decides nothing.
+const AGH = { running: ["يعمل", "✓", "ok"], ondemand: ["عند الطلب — بلا مهمة مجدولة", "→", "unk"], paused: ["موقوف", "▲", "warn"], failing: ["مهمة فشلت", "!", "bad"], stale: ["لم يعمل منذ مدة", "!", "bad"], unknown: ["لا سجل تشغيل بعد", "?", "unk"], none: ["لم يُبنَ", "?", "unk"] };
+const AGB = { live: "مبني ويعمل", partial: "مبني جزئياً", none: "لم يُبنَ" };
+function cmdAgents(m, G) {
+  const S = G.acts || { id: "agents", data: { acts: [], add: [] } }, def = (id) => (S.data.acts || []).find((d) => d.id === id), sv = G.service || {}, cl = G.controls || {}, u = G.usage || {};
+  const minT = (n) => (n === null || n === undefined ? "لا يوجد" : n < 1 ? "الآن" : n < 60 ? "قبل " + n + " د" : "قبل " + Math.round(n / 60) + " س");
+  if (cl.stop) m.append(el("div", "banner bad", "إيقاف طارئ مفعّل: لا متابعة ولا رسائل يبادر بها النظام ولا نداءات ذكاء اصطناعي. الرسائل الواردة تُعالج كالمعتاد."));
+  m.append(kpiStrip([{ label: "آخر تشغيل للخدمة", value: minT(sv.ageMin), tone: sv.state === "running" ? "" : "bad", sub: sv.state === "running" ? "كل 15 دقيقة في الخادم" : "تحقق من المجدول" }, { label: "مهام فشلت", value: String((sv.failedJobs || []).length), tone: (sv.failedJobs || []).length ? "bad" : "" },
+    { label: "مشاكل إسناد", value: String((G.issues || []).length), tone: (G.issues || []).length ? "warn" : "" }, { label: "نداءات الذكاء الاصطناعي اليوم", value: String(u.ai || 0) + (u.limit !== null && u.limit !== undefined ? " / " + u.limit : ""), sub: u.refused ? "رُفض " + u.refused + " لتجاوز الحد" : "" }]));
+  m.append(el("div", "small muted", sv.note || ""), el("div", "small muted", u.note || ""));
+  if ((S.data.add || []).length) { const bar = el("div", "ebar2"); for (const id of S.data.add) { const d = def(id); if (d) bar.append(ebtn(d.label, () => actForm(S, d, null))); } m.append(bar); }
+  const pz = Object.entries(cl.paused || {}).flatMap(([sc, o]) => Object.keys(o || {}).map((k) => sc + ": " + k)); if (pz.length) m.append(el("div", "small", "موقوف جزئياً: " + pz.join("، ")));
+  m.append(el("div", "small muted", cl.follow ? "متابعة المنسّق اليومية مفعّلة." : "متابعة المنسّق اليومية متوقفة (تُفعَّل من «مخاطر قادمة ← سياسة المتابعة»)."));
+  for (const f of sv.failedJobs || []) m.append(el("div", "banner bad", f.agent + " — " + f.job + ": " + f.msg));
+  if ((G.issues || []).length) { m.append(secHead("مشاكل إسناد", G.issues.length, "بند بلا مسؤول محدد أو بأكثر من مرشح: يحسمه مخوّل، ولا يخمّن النظام اسماً")); const g = el("div", "grid"); for (const x of G.issues.slice(0, 40)) { const c = el("div", "card"); c.append(glyph("يحتاج إسناداً", "?", "unk"), el("div", "t", x.what), el("div", "st", [x.project, x.ref].filter(Boolean).join(" · ")), el("div", "small", x.why + ((x.candidates || []).length ? " — " + x.candidates.join("، ") : ""))); g.append(c); } m.append(g); }
+  m.append(secHead("المساعدون", (G.agents || []).length, "كل مساعد مسؤولية فوق النظام نفسه، لا روبوت مستقل. «يعمل» حالة تقنية؛ تقدّم العمل يظهر في الحالات."));
+  const g = el("div", "clist");
+  for (const a of G.agents || []) {
+    const [t, gl, tone] = AGH[a.health] || AGH.unknown, c = el("div", "card iv" + (tone === "bad" ? " bad" : tone === "warn" ? " warn" : ""));
+    const top = el("div", "cptop"); top.append(el("span", "pill eng", a.id + " · " + (AGB[a.built] || a.built)), glyph(t, gl, tone)); c.append(top, el("div", "t", a.name), el("div", "st", a.purpose));
+    const kv = el("div", "kv"), add = (k, v, cls) => { if (v === null || v === undefined || v === "") return; kv.append(el("span", "", k), el("b", cls || "", v)); };
+    if (a.built !== "none") { add("حالات مفتوحة", String(a.cases.open) + (a.cases.overdue ? " — منها " + a.cases.overdue + " فات موعدها" : ""), a.cases.overdue ? "neg" : ""); if (a.cases.decision) add("قرار مطلوب", String(a.cases.decision)); if (a.cases.awaiting_verification) add("بانتظار تحقق", String(a.cases.awaiting_verification)); if (a.cases.awaiting_reply) add("بانتظار رد", String(a.cases.awaiting_reply)); if (a.cases.awaiting_evidence) add("بانتظار دليل", String(a.cases.awaiting_evidence));
+      add("آخر تشغيل ناجح", a.lastOk ? minT(Math.round((Date.now() - Date.parse(a.lastOk)) / 60000)) : ""); }
+    add("ما ينقصه", a.lacks); c.append(kv);
+    const d = el("details", "hist"); d.append(el("summary", "", "الصلاحيات والحدود"));
+    for (const [k, v] of [["يقرأ", a.reads], ["يكتب", a.writes], ["يفعل وحده", a.alone], ["يحتاج مخوّلاً", a.needs], ["يصعّد إلى", a.escalate], ["يكتمل البند عند", a.done], ["يقوم على", (a.on || []).join("، ")]]) if (v && v !== "—") d.append(el("div", "small", k + ": " + v));
+    c.append(d); g.append(c);
+  }
+  m.append(g);
+  m.append(secHead("ممنوع على أي مساعد", (G.restricted || []).length, "تبقى للمخوّلين بإجراءاتهم الحالية مهما كانت سياسة التشغيل")); m.append(el("div", "small", (G.restricted || []).join(" · ")));
+  if ((G.log || []).length) { m.append(secHead("سجل الإيقاف والتشغيل", G.log.length)); const ol = el("ol", "small"); for (const e of G.log) { const li = el("li"); li.append(el("span", "", dmy(e.at) + " — " + (e.name || "") + ": " + e.what + " (" + e.why + ")")); ol.append(li); } m.append(ol); }
 }
 function cmdRisks(m, K, money) {
   const R = K.risks || { items: [], groups: [], verify: [] }, S = K.acts || { id: "coord", data: { acts: [], add: [], rows: [] } }, def = (id) => (S.data.acts || []).find((d) => d.id === id);
