@@ -642,6 +642,10 @@ button.mrow{cursor:pointer}.mrow .small{flex:1 1 140px;color:var(--muted)}
 .mrxc.ok{border-inline-start-color:var(--acc6)}.mrxc.bad{border-inline-start-color:var(--crit)}.mrxc.warn{border-inline-start-color:var(--warn6)}
 .mfind{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;font-size:12.5px;padding:4px 6px;border-radius:6px;background:var(--warn1)}.mfind.bad{background:var(--crit1)}
 .mwrap.wall .mstage{height:min(78vh,760px)}
+.mgl{position:absolute;inset:0}.mmk{display:flex;flex-direction:column;align-items:center;cursor:pointer;outline:none}.mmk:focus-visible .mb-plate,.mmk.sel .mb-plate{stroke:var(--ink);stroke-width:2.5}
+.mlab2{font:600 11px var(--f-disp);background:rgb(255 255 255/.92);border-radius:6px;padding:0 5px;margin-top:-2px;white-space:nowrap}.mlab2.red{color:var(--crit)}.mlab2.yellow{color:var(--warn)}.mlab2.green{color:var(--acc9)}.mlab2.grey{color:var(--muted)}
+.mviol{border:1px solid var(--crit);background:var(--crit1);color:var(--crit);border-radius:var(--r-s);padding:8px 10px;display:flex;flex-direction:column;gap:4px}.mviol.closed{border-color:var(--line);background:var(--sunk);color:var(--ink)}
+.mvh{margin:2px 0 0;padding-inline-start:18px;font-size:12px;color:var(--muted)}
 .stt{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;line-height:1.5}
 .stt i{font-style:normal;display:inline-grid;place-items:center;width:18px;height:18px;border-radius:5px;font-size:11px;font-weight:700;color:#fff;background:var(--muted)}
 .stt.bad{color:var(--crit)}.stt.bad i{background:var(--crit)}
@@ -3362,7 +3366,7 @@ function actForm(s, d, row) {
     try {
       const { status, j } = await api({ op: "act", sec: s.id, act: d.id, row: row ? row.id : "", data, opId, ...(pin.i.value ? { pin: pin.i.value } : {}) });
       if (status === 428 && j.pin) { pin.box.hidden = false; res.className = "res bad"; res.textContent = j.error || "اكتب رمزك السري"; pin.i.focus(); return; }
-      if (status !== 200) { res.className = "res bad"; res.textContent = j.error || "تعذّر التنفيذ"; if (j.badPin) pin.i.value = ""; return; }
+      if (status !== 200) { res.className = "res bad"; res.textContent = j.error || "تعذّر التنفيذ"; if (j.badPin) pin.i.value = ""; if (status === 409) load(true); return; } // 409 = the record changed: reload it
       $("dlg").close(); toast(j.msg || "تم ✅"); load(true);
     } catch { res.className = "res bad"; res.textContent = "تعذّر الاتصال ولا نعرف هل وصل — أعد المحاولة: لن يُنفَّذ مرتين."; }
     finally { go.disabled = close.disabled = false; }
@@ -3460,7 +3464,8 @@ const ownerId = (name) => { const f = (ivDef("new") || { fields: [] }).fields.fi
 const MCOL = { green: ["حسب الخطة", "✓"], yellow: ["خطر موثق", "▲"], red: ["متعطّل أو متأخر", "!"], grey: ["بيانات غير كافية", "?"] };
 const MPART = { done: "منفّذ — خرسانة", approvals: "الحديد والشدّة — الاستلامات", supply: "اكتملت الاستلامات — تحضير التوريد", ready: "جاهز للصب", pouring: "صب جارٍ",
   stale: "بدأ الصب — يحتاج تأكيداً", violation: "صب دون إفراج — مخالفة موثقة", work: "جاري حسب التدقيق", unk: "الدور جارٍ — هذا الجزء غير محدد", none: "لم يبدأ" };
-const RXC = { approved: "ok", na: "ok", notes: "bad", awaiting: "warn", scheduled: "warn", requested: "warn", na_pending: "warn", none: "unk" };
+const MV_T = { open: "مفتوحة — بانتظار اطلاع الإدارة", ack: "اطلعت الإدارة — بانتظار التكليف بإجراء تصحيحي", assigned: "إجراء تصحيحي مكلّف به — بانتظار التقييم الفني", assessed: "قُيّمت فنياً — بانتظار التحقق والإغلاق", closed: "أُغلقت بقرار مخوّل" };
+const RXC = { approved: "ok", notes: "bad", awaiting: "warn", scheduled: "warn", requested: "warn", none: "unk" };
 let MAPV = { k: 1, cx: null, cy: null, sel: null, pour: null, fit: true }, MAPWALL = false;
 const motionOK = () => !matchMedia("(prefers-reduced-motion: reduce)").matches;
 // lat/lng → km on a local plane (equirectangular around the projects' centre) — enough for a city-scale site map
@@ -3514,7 +3519,7 @@ function mapBuilding(p, s, detail) {
 }
 // who moves an inspection next, by its state (the party itself while a visit or a result is awaited)
 const RX_NEXT = { none: () => "يطلبه طالب الصبة (مهندس الموقع)", requested: () => "يتابع طالب الصبة حجز الزيارة", scheduled: (r) => "بانتظار زيارة " + r.t, awaiting: (r) => "بانتظار نتيجة " + r.t,
-  notes: () => "الإصلاح على طالب الصبة، والإغلاق للجهة التي أصدرت الملاحظة", na_pending: () => "بانتظار اعتماد الإدارة لـ«لا ينطبق»" };
+  notes: () => "الإصلاح على طالب الصبة، والإغلاق للجهة التي أصدرت الملاحظة" };
 const pctOr = (v) => (v == null ? "— (لم يُدخل)" : Math.round(v * 100) + "%"); // an unknown plan is never 0%
 let MAPRO = null, MAPRAF = 0; // one resize watcher for the map at a time; one repaint per frame
 function cmdMapPaint(fn) { if (MAPRAF) return; MAPRAF = requestAnimationFrame(() => { MAPRAF = 0; fn(); }); }
@@ -3526,6 +3531,67 @@ function mapTip(p) {
   L.push(p.fieldAt ? "آخر تحديث ميداني " + ageT(daysSince(p.fieldAt)) + " (" + dmy(p.fieldAt) + ")" : "لا تحديث ميداني مسجّل");
   return L;
 }
+// ---- Mapbox: ONE map instance for the session, re-attached on every redraw (a data refresh never recreates it); markers updated in
+// place. Provider settings come from the server (settings/mapbase — apart from the operational records); a public, URL-restricted
+// token; Arabic labels (language «ar» + the RTL text plugin); Mapbox's attribution stays on; two-finger / Ctrl gestures (no scroll trap).
+let MAPGL = null;
+const MB_V = "3.8.0";
+function loadMapbox() {
+  if (window.mapboxgl) return Promise.resolve(window.mapboxgl);
+  if (loadMapbox.p) return loadMapbox.p;
+  loadMapbox.p = new Promise((res, rej) => {
+    const l = document.createElement("link"); l.rel = "stylesheet"; l.href = `https://api.mapbox.com/mapbox-gl-js/v${MB_V}/mapbox-gl.css`; document.head.append(l);
+    const sc = document.createElement("script"); sc.src = `https://api.mapbox.com/mapbox-gl-js/v${MB_V}/mapbox-gl.js`;
+    sc.onload = () => (window.mapboxgl ? res(window.mapboxgl) : rej(new Error("مكتبة Mapbox غير متاحة")));
+    sc.onerror = () => { loadMapbox.p = null; rej(new Error("تعذّر تحميل مكتبة Mapbox")); };
+    setTimeout(() => { if (!window.mapboxgl) { loadMapbox.p = null; rej(new Error("لا وصول إلى Mapbox")); } }, 10000); // an unreachable provider never leaves an empty map
+    document.head.append(sc);
+  });
+  return loadMapbox.p;
+}
+function mapGeo(stage, M, ps, wall, tip) {
+  const base = M.base;
+  if (MAPGL && (MAPGL.token !== base.token || MAPGL.style !== base.style)) { try { if (MAPGL.map) MAPGL.map.remove(); } catch (e) {} MAPGL = null; }
+  if (!MAPGL) { const e0 = document.createElement("div"); e0.className = "mgl"; MAPGL = { el: e0, token: base.token, style: base.style, markers: new Map(), map: null, failed: null }; }
+  const G = MAPGL; G.ps = ps; G.wall = !!wall; G.tip = tip; stage.append(G.el);
+  if (G.map) { requestAnimationFrame(() => { G.map.resize(); mapGeoMarkers(G); }); return; }
+  loadMapbox().then((mb) => {
+    if (G !== MAPGL || G.map) return;
+    mb.accessToken = base.token;
+    try { if (mb.getRTLTextPluginStatus() === "unavailable") mb.setRTLTextPlugin("https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.3/mapbox-gl-rtl-text.js", null, true); } catch (e) {}
+    const lats = ps.map((p) => p.geo.lat), lngs = ps.map((p) => p.geo.lng), pad = 0.004;
+    G.map = new mb.Map({ container: G.el, style: base.style, language: "ar", bounds: [[Math.min(...lngs) - pad, Math.min(...lats) - pad], [Math.max(...lngs) + pad, Math.max(...lats) + pad]],
+      fitBoundsOptions: { padding: 70, maxZoom: 15 }, cooperativeGestures: !wall, interactive: !wall, attributionControl: true });
+    if (!wall) G.map.addControl(new mb.NavigationControl({ visualizePitch: false }), "top-left");
+    G.map.addControl(new mb.ScaleControl({ unit: "metric" }), "bottom-left");
+    G.map.on("error", (e) => {
+      const er = (e && e.error) || {}, code = er.status || 0;
+      if ([401, 403].includes(code) || /access token|Unauthorized|Forbidden/i.test(String(er.message || ""))) { if (!G.failed) { G.failed = "الرمز مرفوض " + (code || ""); draw(); } }
+    });
+    G.map.on("load", () => mapGeoMarkers(G));
+  }).catch((e) => { G.failed = e.message; draw(); });
+}
+function mapGeoMarkers(G) {
+  const mb = window.mapboxgl; if (!G.map || !mb) return;
+  const seen = new Set(), stage = G.el.parentNode;
+  for (const p of G.ps) {
+    seen.add(p.id); let mk = G.markers.get(p.id); const node = mk ? mk.getElement() : document.createElement("div");
+    node.className = "mmk" + (MAPV.sel === p.id ? " sel" : ""); node.replaceChildren();
+    const sz = 52, svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", `${-sz} ${-sz * 1.9} ${sz * 2} ${sz * 2.05}`); svg.setAttribute("width", String(sz * 1.4)); svg.setAttribute("height", String(sz * 1.45)); svg.append(mapBuilding(p, sz, true));
+    node.append(svg, el("span", "mlab2 " + p.colour.k, MCOL[p.colour.k][1] + " " + (p.code || p.name)));
+    node.setAttribute("role", G.wall ? "img" : "button"); node.tabIndex = G.wall ? -1 : 0; node.setAttribute("aria-label", `${p.name}: ${MCOL[p.colour.k][0]}`);
+    if (!G.wall) {
+      const open = (e) => { e.stopPropagation(); MAPV.sel = p.id; MAPV.pour = p.active; MAPV.scroll = true; if (G.tip) G.tip.hidden = true; draw(); };
+      node.onclick = open; node.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(e); } };
+      node.onmouseenter = () => { const t = G.tip; if (!t || !stage) return; t.replaceChildren(...mapTip(p).map((x, i) => el(i ? "div" : "b", "", x))); t.hidden = false;
+        const r = stage.getBoundingClientRect(), q = node.getBoundingClientRect(); t.style.left = Math.min(r.width - 280, Math.max(8, q.right - r.left + 8)) + "px"; t.style.top = Math.max(8, q.top - r.top) + "px"; };
+      node.onmouseleave = () => { if (G.tip) G.tip.hidden = true; };
+    }
+    if (!mk) { mk = new mb.Marker({ element: node, anchor: "bottom" }).setLngLat([p.geo.lng, p.geo.lat]).addTo(G.map); G.markers.set(p.id, mk); } else mk.setLngLat([p.geo.lng, p.geo.lat]);
+  }
+  for (const [id, mk] of G.markers) if (!seen.has(id)) { mk.remove(); G.markers.delete(id); }
+}
 function cmdMap(m, M, wall) {
   MAPWALL = !!wall;
   const ps = M.projects, all = [...ps, ...(M.noGeo || [])];
@@ -3533,16 +3599,20 @@ function cmdMap(m, M, wall) {
   // data time and connection: an old picture says so
   const t0 = Date.parse(M.at), age = Number.isFinite(t0) ? Math.max(0, Math.round((Date.now() - t0) / 60000)) : null, st = el("div", "mstat" + (age === null || age > 15 || !navigator.onLine ? " old" : ""));
   st.append(el("span", "", "بيانات الخريطة: " + (age === null ? "وقت التحديث غير معروف" : age < 1 ? "الآن" : "قبل " + age + " دقيقة")), ...(navigator.onLine ? [] : [el("b", "", " · لا اتصال — آخر صورة محفوظة")]));
-  if (!wall) st.append(el("span", "small muted", " · المجسم تمثيل للمرحلة وليس نموذجاً مطابقاً للمخططات"));
+if (!wall) st.append(el("span", "small muted", " · المجسم تمثيل للمرحلة وليس نموذجاً مطابقاً للمخططات"));
+  // the geographic base map (Mapbox) when configured — the same buildings as overlays. The engineering grid is the LABELLED fallback.
+  const useGeo = !!(M.base && M.base.provider === "mapbox" && M.base.token && ps.length && !(MAPGL && MAPGL.failed && MAPGL.token === M.base.token));
+  if (!useGeo && ps.length) st.append(el("span", "pill", M.base ? "تعذّرت الخريطة الجغرافية (" + ((MAPGL && MAPGL.failed) || "") + ") — شبكة هندسية بديلة" : "شبكة هندسية بديلة — الخريطة الجغرافية غير مُعدّة"));
+  if (!wall && M.canGeo) { const b = el("button", "lnk", "إعداد الخريطة الجغرافية"); b.type = "button"; b.onclick = () => mapAct(M, "base", ""); st.append(b); }
   m.append(st);
   if (!ps.length) stage.append(el("div", "empty", "لا مشروع بموقع موثّق بعد — حدّد المواقع من «يحتاج تحديد الموقع»."));
   // a group (not an image): its buildings are buttons a screen reader must reach
   const svgNS = "http://www.w3.org/2000/svg", svg = document.createElementNS(svgNS, "svg"); svg.setAttribute("class", "msvg"); svg.setAttribute("role", wall ? "img" : "group");
   svg.setAttribute("aria-label", "خريطة المشاريع: " + ps.map((p) => `${p.code || p.name} ${MCOL[p.colour.k][0]}`).join("، "));
   const tip = el("div", "mtip"); tip.hidden = true; tip.setAttribute("role", "tooltip");
-  if (ps.length) stage.append(svg, tip);
+  if (ps.length && !useGeo) stage.append(svg); if (ps.length) stage.append(tip);
   const ctl = el("div", "mctl"); [["+", 1.5], ["−", 1 / 1.5], ["⤢", 0]].forEach(([t, f]) => { const b = el("button", "sbtn", t); b.type = "button"; b.setAttribute("aria-label", f === 0 ? "ملاءمة كل المشاريع" : f > 1 ? "تكبير" : "تصغير"); b.onclick = () => { if (f === 0) MAPV.fit = true; else { MAPV.k = Math.min(40, Math.max(0.3, MAPV.k * f)); MAPV.fit = false; } paint(); }; ctl.append(b); });
-  if (ps.length) stage.append(ctl);
+  if (ps.length && !useGeo) stage.append(ctl);
   const xy = ps.length ? mapPlane(ps) : null, P = ps.map((p) => ({ p, km: xy(p.geo) }));
   function paint() {
     const W = stage.clientWidth || 600, H = stage.clientHeight || 420;
@@ -3596,7 +3666,8 @@ function cmdMap(m, M, wall) {
   if (sel && !wall) side.append(mapPanel(sel, M)); else side.append(mapList(M, all, wall));
   wrap.append(stage, side); m.append(wrap);
   if (MAPRO) MAPRO.disconnect(); MAPRO = null; // the previous draw's watcher would keep its detached map alive
-  if (ps.length) { cmdMapPaint(paint); MAPRO = new ResizeObserver(() => cmdMapPaint(paint)); MAPRO.observe(stage); }
+  if (ps.length && !useGeo) { cmdMapPaint(paint); MAPRO = new ResizeObserver(() => cmdMapPaint(paint)); MAPRO.observe(stage); }
+  if (useGeo) mapGeo(stage, M, ps, wall, tip);
   // on a phone the panel sits under the map: bring it into view once when a project is opened (the map stays above)
   if (MAPV.scroll && sel && matchMedia("(max-width:980px)").matches) requestAnimationFrame(() => side.scrollIntoView({ block: "start", behavior: smoothB() }));
   MAPV.scroll = false;
@@ -3651,8 +3722,8 @@ function mapPanel(p, M) {
   box.append(pw);
   // next action: the first open inspection or obstacle, with who and when; then the obstacles; then the next payment (money roles)
   const nx = el("div", "msec"); nx.append(el("h4", "", "الإجراء التالي"));
-  const firstRx = cur && cur.rx.find((r) => !["approved", "na"].includes(r.st));
-  if (cur && cur.violation) nx.append(el("p", "neg", "⛔ صب دون استيفاء المتطلبات — مرفوع للإدارة: " + (cur.violation.why || []).join(" · ")));
+  const firstRx = cur && cur.rx.find((r) => r.st !== "approved");
+  if (cur && cur.violation && cur.violation.status !== "closed") nx.append(el("p", "neg", "⛔ مخالفة صب: " + (MV_T[cur.violation.status] || "") + " — التفاصيل في بطاقة الصبة"));
   else if (firstRx) nx.append(el("p", "", `${firstRx.t}: ${firstRx.stT} — ${RX_NEXT[firstRx.st] ? RX_NEXT[firstRx.st](firstRx) : ""} · المهلة ${firstRx.due ? dmy(firstRx.due) : "غير محددة"}${firstRx.late ? " · فات موعدها" : ""}`));
   else if (cur && !cur.ready && !["poured", "pouring", "stale"].includes(cur.stage)) nx.append(el("p", "", (cur.notReady || []).join(" · ")));
   else nx.append(el("p", "small muted", cur ? "لا إجراء مطلوب على هذه الصبة الآن." : "—"));
@@ -3663,7 +3734,8 @@ function mapPanel(p, M) {
   return box;
 }
 function mapPour(x, M) {
-  const box = el("div", "mpour"), act = new Set(x.acts || []);
+  // every action carries the version of the pour this page showed: changed meanwhile → refused, reloaded, re-checked (never overwritten)
+  const box = el("div", "mpour"), act = new Set(x.acts || []), rid = x.id + (x.ver ? "@" + x.ver : "");
   const top = el("div", "mpt"); top.append(el("b", "", x.el), el("span", "pill", x.stageT), el("span", "small muted", (x.zone ? "المنطقة " + x.zone : "المنطقة غير محددة") + (x.date ? " · موعد الصبة " + dmy(x.date) : "")));
   box.append(top);
   if (x.conflict) box.append(el("div", "banner bad", x.conflict));
@@ -3675,36 +3747,47 @@ function mapPour(x, M) {
   // the three inspections — each its own record for THIS pour only
   const g = el("div", "mrx");
   for (const r of x.rx) {
-    const c = el("div", "mrxc " + (RXC[r.st] || "unk")); c.append(el("b", "", r.t), glyph(r.stT, r.st === "approved" || r.st === "na" ? "✓" : r.st === "notes" ? "!" : r.st === "none" ? "○" : "…", RXC[r.st] || "unk"));
+    const c = el("div", "mrxc " + (RXC[r.st] || "unk")); c.append(el("b", "", r.t), glyph(r.stT, r.st === "approved" ? "✓" : r.st === "notes" ? "!" : r.st === "none" ? "○" : "…", RXC[r.st] || "unk"));
     const kv = el("div", "small");
     if (r.visit) kv.append(el("div", "", "الزيارة " + dmy(r.visit.on)));
     if (r.visited) kv.append(el("div", "", "زار: " + (r.visited.who || "—")));
-    if (r.rec) kv.append(el("div", "", "اعتُمد " + dmy(r.rec.on) + (r.rec.form ? " · النموذج الموقّع مرفق" : "")));
-    if (r.na) kv.append(el("div", "", "لا ينطبق: " + (r.na.reason || "") + (r.na.ok ? " — معتمد" : " — بانتظار اعتماد الإدارة")));
-    if (r.reviewAgain) kv.append(el("div", "neg", "تعديل بعد الاعتماد — يحتاج مراجعة صاحب الاعتماد"));
+    if (r.rec) kv.append(el("div", "", r.rec.legacy ? "اعتُمد في مسار البوت (قبل تسجيل تاريخه)" : "اعتُمد " + dmy(r.rec.on) + (r.rec.form ? " · النموذج الموقّع مرفق" : "")));
     if (r.late) kv.append(el("div", "neg", "متأخر عن مهلة " + dmy(r.due)));
     c.append(kv);
     for (const f of r.findings) {
       const fr = el("div", "mfind " + (f.blocking ? "bad" : "warn")); fr.append(el("span", "", (f.blocking ? "مانعة · " : "شرط · ") + (f.text || "")), el("span", "small muted", ({ open: "عند المسؤول", fixed: "أُصلحت — بانتظار الجهة", verified: "تحقق داخلياً" })[f.status] || f.status));
-      if (act.has(`verify~${r.party}~${f.id}`)) { const b = el("button", "sbtn", "تحقق وأغلق الشرط"); b.type = "button"; b.onclick = () => mapAct(M, "verify", `${x.id}~${r.party}~${f.id}`); fr.append(b); }
+      if (act.has(`verify~${r.party}~${f.id}`)) { const b = el("button", "sbtn", "تحقق وأغلق الشرط"); b.type = "button"; b.onclick = () => mapAct(M, "verify", `${rid}~${r.party}~${f.id}`); fr.append(b); }
       c.append(fr);
     }
     const bar = el("div", "cacts");
-    for (const a of ["req", "visit", "visited", "note", "na", "naok"]) if (act.has(`${a}~${r.party}`)) { const d = (M.defs || []).find((q) => q.id === a); if (!d) continue; bar.append(ebtn(d.label, () => mapAct(M, a, `${x.id}~${r.party}`), "sbtn ebtn")); }
+    for (const a of ["req", "visit", "visited", "note"]) if (act.has(`${a}~${r.party}`)) { const d = (M.defs || []).find((q) => q.id === a); if (!d) continue; bar.append(ebtn(d.label, () => mapAct(M, a, `${rid}~${r.party}`), "sbtn ebtn")); }
     if (bar.children.length) c.append(bar);
     g.append(c);
   }
   box.append(g);
   const bar = el("div", "cacts");
   // a released pour: «بدء الصب»; not released: the button only DOCUMENTS a pour that happened anyway (violation) — the bot's chain is untouched
-  if (act.has("start")) bar.append(ebtn(x.status === "ready" ? "بدء الصب" : "توثيق صب تم دون إفراج", () => mapAct(M, "start", x.id), "sbtn ebtn" + (x.ready ? " pri" : "")));
-  if (act.has("alive")) bar.append(ebtn("ما زال الصب جارياً", () => mapAct(M, "alive", x.id), "sbtn ebtn pri"));
-  if (act.has("seen")) bar.append(ebtn("اطلعت على المخالفة", () => mapAct(M, "seen", x.id), "sbtn ebtn"));
+  if (act.has("start")) bar.append(ebtn(x.status === "ready" ? "بدء الصب" : "توثيق صب تم دون إفراج", () => mapAct(M, "start", rid), "sbtn ebtn" + (x.ready ? " pri" : "")));
+  if (act.has("alive")) bar.append(ebtn("ما زال الصب جارياً", () => mapAct(M, "alive", rid), "sbtn ebtn pri"));
   // what the bot already does (signed forms, fix photos, «تمت الصبة») stays in «المساعد» on the same pour record
   if (x.chat) bar.append(ebtn("افتح الصبة في المساعد", () => openChat(x.chat, x.el), "sbtn ebtn"));
   if (bar.children.length) box.append(bar);
   if (!x.ready && act.has("start")) box.append(el("div", "small muted", x.status === "ready" ? "بدء الصب الآن يُسجّل كمخالفة ويُرفع للإدارة — لا يُعتبر معتمداً." : "الصبة غير مُفرج عنها في مسار البوت: التوثيق يُسجّل مخالفة ويُرفع للإدارة، ولا يغيّر مسار البوت."));
-  if (x.violation && x.violation.unreleased) box.append(el("div", "banner bad", "⛔ وُثّق صب دون إفراج الصبة — " + (x.violation.why || []).join(" · ")));
+  // the violation: the event stays; its lifecycle (acknowledged → corrective action → technical assessment → authorised closure) is
+  // shown step by step — acknowledging it never resolves it, closing it never approves a missing inspection
+  if (x.violation) {
+    const v = x.violation, closed = v.status === "closed", vb = el("div", "mviol" + (closed ? " closed" : ""));
+    vb.append(el("b", "", (closed ? "مخالفة صب مغلقة" : "⛔ مخالفة صب") + (v.unreleased ? " — صب دون إفراج الصبة" : " — بدء دون استيفاء المتطلبات")),
+      el("div", "small", "الحالة: " + (MV_T[v.status] || v.status)), el("div", "small", "الناقص وقتها: " + (v.why || []).join(" · ")));
+    if (v.assign) vb.append(el("div", "small", `الإجراء التصحيحي: ${v.assign.action} — ${v.assign.toName || ""} · ${dmy(v.assign.due)}`));
+    if (v.assess) vb.append(el("div", "small", `التقييم الفني: ${v.assess.t || v.assess.disposition} — ${v.assess.note}`));
+    if (v.close) vb.append(el("div", "small", `الإغلاق: ${v.close.evidence} · ${dmy(v.close.at)}`));
+    const h = el("ol", "mvh"); for (const x2 of v.history || []) h.append(el("li", "", (MV_T[x2.step] || x2.step) + " · " + dmy(x2.at))); if ((v.history || []).length) vb.append(h);
+    const vbar = el("div", "cacts");
+    for (const [a, t] of [["vack", "اطلعت على المخالفة"], ["vassign", "تكليف بإجراء تصحيحي"], ["vassess", "التقييم الفني"], ["vclose", "التحقق والإغلاق"]]) if (act.has(a)) vbar.append(ebtn(t, () => mapAct(M, a, rid), "sbtn ebtn" + (a === "vclose" ? " pri" : "")));
+    if (vbar.children.length) vb.append(vbar);
+    box.append(vb);
+  }
   return box;
 }
 function cmdView(m) {
