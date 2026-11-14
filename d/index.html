@@ -594,6 +594,54 @@ body.chatonly footer{display:none}
 .syncb .sy span{color:var(--muted)}.syncb .sy b{font-weight:600;font-variant-numeric:tabular-nums}
 .syncb .sy em{font-style:normal;font-size:11.5px;font-weight:600;color:var(--warn);background:var(--warn1);border-radius:999px;padding:0 8px}
 .syncb .sy.old{border-color:color-mix(in srgb,var(--warn6) 45%,var(--line))}
+/* «الخريطة»: light engineering grid, buildings drawn in line (concrete grey, timber formwork, rebar), the colour on the base plate with
+   its glyph; the map keeps its place when a project is opened (the side switches to the panel) */
+.mstat{font-size:12.5px;color:var(--muted);margin:-4px 0 8px}.mstat.old{color:var(--warn)}.mstat b{color:var(--crit)}
+.mwrap{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:14px;align-items:start}
+@media (max-width:980px){.mwrap{grid-template-columns:1fr}}
+.mstage{position:relative;height:min(68vh,600px);min-height:360px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);overflow:hidden;touch-action:none}
+.msvg{width:100%;height:100%;display:block;cursor:grab;user-select:none}.msvg:active{cursor:grabbing}
+.mgrid line{stroke:#E6EBF0;stroke-width:1}.mscale line{stroke:var(--ink);stroke-width:1.5}.mscale text,.mnorth text{font-size:11px;fill:var(--muted);text-anchor:middle}
+.mnorth path{fill:var(--ink)}.mlead{stroke:var(--field-in);stroke-dasharray:3 3}.mdot{fill:var(--ink)}
+.mctl{position:absolute;top:10px;inset-inline-start:10px;display:flex;flex-direction:column;gap:4px}.mctl .sbtn{min-width:36px;min-height:36px;padding:0;font-size:18px}
+@media (pointer:coarse){.mctl .sbtn{min-width:44px;min-height:44px}}
+.mproj{cursor:pointer;outline:none}.mproj:focus-visible .mb-plate,.mproj.sel .mb-plate{stroke:var(--ink);stroke-width:2.5}
+.mlab{font:600 11px var(--f-disp);text-anchor:middle;paint-order:stroke;stroke:#fff;stroke-width:3px;fill:var(--ink)}
+.mlab.red{fill:var(--crit)}.mlab.yellow{fill:var(--warn)}.mlab.green{fill:var(--acc9)}.mlab.grey{fill:var(--muted)}
+.mb-plate{stroke:#fff;stroke-width:1}.mb-plate.green{fill:#7BC59C}.mb-plate.yellow{fill:#F1C35B}.mb-plate.red{fill:#E57368}.mb-plate.grey{fill:#C3CAD2}
+.mb-el,.mb-col{stroke:#6B7480;stroke-width:.8}
+.mb-el.done,.mb-col.done{fill:#B9C0C8}.mb-el.done.top{fill:#D3D8DE}.mb-col.back{opacity:.7}
+.mb-el.none,.mb-col.none{display:none}
+.mb-el.unk,.mb-col.unk,.mb-el.work,.mb-col.work{fill:none;stroke:#8A94A0;stroke-dasharray:3 2}
+.mb-el.approvals,.mb-el.supply,.mb-el.ready,.mb-col.approvals,.mb-col.supply,.mb-col.ready{fill:#fff}
+.mb-el.form,.mb-col.form{fill:#EBCB9B;stroke:#A0683A}.mb-col.rebar:not(.form){fill:none;stroke:#8B3A2A;stroke-width:1.4}
+.mb-bar{stroke:#8B3A2A;stroke-width:.9}
+.mb-el.pouring,.mb-col.pouring,.mb-el.stale,.mb-col.stale{fill:#9AA3AD;stroke:#4E5662}
+.mb-pump{stroke:#B45309;stroke-width:2.2;stroke-linecap:round}.mb-drum{fill:#F59E0B;stroke:#92400E;stroke-width:1;transform-box:fill-box;transform-origin:center}
+@media (prefers-reduced-motion:no-preference){.mb-drum.spin{animation:mdrum 1.8s linear infinite}}
+@keyframes mdrum{to{transform:rotate(360deg)}}
+.mb-q{font:700 16px var(--f-disp);fill:var(--warn);text-anchor:middle}.mb-ok{font:700 15px var(--f-disp);fill:var(--acc6);text-anchor:middle}.mb-more{font:600 11px var(--f-text);fill:var(--eng9);text-anchor:end}
+.mtip{position:absolute;max-width:280px;background:var(--ink);color:#fff;font-size:12.5px;line-height:1.6;padding:8px 10px;border-radius:var(--r-s);pointer-events:none;box-shadow:var(--sh-pop);z-index:4}
+.mside{min-width:0}.malist,.mpanel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.malist h3,.mpanel h3{margin:4px 0 0;font:600 15px var(--f-disp)}
+.mrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;text-align:start;border:1px solid var(--line);border-radius:var(--r-s);background:var(--sunk);padding:8px 10px;font:inherit;color:inherit;min-height:44px;width:100%}
+button.mrow{cursor:pointer}.mrow .small{flex:1 1 140px;color:var(--muted)}
+.mg{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;color:#fff;font-weight:700;font-size:12px;background:var(--muted)}
+.mg.red{background:var(--crit)}.mg.yellow{background:var(--warn6)}.mg.green{background:var(--acc6)}
+.mph{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.mcolour{border-radius:var(--r-s);padding:8px 10px;background:var(--sunk);border:1px solid var(--line)}.mcolour ul{margin:4px 0 0;padding-inline-start:18px;font-size:13px}
+.mcolour.red{background:var(--crit1);color:var(--crit)}.mcolour.yellow{background:var(--warn1);color:var(--warn)}.mcolour.green{background:var(--acc1);color:var(--acc9)}
+.msec h4{margin:6px 0 4px;font:600 13.5px var(--f-disp)}.msec p{margin:0 0 4px;font-size:13.5px}
+.mlvr{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline;font-size:12.5px;padding:3px 0;border-top:1px solid var(--line)}
+.mst{color:var(--muted)}.mst.done{color:var(--acc9)}.mst.ready{color:var(--acc6);font-weight:600}.mst.pouring,.mst.approvals,.mst.supply{color:var(--eng9)}.mst.stale{color:var(--warn)}
+.mpour{border:1px solid var(--line);border-radius:var(--r-m);padding:10px;display:flex;flex-direction:column;gap:8px}
+.mpt{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.mready{font-size:13px;padding:6px 8px;border-radius:var(--r-s);background:var(--warn1);color:var(--warn)}.mready.ok{background:var(--acc1);color:var(--acc9)}
+.mrx{display:grid;grid-template-columns:1fr;gap:8px}
+.mrxc{border:1px solid var(--line);border-radius:var(--r-s);padding:8px;display:flex;flex-direction:column;gap:4px;border-inline-start:3px solid var(--field)}
+.mrxc.ok{border-inline-start-color:var(--acc6)}.mrxc.bad{border-inline-start-color:var(--crit)}.mrxc.warn{border-inline-start-color:var(--warn6)}
+.mfind{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;font-size:12.5px;padding:4px 6px;border-radius:6px;background:var(--warn1)}.mfind.bad{background:var(--crit1)}
+.mwrap.wall .mstage{height:min(78vh,760px)}
 .stt{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;line-height:1.5}
 .stt i{font-style:normal;display:inline-grid;place-items:center;width:18px;height:18px;border-radius:5px;font-size:11px;font-weight:700;color:#fff;background:var(--muted)}
 .stt.bad{color:var(--crit)}.stt.bad i{background:var(--crit)}
@@ -3382,7 +3430,7 @@ function subcView(m) {
 // the ladder are the bot's; amounts arrive only for money roles (the bot leaves them out for everyone else and for the wall display).
 const QTYPE = { missing: "ناقص", duplicate: "مكرر", conflict: "متعارض", stale: "يحتاج تحديثاً", unsupported: "بلا دليل", mislinked: "ربط خاطئ" };
 const CTABS = [{ k: "now", t: "العمليات الآن" }, { k: "week", t: "خطة الأسبوع" }, { k: "starts", t: "بدء المشاريع" }, { k: "coll", t: "التنفيذ والتحصيل" }, { k: "review", t: "اجتماع الإدارة" }];
-let CT = "now", RT = "req";
+let CT = "map", RT = "req"; // «الخريطة» first when the server sends it (else «العمليات الآن»)
 const CST = { critical: ["حرج", "!", "bad"], attention: ["يحتاج متابعة", "▲", "warn"], unknown: ["غير متحقق", "?", "unk"], normal: ["لا مشكلة مسجلة", "✓", "ok"] };
 const FRESH = { fresh: "محدّث", aging: "تحديث قديم", stale: "متوقف التحديث", none: "لا تحديث ميداني" };
 const FUND = { covered: "مغطى في التوقع", short: "عجز متوقع", unknown: "غير معروف" };
@@ -3405,12 +3453,252 @@ const ivSec = () => ({ id: "cmdiv", data: D.cmd.iv || { acts: [], rows: [] } });
 const ivDef = (id) => (ivSec().data.acts || []).find((d) => d.id === id);
 const pName = (id) => { const f = (ivDef("assign") || { fields: [] }).fields.find((x) => x.key === "owner"); const o = f && (f.options || []).find((x) => x.v === id); return o ? o.t : id; };
 const ownerId = (name) => { const f = (ivDef("new") || { fields: [] }).fields.find((x) => x.key === "owner"); const o = f && (f.options || []).find((x) => x.t === name); return o ? o.v : ""; };
+// ===== «الخريطة» (bot core/sitemap.ts, owner's brief 15 Nov 2026): projects at their DOCUMENTED locations as small buildings built from
+// the recorded stages; each pour with its three inspections; the colour (plan/risk/delay/unknown) apart from the pour stage. The page
+// draws what the server sent — the actions offered on a pour are the server's list for this person; every one is re-checked there.
+// No base map tiles are loaded (the provider is the owner's decision): a light engineering grid with scale and north, real proportions.
+const MCOL = { green: ["حسب الخطة", "✓"], yellow: ["خطر موثق", "▲"], red: ["متعطّل أو متأخر", "!"], grey: ["بيانات غير كافية", "?"] };
+const MPART = { done: "منفّذ — خرسانة", approvals: "الحديد والشدّة — الاستلامات", supply: "اكتملت الاستلامات — تحضير التوريد", ready: "جاهز للصب", pouring: "صب جارٍ",
+  stale: "بدأ الصب — يحتاج تأكيداً", work: "جاري حسب التدقيق", unk: "الدور جارٍ — هذا الجزء غير محدد", none: "لم يبدأ" };
+const RXC = { approved: "ok", na: "ok", notes: "bad", awaiting: "warn", scheduled: "warn", requested: "warn", na_pending: "warn", none: "unk" };
+let MAPV = { k: 1, cx: null, cy: null, sel: null, pour: null, fit: true }, MAPWALL = false;
+const motionOK = () => !matchMedia("(prefers-reduced-motion: reduce)").matches;
+// lat/lng → km on a local plane (equirectangular around the projects' centre) — enough for a city-scale site map
+function mapPlane(ps) {
+  const lat0 = ps.reduce((t, p) => t + p.geo.lat, 0) / ps.length, lng0 = ps.reduce((t, p) => t + p.geo.lng, 0) / ps.length, kx = 111.32 * Math.cos((lat0 * Math.PI) / 180);
+  return (g) => [(g.lng - lng0) * kx, -(g.lat - lat0) * 110.57];
+}
+// the building: levels from the bottom; each part drawn by its recorded state (no BIM: a picture of the stage, said in the panel)
+function mapBuilding(p, s, detail) {
+  const ns = "http://www.w3.org/2000/svg", g = document.createElementNS(ns, "g"), sv = (t, a) => { const e = document.createElementNS(ns, t); for (const k in a) e.setAttribute(k, a[k]); return e; };
+  const W = s, d = s * 0.28, lv = p.levels, act = (p.pours || []).find((x) => x.id === p.active);
+  const work = p.work || [], hasRebar = work.some((w) => w.k === "rebar"), hasForm = work.some((w) => w.k === "form"), both = !hasRebar && !hasForm; // a pour request reports both
+  // base plate in the project's colour + its glyph (never colour alone)
+  g.append(sv("path", { d: `M${-W / 2},0 L${W / 2},0 L${W / 2 + d},${-d} L${-W / 2 + d},${-d} Z`, class: "mb-plate " + p.colour.k }));
+  let y = -d * 0.2;
+  const box = (h, st, wfrac = 1, kind = "slab") => { // one element: a front face + a top face, styled by state
+    const w = W * wfrac, x0 = -w / 2;
+    const cls = "mb-el " + st + (st === "approvals" || st === "supply" || st === "ready" ? (both || hasForm ? " form" : "") + (both || hasRebar ? " rebar" : "") : "");
+    const f = sv("rect", { x: x0, y: y - h, width: w, height: h, class: cls });
+    const top = sv("path", { d: `M${x0},${y - h} L${x0 + w},${y - h} L${x0 + w + d},${y - h - d} L${x0 + d},${y - h - d} Z`, class: cls + " top" });
+    g.append(f, top);
+    if (detail && /approvals|supply|ready|pouring|stale/.test(st) && (both || hasRebar)) for (let i = 1; i < 4; i++) g.append(sv("line", { x1: x0 + (w * i) / 4, y1: y - h + 1, x2: x0 + (w * i) / 4, y2: y - 1, class: "mb-bar" }));
+    y -= h + (kind === "slab" ? 0 : 0);
+  };
+  const cols = (st) => { // four columns, drawn as bars (rebar cages / formwork / concrete by state)
+    const h = s * 0.42, cls = "mb-col " + st + (/approvals|supply|ready/.test(st) ? (both || hasForm ? " form" : "") + (both || hasRebar ? " rebar" : "") : "");
+    for (const fx of [-0.42, -0.14, 0.14, 0.42]) g.append(sv("rect", { x: fx * W - s * 0.035, y: y - h, width: s * 0.07, height: h, class: cls }));
+    for (const fx of [-0.3, 0.3]) g.append(sv("rect", { x: fx * W + d * 0.6 - s * 0.03, y: y - h - d * 0.6, width: s * 0.06, height: h, class: cls + " back" }));
+    y -= h;
+  };
+  for (const L of lv) {
+    const part = (k) => (L.parts.find((x) => x.k === k) || { st: "none" }).st;
+    if (L.key === "foot") { const st = [part("foot"), part("neck")].find((x) => x !== "done" && x !== "none") || (part("foot") === "done" ? "done" : "none"); if (st !== "none") box(s * 0.08, st, 1.05, "foot"); continue; }
+    if (L.key === "beam") { const st = part("beam"); if (st !== "none") box(s * 0.07, st, 1, "beam"); continue; }
+    const c = part("cols"), sl = part("slab");
+    if (c === "none" && sl === "none") continue;
+    if (c !== "none") cols(c); else y -= s * 0.42;
+    if (sl !== "none") box(s * 0.06, sl, 1.02); else y -= s * 0.06;
+  }
+  // the pour in progress: a pump boom and a mixer drum (moving only after a RECORDED start, never under reduced motion)
+  if (act && (act.stage === "pouring" || act.stage === "stale")) {
+    const px = W / 2 + s * 0.35;
+    g.append(sv("line", { x1: px, y1: 0, x2: px - s * 0.1, y2: y - s * 0.15, class: "mb-pump" }), sv("line", { x1: px - s * 0.1, y1: y - s * 0.15, x2: 0, y2: y - s * 0.05, class: "mb-pump" }));
+    const drum = sv("ellipse", { cx: px + s * 0.18, cy: -s * 0.12, rx: s * 0.13, ry: s * 0.09, class: "mb-drum" + (act.stage === "pouring" && motionOK() && !MAPWALL ? " spin" : "") });
+    g.append(drum);
+    if (act.stage === "stale") { const q = sv("text", { x: px, y: y - s * 0.2, class: "mb-q" }); q.textContent = "?"; g.append(q); }
+  }
+  if (act && act.stage === "ready") { const t = sv("text", { x: 0, y: y - s * 0.12, class: "mb-ok" }); t.textContent = "✓"; g.append(t); }
+  if (detail && p.others && p.others.length) { const t = sv("text", { x: -W / 2 - 4, y: y, class: "mb-more" }); t.textContent = "+" + p.others.length; g.append(t); }
+  return g;
+}
+function mapTip(p) {
+  const act = (p.pours || []).find((x) => x.id === p.active), lvl = act ? (p.levels.find((l) => l.key === act.level) || {}).t : null;
+  const L = [p.name + (p.code ? " · " + p.code : ""), act ? `${act.el}${lvl ? " · " + lvl : ""}${act.zone ? " · " + act.zone : " · المنطقة غير محددة"} — ${act.stageT}` : "لا صبة مفتوحة"];
+  L.push(p.progress && p.progress.actual !== null && p.progress.actual !== undefined ? `الإنجاز ${Math.round(p.progress.actual * 100)}% (${p.progress.src === "verified" ? "متحقق" : "مبلّغ عنه"}) مقابل المخطط ${Math.round((p.progress.planned || 0) * 100)}%` : "الإنجاز مقابل المخطط: لا طريقة حساب معتمدة لهذا المشروع");
+  L.push(`${MCOL[p.colour.k][1]} ${MCOL[p.colour.k][0]} — ${p.colour.why[0] || ""}`);
+  L.push(p.fieldAt ? "آخر تحديث ميداني " + ageT(daysSince(p.fieldAt)) + " (" + dmy(p.fieldAt) + ")" : "لا تحديث ميداني مسجّل");
+  return L;
+}
+function cmdMap(m, M, wall) {
+  MAPWALL = !!wall;
+  const ps = M.projects, all = [...ps, ...(M.noGeo || [])];
+  const wrap = el("div", "mwrap" + (wall ? " wall" : "")), stage = el("div", "mstage"), side = el("div", "mside");
+  // data time and connection: an old picture says so
+  const age = Math.round((Date.now() - Date.parse(M.at)) / 60000), st = el("div", "mstat" + (age > 15 || !navigator.onLine ? " old" : ""));
+  st.append(el("span", "", "بيانات الخريطة: " + (age < 1 ? "الآن" : "قبل " + age + " دقيقة")), ...(navigator.onLine ? [] : [el("b", "", " · لا اتصال — آخر صورة محفوظة")]));
+  if (!wall) st.append(el("span", "small muted", " · المجسم تمثيل للمرحلة وليس نموذجاً مطابقاً للمخططات"));
+  m.append(st);
+  if (!ps.length) stage.append(el("div", "empty", "لا مشروع بموقع موثّق بعد — حدّد المواقع من «يحتاج تحديد الموقع»."));
+  const svgNS = "http://www.w3.org/2000/svg", svg = document.createElementNS(svgNS, "svg"); svg.setAttribute("class", "msvg"); svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", "خريطة المشاريع: " + ps.map((p) => `${p.code || p.name} ${MCOL[p.colour.k][0]}`).join("، "));
+  const tip = el("div", "mtip"); tip.hidden = true; tip.setAttribute("role", "tooltip");
+  if (ps.length) stage.append(svg, tip);
+  const ctl = el("div", "mctl"); [["+", 1.5], ["−", 1 / 1.5], ["⤢", 0]].forEach(([t, f]) => { const b = el("button", "sbtn", t); b.type = "button"; b.setAttribute("aria-label", f === 0 ? "ملاءمة كل المشاريع" : f > 1 ? "تكبير" : "تصغير"); b.onclick = () => { if (f === 0) MAPV.fit = true; else { MAPV.k = Math.min(40, Math.max(0.3, MAPV.k * f)); MAPV.fit = false; } paint(); }; ctl.append(b); });
+  if (ps.length) stage.append(ctl);
+  const xy = ps.length ? mapPlane(ps) : null, P = ps.map((p) => ({ p, km: xy(p.geo) }));
+  function paint() {
+    const W = stage.clientWidth || 600, H = stage.clientHeight || 420;
+    const xs = P.map((q) => q.km[0]), ys = P.map((q) => q.km[1]), spanX = Math.max(0.6, Math.max(...xs) - Math.min(...xs)), spanY = Math.max(0.6, Math.max(...ys) - Math.min(...ys));
+    if (MAPV.fit || MAPV.cx === null) { MAPV.cx = (Math.max(...xs) + Math.min(...xs)) / 2; MAPV.cy = (Math.max(...ys) + Math.min(...ys)) / 2; MAPV.k = 1; MAPV.fit = false; }
+    const base = Math.min((W - 140) / spanX, (H - 140) / spanY), sc = base * MAPV.k; // px per km
+    const sx = (km) => [W / 2 + (km[0] - MAPV.cx) * sc, H / 2 + (km[1] - MAPV.cy) * sc];
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.replaceChildren();
+    const sv = (t, a) => { const e = document.createElementNS(svgNS, t); for (const k in a) e.setAttribute(k, a[k]); return e; };
+    // grid: a «nice» step near 90 px, scale bar and north
+    const step = [0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50].find((v) => v * sc >= 90) || 50, gx = sv("g", { class: "mgrid" });
+    const x0 = MAPV.cx - W / 2 / sc, y0 = MAPV.cy - H / 2 / sc;
+    for (let v = Math.floor(x0 / step) * step; v < x0 + W / sc; v += step) { const [px] = sx([v, 0]); gx.append(sv("line", { x1: px, y1: 0, x2: px, y2: H })); }
+    for (let v = Math.floor(y0 / step) * step; v < y0 + H / sc; v += step) { const [, py] = sx([0, v]); gx.append(sv("line", { x1: 0, y1: py, x2: W, y2: py })); }
+    svg.append(gx);
+    const sb = sv("g", { class: "mscale" }); sb.append(sv("line", { x1: 16, y1: H - 18, x2: 16 + step * sc, y2: H - 18 }), sv("line", { x1: 16, y1: H - 23, x2: 16, y2: H - 13 }), sv("line", { x1: 16 + step * sc, y1: H - 23, x2: 16 + step * sc, y2: H - 13 }));
+    const sbt = sv("text", { x: 16 + step * sc / 2, y: H - 26 }); sbt.textContent = step >= 1 ? step + " كم" : Math.round(step * 1000) + " م"; sb.append(sbt); svg.append(sb);
+    const nt = sv("g", { class: "mnorth", transform: "translate(26,30)" }); nt.append(sv("path", { d: "M0,-14 L6,6 L0,2 L-6,6 Z" })); const nl = sv("text", { x: 0, y: 20 }); nl.textContent = "ش"; nt.append(nl); svg.append(nt);
+    // size by zoom (simpler buildings when small); overlapping sites fan out with a leader line to their true point
+    const size = Math.max(26, Math.min(90, 44 + 12 * Math.log2(MAPV.k) - Math.max(0, P.length - 8) * 1.5)), detail = size >= 40;
+    const pts = P.map((q) => ({ q, at: sx(q.km), pos: sx(q.km) }));
+    for (let i = 0; i < pts.length; i++) for (let j = 0; j < i; j++) { const a = pts[i], b = pts[j]; if (Math.hypot(a.pos[0] - b.pos[0], a.pos[1] - b.pos[1]) < size * 1.1) { const ang = (i * 2.4) % (2 * Math.PI); a.pos = [a.pos[0] + Math.cos(ang) * size * 1.15, a.pos[1] + Math.sin(ang) * size * 0.9]; } }
+    for (const t of pts) {
+      const p = t.q.p, g = sv("g", { class: "mproj" + (MAPV.sel === p.id ? " sel" : ""), transform: `translate(${t.pos[0]},${t.pos[1]})`, tabindex: wall ? "-1" : "0", role: wall ? "img" : "button" });
+      g.setAttribute("aria-label", `${p.name}: ${MCOL[p.colour.k][0]}`);
+      if (t.pos !== t.at) svg.append(sv("line", { x1: t.at[0], y1: t.at[1], x2: t.pos[0], y2: t.pos[1], class: "mlead" }), sv("circle", { cx: t.at[0], cy: t.at[1], r: 2.5, class: "mdot" }));
+      g.append(mapBuilding(p, size, detail));
+      const lab = sv("text", { x: 0, y: 16, class: "mlab " + p.colour.k }); lab.textContent = MCOL[p.colour.k][1] + " " + (p.code || p.name); g.append(lab);
+      if (!wall) {
+        g.addEventListener("pointerenter", (e) => { if (e.pointerType !== "mouse") return; tip.replaceChildren(...mapTip(p).map((s, i) => el(i ? "div" : "b", "", s))); tip.hidden = false; const r = stage.getBoundingClientRect(); tip.style.left = Math.min(r.width - 280, Math.max(8, e.clientX - r.left + 14)) + "px"; tip.style.top = Math.max(8, e.clientY - r.top + 14) + "px"; });
+        g.addEventListener("pointerleave", () => (tip.hidden = true));
+        const open = () => { MAPV.sel = p.id; MAPV.pour = p.active; MAPV.scroll = true; tip.hidden = true; draw(); };
+        g.addEventListener("click", open); g.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } });
+      }
+      svg.append(g);
+    }
+  }
+  // pan by drag (mouse, pen, one finger), zoom by wheel; both simple and bounded
+  let drag = null;
+  svg.addEventListener("pointerdown", (e) => { if (e.target.closest && e.target.closest(".mproj")) return; drag = { x: e.clientX, y: e.clientY, cx: MAPV.cx, cy: MAPV.cy }; svg.setPointerCapture(e.pointerId); });
+  svg.addEventListener("pointermove", (e) => { if (!drag) return; const W = stage.clientWidth, H = stage.clientHeight, xs = P.map((q) => q.km[0]), ys = P.map((q) => q.km[1]);
+    const sc = Math.min((W - 140) / Math.max(0.6, Math.max(...xs) - Math.min(...xs)), (H - 140) / Math.max(0.6, Math.max(...ys) - Math.min(...ys))) * MAPV.k;
+    MAPV.cx = drag.cx - (e.clientX - drag.x) / sc; MAPV.cy = drag.cy - (e.clientY - drag.y) / sc; requestAnimationFrame(paint); });
+  svg.addEventListener("pointerup", () => (drag = null)); svg.addEventListener("pointercancel", () => (drag = null));
+  svg.addEventListener("wheel", (e) => { e.preventDefault(); MAPV.k = Math.min(40, Math.max(0.3, MAPV.k * (e.deltaY < 0 ? 1.25 : 0.8))); requestAnimationFrame(paint); }, { passive: false });
+  // the side: the synchronized alert list (so a stalled project is never lost under another or off-screen), then the unplaced ones;
+  // a chosen project replaces the list with its panel — the map stays
+  const sel = all.find((p) => p.id === MAPV.sel);
+  if (sel && !wall) side.append(mapPanel(sel, M)); else side.append(mapList(M, all, wall));
+  wrap.append(stage, side); m.append(wrap);
+  if (ps.length) { requestAnimationFrame(paint); const ro = new ResizeObserver(() => requestAnimationFrame(paint)); ro.observe(stage); }
+  // on a phone the panel sits under the map: bring it into view once when a project is opened (the map stays above)
+  if (MAPV.scroll && sel && matchMedia("(max-width:980px)").matches) requestAnimationFrame(() => side.scrollIntoView({ block: "start", behavior: smoothB() }));
+  MAPV.scroll = false;
+}
+function mapList(M, all, wall) {
+  const box = el("div", "malist");
+  const al = (M.alerts || []);
+  box.append(el("h3", "", "تنبيهات المشاريع (" + al.length + ")"));
+  if (!al.length) box.append(el("p", "small muted", "لا مشروع أحمر أو أصفر أو رمادي."));
+  for (const a of al) {
+    const p = all.find((x) => x.id === a.id); if (!p) continue;
+    const b = el(wall ? "div" : "button", "mrow " + a.k); if (!wall) { b.type = "button"; b.onclick = () => { MAPV.sel = p.id; MAPV.pour = p.active; MAPV.scroll = true; draw(); }; }
+    b.append(el("span", "mg " + a.k, MCOL[a.k][1]), el("b", "", p.code || p.name), el("span", "small", a.why || MCOL[a.k][0]), ...(p.geo ? [] : [el("span", "pill", "بلا موقع")]));
+    box.append(b);
+  }
+  if ((M.noGeo || []).length) {
+    box.append(el("h3", "", "يحتاج تحديد الموقع (" + M.noGeo.length + ")"));
+    box.append(el("p", "small muted", "لا يُوضع مشروع على الخريطة دون إحداثيات موثقة."));
+    for (const p of M.noGeo) {
+      const r = el("div", "mrow grey"); r.append(el("b", "", p.code || p.name), el("span", "small", p.name));
+      if (M.canGeo && !wall) { const b = el("button", "sbtn", "تحديد الموقع"); b.type = "button"; b.onclick = () => mapAct(M, "geo", "", { pid: p.id }); r.append(b); }
+      if (!wall) { const o = el("button", "sbtn", "التفاصيل"); o.type = "button"; o.onclick = () => { MAPV.sel = p.id; MAPV.pour = p.active; MAPV.scroll = true; draw(); }; r.append(o); }
+      box.append(r);
+    }
+  }
+  return box;
+}
+// an action from the server's list on this pour, through the page's own action form (fields, PIN, opId, errors)
+function mapAct(M, act, row, pre) {
+  const d = (M.defs || []).find((x) => x.id === act); if (!d) return;
+  actForm({ id: "map" }, d, { id: row, data: pre || {} }); if (!$("dlg").open) $("dlg").showModal();
+}
+function mapPanel(p, M) {
+  const box = el("div", "mpanel"), back = el("button", "lnk", "→ كل التنبيهات"); back.type = "button"; back.onclick = () => { MAPV.sel = null; draw(); };
+  const h = el("div", "mph"); h.append(el("h3", "", p.name), el("span", "small muted", p.code || ""));
+  const cb = el("div", "mcolour " + p.colour.k); cb.append(el("b", "", MCOL[p.colour.k][1] + " " + MCOL[p.colour.k][0])); const ul = el("ul"); for (const w of p.colour.why) ul.append(el("li", "", w)); cb.append(ul);
+  box.append(back, h, cb);
+  // progress: planned vs achieved only with an approved method; reported and verified kept apart
+  const pr = el("div", "msec"); pr.append(el("h4", "", "التقدم ومصدره"));
+  if (p.progress && p.progress.actual !== null && p.progress.actual !== undefined) pr.append(el("p", "", `الإنجاز ${Math.round(p.progress.actual * 100)}% — ${p.progress.src === "verified" ? "متحقق بدليل حديث" : "مبلّغ عنه (غير متحقق)"} · المخطط ${Math.round((p.progress.planned || 0) * 100)}%`));
+  else pr.append(el("p", "small muted", "لا طريقة حساب معتمدة للإنجاز مقابل المخطط لهذا المشروع — لا تُعرض نسبة."));
+  const lv = el("div", "mlv"); for (const L of p.levels) { const r = el("div", "mlvr"); r.append(el("b", "", L.t)); for (const x of L.parts) r.append(el("span", "mst " + x.st, x.t + ": " + (MPART[x.st] || x.st) + (x.src === "audit" ? " (التدقيق)" : x.src === "pour" ? " (الصبة)" : ""))); lv.append(r); }
+  pr.append(lv); box.append(pr);
+  if ((p.work || []).length) { const w = el("div", "msec"); w.append(el("h4", "", "أعمال اليوم المسجّلة")); for (const x of p.work) w.append(el("div", "small", (x.k === "rebar" ? "حدادة" : x.k === "form" ? "نجارة" : "عمل") + ": " + x.t + (x.area ? " · " + x.area : "") + (x.status ? " · " + x.status : ""))); box.append(w); }
+  // pours: the chosen one in full, the others named (several activities at once are normal)
+  const pours = (p.pours || []).filter((x) => x.stage !== "cancelled");
+  const pw = el("div", "msec"); pw.append(el("h4", "", "الصبات (" + pours.length + ")"));
+  if (!pours.length) pw.append(el("p", "small muted", "لا صبة مسجّلة لهذا المشروع."));
+  const cur = pours.find((x) => x.id === MAPV.pour) || pours.find((x) => x.id === p.active) || pours[pours.length - 1];
+  if (pours.length > 1) { const tabs = el("div", "sub-tabs"); for (const x of pours) { const b = el("button", "", x.el + " · " + x.stageT); b.type = "button"; b.setAttribute("aria-current", String(x === cur)); b.onclick = () => { MAPV.pour = x.id; draw(); }; tabs.append(b); } pw.append(tabs); }
+  if (cur) pw.append(mapPour(cur, M));
+  box.append(pw);
+  // next action: the first open inspection or obstacle, with who and when; then the obstacles; then the next payment (money roles)
+  const nx = el("div", "msec"); nx.append(el("h4", "", "الإجراء التالي"));
+  const firstRx = cur && cur.rx.find((r) => !["approved", "na"].includes(r.st));
+  if (cur && cur.violation) nx.append(el("p", "neg", "⛔ صب دون استيفاء المتطلبات — مرفوع للإدارة: " + (cur.violation.why || []).join(" · ")));
+  else if (firstRx) nx.append(el("p", "", `${firstRx.t}: ${firstRx.stT} — المسؤول: طالب الصبة (مهندس الموقع) · المهلة ${firstRx.due ? dmy(firstRx.due) : "غير محددة"}${firstRx.late ? " · فات موعدها" : ""}`));
+  else if (cur && !cur.ready && cur.stage !== "poured") nx.append(el("p", "", cur.notReady.join(" · ")));
+  else nx.append(el("p", "small muted", cur ? "لا إجراء مطلوب على هذه الصبة الآن." : "—"));
+  for (const b of p.blockers || []) nx.append(el("div", "small" + (b.overdue ? " neg" : ""), `عائق ${b.no || ""}: ${b.what} — ${b.resp || "بلا مسؤول محدد"}${b.due ? " · " + dmy(b.due) : ""}`));
+  box.append(nx);
+  if (p.next) { const pay = el("div", "msec"); pay.append(el("h4", "", "الدفعة القادمة"), el("p", "", p.next.label + (p.next.date ? " · " + dmy(p.next.date) : "") + (p.next.amount !== undefined && p.next.amount !== null ? " · " : "")));
+    if (p.next.amount !== undefined && p.next.amount !== null) pay.lastChild.append(sar(fmt(p.next.amount))); if (p.next.stage) pay.append(el("div", "small muted", "شرطها حسب العقد: " + p.next.stage)); box.append(pay); }
+  return box;
+}
+function mapPour(x, M) {
+  const box = el("div", "mpour"), act = new Set(x.acts || []);
+  const top = el("div", "mpt"); top.append(el("b", "", x.el), el("span", "pill", x.stageT), el("span", "small muted", (x.zone ? "المنطقة " + x.zone : "المنطقة غير محددة") + (x.date ? " · موعد الصبة " + dmy(x.date) : "")));
+  box.append(top);
+  if (x.conflict) box.append(el("div", "banner bad", x.conflict));
+  box.append(el("div", x.ready ? "mready ok" : "mready", x.ready ? "✓ جاهز للصب: الاستلامات الثلاثة معتمدة، لا ملاحظة مانعة، والصبة مُفرج عنها" : "غير جاهز للصب: " + x.notReady.join(" · ")));
+  if (x.started) box.append(el("div", "small", "بدء الصب مسجّل " + new Date(x.started.at).toLocaleTimeString("ar-SA-u-nu-latn", { hour: "2-digit", minute: "2-digit" }) + (x.stage === "stale" ? " — لا تحديث منذ مدة، يحتاج تأكيداً" : "")));
+  if (x.poured) box.append(el("div", "small", `تم الصب ${dmy(x.poured.date)}${x.poured.m3 !== null ? " · " + x.poured.m3 + " م³" : ""}${x.cureLeft !== null ? " · المعالجة: " + (x.cureLeft ? "باقي " + x.cureLeft + " أيام" : "انتهت مدتها") : ""}${x.cubes ? " · مكعبات " + x.cubes.n + (x.cubes.r7 !== null ? " · 7 أيام " + x.cubes.r7 + " MPa" : "") + (x.cubes.r28 !== null ? " · 28 يوماً " + x.cubes.r28 + " MPa" : "") : ""}`));
+  // the three inspections — each its own record for THIS pour only
+  const g = el("div", "mrx");
+  for (const r of x.rx) {
+    const c = el("div", "mrxc " + (RXC[r.st] || "unk")); c.append(el("b", "", r.t), glyph(r.stT, r.st === "approved" || r.st === "na" ? "✓" : r.st === "notes" ? "!" : r.st === "none" ? "○" : "…", RXC[r.st] || "unk"));
+    const kv = el("div", "small");
+    if (r.visit) kv.append(el("div", "", "الزيارة " + dmy(r.visit.on)));
+    if (r.visited) kv.append(el("div", "", "زار: " + (r.visited.who || "—")));
+    if (r.rec) kv.append(el("div", "", "اعتُمد " + dmy(r.rec.on) + (r.rec.form ? " · النموذج الموقّع مرفق" : "")));
+    if (r.na) kv.append(el("div", "", "لا ينطبق: " + (r.na.reason || "") + (r.na.ok ? " — معتمد" : " — بانتظار اعتماد الإدارة")));
+    if (r.reviewAgain) kv.append(el("div", "neg", "تعديل بعد الاعتماد — يحتاج مراجعة صاحب الاعتماد"));
+    if (r.late) kv.append(el("div", "neg", "متأخر عن مهلة " + dmy(r.due)));
+    c.append(kv);
+    for (const f of r.findings) {
+      const fr = el("div", "mfind " + (f.blocking ? "bad" : "warn")); fr.append(el("span", "", (f.blocking ? "مانعة · " : "شرط · ") + (f.text || "")), el("span", "small muted", ({ open: "عند المسؤول", fixed: "أُصلحت — بانتظار الجهة", verified: "تحقق داخلياً" })[f.status] || f.status));
+      if (act.has(`verify~${r.party}~${f.id}`)) { const b = el("button", "sbtn", "تحقق وأغلق الشرط"); b.type = "button"; b.onclick = () => mapAct(M, "verify", `${x.id}~${r.party}~${f.id}`); fr.append(b); }
+      c.append(fr);
+    }
+    const bar = el("div", "cacts");
+    for (const a of ["req", "visit", "visited", "note", "na", "naok"]) if (act.has(`${a}~${r.party}`)) { const d = (M.defs || []).find((q) => q.id === a); if (!d) continue; bar.append(ebtn(d.label, () => mapAct(M, a, `${x.id}~${r.party}`), "sbtn ebtn")); }
+    if (bar.children.length) c.append(bar);
+    g.append(c);
+  }
+  box.append(g);
+  const bar = el("div", "cacts");
+  if (act.has("start")) bar.append(ebtn("بدء الصب", () => mapAct(M, "start", x.id), "sbtn ebtn" + (x.ready ? " pri" : "")));
+  if (act.has("alive")) bar.append(ebtn("ما زال الصب جارياً", () => mapAct(M, "alive", x.id), "sbtn ebtn pri"));
+  if (act.has("seen")) bar.append(ebtn("اطلعت على المخالفة", () => mapAct(M, "seen", x.id), "sbtn ebtn"));
+  // what the bot already does (signed forms, fix photos, «تمت الصبة») stays in «المساعد» on the same pour record
+  if (x.chat) bar.append(ebtn("افتح الصبة في المساعد", () => openChat(x.chat, x.el), "sbtn ebtn"));
+  if (bar.children.length) box.append(bar);
+  if (!x.ready && act.has("start")) box.append(el("div", "small muted", "بدء الصب الآن يُسجّل كمخالفة ويُرفع للإدارة — لا يُعتبر معتمداً."));
+  return box;
+}
 function cmdView(m) {
   const C = D.cmd, money = !!(C.cash && C.cash.protection && C.cash.protection.floor !== undefined);
   m.append(page("", "مركز القيادة", "كل المشاريع معاً: ما يجري اليوم، ما يعيقه، ما يحتاج تدخلاً، وما يلزم للوصول إلى كل تحصيل. يقترح النظام، والقرار للمخوّلين.", "var(--eng6)"));
-  m.append(syncBar(C));
+  if (!(CT === "map" && C.map)) m.append(syncBar(C)); // the map carries its own data time and each project's field freshness
   const st = el("div", "sub-tabs mtabs");
-  const tabs = [...CTABS.slice(0, 1), ...(C.coord ? [{ k: "coord", t: "المنسّق" }, { k: "risk", t: "مخاطر قادمة" }] : []), ...(D.ws && D.ws.team ? [{ k: "team", t: "متابعة الفريق" }] : []), ...(C.agents ? [{ k: "agents", t: "فريق المساعدين" }] : []), ...CTABS.slice(1), ...(D.quality ? [{ k: "dq", t: "جودة البيانات" }] : [])]; if (!tabs.some((x) => x.k === CT)) CT = "now";
+  const tabs = [...(C.map ? [{ k: "map", t: "الخريطة" }] : []), ...CTABS.slice(0, 1), ...(C.coord ? [{ k: "coord", t: "المنسّق" }, { k: "risk", t: "مخاطر قادمة" }] : []), ...(D.ws && D.ws.team ? [{ k: "team", t: "متابعة الفريق" }] : []), ...(C.agents ? [{ k: "agents", t: "فريق المساعدين" }] : []), ...CTABS.slice(1), ...(D.quality ? [{ k: "dq", t: "جودة البيانات" }] : [])]; if (!tabs.some((x) => x.k === CT)) CT = "now";
   for (const x of tabs) { const b = el("button", "", x.t); b.type = "button"; b.setAttribute("aria-current", String(CT === x.k)); b.onclick = () => { CT = x.k; draw(); }; st.append(b); }
   m.append(st);
   if (CT === "dq") return cmdQuality(m, D.quality);
@@ -3418,6 +3706,7 @@ function cmdView(m) {
   if (CT === "coord") return cmdCoord(m, C.coord);
   if (CT === "agents") return cmdAgents(m, C.agents);
   if (CT === "risk") return cmdRisks(m, C.coord, money);
+  if (CT === "map") return cmdMap(m, C.map, false);
   if (CT === "now") return cmdNow(m, C, money);
   if (CT === "week") return cmdWeek(m, C);
   if (CT === "starts") return cmdStarts(m, C);
@@ -3547,6 +3836,7 @@ function wsAct(a, x, btn) {
   if (a.t === "doc") return openDoc({ open: { t: "file", id: a.id } }, btn);
   if (a.t === "act") { const KA = (D.cmd && D.cmd.coord && D.cmd.coord.acts) || null, d = KA && (KA.data.acts || []).find((q) => q.id === a.act), row = KA && (KA.data.rows || []).find((r) => r.id === a.row); return d && row ? actForm(KA, d, row) : toast("الإجراء غير متاح لك على هذا البند"); }
   if (a.v === "site" && a.sub) ST = a.sub; if (a.v === "cmd" && a.sub) CT = a.sub;
+  if (a.v === "cmd" && a.sub === "map" && a.pid) { MAPV.sel = a.pid; MAPV.pour = a.pour || null; } // a map card opens its project and pour
   go(a.v);
 }
 function wsCard(x) {
@@ -4066,6 +4356,8 @@ async function wallRefresh() {
 }
 function wallPanels(X) {
   const ps = X.projects || [], P = [];
+  // the map first: read-only (no panel, no actions); the server already stripped names, notes, forms and amounts
+  if (X.map && (X.map.projects.length || (X.map.noGeo || []).length)) P.push(["خريطة المشاريع", (b) => cmdMap(b, X.map, true)]);
   for (let i = 0; i < Math.max(1, ps.length); i += 20) P.push(["المشاريع" + (ps.length > 20 ? " (" + (i / 20 + 1) + "/" + Math.ceil(ps.length / 20) + ")" : ""), (b) => {
     const g = el("div", "wgrid");
     for (const p of ps.slice(i, i + 20)) {

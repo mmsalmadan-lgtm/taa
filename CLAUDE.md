@@ -315,3 +315,16 @@ Known good totals (2026-11-09): contracts 14,259,433.75 · collected 7,751,477.4
 - Custody fee %: set by management from the data-completion list (no fee until then); VAT on custody purchases (ask Amr).
 - 8 projects have no contract date (year 2025 assumed for their numbers).
 - Ahmed Zaki (S-25-003): see the reconciliation item in «اكتمال البيانات» (audit 600k vs Qoyod 450k).
+
+## «الخريطة» — first tab of «مركز القيادة» (owner's brief 15 Nov 2026; server: taa-bot core/sitemap.ts)
+- `cmdMap(m, M, wall)` draws `D.cmd.map` (or `D.display.map` on the wall, read-only): projects at their documented coordinates on a light grid
+  with scale and north (NO base-map tiles — the provider is the owner's decision), each as `mapBuilding()` — footings, beams, columns and slab per
+  floor by recorded state (concrete / formwork + rebar / dashed «غير محدد») with the colour on the base plate AND a glyph; pump + mixer only after a
+  RECORDED start (no spin under reduced motion or on the wall). Zoom buttons, wheel, drag; sizes simplify when small; overlapping sites fan out.
+- Side: the alert list (red, yellow, grey) synchronised with the map, then «يحتاج تحديد الموقع» (admin: «تحديد الموقع» → `map.geo`). A chosen
+  project replaces the side with `mapPanel` (colour reasons, progress only with an approved method — reported vs verified, levels with source,
+  today's recorded work, pours with `mapPour`: readiness, conflict, the three inspection cards with their notes, the next action, obstacles, the next
+  payment for money roles). Buttons = the server's `acts` for this person, through `actForm` (`mapAct`), PIN where required; the bot's own steps
+  (signed forms, fix photos, «تمت الصبة») open the pour in «المساعد». Hover = tooltip (mouse only); tap/Enter opens; phones scroll to the panel.
+- `wsAct` opens a map card's project and pour (`a.pid`, `a.pour`). The map tab hides the field-sync bar (the map has its own data time).
+- Known: the wall's top counters come from the Command Center status (critical/attention/unknown), not from the map colour — a decision.
