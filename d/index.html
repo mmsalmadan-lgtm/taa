@@ -66,7 +66,7 @@ h1,h2,h3{font-family:var(--f-disp);font-weight:600;letter-spacing:0}
 /* phone and tablet: the account actions (language, alerts, PIN, sign out) fold behind «الحساب», so they no longer take a whole
    row above the work and «خروج» is not alone where a thumb lands (critique 14 Nov 2026); the desk sidebar keeps them all */
 .acct-t{display:none}.acct-t::after{content:"▾";margin-inline-start:6px;font-size:11px}.acct-t[aria-expanded="true"]::after{content:"▴"}
-.acct-m{display:contents}#langBtn{order:1}#bellBtn{order:2}#reload{order:3}#pinBtn{order:4}#outBtn{order:5}#acctBtn{order:6}
+.acct-m{display:contents}#acctBtn{order:1} /* DOM order = screen order = focus order (no CSS reordering of the actions) */
 /* one breakpoint for the phone header: the role/update line wraps (it shares the row), the account actions are a dropdown that
    opens under «الحساب» without moving it */
 @media (max-width:1079px){
@@ -3107,9 +3107,10 @@ function fail(title, text) {
 // ---- sign-in: phone + PIN; the first time phone + activation code + a PIN of your own ----
 const clearHash = () => { if (location.hash) history.replaceState(history.state, "", location.pathname + location.search); };
 // closes the phone account menu (also on sign-out, so the next sign-in never starts with it open)
+let ACCT_BACK = false; // return focus to «الحساب» when the dialog opened from its menu closes
 function acctShut() { $("ghA").classList.remove("open"); $("acctBtn").setAttribute("aria-expanded", "false"); }
 function signedOut() {
-  token = ""; store.clear(); clearHash(); D = null; REG = null; AUTHL = null; acctShut();
+  token = ""; store.clear(); clearHash(); D = null; REG = null; AUTHL = null; acctShut(); ACCT_BACK = false;
   for (const id of ["reload", "pinBtn", "outBtn", "bellBtn", "mode"]) $(id).hidden = true;
   $("who").textContent = "لوحة المتابعة"; $("roles").textContent = "مؤسسة طاء الرائدة للمقاولات العامة";
 }
@@ -7041,12 +7042,26 @@ async function pushDialog() {
 $("bellBtn").addEventListener("click", pushDialog);
 { // «الحساب» on phones: a dropdown of the account actions. Closes on choosing one (focus comes back to «الحساب» when the
   // dialog it opened closes), on a tap outside, on Escape, and on sign-out (acctShut in signedOut)
-  const a = $("ghA"), t = $("acctBtn"), m = $("acctMenu"); let back = false;
+  const a = $("ghA"), t = $("acctBtn"), m = $("acctMenu"), isOpen = () => a.classList.contains("open");
+  const inside = (n) => !!n && (t.contains(n) || m.contains(n));
   t.addEventListener("click", () => { const o = a.classList.toggle("open"); t.setAttribute("aria-expanded", String(o)); });
-  m.addEventListener("click", (e) => { const b = e.target.closest("button"); if (b && a.classList.contains("open")) { acctShut(); back = b.id === "pinBtn" || b.id === "bellBtn"; } });
-  document.addEventListener("click", (e) => { if (a.classList.contains("open") && !a.contains(e.target)) acctShut(); });
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && a.classList.contains("open")) { acctShut(); t.focus(); } });
-  $("dlg").addEventListener("close", () => { if (back) { back = false; if (getComputedStyle(t).display !== "none") t.focus(); } });
+  m.addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b || !isOpen()) return;
+    acctShut(); ACCT_BACK = b.id === "pinBtn" || b.id === "bellBtn";
+    if (b.id === "langBtn") t.focus(); // the language switch opens no dialog: keep the place
+  });
+  // a tap outside only closes the menu: it is swallowed so it does not also press what lies under it (pointerdown also
+  // catches taps on plain space, which iOS may not turn into a click)
+  let swallow = 0;
+  document.addEventListener("pointerdown", (e) => { if (isOpen() && !inside(e.target)) { acctShut(); swallow = Date.now(); } }, true);
+  document.addEventListener("click", (e) => {
+    if (swallow && Date.now() - swallow < 600) { swallow = 0; if (!inside(e.target)) { e.preventDefault(); e.stopPropagation(); } return; }
+    swallow = 0; if (isOpen() && !inside(e.target)) acctShut();
+  }, true);
+  a.addEventListener("focusout", (e) => { if (isOpen() && e.relatedTarget && !inside(e.relatedTarget)) acctShut(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && isOpen()) { acctShut(); t.focus(); } });
+  matchMedia("(max-width:1079px)").addEventListener("change", acctShut);
+  $("dlg").addEventListener("close", () => { if (ACCT_BACK) { ACCT_BACK = false; if (getComputedStyle(t).display !== "none") t.focus(); } });
 }
 // an alert tapped while the dashboard is open: the service worker asks this page to show «المساعد»
 if (PUSH.ok) navigator.serviceWorker.addEventListener("message", (e) => { if (e.data && e.data.go === "bot" && D) { if ($("dlg").open) $("dlg").close(); go("bot"); } });
