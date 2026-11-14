@@ -171,6 +171,12 @@ card or page · finance things live under المالية, purchases under الم
   dialog, `ACCT_BACK`), a tap outside (swallowed, so it never presses what lies under it), focus leaving it, Escape, crossing the breakpoint,
   and sign-out (`acctShut()` in `signedOut`). On the desk `#acctMenu` is `display:contents`; DOM order = screen order = focus order
   (update, language, alerts, PIN, sign out) — no CSS reordering.
+- Header name (owner, 15 Nov 2026): «المهندس/المهندسة» shows as «م.»; the name wraps instead of being cut (two lines at most below
+  1080 px, where it shares the row with «الحساب»).
+- «مساحتي»: an empty «بانتظار اعتمادي» / «متأخر» section is not drawn (its chip already says «لا …»; zero chips are plain labels, a
+  chip with a count jumps and moves focus to its section). A person whose every role is sales/pricing gets no «0 مشاريع مسندة لك» line
+  and no «لا مشروع مسند لك» banner (the bot still sends the gap — a bot-side follow-up). On phones a one-column card list (`.clist`) keeps
+  label | value side by side.
 - Not built yet: ranking by «what it unblocks» (the bot ranks by money × urgency), one-press execution for decisions that have no action in
   the bot, and the same layout for non-money roles.
 
