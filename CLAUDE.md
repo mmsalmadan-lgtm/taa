@@ -292,6 +292,20 @@ card or page · finance things live under المالية, purchases under الم
    can't reach it) and confirm the new code is live; then compare the totals on the page with production data.
 Known good totals (2026-11-09): contracts 14,259,433.75 · collected 7,751,477.43 · due now 201,663.50.
 
+## Review and test levels (owner-approved after the 3-PR gstack pilot, 15 Nov 2026)
+- **Level 1 — mock (every PR touching `d/`):** the local kit `CC/tools/taa-browse` (outside this repo; synthetic data only) serves
+  this checkout with the API rewritten to a mock and drives gstack's headless browser as four synthetic accounts (owner, site
+  engineer, accountant, sales) at phone width; compare against `origin/main` and prove each fix on the rendered page (roles,
+  ownership, transitions, failure paths — not only screenshots). The kit refuses non-localhost URLs.
+- **Level 2 — isolated staging:** none exists for the bot; no end-to-end tests until one exists and its isolation from production
+  data, credentials, webhooks and external services is verified.
+- **Level 3 — production, read-only:** after every merge, the kit's smoke script waits for the new code and checks the public pages
+  (200, no console errors, sign-in loads on a phone). It never signs in or submits.
+- **Review:** `/code-review` on every PR. gstack `/review` as a second reviewer only for PRs touching sign-in/sessions,
+  roles/permissions, money/payments/contracts, or customer pages (`q/`, `f/`). At most two passes; an unresolved Critical/High is
+  never merged; leftovers are listed in the PR body. Impeccable stays the design authority. Merge and deploy only with the owner's
+  approval. gstack skills are invoked by hand only — no hooks, no `/ship`, `/land-and-deploy` or `/canary`.
+
 ## Open items
 - «المستندات» tab and the bot behind it are live (2026-11-09; bot ebed7cd deployed). It lists documents issued from then on;
   older PO / GRN / PV have no stored PDF. Not yet checked with real data or against the known-good totals (needs a dash link).
