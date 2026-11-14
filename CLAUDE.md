@@ -204,6 +204,15 @@ card or page · finance things live under المالية, purchases under الم
   command.ts/labour.ts on controlled records): 390/1280/EN, engineer view has no riyal sign, wall 1920×1080 + phone, rotation and pause,
   an intervention action body, no horizontal scroll, no console errors.
 
+## Data quality (spec 14 Nov 2026, stage 1)
+- With `D.quality` (money roles) the Command Center gets a sixth sub-tab «جودة البيانات» (`cmdQuality`) and `cmdNow` shows `qualityBox(C.quality)`:
+  last field update / last financial reconciliation, missing inputs, discrepancies, violations, specific sentences. `cmdQuality`: figure cards
+  (`traceDlg`: kind actual/calculated/estimated, rule, sources, excluded, assumptions, freshness, the open items that weaken it), freshness rows
+  against the policy with connectivity apart, `policyDlg` (admin, PIN → op `quality_policy`), reconciliation results, the `q` issues of the
+  register, the source-ownership list. Register cards and `dqDialog` show an item's `q` (type, violation vs review, record, impact, correction).
+- English covers the page's own labels and the bot's fixed labels; issue titles, evidence and policy reasons come from the bot in Arabic.
+- Checked with `rd/cc.cjs` (mock `p7/dash_cc.json` incl. quality from the bot's `quality.ts`): 390/1280/EN, trace and issue sheets open, no errors.
+
 ## How to change and verify (the owner expects Claude to check its own work)
 1. `git fetch && git checkout -B <branch> origin/main` (always from a fresh main — PRs are squash-merged).
 2. Test locally: `python3 -m http.server 8765` in the repo + Playwright (Chromium is pre-installed), routing the API to mock

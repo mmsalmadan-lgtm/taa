@@ -562,6 +562,9 @@ body.chatonly footer{display:none}
 .w13.d28{grid-template-columns:repeat(28,minmax(0,1fr));gap:2px;height:110px}.w13.d28 .c i{inset-inline:6%}
 .w13 .fl{position:absolute;inset-inline:0;border-top:1.5px dashed var(--warn6)}
 .w13.d28 .c i.u{background:color-mix(in srgb,var(--warn6) 75%,var(--surface))}
+.qbox{gap:10px}.qbox h3{margin:0;font-size:16px;font-family:var(--f-disp);font-weight:600}.qbox .kv{max-width:560px}
+.qlines{margin:0;padding-inline-start:18px;font-size:13.5px;line-height:1.8}.qlines li.bad{color:var(--crit);font-weight:600}.qlines li.warn{color:var(--warn)}.qlines .lnk{text-align:start}
+.qkv{margin:10px 0;padding:12px 14px;background:var(--sunk);border-radius:var(--r-m)}
 .dsec{margin:14px 0 0}.dsec h4{margin:0 0 6px;font-size:14px;font-family:var(--f-disp);font-weight:600}.dsec ul{margin:0;padding-inline-start:18px;font-size:14px;line-height:1.8}.dsec p{margin:0;font-size:14px}
 .agenda{counter-reset:ag}.agenda>.sec-h h2::before{counter-increment:ag;content:counter(ag) ". ";color:var(--muted)}
 /* the wall display: one shared screen, read-only, large type, no amounts */
@@ -2450,7 +2453,94 @@ const EN = {
 "عجز نقدي متوقع من {x} لمدة {n} يوماً": "Cash shortfall expected from {x} for {n} days",
 "عجز نقدي متوقع من {x} لمدة يوم واحد": "Cash shortfall expected from {x} for 1 day",
 "عجز نقدي متوقع من {x} لمدة يومين": "Cash shortfall expected from {x} for 2 days",
-"عجز متوقع من {x}": "Shortfall expected from {x}"
+"عجز متوقع من {x}": "Shortfall expected from {x}",
+"جودة البيانات": "Data quality",
+"جودة البيانات التي يُبنى عليها هذا العرض": "Quality of the data behind this view",
+"آخر مطابقة مالية": "Last financial reconciliation",
+"مدخلات ناقصة": "Missing inputs",
+"فروقات ومطابقات مفتوحة": "Open discrepancies and reconciliations",
+"مخالفات قواعد": "Rule violations",
+"أرقام محدودة الثقة الآن:": "Figures with limited confidence now:",
+"حدود الحداثة مقترحة ولم تعتمدها الإدارة بعد.": "Freshness limits are proposed and not yet approved by management.",
+"تفاصيل الجودة والمصادر ←": "Quality details and sources →",
+"التحقق والحداثة والاكتمال والاتساق تُعرض كلٌّ على حدة. تحديث الشاشة أو نجاح المزامنة لا يعني أن المعلومة حديثة، والحساب لا يجعل مدخلاته متحققة.": "Verification, freshness, completeness and consistency are shown separately. A screen refresh or a successful sync does not make information current, and a calculation does not verify its inputs.",
+"الأرقام المهمة ومصادرها": "Key figures and their sources",
+"اضغط أي رقم لترى مصدره وقاعدة حسابه وما يُضعفه": "Tap a figure to see its source, calculation rule and what weakens it",
+"لا ملاحظات مفتوحة": "No open findings",
+"محدود — مدخلات ناقصة أو قديمة": "Limited — missing or old inputs",
+"غير موثوق — مخالفة في مدخلاته": "Unreliable — a violation in its inputs",
+"محسوب": "Calculated",
+"حديث": "Current",
+"يحتاج تحديثاً": "Needs refresh",
+"لا سجل — غير متحقق": "No record — unverified",
+"بنود مفتوحة تؤثر عليه": "Open items affecting it",
+"حداثة مصدره": "Source freshness",
+"حداثة المعلومات": "Freshness of information",
+"السياسة مقترحة — لم تعتمدها الإدارة بعد. العمر يُقاس من تاريخ الحدث لا من وقت المزامنة.": "The policy is proposed — not yet approved by management. Age is measured from the event date, not the sync time.",
+"آخر تاريخ": "Last date",
+"الحد المقترح": "Proposed limit",
+"يُقاس من": "Measured from",
+"الاتصال بالأنظمة (ليس حداثة البيانات):": "System connectivity (not data freshness):",
+"وقت المزامنة يدل على أن الاتصال يعمل — لا على أن البيانات حديثة": "A sync time shows the connection works — not that the data is current",
+"سياسة الحداثة المقترحة ({n} قواعد)": "Proposed freshness policy ({n} rules)",
+"يوم الموعد": "On the due day",
+"مراجعة السياسة واعتمادها": "Review and approve the policy",
+"تعديل السياسة": "Change the policy",
+"نتائج المطابقات": "Reconciliation results",
+"لا يُعدَّل أي مصدر تلقائياً ليتطابق المجموع": "No source is changed automatically to make totals agree",
+"قورن": "Compared",
+"الفروقات ({n})": "Differences ({n})",
+"سجل الملاحظات": "Issue register",
+"كل ملاحظة بسجلها ودليلها وأثرها ومسؤولها والتصحيح المطلوب": "Each finding with its record, evidence, impact, owner and required correction",
+"مخالفة قاعدة": "Rule violation",
+"يحتاج مراجعة": "Needs review",
+"لا ملاحظات اتساق مفتوحة — هذا لا يثبت صحة البيانات، فقط أن الفحوص الآلية لم تجد تعارضاً": "No open consistency findings — this does not prove the data is correct, only that the automated checks found no conflict",
+"كل بنود اكتمال البيانات ({n}) ←": "All data-completion items ({n}) →",
+"المصدر المعتمد لكل نوع من السجلات": "The authoritative source for each record type",
+"قاعدة الحساب": "Calculation rule",
+"السجلات المصدر": "Source records",
+"خارج الرقم": "Excluded",
+"الحداثة": "Freshness",
+"ما يُضعف هذا الرقم الآن ({n})": "What weakens this figure now ({n})",
+"لا بنود مفتوحة مسجّلة عليه": "No open items recorded against it",
+"السجل المتأثر": "Affected record",
+"الأثر": "Impact",
+"التصحيح المطلوب": "Required correction",
+"يحتاج مراجعة شخص": "needs a person's review",
+"لا يُصحَّح شيء تلقائياً. الإغلاق هنا استثناء مبرَّر: اكتب السبب والدليل في الملاحظة.": "Nothing is corrected automatically. Closing here is a justified exception: write the reason and evidence in the note.",
+"ناقص": "Missing",
+"مكرر": "Duplicate",
+"متعارض": "Conflicting",
+"بلا دليل": "Unsupported",
+"ربط خاطئ": "Wrongly linked",
+"سياسة حداثة المعلومات": "Information freshness policy",
+"عدد الأيام التي تبقى المعلومة بعدها «تحتاج تحديثاً». العقود الموقّعة ومحاضر الفحص لا تنتهي بالقِدم. اعتمادك يُسجَّل باسمك.": "The number of days after which information “needs refresh”. Signed contracts and inspection reports do not expire with age. Your approval is recorded in your name.",
+"رمزك السري للاعتماد": "Your PIN to approve",
+"اعتماد السياسة": "Approve the policy",
+"النقد المتاح": "Available cash",
+"أدنى رصيد متوقع (13 أسبوعاً)": "Lowest expected balance (13 weeks)",
+"الالتزامات المتبقية": "Remaining commitments",
+"الربح المتوقع للمشاريع المشمولة": "Expected profit of included projects",
+"النقد: آخر مطابقة (جرد أو كشف بنك)": "Cash: last reconciliation (count or bank statement)",
+"أرقام التدقيق: آخر حفظ": "Audit figures: last save",
+"التنفيذ: آخر تحديث ميداني": "Execution: last field update",
+"البرنامج: آخر تحقق من نشاط": "Programme: last activity verification",
+"دفتر النقد ↔ أرصدة الحسابات في قيود": "Cash book ↔ account balances in Qoyod",
+"أرصدة البنوك ↔ كشف البنك": "Bank balances ↔ bank statement",
+"عهد الموظفين ↔ العدّ الفعلي": "Staff custody ↔ physical count",
+"اتفاقيات مقاولي الباطن ↔ المثبت في حساباتهم في قيود": "Subcontract agreements ↔ work booked on their Qoyod accounts",
+"التحصيل في التدقيق ↔ سندات القبض في قيود": "Collections in the audit ↔ receipts in Qoyod",
+"لم يُدخل رصيد كشف البنك بعد — لا مطابقة": "No bank statement balance entered yet — no reconciliation",
+"توفر الفرق وتوزيعها اليومي": "Daily crew availability and assignments",
+"تقدم الأعمال الجارية": "Progress on active work",
+"النقد المتاح ومطابقته": "Available cash and its reconciliation",
+"أرقام التدقيق المُدخلة يدوياً (التحصيل والمراحل)": "Hand-entered audit figures (collections and stages)",
+"وعود سداد العملاء": "Customer payment promises",
+"مخزون المواد والحجوزات والتوريد": "Material stock, reservations and deliveries",
+"صلاحية أسعار الموردين": "Supplier price validity",
+"البرنامج الزمني": "Programme",
+"افتراضات تكلفة الإكمال": "Cost-to-complete assumptions",
+"العوائق المفتوحة (إعادة تحقق)": "Open blockers (revalidation)"
 };
 const EN_X = new Map(), EN_P = [];
 {
@@ -2811,6 +2901,7 @@ function subcView(m) {
 // ===== «مركز القيادة» (owner's spec, 14 Nov 2026): every project at once — what runs today, what blocks it, what needs a decision, and
 // what it takes to reach each receipt. Drawn from D.cmd (the bot's core/command.ts). The page decides nothing: statuses, funding and
 // the ladder are the bot's; amounts arrive only for money roles (the bot leaves them out for everyone else and for the wall display).
+const QTYPE = { missing: "ناقص", duplicate: "مكرر", conflict: "متعارض", stale: "يحتاج تحديثاً", unsupported: "بلا دليل", mislinked: "ربط خاطئ" };
 const CTABS = [{ k: "now", t: "العمليات الآن" }, { k: "week", t: "خطة الأسبوع" }, { k: "starts", t: "بدء المشاريع" }, { k: "coll", t: "التنفيذ والتحصيل" }, { k: "review", t: "اجتماع الإدارة" }];
 let CT = "now", RT = "req";
 const CST = { critical: ["حرج", "!", "bad"], attention: ["يحتاج متابعة", "▲", "warn"], unknown: ["غير متحقق", "?", "unk"], normal: ["لا مشكلة مسجلة", "✓", "ok"] };
@@ -2840,8 +2931,10 @@ function cmdView(m) {
   m.append(page("", "مركز القيادة", "كل المشاريع معاً: ما يجري اليوم، ما يعيقه، ما يحتاج تدخلاً، وما يلزم للوصول إلى كل تحصيل. يقترح النظام، والقرار للمخوّلين.", "var(--eng6)"));
   m.append(syncBar(C));
   const st = el("div", "sub-tabs mtabs");
-  for (const x of CTABS) { const b = el("button", "", x.t); b.type = "button"; b.setAttribute("aria-current", String(CT === x.k)); b.onclick = () => { CT = x.k; draw(); }; st.append(b); }
+  const tabs = D.quality ? [...CTABS, { k: "dq", t: "جودة البيانات" }] : CTABS; if (!tabs.some((x) => x.k === CT)) CT = "now";
+  for (const x of tabs) { const b = el("button", "", x.t); b.type = "button"; b.setAttribute("aria-current", String(CT === x.k)); b.onclick = () => { CT = x.k; draw(); }; st.append(b); }
   m.append(st);
+  if (CT === "dq") return cmdQuality(m, D.quality);
   if (CT === "now") return cmdNow(m, C, money);
   if (CT === "week") return cmdWeek(m, C);
   if (CT === "starts") return cmdStarts(m, C);
@@ -2852,6 +2945,7 @@ function cmdNow(m, C, money) {
   const k = C.counts || {};
   m.append(kpiStrip([{ label: "مشاريع حرجة", value: String(k.critical || 0), tone: k.critical ? "bad" : "" }, { label: "تحتاج متابعة", value: String(k.attention || 0), tone: k.attention ? "warn" : "" },
     { label: "غير متحققة", value: String(k.unknown || 0), sub: "لا سجل ميداني يُحكم منه" }, { label: "بلا تحديث حديث", value: String(k.stale || 0) }]));
+  if (C.quality) m.append(qualityBox(C.quality));
   const open = (C.interventions || []).filter((x) => x.status !== "resolved");
   const ivs = ivSec(), nw = ivDef("new");
   m.append(secHead("التدخلات المطلوبة", open.length, "كل بند بدليله ومسؤوله وموعده وشرط إغلاقه. الوعد يُسجَّل ولا يُغلق البند."));
@@ -3059,6 +3153,106 @@ function cmdReview(m, C, money) {
   else ag.append(el("div", "empty", "لا تحصيل متأخر أو غير مُطالب به"));
   const done = (C.interventions || []).filter((x) => (x.decisions || []).length);
   if (done.length) { ag.append(secHead("قرارات سابقة ومتابعة مهامها", done.length)); const g = el("div", "clist"); for (const x of done) g.append(ivCard(x)); ag.append(g); }
+}
+// ===== «جودة البيانات» (owner's spec 14 Nov 2026): what each figure rests on, how old it is, what contradicts it. Verification, freshness and
+// completeness are shown apart — never one «accuracy %». Everything comes from the bot (core/quality.ts); the page corrects nothing.
+const QST = { ok: ["لا ملاحظات مفتوحة", "✓", "ok"], limited: ["محدود — مدخلات ناقصة أو قديمة", "▲", "warn"], unreliable: ["غير موثوق — مخالفة في مدخلاته", "!", "bad"] };
+const QKIND = { actual: "فعلي", calculated: "محسوب", estimated: "تقديري" };
+const FRS = { current: ["حديث", "✓", "ok"], refresh: ["يحتاج تحديثاً", "▲", "warn"], none: ["لا سجل — غير متحقق", "?", "unk"] };
+function qualityBox(Q) {
+  const b = el("section", "panel qbox"); b.append(el("h3", "", "جودة البيانات التي يُبنى عليها هذا العرض"));
+  const kv = el("div", "kv");
+  kv.append(el("span", "", "آخر تحديث ميداني"), el("b", Q.lastField ? "" : "wv", Q.lastField ? ageT(daysSince(Q.lastField)) : "لا يوجد"), el("span", "", "آخر مطابقة مالية"), el("b", Q.lastRecon ? "" : "wv", Q.lastRecon ? dmy(Q.lastRecon) + " — " + Q.reconBasis : "لا يوجد"),
+    el("span", "", "مدخلات ناقصة"), el("b", "", String(Q.missing)), el("span", "", "فروقات ومطابقات مفتوحة"), el("b", "", String(Q.discrepancies)), el("span", "", "مخالفات قواعد"), el("b", Q.violations ? "neg" : "", String(Q.violations)));
+  b.append(kv);
+  if (Q.lines.length) { const ul = el("ul", "qlines"); for (const l of Q.lines) { const li = el("li", l.tone); if (l.go) { const a = el("button", "lnk", sar(l.t)); a.type = "button"; a.onclick = () => { const it = (D.items || []).find((x) => x.id === l.go); if (it) dqDialog(it); }; li.append(a); } else li.textContent = sar(l.t); ul.append(li); } b.append(ul); }
+  if (Q.limited.length) { const p = el("p", "small"); p.append(el("span", "muted", "أرقام محدودة الثقة الآن:"), " ", el("b", "", Q.limited.map((x) => x.t).join("، "))); b.append(p); }
+  if (!Q.policyApproved) b.append(el("p", "small muted", "حدود الحداثة مقترحة ولم تعتمدها الإدارة بعد."));
+  const go = el("button", "lnk", "تفاصيل الجودة والمصادر ←"); go.type = "button"; go.onclick = () => { CT = "dq"; draw(); window.scrollTo(0, 0); }; b.append(go);
+  return b;
+}
+function cmdQuality(m, Q) {
+  m.append(el("p", "small muted", "التحقق والحداثة والاكتمال والاتساق تُعرض كلٌّ على حدة. تحديث الشاشة أو نجاح المزامنة لا يعني أن المعلومة حديثة، والحساب لا يجعل مدخلاته متحققة."));
+  m.append(qualityBox(Q.summary));
+  // each important figure: kind, rule, sources, in / out, assumptions, what undermines it
+  m.append(secHead("الأرقام المهمة ومصادرها", Q.trace.length, "اضغط أي رقم لترى مصدره وقاعدة حسابه وما يُضعفه"));
+  const g = el("div", "grid");
+  for (const t of Q.trace) {
+    const [st, gl, cl] = QST[t.state] || QST.limited, c = el("button", "card" + (cl === "bad" ? " bad" : cl === "warn" ? " warn" : "")); c.type = "button";
+    const top = el("div", "cptop"); top.append(glyph(st, gl, cl), el("span", "pill", QKIND[t.kind] || t.kind)); c.append(top, el("div", "t", t.t));
+    if (t.value !== undefined && t.value !== null) c.append(el("div", "amt", acc(t.value)));
+    const kv = el("div", "kv"); kv.append(el("span", "", "بنود مفتوحة تؤثر عليه"), el("b", t.issues.length ? "wv" : "", String(t.issues.length)));
+    if (t.fresh) kv.append(el("span", "", "حداثة مصدره"), el("b", t.fresh.state === "current" ? "" : "wv", (FRS[t.fresh.state] || FRS.none)[0]));
+    c.append(kv); c.onclick = () => traceDlg(t); g.append(c);
+  }
+  m.append(g);
+  // freshness against the policy (business dates), and connectivity apart
+  const P = Q.fresh.policy;
+  m.append(secHead("حداثة المعلومات", undefined, P.approved ? "السياسة معتمدة من " + P.approved.by + " — " + dmy(P.approved.at) : "السياسة مقترحة — لم تعتمدها الإدارة بعد. العمر يُقاس من تاريخ الحدث لا من وقت المزامنة."));
+  const fg = el("div", "grid");
+  for (const r of Q.fresh.rows) { const [st, gl, cl] = FRS[r.state] || FRS.none, c = el("div", "card" + (cl === "warn" ? " warn" : "")); c.append(glyph(st, gl, cl), el("div", "t", r.t));
+    const kv = el("div", "kv"); kv.append(el("span", "", "آخر تاريخ"), el("b", "", r.last ? dmy(r.last) + " · " + ageT(r.age) : "لا يوجد"), el("span", "", "الحد المقترح"), el("b", "", dayN(r.limit)), el("span", "", "يُقاس من"), el("b", "", r.basis)); c.append(kv); fg.append(c); }
+  m.append(fg);
+  const cn = Q.fresh.connectivity, cb = el("div", "box small"); cb.append(el("b", "", "الاتصال بالأنظمة (ليس حداثة البيانات): "), el("span", "", "آخر مزامنة ناجحة مع قيود " + (cn.qoyodSyncAt ? dWhen(cn.qoyodSyncAt) : "غير معروفة") + ". "), el("span", "muted", cn.note)); m.append(cb);
+  const pd = el("details", "hist"); pd.append(el("summary", "", "سياسة الحداثة المقترحة (" + P.rules.length + " قواعد)"));
+  const pk = el("div", "kv"); for (const r of P.rules) pk.append(el("span", "", r.t), el("b", "", (r.k === "promise" ? "يوم الموعد" : dayN(r.days)) + " — " + r.why)); pd.append(pk);
+  if (D.dqMe && D.dqMe.admin) { const b = el("button", "sbtn", P.approved ? "تعديل السياسة" : "مراجعة السياسة واعتمادها"); b.type = "button"; b.onclick = () => policyDlg(P); pd.append(b); }
+  m.append(pd);
+  // reconciliation results
+  m.append(secHead("نتائج المطابقات", Q.recon.length, "لا يُعدَّل أي مصدر تلقائياً ليتطابق المجموع"));
+  const rg = el("div", "grid fam-acc");
+  for (const r of Q.recon) {
+    const c = el("div", "card" + (r.unmatched ? " warn" : "")); c.append(el("div", "t", r.t), el("div", "st", r.sources.join(" ↔ ")));
+    const kv = el("div", "kv");
+    if (r.none) kv.append(el("span", "", "الحالة"), el("b", "wv", r.none));
+    else { if (r.compared !== null) kv.append(el("span", "", "قورن"), el("b", "", String(r.compared)), el("span", "", "مطابق"), el("b", "", String(r.matched))); kv.append(el("span", "", "غير مطابق"), el("b", r.unmatched ? "neg" : "", r.unmatched === null ? "غير معروف" : String(r.unmatched))); if (r.diff !== null && r.diff !== undefined && r.unmatched) kv.append(el("span", "", "الفرق"), el("b", "neg", acc(r.diff))); }
+    kv.append(el("span", "", "بتاريخ"), el("b", "", r.at ? dmy(r.at) : "لا يوجد"), el("span", "", "المسؤول"), el("b", "", r.owner)); c.append(kv);
+    if ((r.lines || []).length) { const h = el("details", "hist"), ol = el("ol"); h.append(el("summary", "", "الفروقات (" + r.lines.length + ")")); for (const l of r.lines) ol.append(el("li", "", sar(l.t + ": " + fmt(l.a) + " مقابل " + fmt(l.b) + " — الفرق " + acc(l.d)))); h.append(ol); c.append(h); }
+    const it = r.issue && (D.items || []).find((x) => x.id === r.issue); if (it) { const bar = el("div", "cacts"); bar.append(ebtn("افتح البند", () => dqDialog(it))); c.append(bar); }
+    rg.append(c);
+  }
+  m.append(rg);
+  // the issue register (the same «اكتمال البيانات» queue) and who owns each kind of record
+  const q = (D.items || []).filter((i) => i.q && i.status !== "done");
+  m.append(secHead("سجل الملاحظات", q.length, "كل ملاحظة بسجلها ودليلها وأثرها ومسؤولها والتصحيح المطلوب"));
+  if (q.length) { const g2 = el("div", "grid dq"); for (const it of q.slice(0, 12)) { const c = el("button", "card dqc " + it.kind + (it.q.sev === "violation" ? " bad" : "")); c.type = "button"; c.append(el("span", "kind", QTYPE[it.q.type] || it.q.type), el("div", "t", sar(it.title)));
+      const meta = el("div", "meta"); meta.append(glyph(it.q.sev === "violation" ? "مخالفة قاعدة" : "يحتاج مراجعة", it.q.sev === "violation" ? "!" : "?", it.q.sev === "violation" ? "bad" : "unk"), el("span", "small muted", DQ_ROLE[it.owner.role] || it.owner.role)); c.append(meta); c.onclick = () => dqDialog(it); g2.append(c); } m.append(g2); }
+  else m.append(el("div", "empty", "لا ملاحظات اتساق مفتوحة — هذا لا يثبت صحة البيانات، فقط أن الفحوص الآلية لم تجد تعارضاً"));
+  const all = el("button", "lnk", "كل بنود اكتمال البيانات (" + (D.items || []).filter((i) => i.status !== "done").length + ") ←"); all.type = "button"; all.onclick = () => more("dq"); m.append(all);
+  const sd = el("details", "hist"); sd.append(el("summary", "", "المصدر المعتمد لكل نوع من السجلات")); const ol = el("ol"); for (const x of Q.sources) { const li = el("li"); li.append(el("b", "", x.rec + ": "), el("span", "", x.src + ". "), el("span", "muted", x.dir + " — " + x.conflict)); ol.append(li); } sd.append(ol); m.append(sd);
+}
+function traceDlg(t) {
+  const body = $("dlgBody"); body.replaceChildren(el("h3", "", t.t));
+  const [st, gl, cl] = QST[t.state] || QST.limited, hd = el("div", "cptop"); hd.append(glyph(st, gl, cl), el("span", "pill", QKIND[t.kind] || t.kind)); body.append(hd);
+  if (t.value !== undefined && t.value !== null) body.append(el("div", "amt", acc(t.value)));
+  body.append(dsec("قاعدة الحساب", [t.rule]), dsec("السجلات المصدر", t.sources, "غير محدد"));
+  if ((t.excluded || []).length) body.append(dsec("خارج الرقم", t.excluded));
+  if ((t.assumptions || []).length) body.append(dsec("الافتراضات", t.assumptions));
+  if (t.fresh) body.append(dsec("الحداثة", [t.fresh.t + ": " + (t.fresh.last ? dmy(t.fresh.last) + " · " + ageT(t.fresh.age) : "لا يوجد") + " — " + (FRS[t.fresh.state] || FRS.none)[0]]));
+  const s = el("div", "dsec"); s.append(el("h4", "", "ما يُضعف هذا الرقم الآن (" + t.issues.length + ")"));
+  if (!t.issues.length) s.append(el("p", "muted", "لا بنود مفتوحة مسجّلة عليه"));
+  for (const x of t.issues) { const b = el("button", "lnk", sar(x.title)); b.type = "button"; b.onclick = () => { const it = (D.items || []).find((y) => y.id === x.id); if (it) dqDialog(it); }; const d = el("div"); d.append(b); s.append(d); }
+  body.append(s);
+  const bar = el("div", "dbar"), close = el("button", "sbtn", "إغلاق"); close.type = "button"; close.onclick = () => $("dlg").close(); bar.append(close); body.append(bar);
+  $("dlg").showModal();
+}
+function policyDlg(P) {
+  const body = $("dlgBody"); body.replaceChildren(el("h3", "", "سياسة حداثة المعلومات"), el("p", "small muted", "عدد الأيام التي تبقى المعلومة بعدها «تحتاج تحديثاً». العقود الموقّعة ومحاضر الفحص لا تنتهي بالقِدم. اعتمادك يُسجَّل باسمك."));
+  const ins = {};
+  for (const r of P.rules) { if (r.k === "promise") continue; const f = el("div", "f"), l = el("label", "", r.t + " (أيام)"), i = el("input"); i.type = "text"; i.inputMode = "numeric"; i.dir = "ltr"; i.value = r.days; f.append(l, i, el("div", "hint", r.why)); body.append(f); ins[r.k] = i; }
+  const pin = field("رمزك السري للاعتماد", "password", "current-password"); body.append(pin.box);
+  const res = el("div", "res"); res.setAttribute("role", "status");
+  const bar = el("div", "dbar"), go = el("button", "pbtn", "اعتماد السياسة"), close = el("button", "sbtn", "إغلاق"); go.type = close.type = "button"; bar.append(go, close); body.append(res, bar);
+  close.onclick = () => $("dlg").close();
+  go.onclick = async () => {
+    if (!pin.i.value.trim()) { res.className = "res bad"; res.textContent = "اكتب رمزك السري"; pin.i.focus(); return; }
+    go.disabled = true;
+    try { const { status, j } = await api({ op: "quality_policy", policy: Object.fromEntries(Object.entries(ins).map(([k, i]) => [k, i.value.trim()])), pin: pin.i.value });
+      if (status !== 200) { res.className = "res bad"; res.textContent = j.error || "تعذّر الحفظ"; if (j.badPin) pin.i.value = ""; return; }
+      $("dlg").close(); toast(j.msg || "تم ✅"); load(true);
+    } catch { res.className = "res bad"; res.textContent = "تعذّر الاتصال"; } finally { go.disabled = false; }
+  };
+  linkLabels(body); $("dlg").showModal();
 }
 // «الموارد والعمالة → العمالة المستأجرة»: the bot's sections (core/labour.ts) with their actions; equipment has no records yet
 const RTABS = [{ k: "req", t: "الطلبات والحضور", ids: ["lreq", "ltsh"] }, { k: "sup", t: "الموردون والشروط", ids: ["lsup"] }, { k: "wk", t: "العمال", ids: ["lwk"] }, { k: "inv", t: "الفواتير", ids: ["linv"] }];
@@ -3999,8 +4193,8 @@ function dqPage(m, cat) {
   const g = el("div", "grid dq");
   for (const it of L) {
     const c = el("button", "card dqc " + it.kind + (it.status === "done" ? " done" : "")); c.type = "button";
-    c.append(el("span", "kind", DQ_KIND[it.kind] || it.kind), el("div", "t", sar(it.title)));
-    const meta = el("div", "meta"); meta.append(el("span", "pill " + (it.status === "done" ? "ok" : it.status === "waiting" ? "warn" : ""), DQ_ST[it.status] || it.status), el("span", "small muted", DQ_ROLE[it.owner.role] || it.owner.role));
+    c.append(el("span", "kind", it.q ? QTYPE[it.q.type] || it.q.type : DQ_KIND[it.kind] || it.kind), el("div", "t", sar(it.title)));
+    const meta = el("div", "meta"); if (it.q) meta.append(glyph(it.q.sev === "violation" ? "مخالفة قاعدة" : "يحتاج مراجعة", it.q.sev === "violation" ? "!" : "?", it.q.sev === "violation" ? "bad" : "unk")); meta.append(el("span", "pill " + (it.status === "done" ? "ok" : it.status === "waiting" ? "warn" : ""), DQ_ST[it.status] || it.status), el("span", "small muted", DQ_ROLE[it.owner.role] || it.owner.role));
     c.append(meta); c.onclick = () => dqDialog(it); g.append(c);
   }
   m.append(g);
@@ -4012,6 +4206,11 @@ function dqPage(m, cat) {
 function dqDialog(it) {
   const body = $("dlgBody"); body.replaceChildren(el("span", "kind dqk", DQ_KIND[it.kind] || it.kind), el("h3", "", sar(it.title)));
   if (it.detail) body.append(el("p", "", sar(it.detail)));
+  if (it.q) {
+    const qk = el("div", "kv qkv"); qk.append(el("span", "", "النوع"), el("b", "", (QTYPE[it.q.type] || it.q.type) + " — " + (it.q.sev === "violation" ? "مخالفة قاعدة" : "يحتاج مراجعة شخص")), el("span", "", "السجل المتأثر"), el("b", "", sar(it.q.record)),
+      el("span", "", "الأثر"), el("b", "", sar(it.q.impact)), el("span", "", "التصحيح المطلوب"), el("b", "", sar(it.q.fix)));
+    body.append(qk, el("p", "small muted", "لا يُصحَّح شيء تلقائياً. الإغلاق هنا استثناء مبرَّر: اكتب السبب والدليل في الملاحظة."));
+  }
   if ((it.evidence || []).length) { const d = el("div", "f"); d.append(el("b", "", it.kind === "review" ? "التعديلات" : "الأدلة")); const ul = el("ul", "mlist"); for (const x of it.evidence) ul.append(el("li", "", sar(x))); d.append(ul); body.append(d); }
   const kv = el("div", "kv");
   kv.append(el("span", "", "المسؤول"), el("b", "", (DQ_ROLE[it.owner.role] || it.owner.role) + ((it.owner.names || []).length ? " — " + it.owner.names.join("، ") : "")));
