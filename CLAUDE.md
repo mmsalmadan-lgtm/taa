@@ -158,6 +158,14 @@ card or page · finance things live under المالية, purchases under الم
 - Not built yet: ranking by «what it unblocks» (the bot ranks by money × urgency), one-press execution for decisions that have no action in
   the bot, and the same layout for non-money roles.
 
+## «مساحتي» as each person's home (owner shape brief, 14 Nov 2026)
+- Non-management roles land on `wsView`: `hero()` (greeting skips titles like «م.»), `.hsum` chips, then the role's first section (`WSROLE`,
+  matched on `D.ws.who.roles` names: engineer «شغل اليوم» = cards whose go-action is `site`; accountant «الدفعات والتحصيل» = approvals + collection
+  cards; procurement «طلبات اليوم» = `buy` cards + approvals; sales «عملاؤك» and pricing «عروض بانتظارك» from `D.leads`, `wsLead`), then for
+  everyone: «بانتظار اعتمادي», «يحتاج تحديثاً منك» (no/stale update or missing), «متأخر», «مهام أخرى عليك», the gaps banners, and folded
+  «كل بنودي» (the previous chips + full lists, `WSOPEN`). A card appears once; chips count all approvals/overdue wherever shown.
+- «متابعة الفريق» moved to «مركز القيادة» → sub-tab `team` (`wsTeam`), shown when `D.ws.team`.
+
 ## Phase 4: inspections (2026-11-14)
 - Sub-tab «الفحوصات» under «التنفيذ والجودة»: the bot's sections `insp`, `findings`, `gates`, `qaplan`, `bfqa`, drawn by the generic
   section cards (no special code). EN strings added. Checked with `scratchpad rd/p4.cjs` (mock `p4/dash_p4.json` from `p4/gen.mts`).
