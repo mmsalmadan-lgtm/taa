@@ -2416,6 +2416,17 @@ const EN = {
 "مدفوعة": "Paid",
 "لا فواتير": "No invoices",
 "لا مورد عمالة مسجل": "No labour supplier recorded",
+"ست طبقات لا تُدمج": "Six layers, never merged",
+"استدعاء المجدول، اكتمال المهام، إرسال الرسائل، دليل التسليم، الردود، حل الحالات — كل واحدة تُقرأ وحدها": "Scheduler invocation, job completion, message dispatch, delivery evidence, responses, case resolution \u2014 each read on its own",
+"الغرض": "Purpose",
+"المزوّد": "Provider",
+"جلسة Claude المجدولة": "Scheduled Claude session",
+"مفتاح البوت": "Bot API key",
+"التجربة الحية: الجاهزية لكل مسار": "Live pilot: readiness per workflow",
+"شروط كل مسار تخصه وحده: متابعة مادة لا تحتاج خطة فحص، والإفراج لا يُتجاوز فيه شرط إلزامي. التفعيل قرار الإدارة.": "Each workflow has its own prerequisites: a material enquiry needs no inspection plan, and a release never waives a mandatory one. Activation is management's decision.",
+"أصغر تجربة تدعمها السجلات الحالية": "The smallest pilot the current records support",
+"المتابعة القادمة": "Next follow-up",
+"ضمانة تقنية مؤقتة": "Temporary technical safeguard",
 "الإسناد والمسؤوليات": "Assignment and responsibilities",
 "كل سبب جذري بطاقة واحدة مرتبطة ببنودها. لا يُسند أحد من دور عام: الإدارة تؤكد المسؤول الأساسي والبديل.": "One card per root cause, linked to its items. Nobody is assigned from a broad role: management confirms the primary and the backup.",
 "كل سبب جذري مرة واحدة": "Each root cause once",
@@ -3226,7 +3237,7 @@ let COF = "", COT = "";
 function cmdCoord(m, K) {
   const open = (K.cases || []).filter((x) => x.state !== "resolved");
   m.append(secHead("حالات المتابعة", open.length, "كل التزام مفتوح كبند محدد: النتيجة المطلوبة، المسؤول، الموعد، الناقص. «أُبلغ» ليس «قُبل»، والوعد لا يُغلق بنداً. المنسّق يقرأ السجلات ولا يعتمد ولا يفرج."));
-  for (const f of K.conflicts || []) { const d = el("div", "banner bad"); d.append(el("b", "", "تعارض يحتاج قراراً: " + f.what), el("div", "small", f.cases.map((q) => q.project + " — " + q.ref).join(" · ")), el("div", "small", f.needs)); m.append(d); }
+  for (const f of K.conflicts || []) { const d = el("div", "banner bad"); d.className = "banner" + (f.kind === "confirmed" ? " bad" : ""); d.append(el("b", "", (f.kind === "confirmed" ? "تعارض مؤكد يحتاج قراراً: " : "تعارض محتمل يحتاج توضيحاً: ") + f.what), el("div", "small", f.cases.map((q) => q.project + " — " + q.ref).join(" · ")), el("div", "small", f.needs)); if ((f.missing || []).length) d.append(el("div", "small muted", "الناقص للحكم: " + f.missing.join(" · "))); m.append(d); }
   const bar = el("div", "filters docf");
   const chip = (k, t, n, cur, set) => { const b = el("button", "chip", t + " (" + n + ")"); b.type = "button"; b.setAttribute("aria-pressed", String(cur === k)); b.onclick = () => { set(cur === k ? "" : k); draw(); }; bar.append(b); };
   for (const s of K.states || []) if (s.k !== "resolved") chip(s.k, s.t, s.n, COF, (v) => { COF = v; });
@@ -3242,7 +3253,7 @@ function cmdCoord(m, K) {
     c.append(el("div", "t", x.what), el("div", "st", [x.project, x.ref].filter(Boolean).join(" · ")));
     const kv = el("div", "kv"), add = (k, v, cls) => { if (v === null || v === undefined || v === "") return; kv.append(el("span", "", k), el("b", cls || "", v)); };
     add("النطاق", x.scope); add("المسؤول", x.owner || "غير محدد", x.owner ? "" : "wv"); add("الموعد", x.due ? dmy(x.due) + (x.overdue ? " — فات" : "") : "بلا موعد", x.overdue ? "neg" : "");
-    add("آخر تحديث", x.last ? ageT(daysSince(x.last)) : "لا يوجد"); for (const t of x.missing || []) add("الناقص", t); add("الأثر", x.consequence); add("البديل عند الغياب", x.backup); add("صاحب التواصل", x.human ? "استلمه " + x.human + " — المنسّق متوقف عنه" : CHASE[x.chasedBy] || ""); if (x.agent) add("المساعد المالك", x.agent + ((x.handoffs || []).length ? " (سُلّم من " + x.handoffs.map((h) => h.from).join(" ← ") + ")" : ""));
+    add("آخر تحديث", x.last ? ageT(daysSince(x.last)) : "لا يوجد"); for (const t of x.missing || []) add("الناقص", t); add("الأثر", x.consequence); add("البديل عند الغياب", x.backup); add("صاحب التواصل", x.human ? "استلمه " + x.human + " — المنسّق متوقف عنه" : CHASE[x.chasedBy] || ""); if (x.follow) add("المتابعة القادمة", (x.follow.next ? dmy(x.follow.next) + " — " : "") + x.follow.why); if (x.agent) add("المساعد المالك", x.agent + ((x.handoffs || []).length ? " (سُلّم من " + x.handoffs.map((h) => h.from).join(" ← ") + ")" : ""));
     c.append(kv);
     if ((x.updates || []).length) { const l = el("div", "ivl"); for (const u of x.updates) { const r = el("div", "pr"); r.append(el("span", "", (u.kindT || "") + ": " + (u.text || (u.media ? "مرفق" : "")) + (u.media ? " [" + u.media + " مرفق]" : "")), el("span", "muted", (u.name || "") + " · " + dmy(u.at) + " · غير متحقق")); l.append(r); } c.append(l); }
     const KA = K.acts || { data: { acts: [], rows: [] } }, row = (KA.data.rows || []).find((r) => r.id === x.id); if (row && row.acts.length) { const bar = el("div", "cacts"); for (const id of row.acts) { const d = (KA.data.acts || []).find((q) => q.id === id); if (d) bar.append(ebtn(d.label, () => actForm(KA, d, row))); } c.append(bar); }
@@ -3260,12 +3271,13 @@ function cmdAgents(m, G) {
   const usd = (v) => (v === null || v === undefined ? "غير معروف" : "$" + (+v).toFixed(v < 1 ? 4 : 2));
   if (cl.stop) m.append(el("div", "banner bad", "إيقاف طارئ مفعّل: لا متابعة ولا رسائل يبادر بها النظام ولا نداءات ذكاء اصطناعي. الرسائل الواردة تُعالج كالمعتاد."));
   m.append(kpiStrip([{ label: "آخر تشغيل للخدمة", value: minT(sv.ageMin), tone: sv.state === "running" ? "" : "bad", sub: sv.state === "running" ? "كل 15 دقيقة في الخادم" : "تحقق من المجدول" }, { label: "مهام فشلت", value: String((sv.failedJobs || []).length), tone: (sv.failedJobs || []).length ? "bad" : "" },
-    { label: "مشاكل إسناد", value: String((G.issues || []).length), tone: (G.issues || []).length ? "warn" : "", sub: "كل سبب جذري مرة واحدة" }, { label: "نداءات الذكاء الاصطناعي اليوم", value: String(u.calls || 0) + " / " + u.limit, sub: u.blocked ? "حُجب " + u.blocked + " — العمل استمر بالقواعد" : u.provisional ? "حد مؤقت للتجربة" : "" },
+    { label: "مشاكل إسناد", value: String((G.issues || []).length), tone: (G.issues || []).length ? "warn" : "", sub: "كل سبب جذري مرة واحدة" }, { label: "نداءات الذكاء الاصطناعي اليوم", value: String(u.calls || 0) + " / " + u.limit, sub: u.blocked ? "حُجب " + u.blocked + " — العمل استمر بالقواعد" : u.provisional ? "ضمانة تقنية مؤقتة" : "" },
     { label: "تكلفة اليوم التقديرية", value: u.costState === "none" ? "لا نداءات" : u.costState === "estimated" ? usd(u.costUsd) : "غير معروف", sub: u.costState === "unknown" ? "رموز أو سعر غير متاح" : "من الأسعار المنشورة" }]));
   m.append(el("div", "small muted", sv.note || ""));
   if ((S.data.add || []).length) { const bar = el("div", "ebar2"); for (const id of S.data.add) { const d = def(id); if (d) bar.append(ebtn(d.label, () => actForm(S, d, null))); } m.append(bar); }
   const pz = Object.entries(cl.paused || {}).flatMap(([sc, o]) => Object.keys(o || {}).map((k) => sc + ": " + k)); if (pz.length) m.append(el("div", "small", "موقوف جزئياً: " + pz.join("، ")));
-  for (const f of sv.failedJobs || []) m.append(el("div", "banner bad", f.agent + " — " + f.job + ": " + f.msg));
+  for (const f of sv.failedJobs || []) { const d = el("div", "banner bad"); d.append(el("b", "", (f.sev === "high" ? "عطل تشغيلي عاجل — " : "مهمة فشلت — ") + f.agent + " (" + f.job + ")"), el("div", "small", f.msg), el("div", "small", "الاسترداد: " + (f.recovery || "")), el("div", "small", "المسؤول: " + (f.owner || ""))); m.append(d); }
+  if ((sv.layers || []).length) { m.append(secHead("ست طبقات لا تُدمج", sv.layers.length, "استدعاء المجدول، اكتمال المهام، إرسال الرسائل، دليل التسليم، الردود، حل الحالات — كل واحدة تُقرأ وحدها")); const gl = el("div", "grid"); for (const l of sv.layers) { const c = el("div", "card"); c.append(el("div", "st", l.t), el("div", "t", l.v)); if (l.note) c.append(el("div", "small muted", l.note)); gl.append(c); } m.append(gl); }
   // assignment: one card per root cause, the proposal for confirmation, what is confirmed
   m.append(secHead("الإسناد والمسؤوليات", (G.issues || []).length, "كل سبب جذري بطاقة واحدة مرتبطة ببنودها. لا يُسند أحد من دور عام: الإدارة تؤكد المسؤول الأساسي والبديل."));
   const O = G.owners || { set: {}, labels: {}, proposal: [] }, g0 = el("div", "grid");
@@ -3292,10 +3304,11 @@ function cmdAgents(m, G) {
   m.append(g);
   // usage per agent · workflow · model
   m.append(secHead("استخدام الذكاء الاصطناعي اليوم", (u.rows || []).length, u.note));
-  if ((u.rows || []).length) { const w = el("div", "tblw"), tb = el("table", "tbl"), hd = el("tr"); for (const h of ["المساعد", "المسار", "النموذج", "نداءات", "فشل", "حُجب", "رموز داخلة", "رموز خارجة", "تكلفة تقديرية"]) hd.append(el("th", "", h)); tb.append(hd);
-    for (const r of u.rows) { const tr = el("tr"); for (const v of [r.agent, r.wf, r.model, r.calls, r.fail, r.blocked, r.noUsage ? "غير معروف" : r.in.toLocaleString("en-US"), r.noUsage ? "غير معروف" : r.out.toLocaleString("en-US"), r.costState === "estimated" ? usd(r.costUsd) : r.costState === "none" ? "—" : "غير معروف"]) tr.append(el("td", "", String(v))); tb.append(tr); } w.append(tb); m.append(w); }
+  if ((u.rows || []).length) { const w = el("div", "tblw"), tb = el("table", "tbl"), hd = el("tr"); for (const h of ["المساعد", "الغرض", "المزوّد", "النموذج", "نداءات", "فشل", "حُجب", "رموز داخلة", "رموز خارجة", "تكلفة تقديرية"]) hd.append(el("th", "", h)); tb.append(hd);
+    for (const r of u.rows) { const tr = el("tr"); for (const v of [r.agent, r.purpose || r.wf, r.provider === "claude-routine" ? "جلسة Claude المجدولة" : "مفتاح البوت", r.model, r.calls, r.fail, r.blocked, r.noUsage ? "غير معروف" : r.in.toLocaleString("en-US"), r.noUsage ? "غير معروف" : r.out.toLocaleString("en-US"), r.costState === "estimated" ? usd(r.costUsd) : r.costState === "none" ? "—" : "غير معروف"]) tr.append(el("td", "", String(v))); tb.append(tr); } w.append(tb); m.append(w); }
   else m.append(el("div", "empty", "لا نداءات مسجلة اليوم"));
-  if (u.prices) m.append(el("div", "small muted", "مصدر الأسعار: " + u.prices.source + " — قُرئت " + dmy(u.prices.asOf) + ". مهمة التسعير المجدولة تعمل خارج هذا الخادم ولا تُقاس هنا."));
+  if (u.prices) m.append(el("div", "small muted", "مصدر الأسعار: " + u.prices.source + " — قُرئت " + dmy(u.prices.asOf) + "."));
+  if ((u.coverage || []).length) { const d = el("details", "hist"); d.append(el("summary", "", "تغطية القياس: كل مدخل يُستدعى منه نموذج (" + u.coverage.length + ")")); for (const c of u.coverage) d.append(el("div", "small", c.purpose + " — " + c.via + " — " + c.metered + " — " + c.gate)); m.append(d); }
   // the scheduler's own evidence
   m.append(secHead("سجل دورات التشغيل", (sv.hist || []).length, "آخر الدورات كما سجّلها المجدول نفسه: ما نجح وما فشل وما تُخطّي بسبب إيقاف"));
   if ((sv.hist || []).length) { const w = el("div", "tblw"), tb = el("table", "tbl"), hd = el("tr"); for (const h of ["الدورة", "مهام نجحت", "فشلت", "متخطاة (إيقاف)"]) hd.append(el("th", "", h)); tb.append(hd);
@@ -3304,9 +3317,13 @@ function cmdAgents(m, G) {
   if (sv.timing) for (const [k, v] of [["فوري", sv.timing.event], ["دوري", sv.timing.periodic], ["الفجوة", sv.timing.between]]) m.append(el("div", "small", k + ": " + v));
   m.append(secHead("ماذا يبقى مسموحاً عند الإيقاف", (G.modes || []).length)); const gm = el("div", "grid");
   for (const x of G.modes || []) { const c = el("div", "card"); c.append(el("div", "t", x.t)); const kv = el("div", "kv"); kv.append(el("span", "", "يبقى مسموحاً"), el("b", "", x.allowed), el("span", "", "يتوقف"), el("b", "", x.blocked)); c.append(kv); gm.append(c); } m.append(gm);
-  // pilot readiness per active project
-  m.append(secHead("جاهزية مشروع للتجربة الحية", (G.pilot || []).length, "متابعة التنفيذ والمواد وجاهزية الفحص لمشروع واحد. الجاهزية من سجلات المشروع فقط؛ التفعيل قرار الإدارة."));
-  const gp = el("div", "grid"); for (const x of (G.pilot || []).slice(0, 12)) { const c = el("div", "card"); c.append(glyph(x.ready ? "جاهز للتجربة" : "ينقصه " + (x.of - x.done) + " من " + x.of, x.ready ? "✓" : "?", x.ready ? "ok" : "unk"), el("div", "t", x.name)); const d = el("details", "hist"); d.append(el("summary", "", "الشروط")); for (const k of x.checks) d.append(el("div", "small" + (k.ok ? "" : " neg"), (k.ok ? "✓ " : "✗ ") + k.t + " — " + k.why)); c.append(d); gp.append(c); } m.append(gp);
+  // the pilot: prerequisites per workflow, from the records only
+  m.append(secHead("التجربة الحية: الجاهزية لكل مسار", undefined, "شروط كل مسار تخصه وحده: متابعة مادة لا تحتاج خطة فحص، والإفراج لا يُتجاوز فيه شرط إلزامي. التفعيل قرار الإدارة."));
+  const wfCard = (title, sub, w) => { const c = el("div", "card"); c.append(glyph(w.ready ? "جاهز للتجربة" : "ينقصه " + (w.of - w.done) + " من " + w.of, w.ready ? "✓" : "?", w.ready ? "ok" : "unk"), el("div", "t", title)); if (sub) c.append(el("div", "st", sub)); const d = el("details", "hist"); d.append(el("summary", "", "الشروط")); for (const k of w.checks) d.append(el("div", "small" + (k.ok ? "" : " neg"), (k.ok ? "✓ " : "✗ ") + k.t + " — " + k.why)); c.append(d); return c; };
+  const gp = el("div", "grid");
+  if (G.recon) { const c = wfCard(G.recon.t, "أصغر تجربة تدعمها السجلات الحالية", G.recon); for (const a of G.recon.sent || []) c.append(el("div", "small muted", a.no + " إلى " + a.to + ": أُرسل · التسليم " + a.delivery + " · " + a.response)); gp.append(c); }
+  for (const x of (G.pilot || []).slice(0, 6)) { const w = x.workflows.slice().sort((a, b) => b.done / b.of - a.done / a.of)[0]; gp.append(wfCard(x.name, w.t, w)); }
+  m.append(gp);
   m.append(secHead("ممنوع على أي مساعد", (G.restricted || []).length, "تبقى للمخوّلين بإجراءاتهم الحالية مهما كانت سياسة التشغيل")); m.append(el("div", "small", (G.restricted || []).join(" · ")));
   if ((G.log || []).length) { m.append(secHead("سجل الإيقاف والتشغيل", G.log.length)); const ol = el("ol", "small"); for (const e of G.log) { const li = el("li"); li.append(el("span", "", dmy(e.at) + " — " + (e.name || "") + ": " + e.what + " (" + e.why + ")")); ol.append(li); } m.append(ol); }
 }
