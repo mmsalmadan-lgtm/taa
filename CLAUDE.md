@@ -158,13 +158,19 @@ card or page · finance things live under المالية, purchases under الم
 - After the owner's review («محشو كلام، مافيه charts»): under the chips the recorded figures `homeNums()` (contracts, collected, remaining
   + due now, spent, cash) and `.hcharts` = `collChart()` (bars per project: length = contract, green = collected, amber = due now, value =
   remaining; tap opens the project) beside `w13Box` (estimate). Decision rows are one line (`homeDec`: title, kind · age · owner, amount,
-  button; the cause is the tooltip).
+  button; the cause opens in place from «السبب» on the short line — see below).
 - After the Impeccable critique (14 Nov 2026), order: compact greeting (`.hero.sm`, one line with the date) → chips → `homeNums()` →
   `collChart()` → decisions → `w13Box` (estimate, after the decisions) → missing → alerts → folded. `openKnown(o)` (= `AUD.cashDone`, or a
   dated documented source) gates every cash verdict built on the forecast's opening balance: while unknown, `w13Box` shows «لا يمكن الحكم —
   الرصيد النقدي لم يُدخل» + «أدخل الرصيد» and labels the bars net flow from zero; `answers()` says «لا يمكن الحكم»; the folded lowest balance
   is «—». The folded ledger is «أرقام أخرى ومصدرها» and drops what the strip shows (collected, still with clients, spent, cash) — one
   source per figure on the page.
+- Decision rows stay one line (owner's rule); the short line is a `<details class="hwhy">` whose «السبب» opens the full title and the cause
+  in place (`.hcause`) — no hover tooltip, readable on a phone. Below 1080 px the account actions (language, alerts, PIN, sign out) sit in
+  `#acctMenu`, a dropdown under «الحساب» (`#acctBtn`, `#ghA.open`); it closes on choosing an action (focus returns to «الحساب» after its
+  dialog, `ACCT_BACK`), a tap outside (swallowed, so it never presses what lies under it), focus leaving it, Escape, crossing the breakpoint,
+  and sign-out (`acctShut()` in `signedOut`). On the desk `#acctMenu` is `display:contents`; DOM order = screen order = focus order
+  (update, language, alerts, PIN, sign out) — no CSS reordering.
 - Not built yet: ranking by «what it unblocks» (the bot ranks by money × urgency), one-press execution for decisions that have no action in
   the bot, and the same layout for non-money roles.
 
