@@ -216,6 +216,15 @@ card or page · finance things live under المالية, purchases under الم
 ## Reconciliation questions (14 Nov 2026)
 - The bot's section `asks` («أسئلة المطابقة») sits in «المستندات والسجلات» (generic cards and actions: new / resend / close). EN strings added.
 
+## Operations coordinator (spec 14 Nov 2026, stage 1)
+- With `D.cmd.coord` (the bot's core/coord.ts) the Command Center gets «المنسّق» (`cmdCoord`: state and template chips `COF`/`COT`, one card per open
+  obligation — scope, owner, date, missing, consequence, backup, which module chases it) and «مخاطر قادمة» (`cmdRisks`: level counts, receipts
+  affected — each once, amounts only for money roles —, risk cards with the latest action date, its basis, proposed actions and the limits of the
+  conclusion in a `<details>`, «تقييم التنبيه» → act `coord.mark`, data needing verification kept apart, warning metrics, admin «سياسة المتابعة»
+  → act `coord.policy` with PIN). Fixed labels are in `EN`; case and risk sentences come from the bot in Arabic.
+- Checked with `scratchpad rd/co.cjs` (mocks `p7/dash_co_cc*.json` from `p7/gen_co.mts`: the bot's coord.ts on controlled records): 390/1280/EN,
+  engineer view without amounts, a filter, a rating posted (body checked), the policy form prefilled, no errors, no horizontal scroll.
+
 ## How to change and verify (the owner expects Claude to check its own work)
 1. `git fetch && git checkout -B <branch> origin/main` (always from a fresh main — PRs are squash-merged).
 2. Test locally: `python3 -m http.server 8765` in the repo + Playwright (Chromium is pre-installed), routing the API to mock
