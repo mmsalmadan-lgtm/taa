@@ -231,6 +231,15 @@ card or page · finance things live under المالية, purchases under الم
   what it lacks, permissions in a `<details>`), the restricted list, and for an admin the controls (stop / resume / pause a scope / AI limit →
   acts `agents.*`, PIN) with the last changes. Agent texts come from the bot in Arabic.
 
+## Agent control foundation, second stage (owner's review 14 Nov 2026)
+- `cmdAgents`: readiness as FIVE stages per agent (`STG`, `a.stage`, labels `G.stages`) — never one «built» word; assignment = one card per ROOT
+  cause (`G.issues[].cases`), the proposal per responsibility and what management confirmed (`G.owners`), act `agents.owners`; usage table per
+  agent · workflow · model with tokens and an estimated USD cost («غير معروف» when tokens or price are missing — never 0); the scheduler's run
+  cycles (`service.hist`), event vs periodic timing, what each pause mode still allows (`G.modes`), pilot readiness per project (`G.pilot`).
+- `cmdCoord`: conflicts as banners; each case shows its communication owner, owning agent and handoffs, the REPORTED updates (always «غير متحقق»),
+  and the buttons takeover / handoff / resume (acts `coord.*` from `K.acts`).
+- Checked with `rd/ag.cjs` on mocks from `p7/gen_co.mts` + `p7/gen_ag.mts`: 390/1280/EN, engineer without admin buttons, no errors, no horizontal scroll.
+
 ## How to change and verify (the owner expects Claude to check its own work)
 1. `git fetch && git checkout -B <branch> origin/main` (always from a fresh main — PRs are squash-merged).
 2. Test locally: `python3 -m http.server 8765` in the repo + Playwright (Chromium is pre-installed), routing the API to mock
