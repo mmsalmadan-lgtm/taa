@@ -154,6 +154,12 @@ card or page · finance things live under المالية, purchases under الم
 - After the owner's review: home ledger profit says how many projects rest on an unvalidated company ratio (`F.totals.benchmark`, left
   out of the total); risk page class `benchmark`; the forecast's «خارج التوقع» shows each excluded project's uncommitted amount.
 
+## Consolidated spec stage 2 (2026-11-14)
+- Home ledger profit row = «ربح المشاريع المشمولة فقط» with «N من M مشروعاً — ليس ربح المحفظة» (`F.totals.coverage`). Risk page: per company
+  ratio its sources with completeness / comparability (admin «تأكيد» → `benchSrcDialog` → op `bench_src`), the minimum of sources, and
+  «ما يشمله مجموع الربح المتوقع» (included, each group left out, contract evidence). fc13: a stress row under each scenario
+  (`x.stress`) and «تعرّض غير مجدول» (`C.unscheduled`). «إعدادات التوقع» has `benchMin`. Checked with `rd/p3.cjs` on `p4/dash_s2.json`.
+
 ## How to change and verify (the owner expects Claude to check its own work)
 1. `git fetch && git checkout -B <branch> origin/main` (always from a fresh main — PRs are squash-merged).
 2. Test locally: `python3 -m http.server 8765` in the repo + Playwright (Chromium is pre-installed), routing the API to mock

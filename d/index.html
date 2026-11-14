@@ -1846,6 +1846,36 @@ const EN = {
 "الميزانية المعتمدة الآن": "Current approved budget",
 "آخر تحديث للتوقع": "Latest forecast update",
 "التحصيل المتوقع وأدلته (اختياري) — {n} دفعة": "Expected receipts and evidence (optional) — {n} instalments",
+"ربح المشاريع المشمولة فقط": "Profit of included projects only",
+"تقديري · {n} من {n} مشروعاً — ليس ربح المحفظة": "Estimate · {n} of {n} projects — not the portfolio's profit",
+"اختبار ضغط: لو وقع التعرّض غير المجدول ({x}) داخل الأسابيع الـ13": "Stress test: if the unscheduled exposure ({x}) fell inside the 13 weeks",
+"تعرّض غير مجدول": "Unscheduled exposure",
+"متعاقد عليه ولم يبدأ ولا تاريخ بدء مسجل: غياب التاريخ لا يثبت أن أعماله بعد الأسابيع الـ13. التزاماته ومستحقاته داخل التوقع؛ أعماله غير الملتزم بها هنا، ومعها اختبار الضغط في جدول السيناريوهات.": "Contracted, not started, no start date recorded: a missing date does not prove its work falls after the 13 weeks. Its commitments and dues are in the forecast; its uncommitted work is here, with the stress test in the scenarios table.",
+"متعاقد عليه ولم يبدأ — لا تاريخ بدء مسجل: قد يقع داخل الأسابيع الـ13 أو بعدها": "Contracted, not started — no start date recorded: it may fall inside the 13 weeks or after",
+"نسبة المؤسسة لـ«{x}»: هامش {n} من {n} مشاريع منتهية — غير موثّقة ولا يُبنى عليها ربح": "Company ratio for “{x}”: margin {n} from {n} finished projects — not validated, no profit rests on it",
+"نسبة المؤسسة لـ«{x}»: هامش {n} من {n} مشاريع منتهية — موثّقة": "Company ratio for “{x}”: margin {n} from {n} finished projects — validated",
+"الحد الأدنى للمصادر: لم تحدده الإدارة": "Minimum sources: not set by management",
+"الحد الأدنى للمصادر: {n}": "Minimum sources: {n}",
+"هامش {n}": "margin {n}",
+"الاكتمال مؤكد": "Completeness confirmed", "الاكتمال غير مؤكد": "Completeness not confirmed",
+"المقارنة مؤكدة": "Comparability confirmed", "المقارنة غير مؤكدة": "Comparability not confirmed",
+"ما يشمله مجموع الربح المتوقع": "What the expected-profit total covers",
+"الربح المتوقع للمشاريع المشمولة فقط — ليس ربح المحفظة": "Expected profit of the included projects only — not the portfolio's profit",
+"مشمول: {n} مشروعاً": "Included: {n} projects",
+"إيراد {n}": "Revenue {n}",
+"خارج المجموع — {x}: {n}": "Left out — {x}: {n}",
+"إثبات التعاقد: نسخة موقعة في النظام {n}": "Contract evidence: signed copy in the system {n}",
+"قيمة مسجلة فقط {n}": "value recorded only {n}",
+"بلا عقد {n} — قيمة العقد وحدها لا تثبت عقداً موقعاً.": "no contract {n} — a contract value alone does not prove a signed contract.",
+"مشروع مصدر لنسبة «{x}»": "Source project of the “{x}” ratio",
+"{x} — النسبة لا تُوثّق إلا بحد أدنى من المصادر، كل منها مؤكد الاكتمال وقابل للمقارنة.": "{x} — a ratio is validated only with a minimum number of sources, each confirmed complete and comparable.",
+"تكاليفه مكتملة (قيود والتدقيق متطابقان، لا تكاليف ناقصة)": "Its costs are complete (Qoyod and the audit agree, nothing missing)",
+"قابل للمقارنة (نفس نوع العمل والنطاق والحجم والفترة)": "Comparable (same kind of work, scope, size and period)",
+"ما الذي تحققت منه": "What you checked",
+"الحد الأدنى لمشاريع مصدر نسبة المؤسسة (3 فأكثر)": "Minimum source projects for a company ratio (3 or more)",
+"افتراض: لم يُحدد": "Assumption: not set",
+"{n} مشروع متعاقد عليه بلا تاريخ بدء — تعرّض غير مجدول {n}": "{n} contracted projects with no start date — unscheduled exposure {n}",
+"نسبة ضمان محتجزة مسجلة على {n} اتفاقيات باطن — المحتجز لا يظهر منفصلاً في أرقام التدقيق (معتمد / مصروف)؛ يُسدَّد بعد الضمان ولا يدخل الأسابيع الـ13 إلا بتاريخ موثق": "A retention % is recorded on {n} subcontract agreements — the amount held is not separated in the audit's figures (certified / paid); it is paid after the warranty and enters the 13 weeks only with a documented date",
 "صباح الخير، {x}": "Good morning, {x}",
 "مساء الخير، {x}": "Good evening, {x}"
 };
@@ -2507,7 +2537,7 @@ function home3(m) {
     const B = F.cash.scenarios.base;
     const K = homeK(AUD).map((k) => {
       if (k.est === "forecast") return { label: "أدنى رصيد خلال 13 أسبوعاً (الأساسي)", est: "forecast", value: acc(B.lowest.amount), neg: B.lowest.amount < 0, f: "cash", sub: "تقديري · " + dmy(B.lowest.date) };
-      if (k.est === "profit") { const bm = F.totals.benchmark || { n: 0 }; return { ...k, label: "ربح المشاريع المقدّرة", value: fmt(F.totals.profit), sub: "تقديري · بلا " + (F.totals.unavailable + F.totals.loss) + " مشاريع بلا تقدير كامل" + (bm.n ? " · بلا " + bm.n + " على نسبة غير موثّقة" : ""), flag: bm.n ? ["warn", bm.n + " مشاريع ربحها من نسبة غير موثّقة: " + fmt(bm.profit) + " خارج المجموع"] : F.totals.high ? ["warn", F.totals.high + " بهامش يحتاج تحقق"] : null }; }
+      if (k.est === "profit") { const bm = F.totals.benchmark || { n: 0 }, cv = F.totals.coverage; return { ...k, label: "ربح المشاريع المشمولة فقط", value: fmt(F.totals.profit), sub: "تقديري · " + (cv ? cv.included.n + " من " + cv.all + " مشروعاً — ليس ربح المحفظة" : "بلا " + (F.totals.unavailable + F.totals.loss) + " مشاريع بلا تقدير كامل"), flag: bm.n ? ["warn", bm.n + " مشاريع ربحها من نسبة غير موثّقة: " + fmt(bm.profit) + " خارج المجموع"] : F.totals.high ? ["warn", F.totals.high + " بهامش يحتاج تحقق"] : null }; }
       return k;
     });
     m.append(ledger(K));
@@ -2618,9 +2648,21 @@ function p3Page(m, k) {
     const ML = { revised: "تقدير محدَّث مُدخل", file: "الميزانية المعتمدة − المصروف", manual: "متبقٍ مُدخل في التدقيق", bench: "نسبة المؤسسة (مشاريع إنجازها أقل من 50%)", linear: "المصروف ÷ الإنجاز (إنجاز 50% فأكثر، أو لا نسبة للمؤسسة)", done: "منتهي", unknown: "لا تقدير" };
     const t = el("table", "ovt"); Object.entries(F.methods).forEach(([k2, v]) => { const tr = el("tr"); tr.append(el("td", "", ML[k2] || k2), el("td", "n", String(v))); t.append(tr); });
     mb.append(t, el("div", "small muted", "طريقة واحدة لكل مشروع بالترتيب: تحديث مُدخل، ثم الميزانية، ثم المتبقي المُدخل، ثم نسبة المؤسسة إن كان الإنجاز أقل من 50%، ثم المصروف ÷ الإنجاز. المجموعات منفصلة ومجموعها عدد المشاريع القائمة."));
-    for (const [kind, b] of Object.entries(F.bench || {})) if (b.validated === false) mb.append(el("div", "small neg", "نسبة «" + kind + "» غير موثّقة ولا يُبنى عليها ربح: " + (b.why || []).join(" · ")));
-    for (const [kind, b] of Object.entries(F.bench || {})) mb.append(el("div", "small", "نسبة المؤسسة لـ«" + kind + "»: هامش " + Math.round(b.margin * 100) + "% من " + b.projects.length + " مشاريع منتهية (" + b.projects.map((p) => p.name.split(" - ")[0] + " " + Math.round((1 - p.ratio) * 100) + "%").join("، ") + ") — قد تكون تكاليف هذه المشاريع نفسها غير مكتملة."));
+    for (const [kind, b] of Object.entries(F.bench || {})) {
+      mb.append(el("div", "small" + (b.validated === false ? " neg" : ""), "نسبة المؤسسة لـ«" + kind + "»: هامش " + Math.round(b.margin * 100) + "% من " + b.projects.length + " مشاريع منتهية — " + (b.validated ? "موثّقة" : "غير موثّقة ولا يُبنى عليها ربح") + " · الحد الأدنى للمصادر: " + (b.min === null || b.min === undefined ? "لم تحدده الإدارة" : Math.max(3, b.min))));
+      const ts = el("table", "ovt");
+      (b.sources || []).forEach((src) => { const tr = el("tr"), a = el("td", "", src.name + " · هامش " + Math.round((1 - src.ratio) * 100) + "%"); a.append(el("div", "small muted", (src.flags.length ? src.flags.join("، ") + " · " : "") + "الاكتمال " + (src.complete ? "مؤكد" : "غير مؤكد") + " · المقارنة " + (src.comparable ? "مؤكدة" : "غير مؤكدة") + (src.by ? " — " + src.by + (src.note ? ": " + src.note : "") : "")));
+        const c2 = el("td", "n"); if (D.fcMe && D.fcMe.decide) { const bt = el("button", "sbtn", "تأكيد"); bt.type = "button"; bt.onclick = () => benchSrcDialog(kind, src); c2.append(bt); } tr.append(a, c2); ts.append(tr); });
+      mb.append(ts);
+    }
     m.append(mb);
+    // what the expected-profit total covers, and contract evidence
+    const cv = F.totals.coverage;
+    if (cv) { const cb = el("section", "box"); cb.append(el("b", "", "ما يشمله مجموع الربح المتوقع"), el("div", "small muted", F.totals.profitLabel || ""));
+      const tc = el("table", "ovt"); const tr0 = el("tr"); tr0.append(el("td", "", "مشمول: " + cv.included.n + " مشروعاً · إيراد " + fmt(cv.included.revenue)), el("td", "n", fmt(cv.included.profit))); tc.append(tr0);
+      cv.out.forEach((g) => { const tr = el("tr"); tr.append(el("td", "", "خارج المجموع — " + g.label + ": " + g.n), el("td", "n", "إيراد " + fmt(g.revenue))); tc.append(tr); });
+      cb.append(tc, el("div", "small" + (cv.contractEv.signed < cv.all ? " neg" : ""), "إثبات التعاقد: نسخة موقعة في النظام " + cv.contractEv.signed + " · قيمة مسجلة فقط " + cv.contractEv.valueOnly + " · بلا عقد " + cv.contractEv.none + " — قيمة العقد وحدها لا تثبت عقداً موقعاً."));
+      m.append(cb); }
     return true;
   }
   if (k === "fcq") {
@@ -2645,8 +2687,12 @@ function p3Page(m, k) {
     const sb = el("section", "box"); sb.append(el("b", "", "السيناريوهات"));
     const st = el("table", "ovt wkt"); const hr = el("tr"); ["السيناريو", "تحصيل 13 أسبوعاً", "أول عجز", "أدنى رصيد"].forEach((h) => hr.append(el("th", "", h))); st.append(hr);
     for (const s of SCN) { const x = SC[s], tr = el("tr"); const a = el("td"); const bt = el("button", "lnk", x.label); bt.type = "button"; bt.setAttribute("aria-pressed", String(FCS === s)); bt.onclick = () => { FCS = s; draw(); }; a.append(bt, el("div", "small muted", x.def));
-      tr.append(a, el("td", "n rcv", kf(x.inTotal)), el("td", "n" + (x.firstShort ? " neg" : ""), x.firstShort ? dmy(x.firstShort.date) : "لا عجز"), el("td", "n" + (x.lowest.amount < 0 ? " neg" : ""), kf(x.lowest.amount) + " · " + dmy(x.lowest.date))); st.append(tr); }
+      tr.append(a, el("td", "n rcv", kf(x.inTotal)), el("td", "n" + (x.firstShort ? " neg" : ""), x.firstShort ? dmy(x.firstShort.date) : "لا عجز"), el("td", "n" + (x.lowest.amount < 0 ? " neg" : ""), kf(x.lowest.amount) + " · " + dmy(x.lowest.date))); st.append(tr);
+      if (x.stress) { const sr = el("tr", "stress"), sa = el("td", "small muted", "اختبار ضغط: لو وقع التعرّض غير المجدول (" + kf(x.stress.unscheduled) + ") داخل الأسابيع الـ13"); sr.append(sa, el("td", "n", ""), el("td", "n" + (x.stress.firstShort ? " neg" : ""), x.stress.firstShort ? dmy(x.stress.firstShort.date) : "لا عجز"), el("td", "n" + (x.stress.lowest.amount < 0 ? " neg" : ""), kf(x.stress.lowest.amount) + " · " + dmy(x.stress.lowest.date))); st.append(sr); } }
     sb.append(st); m.append(sb);
+    // contracted projects with no start date: unscheduled, not «after the 13 weeks»
+    if ((C.unscheduled || []).length) { const ub = el("section", "box"); ub.append(el("b", "", "تعرّض غير مجدول"), el("div", "small muted", "متعاقد عليه ولم يبدأ ولا تاريخ بدء مسجل: غياب التاريخ لا يثبت أن أعماله بعد الأسابيع الـ13. التزاماته ومستحقاته داخل التوقع؛ أعماله غير الملتزم بها هنا، ومعها اختبار الضغط في جدول السيناريوهات."));
+      const tu = el("table", "ovt"); C.unscheduled.forEach((x) => { const tr = el("tr"), a = el("td", "", x.name); a.append(el("div", "small muted", x.why)); tr.append(a, el("td", "n pay", x.amount === null ? "غير مقدّرة" : fmt(x.amount))); tu.append(tr); }); ub.append(tu); m.append(ub); }
     m.append(w13Box(F, true));
     // how much rests on what
     const ob = C.out.byBasis, bb = el("section", "box"); bb.append(el("b", "", "على ماذا يعتمد التوقع"));
@@ -2801,11 +2847,27 @@ function budgetDec(x, r, ok) {
   };
   $("dlg").showModal();
 }
+// management confirms ONE source project of a company ratio: cost completeness and comparability, with what was checked
+function benchSrcDialog(kind, src) {
+  const body = $("dlgBody");
+  body.replaceChildren(el("h3", "", "مشروع مصدر لنسبة «" + kind + "»"), el("p", "small muted", src.name + " — النسبة لا تُوثّق إلا بحد أدنى من المصادر، كل منها مؤكد الاكتمال وقابل للمقارنة."));
+  const mk = (id, lab, v) => { const f = el("label", "chk"), i = el("input"); i.type = "checkbox"; i.id = id; i.checked = !!v; f.append(i, document.createTextNode(" " + lab)); body.append(f); return i; };
+  const c1 = mk("bs-c", "تكاليفه مكتملة (قيود والتدقيق متطابقان، لا تكاليف ناقصة)", src.complete), c2 = mk("bs-m", "قابل للمقارنة (نفس نوع العمل والنطاق والحجم والفترة)", src.comparable);
+  const f = el("div", "f"), l = el("label", "", "ما الذي تحققت منه"), t = el("textarea"); t.id = "bs-n"; l.htmlFor = t.id; f.append(l, t); body.append(f);
+  const res = el("div", "res"), bar = el("div", "dbar"), save = el("button", "pbtn", "حفظ"), close = el("button", "sbtn", "إلغاء"); res.setAttribute("role", "status");
+  save.type = close.type = "button"; bar.append(save, close); body.append(res, bar); close.onclick = () => $("dlg").close();
+  save.onclick = async () => {
+    save.disabled = true;
+    try { const { status, j } = await api({ op: "bench_src", kind, aid: src.aid, complete: c1.checked, comparable: c2.checked, note: t.value.trim() }); if (status !== 200) { res.className = "res bad"; res.textContent = j.error || "تعذّر الحفظ"; save.disabled = false; return; } $("dlg").close(); toast("حُفظ ✓"); load(true); }
+    catch { res.className = "res bad"; res.textContent = "تعذّر الاتصال"; save.disabled = false; }
+  };
+  $("dlg").showModal();
+}
 function setDialog() {
   const body = $("dlgBody"), S0 = D.fc.set, A = D.fc.assume || {};
   body.replaceChildren(el("h3", "", "إعدادات التوقع"), el("p", "small muted", "اترك الحقل فارغاً ليبقى الافتراض الظاهر في التوقع."));
   const fields = [["subDays", "دفع مستخلصات الباطن بعد التنفيذ (أيام)", A.subDays], ["supDays", "دفع الموردين بعد التسليم أو الفاتورة (أيام)", A.supDays], ["payrollDay", "يوم صرف الرواتب في الشهر", "آخر الشهر"], ["otherDay", "يوم دفع بقية المصاريف الثابتة", A.otherDay],
-    ["collectLag", "مدة التحصيل بعد استحقاق الدفعة (أيام)", A.collectLag], ["minMargin", "حد الهامش المنخفض (0.10 = 10%)", "0.10"], ["reviewMargin", "حد الهامش المرتفع للتحقق (0.30 = 30%)", "0.30"], ["staleDays", "دليل الإنجاز يعتبر حديثاً لمدة (أيام)", "30"]];
+    ["collectLag", "مدة التحصيل بعد استحقاق الدفعة (أيام)", A.collectLag], ["minMargin", "حد الهامش المنخفض (0.10 = 10%)", "0.10"], ["reviewMargin", "حد الهامش المرتفع للتحقق (0.30 = 30%)", "0.30"], ["staleDays", "دليل الإنجاز يعتبر حديثاً لمدة (أيام)", "30"], ["benchMin", "الحد الأدنى لمشاريع مصدر نسبة المؤسسة (3 فأكثر)", "لم يُحدد"]];
   const ins = fields.map(([k, lab, ph]) => { const f = el("div", "f"), l = el("label", "", lab), i = el("input"); i.id = "fs-" + k; l.htmlFor = i.id; i.inputMode = "decimal"; i.placeholder = "افتراض: " + ph; const v = S0[k]; const isAssumed = ["subDays", "supDays", "payrollDay", "otherDay", "collectLag"].includes(k) && v === null; if (!isAssumed && v !== null && v !== undefined) i.value = v; f.append(l, i); body.append(f); return [k, i]; });
   const res = el("div", "res"), bar = el("div", "dbar"), save = el("button", "pbtn", "حفظ"), close = el("button", "sbtn", "إلغاء"); res.setAttribute("role", "status");
   save.type = close.type = "button"; bar.append(save, close); body.append(res, bar); close.onclick = () => $("dlg").close();
