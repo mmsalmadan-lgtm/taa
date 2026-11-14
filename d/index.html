@@ -58,7 +58,6 @@ h1,h2,h3{font-family:var(--f-disp);font-weight:600;letter-spacing:0}
 .gh-t{display:flex;flex-direction:column;line-height:1.3;min-width:0;flex:1}
 .gh-t b{font-family:var(--f-disp);font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .gh-t span{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-@media (max-width:1079px){.gh-t span{white-space:normal}} /* the header row is shared with «الحساب» on phones: wrap the role and update time instead of cutting the time off */
 .badge{font-size:12px;padding:3px 10px;border-radius:999px;background:var(--warn1);color:var(--warn);white-space:nowrap;font-weight:600}
 .badge.ok{background:var(--acc1);color:var(--acc9)}.badge.bad{background:var(--crit1);color:var(--crit)}
 .gh-a{display:flex;gap:4px;flex-basis:100%;flex-wrap:wrap}.gh-a:empty{display:none}
@@ -67,7 +66,17 @@ h1,h2,h3{font-family:var(--f-disp);font-weight:600;letter-spacing:0}
 /* phone and tablet: the account actions (language, alerts, PIN, sign out) fold behind «الحساب», so they no longer take a whole
    row above the work and «خروج» is not alone where a thumb lands (critique 14 Nov 2026); the desk sidebar keeps them all */
 .acct-t{display:none}.acct-t::after{content:"▾";margin-inline-start:6px;font-size:11px}.acct-t[aria-expanded="true"]::after{content:"▴"}
-@media (max-width:1079px){.acct-t{display:inline-flex;align-items:center}.gh-a{flex-basis:auto;margin-inline-start:auto;flex-wrap:nowrap}.gh-a:not(.open) .acct-x{display:none}.gh-a.open{flex-basis:100%;flex-wrap:wrap;justify-content:flex-end}}
+.acct-m{display:contents}#langBtn{order:1}#bellBtn{order:2}#reload{order:3}#pinBtn{order:4}#outBtn{order:5}#acctBtn{order:6}
+/* one breakpoint for the phone header: the role/update line wraps (it shares the row), the account actions are a dropdown that
+   opens under «الحساب» without moving it */
+@media (max-width:1079px){
+ .gh-t span{white-space:normal}
+ .acct-t{display:inline-flex;align-items:center}
+ .gh-a{flex-basis:auto;margin-inline-start:auto;flex-wrap:nowrap;position:relative}
+ .acct-m{display:none}
+ .gh-a.open .acct-m{display:flex;flex-direction:column;align-items:stretch;position:absolute;top:calc(100% + 4px);inset-inline-end:0;z-index:30;min-width:200px;padding:6px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-s);box-shadow:0 8px 24px rgba(16,24,40,.12)}
+ .acct-m .ibtn{text-align:start;min-height:44px}
+}
 .tabs{background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
 .tabs .wrapx{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding-top:8px;padding-bottom:8px}.tabs .wrapx::-webkit-scrollbar{display:none}
 .tgrp{display:none}
@@ -345,8 +354,11 @@ label.chk{display:inline-flex;align-items:center;gap:6px;margin-inline-end:14px;
 .hnone{margin:0;color:var(--acc9);font-weight:600;font-size:15px}
 .hlist{display:flex;flex-direction:column}
 .hd{display:flex;align-items:center;flex-wrap:wrap;gap:6px 14px;padding:12px 0;border-top:1px solid var(--line)}.hd:first-child{border-top:0;padding-top:0}
-.hdm{flex:1 1 220px;min-width:0;display:flex;flex-direction:column;gap:2px}.hd h3{margin:0;font-size:15.5px;font-weight:600;line-height:1.45;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2}
-.hcause{margin:2px 0 0;font-size:13px;line-height:1.6;color:var(--muted);overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2}
+.hdm{flex:1 1 220px;min-width:0;display:flex;flex-direction:column;gap:2px}.hd h3{margin:0;font-size:15.5px;font-weight:600;line-height:1.45;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hwhy summary{list-style:none;display:flex;align-items:center;gap:8px;min-width:0;cursor:pointer}.hwhy summary::-webkit-details-marker{display:none}
+.hwhy .hw{flex:none;font-size:12.5px;font-weight:600;color:var(--ui);text-decoration:underline;text-underline-offset:3px}.hwhy .hw::after{content:" ▾"}.hwhy[open] .hw::after{content:" ▴"}
+.hcause{margin:6px 0 2px;padding:8px 10px;border-radius:var(--r-s);background:var(--sunk);font-size:13px;line-height:1.7}.hcause b{display:block;font-weight:600;margin-bottom:2px}.hcause p{margin:0;color:var(--ink)}
+@media (pointer:coarse){.hwhy summary{min-height:44px}}
 .hsub{font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hamt{font-family:var(--f-disp);font-size:17px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}.hamt.neg{color:var(--crit)}.hd .hbtn{align-self:center}
 
@@ -666,7 +678,7 @@ body.wallmode main{max-width:none;padding:24px 32px;gap:18px}
   <div class="brand"><div class="logo" aria-hidden="true">ط</div>
   <div class="gh-t"><b id="who">لوحة المتابعة</b><span id="roles">مؤسسة طاء الرائدة للمقاولات العامة</span></div></div>
   <span class="badge" id="mode" hidden></span>
-  <div class="gh-a" id="ghA"><button type="button" class="ibtn" id="reload" hidden>تحديث</button><button type="button" class="ibtn acct-t" id="acctBtn" aria-expanded="false" aria-controls="ghA">الحساب</button><button type="button" class="ibtn lang acct-x" id="langBtn" lang="en">English</button><button type="button" class="ibtn acct-x" id="bellBtn" hidden>التنبيهات</button><button type="button" class="ibtn acct-x" id="pinBtn" hidden>تغيير الرمز السري</button><button type="button" class="ibtn acct-x" id="outBtn" hidden>خروج</button></div>
+  <div class="gh-a" id="ghA"><button type="button" class="ibtn" id="reload" hidden>تحديث</button><button type="button" class="ibtn acct-t" id="acctBtn" aria-expanded="false" aria-controls="acctMenu">الحساب</button><div class="acct-m" id="acctMenu"><button type="button" class="ibtn lang" id="langBtn" lang="en">English</button><button type="button" class="ibtn" id="bellBtn" hidden>التنبيهات</button><button type="button" class="ibtn" id="pinBtn" hidden>تغيير الرمز السري</button><button type="button" class="ibtn" id="outBtn" hidden>خروج</button></div></div>
 </div></header>
 <nav class="tabs" id="tabs" hidden aria-label="الأقسام"><div class="wrapx" id="tabRow"></div></nav>
 </aside>
@@ -3094,8 +3106,10 @@ function fail(title, text) {
 }
 // ---- sign-in: phone + PIN; the first time phone + activation code + a PIN of your own ----
 const clearHash = () => { if (location.hash) history.replaceState(history.state, "", location.pathname + location.search); };
+// closes the phone account menu (also on sign-out, so the next sign-in never starts with it open)
+function acctShut() { $("ghA").classList.remove("open"); $("acctBtn").setAttribute("aria-expanded", "false"); }
 function signedOut() {
-  token = ""; store.clear(); clearHash(); D = null; REG = null; AUTHL = null;
+  token = ""; store.clear(); clearHash(); D = null; REG = null; AUTHL = null; acctShut();
   for (const id of ["reload", "pinBtn", "outBtn", "bellBtn", "mode"]) $(id).hidden = true;
   $("who").textContent = "لوحة المتابعة"; $("roles").textContent = "مؤسسة طاء الرائدة للمقاولات العامة";
 }
@@ -4455,16 +4469,21 @@ const HEST = (x) => x.kind === "cash" || x.kind === "loss";          // built on
 const HALERT = (x) => x.kind === "floor";                            // recorded commitments above the estimate
 const DEC_K = { mine: "بانتظارك", budget: "تعديل ميزانية", decision: "قرار للإدارة" };
 const DEC_ACT = { chat: "افتح واحسم", dq: "احسم البند", cost: "اعتمد أو ارفض", rev: "حدّث التوقع", proj: "افتح المشروع", fc: "افتح التوقع" };
-// one line per item (owner, 15 Nov 2026: «محشو كلام»): title, one short line of kind · age · owner, the amount, the button —
-// the explanation stays one tap away (the action's own sheet) and in the tooltip
+// one line per item (owner, 15 Nov 2026: «محشو كلام»): title, one short line of kind · age · owner, the amount, the button.
+// The explanation is one tap away on that short line («السبب»), which opens the full title and the cause in place — a hover
+// tooltip cannot be read on a phone (critique + pilot review, 14 Nov 2026)
 function homeDec(x) {
-  const c = el("article", "hd " + (x.tone || "")); if (x.cause) c.title = x.cause;
+  const c = el("article", "hd " + (x.tone || ""));
   const main = el("div", "hdm"); main.append(el("h3", "", sar(x.title)));
   const k = DEC_K[String(x.kind).split(":")[0]];
   const sub = [k, x.since ? "منذ " + arN(x.since, "يوم", "يومين", "أيام", "يوماً") : "", x.owner && !["أنت", "الإدارة"].includes(x.owner) ? x.owner : ""].filter(Boolean).join(" · ");
-  if (sub) main.append(el("span", "hsub", sub));
-  // the cause is visible (two lines at most), not only a hover tooltip a phone cannot show (critique 14 Nov 2026)
-  if (x.cause) main.append(el("p", "hcause", sar(x.cause)));
+  if (x.cause) {
+    const d = el("details", "hwhy"), s = el("summary");
+    if (sub) s.append(el("span", "hsub", sub));
+    s.append(el("span", "hw", "السبب"));
+    const p = el("div", "hcause"); p.append(el("b", "", sar(x.title)), el("p", "", sar(x.cause)));
+    d.append(s, p); main.append(d);
+  } else if (sub) main.append(el("span", "hsub", sub));
   c.append(main);
   if (x.impact) { const a = el("b", "hamt" + (x.tone === "bad" ? " neg" : ""), sar(fmt(x.impact))); a.title = x.impactT || ""; c.append(a); }
   if (x.act && x.act.t !== "none") { const b = el("button", "hbtn", DEC_ACT[x.act.t] || "افتح"); b.type = "button"; b.setAttribute("aria-label", (DEC_ACT[x.act.t] || "افتح") + ": " + x.title); b.onclick = () => doAct(x.act, x); c.append(b); }
@@ -7020,11 +7039,14 @@ async function pushDialog() {
   body.append(res, bar); bar.append(on, close);
 }
 $("bellBtn").addEventListener("click", pushDialog);
-{ // «الحساب» on phones: opens and closes the account actions; Escape or choosing one closes it again
-  const a = $("ghA"), t = $("acctBtn"), shut = () => { a.classList.remove("open"); t.setAttribute("aria-expanded", "false"); };
+{ // «الحساب» on phones: a dropdown of the account actions. Closes on choosing one (focus comes back to «الحساب» when the
+  // dialog it opened closes), on a tap outside, on Escape, and on sign-out (acctShut in signedOut)
+  const a = $("ghA"), t = $("acctBtn"), m = $("acctMenu"); let back = false;
   t.addEventListener("click", () => { const o = a.classList.toggle("open"); t.setAttribute("aria-expanded", String(o)); });
-  a.addEventListener("click", (e) => { if (e.target.closest(".acct-x")) shut(); });
-  a.addEventListener("keydown", (e) => { if (e.key === "Escape" && a.classList.contains("open")) { shut(); t.focus(); } });
+  m.addEventListener("click", (e) => { const b = e.target.closest("button"); if (b && a.classList.contains("open")) { acctShut(); back = b.id === "pinBtn" || b.id === "bellBtn"; } });
+  document.addEventListener("click", (e) => { if (a.classList.contains("open") && !a.contains(e.target)) acctShut(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && a.classList.contains("open")) { acctShut(); t.focus(); } });
+  $("dlg").addEventListener("close", () => { if (back) { back = false; if (getComputedStyle(t).display !== "none") t.focus(); } });
 }
 // an alert tapped while the dashboard is open: the service worker asks this page to show «المساعد»
 if (PUSH.ok) navigator.serviceWorker.addEventListener("message", (e) => { if (e.data && e.data.go === "bot" && D) { if ($("dlg").open) $("dlg").close(); go("bot"); } });
