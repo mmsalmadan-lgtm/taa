@@ -616,7 +616,7 @@ body.chatonly footer{display:none}
 .mb-el.approvals,.mb-el.supply,.mb-el.ready,.mb-col.approvals,.mb-col.supply,.mb-col.ready{fill:#fff}
 .mb-el.form,.mb-col.form{fill:#EBCB9B;stroke:#A0683A}.mb-col.rebar:not(.form){fill:none;stroke:#8B3A2A;stroke-width:1.4}
 .mb-bar{stroke:#8B3A2A;stroke-width:.9}
-.mb-el.pouring,.mb-col.pouring,.mb-el.stale,.mb-col.stale{fill:#9AA3AD;stroke:#4E5662}
+.mb-el.pouring,.mb-col.pouring,.mb-el.stale,.mb-col.stale{fill:#9AA3AD;stroke:#4E5662}.mb-el.violation,.mb-col.violation{fill:#E8A29B;stroke:#B42318}
 .mb-pump{stroke:#B45309;stroke-width:2.2;stroke-linecap:round}.mb-drum{fill:#F59E0B;stroke:#92400E;stroke-width:1;transform-box:fill-box;transform-origin:center}
 @media (prefers-reduced-motion:no-preference){.mb-drum.spin{animation:mdrum 1.8s linear infinite}}
 @keyframes mdrum{to{transform:rotate(360deg)}}
@@ -3459,7 +3459,7 @@ const ownerId = (name) => { const f = (ivDef("new") || { fields: [] }).fields.fi
 // No base map tiles are loaded (the provider is the owner's decision): a light engineering grid with scale and north, real proportions.
 const MCOL = { green: ["حسب الخطة", "✓"], yellow: ["خطر موثق", "▲"], red: ["متعطّل أو متأخر", "!"], grey: ["بيانات غير كافية", "?"] };
 const MPART = { done: "منفّذ — خرسانة", approvals: "الحديد والشدّة — الاستلامات", supply: "اكتملت الاستلامات — تحضير التوريد", ready: "جاهز للصب", pouring: "صب جارٍ",
-  stale: "بدأ الصب — يحتاج تأكيداً", work: "جاري حسب التدقيق", unk: "الدور جارٍ — هذا الجزء غير محدد", none: "لم يبدأ" };
+  stale: "بدأ الصب — يحتاج تأكيداً", violation: "صب دون إفراج — مخالفة موثقة", work: "جاري حسب التدقيق", unk: "الدور جارٍ — هذا الجزء غير محدد", none: "لم يبدأ" };
 const RXC = { approved: "ok", na: "ok", notes: "bad", awaiting: "warn", scheduled: "warn", requested: "warn", na_pending: "warn", none: "unk" };
 let MAPV = { k: 1, cx: null, cy: null, sel: null, pour: null, fit: true }, MAPWALL = false;
 const motionOK = () => !matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -3696,13 +3696,15 @@ function mapPour(x, M) {
   }
   box.append(g);
   const bar = el("div", "cacts");
-  if (act.has("start")) bar.append(ebtn("بدء الصب", () => mapAct(M, "start", x.id), "sbtn ebtn" + (x.ready ? " pri" : "")));
+  // a released pour: «بدء الصب»; not released: the button only DOCUMENTS a pour that happened anyway (violation) — the bot's chain is untouched
+  if (act.has("start")) bar.append(ebtn(x.status === "ready" ? "بدء الصب" : "توثيق صب تم دون إفراج", () => mapAct(M, "start", x.id), "sbtn ebtn" + (x.ready ? " pri" : "")));
   if (act.has("alive")) bar.append(ebtn("ما زال الصب جارياً", () => mapAct(M, "alive", x.id), "sbtn ebtn pri"));
   if (act.has("seen")) bar.append(ebtn("اطلعت على المخالفة", () => mapAct(M, "seen", x.id), "sbtn ebtn"));
   // what the bot already does (signed forms, fix photos, «تمت الصبة») stays in «المساعد» on the same pour record
   if (x.chat) bar.append(ebtn("افتح الصبة في المساعد", () => openChat(x.chat, x.el), "sbtn ebtn"));
   if (bar.children.length) box.append(bar);
-  if (!x.ready && act.has("start")) box.append(el("div", "small muted", "بدء الصب الآن يُسجّل كمخالفة ويُرفع للإدارة — لا يُعتبر معتمداً."));
+  if (!x.ready && act.has("start")) box.append(el("div", "small muted", x.status === "ready" ? "بدء الصب الآن يُسجّل كمخالفة ويُرفع للإدارة — لا يُعتبر معتمداً." : "الصبة غير مُفرج عنها في مسار البوت: التوثيق يُسجّل مخالفة ويُرفع للإدارة، ولا يغيّر مسار البوت."));
+  if (x.violation && x.violation.unreleased) box.append(el("div", "banner bad", "⛔ وُثّق صب دون إفراج الصبة — " + (x.violation.why || []).join(" · ")));
   return box;
 }
 function cmdView(m) {
