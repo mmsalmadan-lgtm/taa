@@ -397,7 +397,7 @@ label.chk{display:inline-flex;align-items:center;gap:6px;margin-inline-end:14px;
 .wkt th{font-size:12px;font-weight:600;color:var(--muted);text-align:start;padding:6px 2px;border-bottom:1px solid var(--line)}.wkt th:not(:first-child){text-align:end}
 .subh{margin:12px 0 2px;font-weight:600}
 .pill.prov,.aq .q .prov{background:var(--warn1);color:var(--warn);border-color:color-mix(in srgb,var(--warn6) 35%,var(--surface))}
-.aq .q .prov{font-style:normal;font-size:11.5px;font-weight:600;border:1px solid;border-radius:999px;padding:0 6px;margin-inline-start:6px;white-space:nowrap;display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
+.aq .q .prov{font-style:normal;font-size:11.5px;font-weight:600;border:1px solid;border-radius:999px;padding:0 6px;margin-inline-start:6px;display:inline-block;max-width:100%;white-space:normal;vertical-align:middle} /* wraps rather than cut: the estimate mark stays readable */
 .bsb{display:flex;height:10px;border-radius:5px;overflow:hidden;margin:10px 0 6px;background:var(--track)}.bsb i{display:block;min-width:2px}
 .b-documented{background:var(--acc6)}.b-terms{background:var(--eng6)}.b-assumed{background:var(--warn6)}.b-fallback{background:color-mix(in srgb,var(--crit) 70%,var(--surface))}
 .sw{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px}
@@ -697,8 +697,12 @@ const store = { get() { try { const x = JSON.parse(localStorage.getItem(TK) || "
   set(x) { try { localStorage.setItem(TK, JSON.stringify(x)); } catch {} }, clear() { try { localStorage.removeItem(TK); } catch {} } };
 // the hash carries a signed link's token — but never one of the page's own section anchors (#h-dec, #ws-first, #ws-all …): a chip
 // opened in a new tab would otherwise send «h-dec» as a token, get 401 and sign the device out of every tab (pilot review, 15 Nov 2026)
-const HASH = decodeURIComponent((location.hash || "").slice(1));
-let token = (/^(h|ws)-[a-z]+$/.test(HASH) ? "" : HASH) || (store.get() || {}).token || "";
+// A malformed hash (a link cut short) is ignored instead of stopping the page; so is a hash naming an element on the page (#main, the
+// skip link) or a section anchor drawn later (#h-…, #ws-…). A hash token that the server rejects falls back to the saved session (load).
+const HASH = (() => { try { return decodeURIComponent((location.hash || "").slice(1)); } catch { return ""; } })();
+const HASH_TOKEN = HASH && !document.getElementById(HASH) && !/^(h|ws)-[a-z]+$/.test(HASH) ? HASH : "";
+let TOKEN_FROM_HASH = !!HASH_TOKEN;
+let token = HASH_TOKEN || (store.get() || {}).token || "";
 const $ = (id) => document.getElementById(id);
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined && text !== null) e.textContent = text; return e; };
 const SAR = "\u20C1";
@@ -3135,7 +3139,7 @@ async function call(body) {
   const r = await fetch(API, { method: "POST", headers: { "content-type": "application/json", ...(token ? { "x-form-token": token } : {}) }, body: JSON.stringify(body) });
   return { status: r.status, j: await r.json().catch(() => ({})) };
 }
-function remember(j) { token = j.token; store.set({ token: j.token, exp: j.exp, name: j.name }); clearHash(); }
+function remember(j) { token = j.token; TOKEN_FROM_HASH = false; store.set({ token: j.token, exp: j.exp, name: j.name }); clearHash(); }
 function signIn(mode, msg) {
   signedOut(); $("tabs").hidden = true;
   const m = $("main"); m.replaceChildren();
@@ -5012,16 +5016,16 @@ function setDialog() {
   $("dlg").showModal();
 }
 let introDone = false;
-// home: the date and a greeting — the figures follow once, below (nothing on home is said twice)
 // a chip's jump to its section (home and «مساحتي»): instant when the device asks for reduced motion (an explicit «smooth» would
 // override the CSS rule), and focus moves there for keyboard and screen-reader users; the temporary tabindex goes when focus leaves
-const smoothB = () => (matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth");
+const smoothB = () => (matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"); // read at each jump: follows a setting changed mid-session
 function jumpTo(id) {
   const x = $(id); if (!x) return;
   x.scrollIntoView({ behavior: smoothB(), block: "start" });
-  x.setAttribute("tabindex", "-1"); x.focus({ preventScroll: true });
-  x.addEventListener("blur", () => x.removeAttribute("tabindex"), { once: true });
+  if (!x.hasAttribute("tabindex")) { x.setAttribute("tabindex", "-1"); x.addEventListener("blur", () => x.removeAttribute("tabindex"), { once: true }); }
+  x.focus({ preventScroll: true });
 }
+// home: the date and a greeting — the figures follow once, below (nothing on home is said twice)
 function hero() {
   const h = el("header", "hero"), now = new Date(), hr = now.getHours();
   // the first word that is a name, not a title («م.»، «المهندس», «Eng.»)
@@ -6811,7 +6815,12 @@ async function load(keep) {
   try {
     const r = await fetch(API, { headers: { "x-form-token": token } });
     const j = await r.json().catch(() => ({}));
-    if (r.status === 401) return signIn("", j.error || "انتهت الجلسة — سجّل الدخول من جديد");
+    if (r.status === 401) {
+      // a rejected token from the URL never costs a good saved session: drop the hash and use the saved one instead of signing out
+      const saved = store.get();
+      if (TOKEN_FROM_HASH && saved && saved.token !== token) { TOKEN_FROM_HASH = false; token = saved.token; clearHash(); return load(keep); }
+      return signIn("", j.error || "انتهت الجلسة — سجّل الدخول من جديد");
+    }
     if (!r.ok) return fail(r.status === 403 ? "غير مصرح" : "تعذّر التحميل", j.error || "حاول مرة أخرى بعد قليل.");
     if (j.display) return wallStart(j); // the shared office screen: read-only, statuses only
     D = j;
