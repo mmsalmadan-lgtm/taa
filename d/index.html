@@ -337,18 +337,33 @@ label.chk{display:inline-flex;align-items:center;gap:6px;margin-inline-end:14px;
 .hsh h2{margin:0;font-family:var(--f-disp);font-size:19px;font-weight:600}
 .hnone{margin:0;color:var(--acc9);font-weight:600;font-size:15px}
 .hlist{display:flex;flex-direction:column}
-.hd{display:flex;flex-direction:column;gap:8px;padding:14px 0;border-top:1px solid var(--line)}.hd:first-child{border-top:0;padding-top:0}
-.hd h3{margin:0;font-size:16px;font-weight:600;line-height:1.55;text-wrap:balance}
-.hd p{margin:0;font-size:14px;color:var(--muted);line-height:1.75;max-width:75ch;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.hd{display:flex;align-items:center;flex-wrap:wrap;gap:6px 14px;padding:12px 0;border-top:1px solid var(--line)}.hd:first-child{border-top:0;padding-top:0}
+.hdm{flex:1 1 220px;min-width:0;display:flex;flex-direction:column;gap:2px}.hd h3{margin:0;font-size:15.5px;font-weight:600;line-height:1.45;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hsub{font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hamt{font-family:var(--f-disp);font-size:17px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}.hamt.neg{color:var(--crit)}.hd .hbtn{align-self:center}
+
 .hmeta{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .hbtn{align-self:flex-start;min-height:44px;padding:0 18px;border-radius:var(--r-s);border:1px solid var(--ui);background:var(--ui);color:var(--on-acc);font:inherit;font-weight:600;font-size:14.5px;cursor:pointer;transition:background .15s,transform .15s var(--ease)}
 .hbtn:hover{background:var(--ui-2)}.hbtn:active{transform:translateY(1px)}.hbtn:focus-visible{outline:2px solid var(--ui);outline-offset:2px}
 .hprog{display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600}
 .hbar{height:8px;border-radius:999px;background:var(--track);overflow:hidden}.hbar i{display:block;height:100%;background:var(--warn6);border-radius:inherit}
 .hgaps{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:10px}
-.hgap{display:flex;flex-direction:column;gap:4px;text-align:start;padding:12px 14px;border:1px solid var(--line);border-radius:var(--r-m);background:var(--sunk);color:var(--ink);font:inherit;cursor:pointer;min-height:44px;transition:border-color .15s,background .15s}
+.hgap{display:flex;flex-direction:column;gap:2px;text-align:start;padding:10px 14px;border:1px solid var(--line);border-radius:var(--r-m);background:var(--sunk);color:var(--ink);font:inherit;cursor:pointer;min-height:44px;min-width:0;transition:border-color .15s,background .15s}
 .hgap:hover{border-color:var(--line-2);background:var(--surface)}.hgap:focus-visible{outline:2px solid var(--ui);outline-offset:2px}
-.hgap b{font-weight:600;font-size:14.5px;line-height:1.5}
+.hgap b{font-weight:600;font-size:14.5px;line-height:1.45;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* charts on home: collection per project (recorded) beside the 13-week cash (estimate) */
+.hcharts{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}@media (max-width:860px){.hcharts{grid-template-columns:1fr}}
+.cchart{display:flex;flex-direction:column;gap:10px}
+.crows{display:flex;flex-direction:column;gap:4px}
+.crow{display:grid;grid-template-columns:minmax(64px,92px) minmax(0,1fr) auto;align-items:center;gap:10px;border:0;background:none;padding:6px 4px;border-radius:var(--r-s);font:inherit;color:var(--ink);text-align:start;cursor:pointer;min-height:36px}
+.crow:hover{background:var(--sunk)}.crow:focus-visible{outline:2px solid var(--ui);outline-offset:1px}
+.cn{font-size:12.5px;font-weight:600;direction:ltr;text-align:start;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-variant-numeric:tabular-nums}
+.ctrack{display:block;min-width:0}
+.cbar{display:flex;height:12px;border-radius:4px;background:var(--track);overflow:hidden}
+.cbar i{display:block;height:100%;background:var(--acc6)}.cbar i.due{background:var(--warn6)}
+.cv{font-size:12.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.clg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--muted)}.clg span{display:inline-flex;align-items:center;gap:6px}.clg span::before{content:"";width:10px;height:10px;border-radius:2px;background:var(--track)}.clg .l1::before{background:var(--acc6)}.clg .l2::before{background:var(--warn6)}
+@media (pointer:coarse){.crow{min-height:44px}}
 .hest{background:var(--sunk);border:1px dashed var(--line-2);border-radius:var(--r-l);padding:2px 20px}
 .hest>summary{cursor:pointer;min-height:48px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;list-style:none}
 .hest>summary::-webkit-details-marker{display:none}
@@ -888,6 +903,12 @@ const EN = {
 "مساء الخير": "Good evening",
 "ابدأ من هنا": "Start here",
 "قرارات تنتظرك": "Decisions waiting for you",
+"التحصيل لكل مشروع": "Collection per project",
+"الممتلئ = المحصّل · الطول = قيمة العقد": "Filled = collected · Length = contract value",
+"محصّل": "Collected",
+"لا عقود مسجّلة": "No contracts recorded",
+"كل المشاريع ({n}) ←": "All projects ({n}) →",
+"الرصيد النقدي": "Cash balance",
 "شغل اليوم": "Today's work",
 "مهام مشاريعك وعوائقها وفحوصاتها": "Tasks, constraints and inspections on your projects",
 "الدفعات والتحصيل": "Payments and collection",
@@ -4414,18 +4435,57 @@ const HEST = (x) => x.kind === "cash" || x.kind === "loss";          // built on
 const HALERT = (x) => x.kind === "floor";                            // recorded commitments above the estimate
 const DEC_K = { mine: "بانتظارك", budget: "تعديل ميزانية", decision: "قرار للإدارة" };
 const DEC_ACT = { chat: "افتح واحسم", dq: "احسم البند", cost: "اعتمد أو ارفض", rev: "حدّث التوقع", proj: "افتح المشروع", fc: "افتح التوقع" };
+// one line per item (owner, 15 Nov 2026: «محشو كلام»): title, one short line of kind · age · owner, the amount, the button —
+// the explanation stays one tap away (the action's own sheet) and in the tooltip
 function homeDec(x) {
-  const c = el("article", "hd " + (x.tone || ""));
-  const t = el("h3", "", sar(x.title)); c.append(t);
-  if (x.cause) { const p = el("p", "", sar(x.cause)); p.title = x.cause; c.append(p); }
-  const meta = el("div", "hmeta");
-  const k = DEC_K[String(x.kind).split(":")[0]]; if (k) meta.append(el("span", "pill " + (x.tone === "bad" ? "bad" : x.tone === "warn" ? "warn" : ""), k));
-  if (x.impact) meta.append(el("span", "pill", (x.impactT || "المبلغ") + " " + fmt(x.impact)));
-  if (x.since) meta.append(el("span", "pill", "منذ " + arN(x.since, "يوم", "يومين", "أيام", "يوماً")));
-  if (x.owner && !["أنت", "الإدارة"].includes(x.owner)) meta.append(el("span", "small muted", "المسؤول: " + x.owner));
-  if (meta.children.length) c.append(meta);
+  const c = el("article", "hd " + (x.tone || "")); if (x.cause) c.title = x.cause;
+  const main = el("div", "hdm"); main.append(el("h3", "", sar(x.title)));
+  const k = DEC_K[String(x.kind).split(":")[0]];
+  const sub = [k, x.since ? "منذ " + arN(x.since, "يوم", "يومين", "أيام", "يوماً") : "", x.owner && !["أنت", "الإدارة"].includes(x.owner) ? x.owner : ""].filter(Boolean).join(" · ");
+  if (sub) main.append(el("span", "hsub", sub));
+  c.append(main);
+  if (x.impact) { const a = el("b", "hamt" + (x.tone === "bad" ? " neg" : ""), sar(fmt(x.impact))); a.title = x.impactT || ""; c.append(a); }
   if (x.act && x.act.t !== "none") { const b = el("button", "hbtn", DEC_ACT[x.act.t] || "افتح"); b.type = "button"; b.setAttribute("aria-label", (DEC_ACT[x.act.t] || "افتح") + ": " + x.title); b.onclick = () => doAct(x.act, x); c.append(b); }
   return c;
+}
+// the company's recorded figures (no forecast): the same sums as the projects page
+function homeNums() {
+  const P = D.projects || [], s = (k) => P.reduce((t, p) => t + (+p.x[k] || 0), 0);
+  const con = s("contract"), col = s("collected"), A = AUD;
+  return kpiStrip([
+    { label: "قيمة العقود", value: fmt(con), f: "in", sub: arN(P.length, "مشروع واحد", "مشروعان", "مشاريع", "مشروعاً") },
+    { label: "المحصّل", value: fmt(col), f: "in", sub: pct(con ? col / con : 0) + " من العقود" },
+    { label: "الباقي عند العملاء", value: fmt(s("toCollect")), f: "in", sub: s("dueNow") > 0.5 ? "مستحق الآن " + fmt(s("dueNow")) : "" , tone: s("dueNow") > 0.5 ? "warn" : "" },
+    { label: "المصروف حتى الآن", value: fmt(s("spent")), f: "out" },
+    { label: "الرصيد النقدي", value: A && A.cashDone ? fmt(A.cash) : "—", f: "cash", flag: A && A.cashDone ? null : ["warn", "لم يُدخل"] },
+  ]);
+}
+// collection per project: bar length = contract size (largest = full width), filled part = collected; the most still to collect first
+function collChart() {
+  const P = (D.projects || []).filter((p) => p.x.contract > 0).sort((a, b) => b.x.toCollect - a.x.toCollect);
+  const box = el("section", "box cchart"); box.setAttribute("aria-labelledby", "cc-h");
+  const hd = el("div", "fch2"); const h = el("b", "", "التحصيل لكل مشروع"); h.id = "cc-h"; hd.append(h, el("span", "small muted", "الممتلئ = المحصّل · الطول = قيمة العقد")); box.append(hd);
+  if (!P.length) { box.append(el("div", "small muted", "لا عقود مسجّلة")); return box; }
+  const L = P.slice(0, 8), mx = Math.max(...L.map((p) => p.x.contract));
+  const list = el("div", "crows");
+  for (const p of L) {
+    const b = el("button", "crow"); b.type = "button";
+    b.setAttribute("aria-label", (p.code || p.name) + ": المحصّل " + pct(p.x.pct) + "، الباقي " + fmt(p.x.toCollect));
+    b.title = p.name + " — المحصّل " + fmt(p.x.collected) + " من " + fmt(p.x.contract);
+    const nm = el("span", "cn", p.code || p.name);
+    const bar = el("span", "cbar"); bar.style.width = Math.max(8, 100 * p.x.contract / mx) + "%";
+    const fill = el("i"); fill.style.width = Math.min(100, 100 * p.x.pct) + "%"; bar.append(fill);
+    if (p.x.dueNow > 0.5) { const due = el("i", "due"); due.style.width = Math.min(100 - Math.min(100, 100 * p.x.pct), 100 * p.x.dueNow / p.x.contract) + "%"; bar.append(due); }
+    const tr = el("span", "ctrack"); tr.append(bar);
+    b.append(nm, tr, el("span", "cv", sar(kf(p.x.toCollect))));
+    b.onclick = () => { view = "proj"; rec = p.id; recTab = "inst"; draw(); window.scrollTo(0, 0); };
+    list.append(b);
+  }
+  box.append(list);
+  const lg = el("div", "clg"); lg.append(el("span", "l1", "محصّل"), el("span", "l2", "مستحق الآن"), el("span", "l3", "الباقي"));
+  box.append(lg);
+  if (P.length > L.length) { const a = el("button", "lnk", "كل المشاريع (" + P.length + ") ←"); a.type = "button"; a.onclick = () => go("proj"); box.append(a); }
+  return box;
 }
 function home3(m) {
   const H = D.home, F = D.fc;
@@ -4453,6 +4513,9 @@ function home3(m) {
     ...(D.items ? [chip(mine.length, arN(mine.length, "بند ناقص عليك", "بندان ناقصان عليك", "بنود ناقصة عليك", "بنداً ناقصاً عليك"), "لا نواقص عليك", "warn", "h-gap")] : []),
     chip(alerts.length, arN(alerts.length, "تنبيه", "تنبيهان", "تنبيهات", "تنبيهاً"), "لا تنبيهات", "eng", "h-al"));
   m.append(sum);
+  // the numbers and two charts first (owner, 15 Nov 2026): recorded figures, collection per project, cash over 13 weeks (marked an estimate)
+  if (D.projects && D.projects.length) m.append(homeNums());
+  const charts = el("div", "hcharts"); if (D.projects && D.projects.length) charts.append(collChart()); if (F) charts.append(w13Box(F, false)); if (charts.children.length) m.append(charts);
 
   // 1. decisions only you can take — three at most
   {
@@ -4480,9 +4543,9 @@ function home3(m) {
       s.append(pr);
       const g = el("div", "hgaps");
       gaps.slice(0, 3).forEach((it) => {
-        const b = el("button", "hgap"); b.type = "button";
+        const b = el("button", "hgap"); b.type = "button"; b.title = it.title;
         b.append(el("b", "", sar(it.title)));
-        if ((it.affects || []).length) b.append(el("span", "small muted", "يصحّح: " + it.affects.map((a) => DQ_AFF[a] || a).join("، ")));
+        if ((it.affects || []).length) b.append(el("span", "hsub", it.affects.map((a) => DQ_AFF[a] || a).join(" · ")));
         b.onclick = () => dqDialog(it); g.append(b);
       });
       s.append(g);
@@ -4508,7 +4571,6 @@ function home3(m) {
   const inner = el("div", "hest-in");
   if (est.length) { const L = el("div", "hlist"); est.forEach((x) => L.append(homeDec({ ...x, title: String(x.title).replace(/^تقديري:\s*/, "") }))); inner.append(L); }
   inner.append(answers(H, F));
-  inner.append(w13Box(F, false));
   if (H.counts.queue) { const b = el("button", "lnk", "تحديث توقعات " + arN(H.counts.queue, "مشروع", "مشروعين", "مشاريع", "مشروعاً") + " — الأكبر مبلغاً والأقل يقيناً أولاً ←"); b.type = "button"; b.onclick = () => more("fcq"); inner.append(b); }
   det.append(inner);
   m.append(det);
