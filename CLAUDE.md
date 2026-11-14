@@ -175,6 +175,18 @@ card or page · finance things live under المالية, purchases under الم
   strings complete except names/data), `rd/ss.cjs` (settings dialog prefill + body), `rd/q.cjs` (acceptance flow, wrong code, missing
   consent, voided link, missing token).
 
+## Consolidated spec v2 (15 Nov 2026): navigation and actions on records
+- Navigation per spec §2: المبيعات والعقود · مقاولو الباطن والتعاقدات (`subc`, `SUBTABS`/`SUBT`, `subcView`: subreg, opps, offers, awards, and the
+  certificates subk/certs as «المستخلصات والأداء») · المشتريات والمواد (`BTABS`: matreq, reqs+purchases, log, ownmat, suppliers) · التنفيذ والجودة
+  (`STABS`: programme, lookahead, dailyplan+teams, ptasks+constraints, inspections, dreports, defects «التسليم والضمان», quality, pours, units) ·
+  المالية ومراقبة التكلفة · المستندات والسجلات.
+- Actions drawn from the bot (`cards()`): `s.data.add` → buttons above the cards; `s.data.rows[i].acts` → buttons in the card (`.cacts`);
+  `actForm(s, def, row)` builds the form from `def.fields` (text/area/number/date/select/multi/bool/lines with `cols` and `opts`), prefills
+  `row.data`, posts `op act {sec, act, row, data, opId, pin?}`; 428 `{pin}` asks the PIN; success → toast + `load(true)`. No rules here.
+- Checked with `scratchpad rd/s6.cjs` (mock `p6/dash_s6.json` from `p6/gen_s6.mts`: the bot's own section builders on controlled test records)
+  at 390/1280/EN: every new sub-tab, no horizontal scroll, an action form submitted (body checked). The only console errors come from the
+  mock answering `op purchases`/`op matbudget` with `{ok:true}` (pre-existing boxes that expect real data).
+
 ## How to change and verify (the owner expects Claude to check its own work)
 1. `git fetch && git checkout -B <branch> origin/main` (always from a fresh main — PRs are squash-merged).
 2. Test locally: `python3 -m http.server 8765` in the repo + Playwright (Chromium is pre-installed), routing the API to mock
