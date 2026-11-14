@@ -2416,6 +2416,17 @@ const EN = {
 "مدفوعة": "Paid",
 "لا فواتير": "No invoices",
 "لا مورد عمالة مسجل": "No labour supplier recorded",
+"إعادة إرسال رسالة فشلت": "Retry a failed message",
+"قبل الإعادة يتحقق النظام من جديد: الرسالة حديثة وغير مكررة، المستلم مسموح له، ولا إيقاف قائم.": "Before retrying, the system rechecks: the message is recent and not a duplicate, the recipient is allowed, and nothing is paused.",
+"محفوظة — تُرسل عند رده": "Kept \u2014 sent when the person replies",
+"مكررة — وصلت نسخة": "Duplicate \u2014 a copy arrived",
+"انتهت صلاحيتها": "Expired",
+"فشلت — يمكن إعادتها": "Failed \u2014 can be retried",
+"غير معروفة — بلا رد من المزوّد": "Unknown \u2014 no answer from the provider",
+"يمكن إعادتها": "Can be retried",
+"محفوظة لحين الرد": "Kept until the reply",
+"مكررة": "Duplicates",
+"استفسارات واردة": "Incoming enquiries",
 "ست طبقات لا تُدمج": "Six layers, never merged",
 "استدعاء المجدول، اكتمال المهام، إرسال الرسائل، دليل التسليم، الردود، حل الحالات — كل واحدة تُقرأ وحدها": "Scheduler invocation, job completion, message dispatch, delivery evidence, responses, case resolution \u2014 each read on its own",
 "الغرض": "Purpose",
@@ -3302,11 +3313,18 @@ function cmdAgents(m, G) {
     c.append(d); g.append(c);
   }
   m.append(g);
+  // the visible message queue: what failed or is stuck, each with a verdict reached by rechecking it
+  if (G.msgq) { const Q = G.msgq; m.append(secHead("طابور الرسائل الفاشلة والمعلّقة (7 أيام)", Q.rows.length, "لكل رسالة حكم بعد إعادة فحصها: محفوظة، مكررة، منتهية، أو تُعاد. الحالات لا تُدمج: " + Q.states.join(" · ")));
+    m.append(kpiStrip([{ label: "يمكن إعادتها", value: String(Q.counts.retry), tone: Q.counts.retry ? "bad" : "" }, { label: "محفوظة لحين الرد", value: String(Q.counts.kept) }, { label: "مكررة", value: String(Q.counts.duplicate) }, { label: "منتهية (أقدم من " + Q.ageH + " س)", value: String(Q.counts.expired) }, { label: "غير معروفة", value: String(Q.counts.unknown), tone: Q.counts.unknown ? "warn" : "" }]));
+    if (Q.rows.length) { const d = el("details", "hist"); d.append(el("summary", "", "الرسائل (" + Q.rows.length + ")")); const gq = el("div", "clist");
+      for (const r of Q.rows) { const [t, gl, tone] = MQV[r.verdict] || MQV.unknown, c = el("div", "card iv" + (tone === "bad" ? " bad" : "")); c.append(glyph(t, gl, tone), el("div", "t", r.head || "—"), el("div", "st", r.toName + " · " + dmy(r.at) + " · محاولات " + r.attempts), el("div", "small muted", r.error)); if (r.verdict === "retry") { const bar = el("div", "cacts"); bar.append(ebtn("إعادة الإرسال", () => msgRetryDlg(r))); c.append(bar); } gq.append(c); }
+      d.append(gq); m.append(d); } }
   // usage per agent · workflow · model
   m.append(secHead("استخدام الذكاء الاصطناعي اليوم", (u.rows || []).length, u.note));
   if ((u.rows || []).length) { const w = el("div", "tblw"), tb = el("table", "tbl"), hd = el("tr"); for (const h of ["المساعد", "الغرض", "المزوّد", "النموذج", "نداءات", "فشل", "حُجب", "رموز داخلة", "رموز خارجة", "تكلفة تقديرية"]) hd.append(el("th", "", h)); tb.append(hd);
     for (const r of u.rows) { const tr = el("tr"); for (const v of [r.agent, r.purpose || r.wf, r.provider === "claude-routine" ? "جلسة Claude المجدولة" : "مفتاح البوت", r.model, r.calls, r.fail, r.blocked, r.noUsage ? "غير معروف" : r.in.toLocaleString("en-US"), r.noUsage ? "غير معروف" : r.out.toLocaleString("en-US"), r.costState === "estimated" ? usd(r.costUsd) : r.costState === "none" ? "—" : "غير معروف"]) tr.append(el("td", "", String(v))); tb.append(tr); } w.append(tb); m.append(w); }
   else m.append(el("div", "empty", "لا نداءات مسجلة اليوم"));
+  if (u.scope) m.append(el("div", "banner", u.scope));
   if (u.prices) m.append(el("div", "small muted", "مصدر الأسعار: " + u.prices.source + " — قُرئت " + dmy(u.prices.asOf) + "."));
   if ((u.coverage || []).length) { const d = el("details", "hist"); d.append(el("summary", "", "تغطية القياس: كل مدخل يُستدعى منه نموذج (" + u.coverage.length + ")")); for (const c of u.coverage) d.append(el("div", "small", c.purpose + " — " + c.via + " — " + c.metered + " — " + c.gate)); m.append(d); }
   // the scheduler's own evidence
@@ -3581,6 +3599,24 @@ function traceDlg(t) {
   const bar = el("div", "dbar"), close = el("button", "sbtn", "إغلاق"); close.type = "button"; close.onclick = () => $("dlg").close(); bar.append(close); body.append(bar);
   $("dlg").showModal();
 }
+// retry ONE failed message: the server rechecks relevance, recipient, permissions and pause state before it queues it again
+function msgRetryDlg(r) {
+  const body = $("dlgBody"); body.replaceChildren(el("h3", "", "إعادة إرسال رسالة فشلت"), el("p", "small", r.toName + " — " + r.head), el("p", "small muted", "قبل الإعادة يتحقق النظام من جديد: الرسالة حديثة وغير مكررة، المستلم مسموح له، ولا إيقاف قائم."));
+  const pin = field("رمزك السري", "password", "current-password"); body.append(pin.box);
+  const res = el("div", "res"); res.setAttribute("role", "status");
+  const bar = el("div", "dbar"), go = el("button", "pbtn", "إعادة الإرسال"), close = el("button", "sbtn", "إغلاق"); go.type = close.type = "button"; bar.append(go, close); body.append(res, bar);
+  close.onclick = () => $("dlg").close();
+  go.onclick = async () => {
+    if (!pin.i.value.trim()) { res.className = "res bad"; res.textContent = "اكتب رمزك السري"; pin.i.focus(); return; }
+    go.disabled = true;
+    try { const { status, j } = await api({ op: "msg_retry", id: r.id, pin: pin.i.value });
+      if (status !== 200) { res.className = "res bad"; res.textContent = j.error || "تعذّرت الإعادة"; if (j.badPin) pin.i.value = ""; return; }
+      $("dlg").close(); toast(j.msg || "تم ✅"); load(true);
+    } catch { res.className = "res bad"; res.textContent = "تعذّر الاتصال"; } finally { go.disabled = false; }
+  };
+  linkLabels(body); $("dlg").showModal();
+}
+const MQV = { kept: ["محفوظة — تُرسل عند رده", "→", "unk"], duplicate: ["مكررة — وصلت نسخة", "✓", "ok"], expired: ["انتهت صلاحيتها", "–", "unk"], retry: ["فشلت — يمكن إعادتها", "!", "bad"], unknown: ["غير معروفة — بلا رد من المزوّد", "?", "warn"] };
 function policyDlg(P) {
   const body = $("dlgBody"); body.replaceChildren(el("h3", "", "سياسة حداثة المعلومات"), el("p", "small muted", "عدد الأيام التي تبقى المعلومة بعدها «تحتاج تحديثاً». العقود الموقّعة ومحاضر الفحص لا تنتهي بالقِدم. اعتمادك يُسجَّل باسمك."));
   const ins = {};
