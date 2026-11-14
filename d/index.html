@@ -375,6 +375,7 @@ label.chk{display:inline-flex;align-items:center;gap:6px;margin-inline-end:14px;
 @media (max-width:520px){.wc{grid-template-columns:46px minmax(0,1fr);grid-template-rows:170px auto}}
 .ebar2{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .cacts{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;padding-top:8px;border-top:1px solid var(--line)}
+.cacts .ebtn.pri{background:var(--ui);border-color:var(--ui);color:var(--on-acc)}
 .ebar2+.kpis,.ebar2+.grid,.ebar2+.empty{margin-top:10px}
 .ph .ebar2{margin-top:12px}
 .ebtn{padding:5px 12px;font-size:13px}.danger{color:var(--crit)!important;border-color:color-mix(in srgb,var(--crit) 40%,var(--line))!important;margin-inline-start:auto}
@@ -2560,6 +2561,21 @@ const EN = {
 "المطالبات والتحصيل ({n})": "Claims & collection ({n})",
 "التدخلات والقرارات ({n})": "Interventions & decisions ({n})",
 "أسئلة المطابقة ({n})": "Reconciliation questions ({n})",
+"مساحتي": "My workspace",
+"أولويات اليوم": "Today's priorities",
+"بانتظار اعتمادي": "Awaiting my approval",
+"مهامي": "My tasks",
+"متأخر": "Overdue",
+"بانتظار غيري": "Waiting on others",
+"محادثات وأسئلة": "Conversations and questions",
+"مستندات": "Documents",
+"متابعة الفريق": "Team oversight",
+"أجب الآن": "Answer now",
+"افتح المستند": "Open document",
+"أستلمه بنفسي": "Take it over",
+"سلّمه": "Hand over",
+"بصفتك": "In your capacity as",
+"بانتظار": "Waiting on",
 "المنسّق": "Coordinator",
 "مخاطر قادمة": "Upcoming risks",
 "حالات المتابعة": "Follow-up cases",
@@ -2815,6 +2831,7 @@ function setLang(l) {
 // app tabs: which sections live where, and their colour family
 const TABS = [
   { v: "home", t: "الرئيسية", fam: "var(--ui)" },
+  { v: "ws", t: "مساحتي", fam: "var(--ui)" },
   { v: "bot", t: "المساعد", fam: "var(--ui)" },
   { v: "proj", t: "المشاريع", fam: "var(--acc6)" },
   { v: "cmd", t: "مركز القيادة", fam: "var(--eng6)", g: "الأقسام" },
@@ -2834,6 +2851,7 @@ const ICO = {
   subc: '<circle cx="8" cy="8" r="2.6"/><circle cx="16.5" cy="9.5" r="2.2"/><path d="M3.5 19c.6-3 2.5-4.6 4.5-4.6s3.9 1.6 4.5 4.6M13 18.5c.4-2.3 1.8-3.6 3.5-3.6S19.6 16.2 20 18.5"/>',
   docs: '<path d="M7 3.5h7l4 4V20a.5.5 0 0 1-.5.5h-10A.5.5 0 0 1 7 20z"/><path d="M14 3.5V8h4M9.5 12h6M9.5 15h6M9.5 18h4"/>',
   home: '<path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z"/>',
+  ws: '<circle cx="12" cy="8" r="3.4"/><path d="M5 20c.8-4 3.6-6 7-6s6.2 2 7 6"/>',
   proj: '<path d="M4 20V8l6-3v15M10 20V5l10 4v11M3 20h18M13.5 11h3M13.5 14.5h3M6.5 11h1M6.5 14.5h1"/>',
   money: '<rect x="3.5" y="6" width="17" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6.5 9.5v5M17.5 9.5v5"/>',
   buy: '<path d="M4 5h2l2.2 10.2a1 1 0 0 0 1 .8h8.6a1 1 0 0 0 1-.8L20 8.5H7"/><circle cx="10" cy="19.5" r="1.2"/><circle cx="17" cy="19.5" r="1.2"/>',
@@ -3071,12 +3089,13 @@ function renderTabs() {
   const row = $("tabRow"); row.replaceChildren(); delete row.dataset.g;
   for (const T of TABS) {
     if (D.chatOnly && T.v !== "bot") continue; // an executor: the assistant only
-    let show = T.v === "home" || T.v === "bot" || (T.v === "proj" ? !!(D.projects && D.projects.length) : T.v === "audit" ? !!D.projects : T.v === "money" ? !!(AUD || MTABS.some((x) => x.ids.some((i) => sec(i)))) : T.v === "data" ? !!(REG && REG.length) : T.v === "cmd" ? !!D.cmd : T.v === "buy" ? canEdit() || T.ids.some((x) => sec(x)) : (T.ids || []).some((x) => sec(x)));
+    let show = T.v === "home" || T.v === "bot" || (T.v === "proj" ? !!(D.projects && D.projects.length) : T.v === "audit" ? !!D.projects : T.v === "money" ? !!(AUD || MTABS.some((x) => x.ids.some((i) => sec(i)))) : T.v === "data" ? !!(REG && REG.length) : T.v === "ws" ? !!D.ws : T.v === "cmd" ? !!D.cmd : T.v === "buy" ? canEdit() || T.ids.some((x) => sec(x)) : (T.ids || []).some((x) => sec(x)));
     if (!show) continue;
     if (T.g && row.dataset.g !== T.g) { row.dataset.g = T.g; row.append(el("div", "tgrp", T.g)); }
     const b = el("button", "tab"); b.type = "button"; b.style.setProperty("--fam", T.fam);
     b.append(icon(T.v), el("span", "", T.t));
-    if (T.v === "home") { const w = sec("wait"); if (w && w.table.rows.length) b.append(el("span", "n", String(w.table.rows.length))); }
+    if (T.v === "home" && !D.ws) { const w = sec("wait"); if (w && w.table.rows.length) b.append(el("span", "n", String(w.table.rows.length))); }
+    if (T.v === "ws" && D.ws.counts.today) b.append(el("span", "n", String(D.ws.counts.today)));
     if (view === T.v || (view === "more" && T.v === "home")) b.setAttribute("aria-current", "page");
     b.onclick = () => go(T.v); row.append(b);
   }
@@ -3271,6 +3290,51 @@ function cmdCoord(m, K) {
     g.append(c);
   }
   m.append(g); if (list.length > 80) m.append(el("div", "small muted", "يظهر أول 80 بنداً — استخدم التصنيف"));
+}
+// «مساحتي» (the bot's core/workspace.ts): the signed-in person's own cards, read from the shared records at every load. The page shows
+// what the server sent for THIS person and decides nothing: each button is the record's own action, re-checked on the server.
+let WSG = "today";
+const WSGRP = [["today", "أولويات اليوم"], ["approvals", "بانتظار اعتمادي"], ["tasks", "مهامي"], ["overdue", "متأخر"], ["waiting", "بانتظار غيري"], ["talks", "محادثات وأسئلة"], ["docs", "مستندات"]];
+const WSEMPTY = { today: "لا شيء يحتاجك الآن في السجلات", approvals: "لا اعتمادات بانتظارك", tasks: "لا مهام مسندة لك في السجلات", overdue: "لا بند متأخر عليك", waiting: "لا تنتظر شيئاً من أحد", talks: "لا أسئلة ولا ملاحظات مفتوحة", docs: "لا مستندات لمشاريعك يحق لك فتحها" };
+function wsAct(a, x, btn) {
+  if (a.t === "chat") return openChat(a.id, x.title);
+  if (a.t === "doc") return openDoc({ open: { t: "file", id: a.id } }, btn);
+  if (a.t === "act") { const KA = (D.cmd && D.cmd.coord && D.cmd.coord.acts) || null, d = KA && (KA.data.acts || []).find((q) => q.id === a.act), row = KA && (KA.data.rows || []).find((r) => r.id === a.row); return d && row ? actForm(KA, d, row) : toast("الإجراء غير متاح لك على هذا البند"); }
+  if (a.v === "site" && a.sub) ST = a.sub; if (a.v === "cmd" && a.sub) CT = a.sub;
+  go(a.v);
+}
+function wsCard(x) {
+  const c = el("div", "card iv" + (x.overdue || x.state === "decision" ? " bad" : x.fresh === "stale" ? " warn" : ""));
+  const top = el("div", "cptop"); top.append(el("span", "pill " + (x.grp === "tasks" || x.grp === "waiting" ? "eng" : ""), x.kind));
+  if (x.overdue) top.append(glyph("متأخر", "!", "bad")); else if (x.stateT) { const [gl, tone] = COST[x.state] || COST.following; top.append(glyph(x.stateT, gl, tone)); }
+  c.append(top, el("div", "t", x.title)); if (x.sub) c.append(el("div", "st", x.sub));
+  const kv = el("div", "kv"), add = (k, v, cls) => { if (v === null || v === undefined || v === "") return; kv.append(el("span", "", k), el("b", cls || "", v)); };
+  add("النطاق", x.scope); if (x.due) add("الموعد", dmy(x.due) + (x.overdue ? " — فات" : ""), x.overdue ? "neg" : "");
+  if (x.fresh === "none") add("آخر تحديث", "لا تحديث مسجّل — غير متحقق", "wv"); else if (x.fresh !== "na") add("آخر تحديث", ageT(daysSince(x.last)) + (x.fresh === "stale" ? " — قديم" : ""), x.fresh === "stale" ? "wv" : "");
+  add("بانتظار", x.waitingOn); for (const t of x.missing || []) add("الناقص", t); add("الأثر", x.consequence); add("بصفتك", x.as);
+  if (kv.children.length) c.append(kv);
+  if ((x.acts || []).length) { const bar = el("div", "cacts"); x.acts.forEach((a, i) => { const b = ebtn(a.label, () => wsAct(a, x, b), i ? "sbtn ebtn" : "sbtn ebtn pri"); bar.append(b); }); c.append(bar); }
+  return c;
+}
+function wsView(m) {
+  const W = D.ws, by = (g) => (g === "today" ? W.today.map((id) => W.cards.find((x) => x.id === id)) : g === "overdue" ? W.overdue.map((id) => W.cards.find((x) => x.id === id)) : W.cards.filter((x) => x.grp === g)).filter(Boolean);
+  m.append(page("", "مساحتي", W.who.name + " — " + W.who.roles.join("، ") + (W.scope.kind === "projects" ? " · " + arN(W.scope.n, "مشروع واحد مسند لك", "مشروعان مسندان لك", "مشاريع مسندة لك", "مشروعاً مسنداً لك") : " · كل المشاريع"), "var(--ui)"));
+  for (const p of W.covering || []) { const d = el("div", "banner"); d.append(el("b", "", "تغطّي " + p.name + " حتى " + dmy(p.until)), el("div", "small", "بنوده تظهر هنا بعلامة «نيابة عن» — في: " + p.roles.join("، "))); m.append(d); }
+  const bar = el("div", "filters docf");
+  for (const [k, t] of WSGRP) { const n = W.counts[k]; if (!n && !["today", "tasks"].includes(k)) continue; const b = el("button", "chip"); b.append(el("span", "", t), el("span", "k", " " + n)); b.type = "button"; b.setAttribute("aria-pressed", String(WSG === k)); b.onclick = () => { WSG = k; draw(); }; bar.append(b); }
+  m.append(bar);
+  if (!W.counts[WSG] && !["today", "tasks"].includes(WSG)) WSG = "today";
+  const list = by(WSG);
+  if (!list.length) m.append(el("div", "empty", WSEMPTY[WSG]));
+  else { const g = el("div", "clist"); for (const x of list.slice(0, 60)) g.append(wsCard(x)); m.append(g); if (list.length > 60) m.append(el("div", "small muted", "يظهر أول 60 بنداً")); }
+  for (const t of (W.gaps || []).filter((t) => !/^تغطّي /.test(t) && !(W.team && /بلا مسؤول محدد/.test(t)))) m.append(el("div", "banner", t));
+  if (W.team) {
+    m.append(secHead("متابعة الفريق", W.team.rows.length, "من يحمل ماذا، من البنود المسندة بالاسم فقط. الدور ليس شخصاً: ما لا مسؤول له يظهر هنا رقماً ولا يُنسب لأحد."));
+    if (W.team.unowned || W.team.roleOwned) m.append(el("div", "banner" + (W.team.unowned ? " bad" : ""), [W.team.unowned ? W.team.unowned + " بند بلا مسؤول محدد" : "", W.team.roleOwned ? W.team.roleOwned + " بند مسؤوله دور أو جهة لا شخص مسمّى" : ""].filter(Boolean).join(" · ")));
+    const w = el("div", "tblw"), tb = el("table", "tbl"), hr = el("tr"); for (const h of ["الموظف", "مفتوح", "متأخر", "بانتظار رد أو دليل", "أقدم موعد", "الغياب والتغطية"]) hr.append(el("th", "", h)); tb.append(hr);
+    for (const r of W.team.rows) { const tr = el("tr"); tr.append(el("td", "", r.name), el("td", "", String(r.open)), el("td", r.overdue ? "neg" : "", String(r.overdue)), el("td", "", String(r.awaiting)), el("td", "", r.oldest ? dmy(r.oldest) : "—"), el("td", "", r.away ? "غائب — يغطيه " + (r.cover || "غير محدد") : "—")); tb.append(tr); }
+    w.append(tb); m.append(w);
+  }
 }
 // «فريق المساعدين» (the bot's core/agents.ts): the responsibility map, the health of the scheduled jobs apart from the state of the work,
 // assignment issues, controls and AI usage. Statuses carry a glyph and a word; the page decides nothing.
@@ -3933,6 +3997,7 @@ function drawView() {
   if (D.chatOnly && view !== "bot") view = "bot";
   if (view === "bot") return assistView(m);
   if (view === "home") return home(m);
+  if (view === "ws") return D.ws ? wsView(m) : (view = "home", home(m));
   if (view === "more") return morePage(m);
   if (view === "money") return moneyView(m);
   if (view === "site") return siteView(m);
@@ -6252,7 +6317,7 @@ async function load(keep) {
     $("who").textContent = D.name; $("roles").textContent = D.roles.join(" · ") + " · آخر تحديث " + new Date(D.at).toLocaleTimeString(LANG === "en" ? "en-GB" : "ar-SA-u-nu-latn", { hour: "2-digit", minute: "2-digit" });
     const mo = $("mode"); mo.hidden = false; mo.replaceChildren(el("span", "bl", "الوضع: "), document.createTextNode(D.mode)); mo.className = "badge" + (D.mode === "فعلي" ? " ok" : D.mode === "إيقاف آمن" ? " bad" : "");
     $("reload").hidden = $("pinBtn").hidden = $("outBtn").hidden = $("bellBtn").hidden = false; pushSync();
-    if (!keep) view = "home";
+    if (!keep) view = D.ws && !D.ws.team ? "ws" : "home"; // management lands on the company overview; everyone else on his own workspace
     draw();
     if (!D.chatOnly && (!keep || !AUD)) refreshAud();
   } catch (e) { fail("تعذّر الاتصال", "تحقق من الإنترنت ثم اضغط تحديث."); $("reload").hidden = false; }
