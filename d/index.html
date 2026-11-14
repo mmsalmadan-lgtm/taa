@@ -296,6 +296,7 @@ label.chk{display:inline-flex;align-items:center;gap:6px;margin-inline-end:14px;
 .hero{display:flex;flex-direction:column;gap:6px;margin-bottom:2px}
 .hero .date{font-size:13px;color:var(--muted)}
 .hero h1{margin:0;font-size:clamp(26px,3.4vw,38px);line-height:1.2;font-weight:600}
+.hero.sm{flex-direction:row;flex-wrap:wrap;align-items:baseline;gap:4px 12px}.hero.sm h1{order:-1;font-size:20px}
 .hero p{margin:4px 0 0;font-size:16px;color:var(--muted);max-width:68ch;line-height:1.7}
 .hero p b{color:var(--ink);font-weight:600}.hero p .bad{color:var(--crit)}
 /* Phase 3: the four answers, the 13-week chart, item cards (alert colours only for alerts; money in the ledger colours) */
@@ -318,6 +319,7 @@ label.chk{display:inline-flex;align-items:center;gap:6px;margin-inline-end:14px;
 .w13 .c i.n{background:color-mix(in srgb,var(--crit) 80%,var(--surface))}
 .w13 .c b{position:absolute;left:50%;width:8px;height:8px;margin-left:-4px;border-radius:50%;background:var(--ink);border:1.5px solid var(--surface)}
 .w13x{display:grid;grid-template-columns:repeat(13,minmax(0,1fr));gap:4px;font-size:11px;color:var(--muted);text-align:center;font-variant-numeric:tabular-nums}
+.w13need{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:6px 0 2px;padding:8px 10px;border-radius:8px;background:var(--warn1);color:var(--warn)}.w13need .hbtn{align-self:center}
 .w13l{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:8px 0 2px}.w13l span{display:inline-flex;align-items:center;gap:6px}
 .w13l .lb::before{content:"";width:10px;height:10px;border-radius:2px;background:color-mix(in srgb,var(--acc6) 78%,var(--surface))}
 .w13l .ld::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--ink)}
@@ -352,7 +354,6 @@ label.chk{display:inline-flex;align-items:center;gap:6px;margin-inline-end:14px;
 .hgap:hover{border-color:var(--line-2);background:var(--surface)}.hgap:focus-visible{outline:2px solid var(--ui);outline-offset:2px}
 .hgap b{font-weight:600;font-size:14.5px;line-height:1.45;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* charts on home: collection per project (recorded) beside the 13-week cash (estimate) */
-.hcharts{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}@media (max-width:860px){.hcharts{grid-template-columns:1fr}}
 .cchart{display:flex;flex-direction:column;gap:10px}
 .crows{display:flex;flex-direction:column;gap:4px}
 .crow{display:grid;grid-template-columns:minmax(64px,92px) minmax(0,1fr) auto;align-items:center;gap:10px;border:0;background:none;padding:6px 4px;border-radius:var(--r-s);font:inherit;color:var(--ink);text-align:start;cursor:pointer;min-height:36px}
@@ -1968,6 +1969,15 @@ const EN = {
 "الأساسي: لا عجز": "Base: no shortfall",
 "{n} من مدفوعات الأسابيع الـ13 مبني على افتراض أو توزيع احتياطي": "{n} of the 13 weeks' payments rest on an assumption or a fallback spread",
 "الرصيد آخر الأسبوع — {x}": "Balance at week end — {x}",
+"صافي الحركة من صفر — {x}": "Net flow from zero — {x}",
+"لا يمكن الحكم — الرصيد النقدي لم يُدخل": "No verdict — the cash balance was not entered",
+"الأعمدة صافي ما يدخل ويخرج من صفر، وليست رصيداً": "The bars are money in minus money out from zero, not a balance",
+"أدخل الرصيد": "Enter the balance",
+"لا يمكن الحكم": "No verdict",
+"الرصيد النقدي لم يُدخل — التوقع يبدأ من صفر": "The cash balance was not entered — the forecast starts from zero",
+"الرصيد النقدي لم يُدخل": "The cash balance was not entered",
+"أرقام أخرى ومصدرها": "Other figures and their source",
+"الضريبة · الالتزامات · آخر 30 يوماً · مصدر الأرقام": "VAT · Obligations · Last 30 days · Where the figures come from",
 "السيناريوهات والأسباب والافتراضات ←": "Scenarios, causes and assumptions →",
 "ربح المشاريع المقدّرة": "Profit of the estimated projects",
 "بلا {n} مشاريع بلا تقدير كامل": "excluding {n} projects without a full estimate",
@@ -4413,6 +4423,9 @@ const BASIS = { documented: "تاريخ مسجل", terms: "شروط معتمدة
 const CONF = { confirmed: "مؤكد بدليل", probable: "مرجّح", possible: "محتمل", schedule: "حسب جدول العقد" };
 const SCN = ["evidence", "base", "schedule"];
 let FCS = "base";
+// the forecast's opening balance is the audit's cash lines (forecast.cashOf): known only once they were entered — the same
+// test as «الرصيد النقدي» everywhere; a documented source (cash book / Qoyod, with its date) is known on its own
+const openKnown = (o) => !!(o && o.at) || (AUD ? !!AUD.cashDone : !!(o && (o.parts || []).some((p) => +p.amount)));
 const assumedShare = () => { const b = D.fc.cash.out.byBasis; return b.total ? Math.round(100 * (b.assumed + b.fallback) / b.total) : 0; };
 function doAct(a, x) {
   if (!a) return;
@@ -4489,7 +4502,7 @@ function collChart() {
 }
 function home3(m) {
   const H = D.home, F = D.fc;
-  m.append(hero());
+  { const h = hero(); h.classList.add("sm"); m.append(h); }
   const all = H.decide || [];
   const dec = all.filter((x) => !HEST(x) && !HALERT(x));
   const decP = new Set(dec.map((x) => x.project).filter(Boolean));
@@ -4513,9 +4526,9 @@ function home3(m) {
     ...(D.items ? [chip(mine.length, arN(mine.length, "بند ناقص عليك", "بندان ناقصان عليك", "بنود ناقصة عليك", "بنداً ناقصاً عليك"), "لا نواقص عليك", "warn", "h-gap")] : []),
     chip(alerts.length, arN(alerts.length, "تنبيه", "تنبيهان", "تنبيهات", "تنبيهاً"), "لا تنبيهات", "eng", "h-al"));
   m.append(sum);
-  // the numbers and two charts first (owner, 15 Nov 2026): recorded figures, collection per project, cash over 13 weeks (marked an estimate)
-  if (D.projects && D.projects.length) m.append(homeNums());
-  const charts = el("div", "hcharts"); if (D.projects && D.projects.length) charts.append(collChart()); if (F) charts.append(w13Box(F, false)); if (charts.children.length) m.append(charts);
+  // the recorded numbers and the collection chart first (owner, 15 Nov 2026), then the decisions; the 13-week cash chart is an
+  // estimate, so it comes after them (critique 14 Nov 2026 — principle 2: estimates never lead)
+  if (D.projects && D.projects.length) { m.append(homeNums()); m.append(collChart()); }
 
   // 1. decisions only you can take — three at most
   {
@@ -4529,6 +4542,7 @@ function home3(m) {
     }
     m.append(s);
   }
+  if (F) m.append(w13Box(F, false));
 
   // 2. what is missing — until it is entered the figures below stay estimates
   if (D.items) {
@@ -4575,15 +4589,19 @@ function home3(m) {
   det.append(inner);
   m.append(det);
   if (AUD) {
-    const B = F.cash.scenarios.base;
-    const K = homeK(AUD).map((k) => {
-      if (k.est === "forecast") return { label: "أدنى رصيد خلال 13 أسبوعاً (الأساسي)", est: "forecast", value: acc(B.lowest.amount), neg: B.lowest.amount < 0, f: "cash", sub: "تقديري · " + dmy(B.lowest.date) };
+    const B = F.cash.scenarios.base, oK = openKnown(F.cash.opening);
+    // one source per figure: what the strip at the top already shows (contracts, collected, still with clients, spent, cash)
+    // is not repeated here — the folded ledger keeps only what the strip does not have
+    const STRIP = new Set(["الباقي عند العملاء", "المحصّل", "المصروف حتى الآن", "الرصيد النقدي اليوم"]);
+    const K = homeK(AUD).filter((k) => !STRIP.has(k.label)).map((k) => {
+      if (k.est === "forecast") return oK ? { label: "أدنى رصيد خلال 13 أسبوعاً (الأساسي)", est: "forecast", value: acc(B.lowest.amount), neg: B.lowest.amount < 0, f: "cash", sub: "تقديري · " + dmy(B.lowest.date) }
+        : { label: "أدنى رصيد خلال 13 أسبوعاً (الأساسي)", est: "forecast", value: "—", f: "cash", flag: ["warn", "الرصيد النقدي لم يُدخل"] };
       if (k.est === "profit") { const bm = F.totals.benchmark || { n: 0 }, cv = F.totals.coverage; return { ...k, label: "ربح المشاريع المشمولة فقط", value: fmt(F.totals.profit), sub: "تقديري · " + (cv ? cv.included.n + " من " + cv.all + " مشروعاً — ليس ربح المحفظة" : "بلا " + (F.totals.unavailable + F.totals.loss) + " مشاريع بلا تقدير كامل"), flag: bm.n ? ["warn", bm.n + " مشاريع ربحها من نسبة غير موثّقة: " + fmt(bm.profit) + " خارج المجموع"] : F.totals.high ? ["warn", F.totals.high + " بهامش يحتاج تحقق"] : null }; }
       return k;
     });
     // the money figures, folded: recorded ones as they are, estimated rows keep their own «تقديري» marker
     const nd = el("details", "hest hnum"), ns = el("summary");
-    ns.append(el("b", "", "الأرقام الرئيسية"), el("span", "small muted", "يدخل · يخرج · النقد"));
+    ns.append(el("b", "", "أرقام أخرى ومصدرها"), el("span", "small muted", "الضريبة · الالتزامات · آخر 30 يوماً · مصدر الأرقام"));
     nd.append(ns); const ni = el("div", "hest-in"); ni.append(ledger(K)); if (D.prov) ni.append(provBox()); nd.append(ni);
     m.insertBefore(nd, det);
   }
@@ -4592,7 +4610,9 @@ function answers(H, F) {
   const g = el("section", "ans"); g.setAttribute("aria-label", "أسئلة اليوم");
   const tile = (q, a, d, tone, go, prov) => { const b = el("button", "aq " + tone); b.type = "button"; const qq = el("span", "q", q); if (prov) qq.append(el("i", "prov", "تقديري")); b.append(qq, el("b", "a", a)); if (d) b.append(el("span", "d", sar(d))); b.onclick = go; g.append(b); };
   const C = H.cash, S = C.scenarios, n = H.counts;
-  tile("هل يكفي النقد للالتزامات القادمة؟",
+  // no «يكفي» on an opening balance that was never entered
+  if (!openKnown(F && F.cash && F.cash.opening)) tile("هل يكفي النقد للالتزامات القادمة؟", "لا يمكن الحكم", "الرصيد النقدي لم يُدخل — التوقع يبدأ من صفر", "warn", () => { MT = "cash"; go("money"); }, true);
+  else tile("هل يكفي النقد للالتزامات القادمة؟",
     S.base.firstShort ? "لا — عجز من " + dmy(S.base.firstShort.date) : S.evidence.firstShort ? "فقط إن وصل تحصيل بلا دليل" : "نعم، 13 أسبوعاً",
     ["بالأدلة فقط: " + (S.evidence.firstShort ? "عجز من " + dmy(S.evidence.firstShort.date) : "يكفي"), "حسب العقد: " + (S.schedule.firstShort ? "عجز من " + dmy(S.schedule.firstShort.date) : "يكفي")].join(" · "),
     S.base.firstShort ? "bad" : S.evidence.firstShort ? "warn" : "ok", () => more("fc13"), true);
@@ -4612,12 +4632,14 @@ function answers(H, F) {
 function w13Box(F, big) {
   const SC = F.cash.scenarios, sel = big ? FCS : "base", W = SC[sel].weeks, E = SC.evidence.weeks, box = el("section", "box w13box");
   const hd = el("div", "fch2"); hd.append(el("b", "", "النقد خلال 13 أسبوعاً"), el("span", "pill prov", "تقديري"));
-  const fs = SC[sel].firstShort;
-  hd.append(el("span", fs ? "pill bad" : "pill ok", (big ? SC[sel].label + ": " : "الأساسي: ") + (fs ? "عجز من " + dmy(fs.date) + " · أدناه " + acc(SC[sel].lowest.amount) : "لا عجز")));
+  const fs = SC[sel].firstShort, o = F.cash.opening, known = openKnown(o);
+  // an unknown opening balance is not 0: no «لا عجز» verdict on it — the bars are then only what comes in minus what goes out
+  if (!known) hd.append(el("span", "pill warn", "لا يمكن الحكم — الرصيد النقدي لم يُدخل"));
+  else hd.append(el("span", fs ? "pill bad" : "pill ok", (big ? SC[sel].label + ": " : "الأساسي: ") + (fs ? "عجز من " + dmy(fs.date) + " · أدناه " + acc(SC[sel].lowest.amount) : "لا عجز")));
   box.append(hd);
-  const o = F.cash.opening;
-  box.append(el("div", "small muted", sar(["الافتتاحي " + fmt(o.amount), o.source, o.at ? dWhen(o.at) : "", o.note || ""].filter(Boolean).join(" · "))));
-  box.append(el("div", "small muted", assumedShare() + "% من مدفوعات الأسابيع الـ13 مبني على افتراض أو توزيع احتياطي"));
+  if (known) box.append(el("div", "small muted", sar(["الافتتاحي " + fmt(o.amount), o.source, o.at ? dWhen(o.at) : "", o.note || ""].filter(Boolean).join(" · "))));
+  else { const r = el("div", "w13need"); r.append(el("span", "small", "الأعمدة صافي ما يدخل ويخرج من صفر، وليست رصيداً")); const b = el("button", "hbtn", "أدخل الرصيد"); b.type = "button"; b.onclick = () => { MT = "cash"; go("money"); }; r.append(b); box.append(r); }
+  if (F.cash.out.byBasis.total) box.append(el("div", "small muted", assumedShare() + "% من مدفوعات الأسابيع الـ13 مبني على افتراض أو توزيع احتياطي"));
   const vals = W.map((w) => w.close).concat(big ? E.map((w) => w.close) : []).concat([0, o.amount]), mx = Math.max(...vals), mn = Math.min(...vals), span = (mx - mn) || 1;
   const y = (v) => ((mx - v) / span) * 100;
   const ch = el("div", "w13" + (big ? " big" : "")), z = el("i", "z"); z.style.top = y(0) + "%"; ch.append(z);
@@ -4630,10 +4652,11 @@ function w13Box(F, big) {
     ch.append(c);
   });
   ch.setAttribute("role", "img");
-  ch.setAttribute("aria-label", "الرصيد آخر كل أسبوع لـ13 أسبوعاً في سيناريو " + SC[sel].label + ": أدنى رصيد " + acc(SC[sel].lowest.amount) + " في " + dmy(SC[sel].lowest.date));
+  ch.setAttribute("aria-label", known ? "الرصيد آخر كل أسبوع لـ13 أسبوعاً في سيناريو " + SC[sel].label + ": أدنى رصيد " + acc(SC[sel].lowest.amount) + " في " + dmy(SC[sel].lowest.date)
+    : "صافي ما يدخل ويخرج لـ13 أسبوعاً من صفر في سيناريو " + SC[sel].label + " — الرصيد النقدي لم يُدخل، فلا حكم على العجز");
   box.append(ch);
   const ax = el("div", "w13x"); W.forEach((w, i) => ax.append(el("span", "", i % 3 === 0 || i === W.length - 1 ? dmy(w.from) : ""))); box.append(ax);
-  const lg = el("div", "w13l"); lg.append(el("span", "lb", "الرصيد آخر الأسبوع — " + SC[sel].label)); if (big && sel !== "evidence") lg.append(el("span", "ld", "بالأدلة فقط")); box.append(lg);
+  const lg = el("div", "w13l"); lg.append(el("span", "lb", (known ? "الرصيد آخر الأسبوع — " : "صافي الحركة من صفر — ") + SC[sel].label)); if (big && sel !== "evidence") lg.append(el("span", "ld", "بالأدلة فقط")); box.append(lg);
   if (!big) { const b = el("button", "lnk", "السيناريوهات والأسباب والافتراضات ←"); b.type = "button"; b.onclick = () => more("fc13"); box.append(b); }
   return box;
 }
