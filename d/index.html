@@ -888,6 +888,49 @@ const EN = {
 "مساء الخير": "Good evening",
 "ابدأ من هنا": "Start here",
 "قرارات تنتظرك": "Decisions waiting for you",
+"شغل اليوم": "Today's work",
+"مهام مشاريعك وعوائقها وفحوصاتها": "Tasks, constraints and inspections on your projects",
+"الدفعات والتحصيل": "Payments and collection",
+"ما ينتظر تأكيدك أو متابعتك": "Waiting for your confirmation or follow-up",
+"طلبات اليوم": "Today's requests",
+"طلبات المواد والتوريد": "Material requests and deliveries",
+"عملاؤك": "Your customers",
+"عروض معتمدة تُرسل، وعملاء ينتظرون ردك": "Approved quotes to send, customers waiting for you",
+"عروض بانتظارك": "Quotes waiting for you",
+"مسودات جاهزة للمراجعة أو تعذّر تسعيرها": "Drafts ready for review or that could not be priced",
+"افتح في المبيعات": "Open in Sales",
+"يُحسم من البطاقة نفسها": "Decided from the card itself",
+"لا اعتمادات بانتظارك ✓": "No approvals waiting ✓",
+"يحتاج تحديثاً منك": "Needs an update from you",
+"بنود عليك بلا تحديث مسجّل أو ينقصها شيء": "Your items with no recorded update or something missing",
+"لا بند متأخر عليك ✓": "Nothing overdue on you ✓",
+"مهام أخرى عليك": "Other tasks on you",
+"الأقرب موعداً أولاً": "Nearest date first",
+"لا شيء عليك اليوم ✓": "Nothing on you today ✓",
+"لا شيء عليك اليوم في السجلات ✓": "Nothing on you today in the records ✓",
+"لا شيء ينتظرك في المبيعات الآن ✓": "Nothing waiting for you in Sales ✓",
+"كل بنودي": "All my items",
+"بانتظار غيري · محادثات · مستندات · القوائم كاملة": "Waiting on others · Conversations · Documents · Full lists",
+"لا اعتمادات": "No approvals",
+"لا متأخر": "Nothing overdue",
+"اعتماد ينتظرك": "1 approval waiting",
+"اعتمادان ينتظرانك": "2 approvals waiting",
+"{n} اعتمادات تنتظرك": "{n} approvals waiting",
+"{n} اعتماداً ينتظرك": "{n} approvals waiting",
+"بند متأخر": "1 overdue item",
+"بندان متأخران": "2 overdue items",
+"{n} بنود متأخرة": "{n} overdue items",
+"{n} بنداً متأخراً": "{n} overdue items",
+"شغل اليوم {n}": "Today's work {n}",
+"شغل اليوم: لا شيء": "Today's work: nothing",
+"الدفعات والتحصيل {n}": "Payments and collection {n}",
+"الدفعات والتحصيل: لا شيء": "Payments and collection: nothing",
+"طلبات اليوم {n}": "Today's requests {n}",
+"طلبات اليوم: لا شيء": "Today's requests: nothing",
+"عملاؤك {n}": "Your customers {n}",
+"عملاؤك: لا شيء": "Your customers: none",
+"عروض بانتظارك {n}": "Quotes waiting for you {n}",
+"عروض بانتظارك: لا شيء": "Quotes waiting for you: none",
 "الأهم أولاً — يُحسم من هنا": "Most important first — decided from here",
 "لا قرار ينتظرك اليوم ✓": "No decision waits for you today ✓",
 "ناقص يمنع الأرقام الصحيحة": "Missing inputs that keep the figures from being real",
@@ -3299,10 +3342,11 @@ function cmdView(m) {
   m.append(page("", "مركز القيادة", "كل المشاريع معاً: ما يجري اليوم، ما يعيقه، ما يحتاج تدخلاً، وما يلزم للوصول إلى كل تحصيل. يقترح النظام، والقرار للمخوّلين.", "var(--eng6)"));
   m.append(syncBar(C));
   const st = el("div", "sub-tabs mtabs");
-  const tabs = [...CTABS.slice(0, 1), ...(C.coord ? [{ k: "coord", t: "المنسّق" }, { k: "risk", t: "مخاطر قادمة" }] : []), ...(C.agents ? [{ k: "agents", t: "فريق المساعدين" }] : []), ...CTABS.slice(1), ...(D.quality ? [{ k: "dq", t: "جودة البيانات" }] : [])]; if (!tabs.some((x) => x.k === CT)) CT = "now";
+  const tabs = [...CTABS.slice(0, 1), ...(C.coord ? [{ k: "coord", t: "المنسّق" }, { k: "risk", t: "مخاطر قادمة" }] : []), ...(D.ws && D.ws.team ? [{ k: "team", t: "متابعة الفريق" }] : []), ...(C.agents ? [{ k: "agents", t: "فريق المساعدين" }] : []), ...CTABS.slice(1), ...(D.quality ? [{ k: "dq", t: "جودة البيانات" }] : [])]; if (!tabs.some((x) => x.k === CT)) CT = "now";
   for (const x of tabs) { const b = el("button", "", x.t); b.type = "button"; b.setAttribute("aria-current", String(CT === x.k)); b.onclick = () => { CT = x.k; draw(); }; st.append(b); }
   m.append(st);
   if (CT === "dq") return cmdQuality(m, D.quality);
+  if (CT === "team") return wsTeam(m, D.ws.team);
   if (CT === "coord") return cmdCoord(m, C.coord);
   if (CT === "agents") return cmdAgents(m, C.agents);
   if (CT === "risk") return cmdRisks(m, C.coord, money);
@@ -3427,7 +3471,7 @@ function cmdCoord(m, K) {
 }
 // «مساحتي» (the bot's core/workspace.ts): the signed-in person's own cards, read from the shared records at every load. The page shows
 // what the server sent for THIS person and decides nothing: each button is the record's own action, re-checked on the server.
-let WSG = "today";
+let WSG = "today", WSOPEN = false;
 const WSGRP = [["today", "أولويات اليوم"], ["approvals", "بانتظار اعتمادي"], ["tasks", "مهامي"], ["overdue", "متأخر"], ["waiting", "بانتظار غيري"], ["talks", "محادثات وأسئلة"], ["docs", "مستندات"]];
 const WSEMPTY = { today: "لا شيء يحتاجك الآن في السجلات", approvals: "لا اعتمادات بانتظارك", tasks: "لا مهام مسندة لك في السجلات", overdue: "لا بند متأخر عليك", waiting: "لا تنتظر شيئاً من أحد", talks: "لا أسئلة ولا ملاحظات مفتوحة", docs: "لا مستندات لمشاريعك يحق لك فتحها" };
 function wsAct(a, x, btn) {
@@ -3450,25 +3494,91 @@ function wsCard(x) {
   if ((x.acts || []).length) { const bar = el("div", "cacts"); x.acts.forEach((a, i) => { const b = ebtn(a.label, () => wsAct(a, x, b), i ? "sbtn ebtn" : "sbtn ebtn pri"); bar.append(b); }); c.append(bar); }
   return c;
 }
+// «متابعة الفريق» (management): who carries what — moved from «مساحتي» to «مركز القيادة» (owner, 14 Nov 2026), so «مساحتي» is
+// the person's own work only
+function wsTeam(m, T) {
+  m.append(secHead("متابعة الفريق", T.rows.length, "من يحمل ماذا، من البنود المسندة بالاسم فقط. الدور ليس شخصاً: ما لا مسؤول له يظهر هنا رقماً ولا يُنسب لأحد."));
+  if (T.unowned || T.roleOwned) m.append(el("div", "banner" + (T.unowned ? " bad" : ""), [T.unowned ? T.unowned + " بند بلا مسؤول محدد" : "", T.roleOwned ? T.roleOwned + " بند مسؤوله دور أو جهة لا شخص مسمّى" : ""].filter(Boolean).join(" · ")));
+  const w = el("div", "tblw"), tb = el("table", "tbl"), hr = el("tr"); for (const h of ["الموظف", "مفتوح", "متأخر", "بانتظار رد أو دليل", "أقدم موعد", "الغياب والتغطية"]) hr.append(el("th", "", h)); tb.append(hr);
+  for (const r of T.rows) { const tr = el("tr"); tr.append(el("td", "", r.name), el("td", "", String(r.open)), el("td", r.overdue ? "neg" : "", String(r.overdue)), el("td", "", String(r.awaiting)), el("td", "", r.oldest ? dmy(r.oldest) : "—"), el("td", "", r.away ? "غائب — يغطيه " + (r.cover || "غير محدد") : "—")); tb.append(tr); }
+  w.append(tb); m.append(w);
+}
+// «مساحتي» as each person's home (owner's shape brief, 14 Nov 2026): the first section is the role's own work (engineer: today's site
+// work · accountant: payments and collection · procurement: requests · sales: customers · pricing: quotes), then for everyone the same
+// order: waiting on my approval → needs an update from me → overdue → what the workspace cannot know; waiting on others, talks,
+// documents and the full list by type stay folded. Every card and button is the server's (wsCard); the page only orders them.
+const goOf = (x) => (x.acts || []).find((a) => a.t === "go") || {};
+const WSROLE = [
+  { k: "eng", re: /مهندس|المشرف|MEP/, t: "شغل اليوم", sub: "مهام مشاريعك وعوائقها وفحوصاتها", pick: (x) => x.grp !== "docs" && goOf(x).v === "site" },
+  { k: "acc", re: /المحاسب|المالي/, t: "الدفعات والتحصيل", sub: "ما ينتظر تأكيدك أو متابعتك", pick: (x) => (x.grp === "approvals") || (goOf(x).v === "cmd" && goOf(x).sub === "coll") },
+  { k: "proc", re: /المشتريات|المعدات/, t: "طلبات اليوم", sub: "طلبات المواد والتوريد", pick: (x) => x.grp !== "docs" && x.grp !== "waiting" && (goOf(x).v === "buy" || x.grp === "approvals") },
+  { k: "sales", re: /المبيعات/, t: "عملاؤك", sub: "عروض معتمدة تُرسل، وعملاء ينتظرون ردك", leads: (l) => l.via && ["sent", "waiting"].includes(l.status) },
+  { k: "pricing", re: /التسعير/, t: "عروض بانتظارك", sub: "مسودات جاهزة للمراجعة أو تعذّر تسعيرها", leads: (l) => l.draft && ["ready", "failed"].includes(l.draft.state) },
+];
+function wsLead(l) {
+  const c = el("article", "hd " + (l.draft && l.draft.state === "failed" ? "bad" : ""));
+  c.append(el("h3", "", l.no + " — " + (l.name || "عميل")));
+  const meta = el("div", "hmeta"); meta.append(el("span", "pill", l.draft && ["ready", "failed"].includes(l.draft.state) ? "المسودة: " + l.draft.stateT : l.statusT));
+  if (l.kind) meta.append(el("span", "small muted", l.kind + (l.loc ? " · " + l.loc : ""))); c.append(meta);
+  const b = el("button", "hbtn", "افتح في المبيعات"); b.type = "button"; b.onclick = () => go("sales"); c.append(b);
+  return c;
+}
+function wsSec(m, id, title, sub, cards, empty, max) {
+  const s = el("section", "hsec"); s.id = id; const hd = el("div", "hsh"); const h = el("h2", "", title); hd.append(h, el("span", "small muted", sub)); s.append(hd);
+  if (!cards.length) { s.append(el("p", "hnone", empty)); m.append(s); return; }
+  const g = el("div", "clist"); cards.slice(0, max || 5).forEach((x) => g.append(x.tagName ? x : wsCard(x))); s.append(g);
+  if (cards.length > (max || 5)) s.append(el("div", "small muted", "و" + arN(cards.length - (max || 5), "بند آخر", "بندان آخران", "بنود أخرى", "بنداً آخر") + " — في «كل بنودي» أسفل الصفحة"));
+  m.append(s);
+}
 function wsView(m) {
-  const W = D.ws, by = (g) => (g === "today" ? W.today.map((id) => W.cards.find((x) => x.id === id)) : g === "overdue" ? W.overdue.map((id) => W.cards.find((x) => x.id === id)) : W.cards.filter((x) => x.grp === g)).filter(Boolean);
-  m.append(page("", "مساحتي", [W.who.name, ...W.who.roles, W.scope.kind === "projects" ? arN(W.scope.n, "مشروع واحد مسند لك", "مشروعان مسندان لك", "مشاريع مسندة لك", "مشروعاً مسنداً لك") : "كل المشاريع"].join(" · "), "var(--ui)"));
+  const W = D.ws, card = (id) => W.cards.find((x) => x.id === id), shown = new Set();
+  const take = (xs) => xs.filter((x) => x && !shown.has(x.id)).map((x) => (shown.add(x.id), x));
+  m.append(hero());
+  m.append(el("div", "small muted ws-who", [...W.who.roles, W.scope.kind === "projects" ? arN(W.scope.n, "مشروع واحد مسند لك", "مشروعان مسندان لك", "مشاريع مسندة لك", "مشروعاً مسنداً لك") : "كل المشاريع"].join(" · ")));
   for (const p of W.covering || []) { const d = el("div", "banner"); d.append(el("b", "", "تغطّي " + p.name + " حتى " + dmy(p.until)), el("div", "small", "بنوده تظهر هنا بعلامة «نيابة عن»"), el("div", "small", p.roles.join(" · "))); m.append(d); }
+  const R = W.who.roles.join(" "), role = WSROLE.find((r) => r.re.test(R));
+  // sort: overdue, due today, approvals, decisions, dated, the rest (the server's own «today» order first)
+  const ord = new Map(W.today.map((id, i) => [id, i]));
+  const byPrio = (a, b) => (ord.has(a.id) ? ord.get(a.id) : 99) - (ord.has(b.id) ? ord.get(b.id) : 99) || (b.overdue - a.overdue) || String(a.due || "9").localeCompare(String(b.due || "9"));
+  const live = W.cards.filter((x) => x.grp !== "docs").sort(byPrio);
+  // 1. the role's own work
+  let first = [], leads = [];
+  if (role && role.pick) first = take(live.filter(role.pick).filter((x) => x.grp !== "waiting"));
+  if (role && role.leads) leads = (D.leads || []).filter(role.leads);
+  // 2–4. the same order for everyone
+  const appr = take(live.filter((x) => x.grp === "approvals"));
+  const upd = take(live.filter((x) => x.grp === "tasks" && (x.fresh === "none" || x.fresh === "stale" || (x.missing || []).length)));
+  const late = take(W.overdue.map(card).filter(Boolean));
+  const rest = take(live.filter((x) => x.grp === "tasks" || (x.grp === "talks" && x.acts.some((a) => a.t === "chat"))));
+  // every approval and overdue item of mine, wherever it is shown (the role's first section may already hold them)
+  const n = (xs) => xs.length, lateAll = W.overdue.length, apprAll = live.filter((x) => x.grp === "approvals").length;
+  // one line: the size of the day
+  const sum = el("div", "hsum");
+  const chip = (k, t, tone, id) => { const a = el("a", "hchip " + (k ? tone : "ok"), t); a.href = "#" + id; a.onclick = (e) => { e.preventDefault(); const x = $(id); if (x) x.scrollIntoView({ behavior: "smooth", block: "start" }); }; return a; };
+  const firstN = n(first) + n(leads);
+  if (role) sum.append(chip(firstN, firstN ? role.t + " " + firstN : role.t + ": لا شيء", "eng", "ws-first"));
+  sum.append(chip(apprAll, apprAll ? arN(apprAll, "اعتماد ينتظرك", "اعتمادان ينتظرانك", "اعتمادات تنتظرك", "اعتماداً ينتظرك") : "لا اعتمادات", "bad", n(appr) || !apprAll ? "ws-appr" : "ws-first"),
+    chip(lateAll, lateAll ? arN(lateAll, "بند متأخر", "بندان متأخران", "بنود متأخرة", "بنداً متأخراً") : "لا متأخر", "bad", n(late) ? "ws-late" : "ws-first"));
+  m.append(sum);
+  if (role) wsSec(m, "ws-first", role.t, role.sub, [...leads.map(wsLead), ...first], role.leads ? "لا شيء ينتظرك في المبيعات الآن ✓" : "لا شيء عليك اليوم في السجلات ✓", 6);
+  if (n(appr) || !apprAll) wsSec(m, "ws-appr", "بانتظار اعتمادي", "يُحسم من البطاقة نفسها", appr, "لا اعتمادات بانتظارك ✓");
+  if (upd.length) wsSec(m, "ws-upd", "يحتاج تحديثاً منك", "بنود عليك بلا تحديث مسجّل أو ينقصها شيء", upd, "");
+  if (n(late) || !lateAll) wsSec(m, "ws-late", "متأخر", "فات موعده", late, "لا بند متأخر عليك ✓");
+  if (rest.length) wsSec(m, "ws-rest", "مهام أخرى عليك", "الأقرب موعداً أولاً", rest, "", 4);
+  if (!role && !n(appr) && !n(late) && !n(upd) && !n(rest)) m.append(el("p", "hnone", "لا شيء عليك اليوم ✓"));
+  for (const t of (W.gaps || []).filter((t) => !/^تغطّي /.test(t) && !(W.team && /بلا مسؤول محدد/.test(t)))) m.append(el("div", "banner", t));
+  // folded: everything by type (waiting on others, talks, documents, the full lists)
+  const det = el("details", "hest"), sm = el("summary"); sm.append(el("b", "", "كل بنودي"), el("span", "small muted", "بانتظار غيري · محادثات · مستندات · القوائم كاملة")); det.append(sm);
+  const inner = el("div", "hest-in"), by = (g) => (g === "today" ? W.today.map(card) : g === "overdue" ? W.overdue.map(card) : W.cards.filter((x) => x.grp === g)).filter(Boolean);
   const bar = el("div", "filters docf");
-  for (const [k, t] of WSGRP) { const n = W.counts[k]; if (!n && !["today", "tasks"].includes(k)) continue; const b = el("button", "chip"); b.append(el("span", "", t), el("span", "k", " " + n)); b.type = "button"; b.setAttribute("aria-pressed", String(WSG === k)); b.onclick = () => { WSG = k; draw(); }; bar.append(b); }
-  m.append(bar);
+  for (const [k, t] of WSGRP) { const c = W.counts[k]; if (!c && !["today", "tasks"].includes(k)) continue; const b = el("button", "chip"); b.append(el("span", "", t), el("span", "k", " " + c)); b.type = "button"; b.setAttribute("aria-pressed", String(WSG === k)); b.onclick = () => { WSG = k; WSOPEN = true; draw(); }; bar.append(b); }
+  inner.append(bar);
   if (!W.counts[WSG] && !["today", "tasks"].includes(WSG)) WSG = "today";
   const list = by(WSG);
-  if (!list.length) m.append(el("div", "empty", WSEMPTY[WSG]));
-  else { const g = el("div", "clist"); for (const x of list.slice(0, 60)) g.append(wsCard(x)); m.append(g); if (list.length > 60) m.append(el("div", "small muted", "يظهر أول 60 بنداً")); }
-  for (const t of (W.gaps || []).filter((t) => !/^تغطّي /.test(t) && !(W.team && /بلا مسؤول محدد/.test(t)))) m.append(el("div", "banner", t));
-  if (W.team) {
-    m.append(secHead("متابعة الفريق", W.team.rows.length, "من يحمل ماذا، من البنود المسندة بالاسم فقط. الدور ليس شخصاً: ما لا مسؤول له يظهر هنا رقماً ولا يُنسب لأحد."));
-    if (W.team.unowned || W.team.roleOwned) m.append(el("div", "banner" + (W.team.unowned ? " bad" : ""), [W.team.unowned ? W.team.unowned + " بند بلا مسؤول محدد" : "", W.team.roleOwned ? W.team.roleOwned + " بند مسؤوله دور أو جهة لا شخص مسمّى" : ""].filter(Boolean).join(" · ")));
-    const w = el("div", "tblw"), tb = el("table", "tbl"), hr = el("tr"); for (const h of ["الموظف", "مفتوح", "متأخر", "بانتظار رد أو دليل", "أقدم موعد", "الغياب والتغطية"]) hr.append(el("th", "", h)); tb.append(hr);
-    for (const r of W.team.rows) { const tr = el("tr"); tr.append(el("td", "", r.name), el("td", "", String(r.open)), el("td", r.overdue ? "neg" : "", String(r.overdue)), el("td", "", String(r.awaiting)), el("td", "", r.oldest ? dmy(r.oldest) : "—"), el("td", "", r.away ? "غائب — يغطيه " + (r.cover || "غير محدد") : "—")); tb.append(tr); }
-    w.append(tb); m.append(w);
-  }
+  if (!list.length) inner.append(el("div", "empty", WSEMPTY[WSG]));
+  else { const g = el("div", "clist"); for (const x of list.slice(0, 60)) g.append(wsCard(x)); inner.append(g); if (list.length > 60) inner.append(el("div", "small muted", "يظهر أول 60 بنداً")); }
+  det.append(inner); if (WSOPEN) det.open = true; det.addEventListener("toggle", () => { WSOPEN = det.open; });
+  m.append(det);
 }
 // «فريق المساعدين» (the bot's core/agents.ts): the responsibility map, the health of the scheduled jobs apart from the state of the work,
 // assignment issues, controls and AI usage. Statuses carry a glyph and a word; the page decides nothing.
@@ -4755,7 +4865,8 @@ let introDone = false;
 // home: the date and a greeting — the figures follow once, below (nothing on home is said twice)
 function hero() {
   const h = el("header", "hero"), now = new Date(), hr = now.getHours();
-  const first = String((D && D.name) || "").trim().split(/\s+/)[0];
+  // the first word that is a name, not a title («م.»، «المهندس», «Eng.»)
+  const first = String((D && D.name) || "").trim().split(/\s+/).find((w) => !/^(م\.?|المهندس|المهندسة|الأستاذ|أ\.|د\.|Eng\.?|Mr\.?)$/i.test(w)) || "";
   h.append(el("div", "date", now.toLocaleDateString(LANG === "en" ? "en-GB" : "ar-SA-u-nu-latn-ca-gregory", { weekday: "long", day: "numeric", month: "long", year: "numeric" })));
   h.append(el("h1", "", (hr < 12 ? "صباح الخير" : "مساء الخير") + (first ? "، " + first : "")));
   return h;
