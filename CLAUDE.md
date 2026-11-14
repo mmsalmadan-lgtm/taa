@@ -165,6 +165,8 @@ card or page · finance things live under المالية, purchases under الم
   الرصيد النقدي لم يُدخل» + «أدخل الرصيد» and labels the bars net flow from zero; `answers()` says «لا يمكن الحكم»; the folded lowest balance
   is «—». The folded ledger is «أرقام أخرى ومصدرها» and drops what the strip shows (collected, still with clients, spent, cash) — one
   source per figure on the page.
+- Decision rows show the cause (`.hcause`, two lines) and wrap the title to two lines. Below 1080 px the account actions (language, alerts,
+  PIN, sign out) fold behind «الحساب» (`#acctBtn`, `#ghA.open`, Escape closes); «تحديث» stays visible; the desk sidebar is unchanged.
 - Not built yet: ranking by «what it unblocks» (the bot ranks by money × urgency), one-press execution for decisions that have no action in
   the bot, and the same layout for non-money roles.
 
