@@ -159,6 +159,12 @@ card or page · finance things live under المالية, purchases under الم
   + due now, spent, cash) and `.hcharts` = `collChart()` (bars per project: length = contract, green = collected, amber = due now, value =
   remaining; tap opens the project) beside `w13Box` (estimate). Decision rows are one line (`homeDec`: title, kind · age · owner, amount,
   button; the cause is the tooltip).
+- After the Impeccable critique (14 Nov 2026), order: compact greeting (`.hero.sm`, one line with the date) → chips → `homeNums()` →
+  `collChart()` → decisions → `w13Box` (estimate, after the decisions) → missing → alerts → folded. `openKnown(o)` (= `AUD.cashDone`, or a
+  dated documented source) gates every cash verdict built on the forecast's opening balance: while unknown, `w13Box` shows «لا يمكن الحكم —
+  الرصيد النقدي لم يُدخل» + «أدخل الرصيد» and labels the bars net flow from zero; `answers()` says «لا يمكن الحكم»; the folded lowest balance
+  is «—». The folded ledger is «أرقام أخرى ومصدرها» and drops what the strip shows (collected, still with clients, spent, cash) — one
+  source per figure on the page.
 - Not built yet: ranking by «what it unblocks» (the bot ranks by money × urgency), one-press execution for decisions that have no action in
   the bot, and the same layout for non-money roles.
 
