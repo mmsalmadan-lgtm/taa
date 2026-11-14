@@ -56,7 +56,7 @@ h1,h2,h3{font-family:var(--f-disp);font-weight:600;letter-spacing:0}
 .brand{display:flex;align-items:center;gap:11px;min-width:0;flex:1}
 .logo{width:36px;height:36px;border-radius:10px;background:var(--brand);color:#fff;font-family:var(--f-disp);font-weight:700;display:grid;place-items:center;font-size:19px;flex:none;line-height:1}
 .gh-t{display:flex;flex-direction:column;line-height:1.3;min-width:0;flex:1}
-.gh-t b{font-family:var(--f-disp);font-size:16px;font-weight:600;line-height:1.35;overflow-wrap:anywhere} /* a full name wraps instead of being cut («…آل مدن», owner 15 Nov 2026) */
+.gh-t b{font-family:var(--f-disp);font-size:16px;font-weight:600;line-height:1.35;overflow-wrap:break-word} /* a full name wraps instead of being cut («…آل مدن», owner 15 Nov 2026) */
 .gh-t span{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .badge{font-size:12px;padding:3px 10px;border-radius:999px;background:var(--warn1);color:var(--warn);white-space:nowrap;font-weight:600}
 .badge.ok{background:var(--acc1);color:var(--acc9)}.badge.bad{background:var(--crit1);color:var(--crit)}
@@ -71,7 +71,7 @@ h1,h2,h3{font-family:var(--f-disp);font-weight:600;letter-spacing:0}
    opens under «الحساب» without moving it */
 @media (max-width:1079px){
  .gh-t span{white-space:normal}
- .gh-t b{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;overflow-wrap:normal}
+ .gh-t b{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;overflow-wrap:break-word}
  .acct-t{display:inline-flex;align-items:center}
  .gh-a{flex-basis:auto;margin-inline-start:auto;flex-wrap:nowrap;position:relative}
  .acct-m{display:none}
@@ -346,7 +346,7 @@ label.chk{display:inline-flex;align-items:center;gap:6px;margin-inline-end:14px;
 /* home (14 Nov 2026): what waits → decisions → missing → alerts → folded figures and estimates */
 .hsum{display:flex;flex-wrap:wrap;gap:8px}
 .hchip{display:inline-flex;align-items:center;min-height:36px;padding:4px 14px;border-radius:999px;font-weight:600;font-size:14px;text-decoration:none;border:1px solid transparent;transition:filter .15s}
-.hchip:hover{filter:brightness(.97)}.hchip:focus-visible{outline:2px solid var(--ui);outline-offset:2px}
+.hchip:hover{filter:brightness(.97)}.hchip.none{cursor:default}.hchip.none:hover{filter:none}.hchip:focus-visible{outline:2px solid var(--ui);outline-offset:2px}
 .hchip.bad{background:var(--crit1);color:var(--crit)}.hchip.warn{background:var(--warn1);color:var(--warn)}.hchip.eng{background:var(--eng1);color:var(--eng9)}.hchip.ok{background:var(--acc1);color:var(--acc9)}
 @media (pointer:coarse){.hchip{min-height:44px}}
 .hsec{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:18px 20px;display:flex;flex-direction:column;gap:12px;scroll-margin-top:84px}
@@ -532,8 +532,8 @@ main.enter>*:nth-child(2){animation-delay:30ms}main.enter>*:nth-child(3){animati
  main{padding-top:16px;gap:14px}
  .grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}.grid>.card{padding:11px;gap:8px;border-radius:10px}
  .card .t{font-size:13.5px}.card .st{margin-top:-6px}.kv{font-size:12.5px;grid-template-columns:1fr;gap:1px}.kv b{text-align:start;margin-bottom:4px}
- /* a one-column card list (e.g. «مساحتي») has the width for label | value side by side: a task card is about half as tall */
- .clist .kv{grid-template-columns:auto minmax(0,1fr);gap:4px 12px}.clist .kv b{margin-bottom:0}
+ /* «مساحتي»'s one-column card lists have the width for label | value side by side (scoped there; other lists keep the stacked phone layout) */
+ .hsec .clist .kv,.hest-in .clist .kv{grid-template-columns:auto minmax(0,1fr);gap:4px 12px}.hsec .clist .kv b,.hest-in .clist .kv b{margin-bottom:0}
  .amt{font-size:15.5px}.ring{width:44px;height:44px}.pc .mid{gap:8px}
  .kpis{border-radius:var(--r-m)}.kpi{flex-basis:140px}
  .pill{font-size:11px;padding:1px 8px}.kpi{padding:12px 13px}.kpi .v{font-size:17px}.kpi::before{top:14px}
@@ -3593,7 +3593,9 @@ function wsView(m) {
   const R = W.who.roles.join(" "), role = WSROLE.find((r) => r.re.test(R));
   // sales and pricing work on customers, not on projects: no «0 مشاريع مسندة لك» line and no «no project assigned» warning for a
   // person whose every role is customer work (anyone who also has a project role still sees both) — critique 14 Nov 2026
-  const custOnly = W.who.roles.length > 0 && W.who.roles.every((r) => /المبيعات|التسعير/.test(r));
+  // whole role names as the bot's admin.ts ROLES writes them — a role that merely contains the word (e.g. «مهندس التسعير») is not one
+  const CUST_ROLES = new Set(["المبيعات", "التسعير وعروض الأسعار"]);
+  const custOnly = W.who.roles.length > 0 && W.who.roles.every((r) => CUST_ROLES.has(String(r).trim()));
   const scopeT = W.scope.kind === "projects" ? (custOnly && !W.scope.n ? "" : arN(W.scope.n, "مشروع واحد مسند لك", "مشروعان مسندان لك", "مشاريع مسندة لك", "مشروعاً مسنداً لك")) : "كل المشاريع";
   m.append(el("div", "small muted ws-who", [...W.who.roles, scopeT].filter(Boolean).join(" · ")));
   for (const p of W.covering || []) { const d = el("div", "banner"); d.append(el("b", "", "تغطّي " + p.name + " حتى " + dmy(p.until)), el("div", "small", "بنوده تظهر هنا بعلامة «نيابة عن»"), el("div", "small", p.roles.join(" · "))); m.append(d); }
@@ -3611,21 +3613,26 @@ function wsView(m) {
   const late = take(W.overdue.map(card).filter(Boolean));
   const rest = take(live.filter((x) => x.grp === "tasks" || (x.grp === "talks" && x.acts.some((a) => a.t === "chat"))));
   // every approval and overdue item of mine, wherever it is shown (the role's first section may already hold them)
-  const n = (xs) => xs.length, lateAll = W.overdue.length, apprAll = live.filter((x) => x.grp === "approvals").length;
+  const lateCards = W.overdue.map(card).filter(Boolean);   // ids the server lists but did not send as cards are not counted
+  const n = (xs) => xs.length, lateAll = lateCards.length, apprAll = live.filter((x) => x.grp === "approvals").length;
+  // a chip jumps to the section that actually holds its first item (an overdue task with no update sits in «يحتاج تحديثاً منك»)
+  const SECS = [["ws-first", first], ["ws-appr", appr], ["ws-upd", upd], ["ws-late", late], ["ws-rest", rest]];
+  const secOf = (xs) => { for (const x of xs) for (const [id, list] of SECS) if (list.some((y) => y.id === x.id) && (id !== "ws-first" || role)) return id; return ""; };
   // one line: the size of the day
   const sum = el("div", "hsum");
-  // a chip with a count jumps to its section; «لا …» is a plain label — the section it would point to is not drawn
+  // a chip with a count jumps to its section; «لا …» (or an item no section shows) is a plain label
   const chip = (k, t, tone, id) => {
-    if (!k) { const s = el("span", "hchip ok", t); s.setAttribute("role", "listitem"); return s; }
+    if (!k || !id) { const s = el("span", "hchip ok none", t); s.setAttribute("role", "listitem"); return s; }
     const a = el("a", "hchip " + tone, t); a.setAttribute("role", "listitem"); a.href = "#" + id;
     a.onclick = (e) => { e.preventDefault(); const x = $(id); if (x) { x.scrollIntoView({ behavior: "smooth", block: "start" }); x.setAttribute("tabindex", "-1"); x.focus({ preventScroll: true }); } };
     return a;
   };
   sum.setAttribute("role", "list");
   const firstN = n(first) + n(leads);
-  if (role) sum.append(chip(firstN, firstN ? role.t + " " + firstN : role.t + ": لا شيء", "eng", "ws-first"));
-  sum.append(chip(apprAll, apprAll ? arN(apprAll, "اعتماد ينتظرك", "اعتمادان ينتظرانك", "اعتمادات تنتظرك", "اعتماداً ينتظرك") : "لا اعتمادات", "bad", n(appr) ? "ws-appr" : "ws-first"),
-    chip(lateAll, lateAll ? arN(lateAll, "بند متأخر", "بندان متأخران", "بنود متأخرة", "بنداً متأخراً") : "لا متأخر", "bad", n(late) ? "ws-late" : "ws-first"));
+  // the role chip always points at its section (drawn even when empty, with its own «لا شيء» line)
+  if (role) sum.append(chip(1, firstN ? role.t + " " + firstN : role.t + ": لا شيء", firstN ? "eng" : "ok", "ws-first"));
+  sum.append(chip(apprAll, apprAll ? arN(apprAll, "اعتماد ينتظرك", "اعتمادان ينتظرانك", "اعتمادات تنتظرك", "اعتماداً ينتظرك") : "لا اعتمادات", "bad", secOf(live.filter((x) => x.grp === "approvals"))),
+    chip(lateAll, lateAll ? arN(lateAll, "بند متأخر", "بندان متأخران", "بنود متأخرة", "بنداً متأخراً") : "لا متأخر", "bad", secOf(lateCards)));
   m.append(sum);
   if (role) wsSec(m, "ws-first", role.t, role.sub, [...leads.map(wsLead), ...first], role.leads ? "لا شيء ينتظرك في المبيعات الآن ✓" : "لا شيء عليك اليوم في السجلات ✓", 6);
   // an empty «بانتظار اعتمادي» / «متأخر» is not drawn: its chip already says «لا اعتمادات» / «لا متأخر» (no information twice)
@@ -6785,7 +6792,7 @@ async function load(keep) {
     if (!r.ok) return fail(r.status === 403 ? "غير مصرح" : "تعذّر التحميل", j.error || "حاول مرة أخرى بعد قليل.");
     if (j.display) return wallStart(j); // the shared office screen: read-only, statuses only
     D = j;
-    $("who").textContent = String(D.name || "").replace(/^(المهندس|المهندسة)\s+/, "م. "); /* «م.» not «المهندس» (owner, 15 Nov 2026) */ $("roles").textContent = D.roles.join(" · ") + " · آخر تحديث " + new Date(D.at).toLocaleTimeString(LANG === "en" ? "en-GB" : "ar-SA-u-nu-latn", { hour: "2-digit", minute: "2-digit" });
+    $("who").textContent = String(D.name || "").replace(/[‎‏؜]/g, "").trim().replace(/^(المهندس|المهندسة)\s+/, LANG === "en" ? "Eng. " : "م. "); /* «م.» not «المهندس» (owner, 15 Nov 2026) */ $("roles").textContent = D.roles.join(" · ") + " · آخر تحديث " + new Date(D.at).toLocaleTimeString(LANG === "en" ? "en-GB" : "ar-SA-u-nu-latn", { hour: "2-digit", minute: "2-digit" });
     const mo = $("mode"); mo.hidden = false; mo.replaceChildren(el("span", "bl", "الوضع: "), document.createTextNode(D.mode)); mo.className = "badge" + (D.mode === "فعلي" ? " ok" : D.mode === "إيقاف آمن" ? " bad" : "");
     $("reload").hidden = $("pinBtn").hidden = $("outBtn").hidden = $("bellBtn").hidden = false; pushSync();
     if (!keep) view = D.ws && !D.ws.team ? "ws" : "home"; // management lands on the company overview; everyone else on his own workspace
