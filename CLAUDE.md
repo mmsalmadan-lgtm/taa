@@ -160,6 +160,21 @@ card or page · finance things live under المالية, purchases under الم
   «ما يشمله مجموع الربح المتوقع» (included, each group left out, contract evidence). fc13: a stress row under each scenario
   (`x.stress`) and «تعرّض غير مجدول» (`C.unscheduled`). «إعدادات التوقع» has `benchMin`. Checked with `rd/p3.cjs` on `p4/dash_s2.json`.
 
+## Consolidated spec stages 4–5 (2026-11-14)
+- Nav «المبيعات والعقود» (`TABS` sales, ids changes/leads/estimates/quotes/ccontracts/variations) with sub-tabs `SCTABS` / `SCT`
+  (الفرص والعملاء = `salesView` · التسعير · عروض الأسعار · العقود · الأعمال الإضافية), drawn by `salesContracts(m)` from the bot's
+  register sections (generic cards). Admin: «صلاحيات الاعتماد والموافقة الإلكترونية» → `salesSetDialog()` (prefilled from `D.salesSet`;
+  sends only what changed) → op `sales_set`. Approval and sending stay in the bot's cards.
+- Nav «المستندات والسجلات» (`TABS` docs, ids docreg/doccomplete/docmatrix, `ICO.docs`).
+- Project «المستندات»: FILE cards show the review status; an admin (not the uploader) presses «مراجعة» → `reviewDoc(d)` → op
+  `doc_review` (contract: «موقّع من الطرفين وكامل»). Upload adds event date and external reference.
+- `q/index.html`: the CUSTOMER's quotation-acceptance page (`POST …/bird-webhook/accept`, token from the hash, then removed from the
+  address bar): view → choice (accept / changes / decline) → name, capacity, consent tick, one-time code → receipt. Riyal symbol via
+  the SAR font (copied from d/). No cost, margin or internal data on it.
+- Checked with `scratchpad rd/s4.cjs` (mock `p4/dash_s4.json` from `p4/gen_s4.mts`, 390/1280/EN, no errors, no horizontal scroll, EN
+  strings complete except names/data), `rd/ss.cjs` (settings dialog prefill + body), `rd/q.cjs` (acceptance flow, wrong code, missing
+  consent, voided link, missing token).
+
 ## How to change and verify (the owner expects Claude to check its own work)
 1. `git fetch && git checkout -B <branch> origin/main` (always from a fresh main — PRs are squash-merged).
 2. Test locally: `python3 -m http.server 8765` in the repo + Playwright (Chromium is pre-installed), routing the API to mock
