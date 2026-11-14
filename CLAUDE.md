@@ -155,6 +155,10 @@ card or page · finance things live under المالية, purchases under الم
   الصحيحة» (my open data items, `kind!=="decision"`, by number of figures affected, progress bar), «تنبيهات موثوقة» (floor items, not repeated
   when the project already has a decision), then two folded `<details class="hest">`: «الأرقام الرئيسية» (ledger + provBox) and «أرقام تقديرية»
   (forecast decisions without the «تقديري:» prefix, `answers()`, `w13Box()`, the forecast queue link). Other roles keep the previous home.
+- After the owner's review («محشو كلام، مافيه charts»): under the chips the recorded figures `homeNums()` (contracts, collected, remaining
+  + due now, spent, cash) and `.hcharts` = `collChart()` (bars per project: length = contract, green = collected, amber = due now, value =
+  remaining; tap opens the project) beside `w13Box` (estimate). Decision rows are one line (`homeDec`: title, kind · age · owner, amount,
+  button; the cause is the tooltip).
 - Not built yet: ranking by «what it unblocks» (the bot ranks by money × urgency), one-press execution for decisions that have no action in
   the bot, and the same layout for non-money roles.
 
