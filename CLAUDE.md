@@ -148,6 +148,16 @@ card or page · finance things live under المالية, purchases under الم
 - Checked with `scratchpad rd/p3.cjs` (mock `p3/dash_p3b.json` from `p3/gen2.mts`) at 390/1280/EN — no errors, no horizontal scroll;
   `rd/p3rev.cjs` fills and saves the revision sheet (mocked API) and checks the request body.
 
+## Home rebuilt (owner shape brief, 14 Nov 2026)
+- `home3()` (money roles, with `D.home`): `hero()`, then `.hsum` chips (decisions / missing on you / alerts, each jumps to its section), then
+  «قرارات تنتظرك» (`D.home.decide` minus forecast-built kinds `HEST` cash/loss and alerts `HALERT` floor; 3 at most via `homeDec`, the rest
+  → `more("decide")`; each button runs the record's own action through `doAct`: bot sheet / data item / budget / revision), «ناقص يمنع الأرقام
+  الصحيحة» (my open data items, `kind!=="decision"`, by number of figures affected, progress bar), «تنبيهات موثوقة» (floor items, not repeated
+  when the project already has a decision), then two folded `<details class="hest">`: «الأرقام الرئيسية» (ledger + provBox) and «أرقام تقديرية»
+  (forecast decisions without the «تقديري:» prefix, `answers()`, `w13Box()`, the forecast queue link). Other roles keep the previous home.
+- Not built yet: ranking by «what it unblocks» (the bot ranks by money × urgency), one-press execution for decisions that have no action in
+  the bot, and the same layout for non-money roles.
+
 ## Phase 4: inspections (2026-11-14)
 - Sub-tab «الفحوصات» under «التنفيذ والجودة»: the bot's sections `insp`, `findings`, `gates`, `qaplan`, `bfqa`, drawn by the generic
   section cards (no special code). EN strings added. Checked with `scratchpad rd/p4.cjs` (mock `p4/dash_p4.json` from `p4/gen.mts`).

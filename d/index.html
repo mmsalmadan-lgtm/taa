@@ -326,6 +326,37 @@ label.chk{display:inline-flex;align-items:center;gap:6px;margin-inline-end:14px;
 .dcard::before{content:"";position:absolute;inset-block:16px;inset-inline-start:0;width:3px;border-radius:0 2px 2px 0;background:var(--line-2)}
 .dcard.bad::before{background:var(--crit)}.dcard.warn::before{background:var(--warn6)}.dcard.info::before{background:var(--eng6)}
 .dcard .dt{font-weight:600;font-size:14.5px}.dcard .sbtn{align-self:flex-start}
+/* home (14 Nov 2026): what waits → decisions → missing → alerts → folded figures and estimates */
+.hsum{display:flex;flex-wrap:wrap;gap:8px}
+.hchip{display:inline-flex;align-items:center;min-height:36px;padding:4px 14px;border-radius:999px;font-weight:600;font-size:14px;text-decoration:none;border:1px solid transparent;transition:filter .15s}
+.hchip:hover{filter:brightness(.97)}.hchip:focus-visible{outline:2px solid var(--ui);outline-offset:2px}
+.hchip.bad{background:var(--crit1);color:var(--crit)}.hchip.warn{background:var(--warn1);color:var(--warn)}.hchip.eng{background:var(--eng1);color:var(--eng9)}.hchip.ok{background:var(--acc1);color:var(--acc9)}
+@media (pointer:coarse){.hchip{min-height:44px}}
+.hsec{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:18px 20px;display:flex;flex-direction:column;gap:12px;scroll-margin-top:84px}
+.hsh{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:2px 12px}
+.hsh h2{margin:0;font-family:var(--f-disp);font-size:19px;font-weight:600}
+.hnone{margin:0;color:var(--acc9);font-weight:600;font-size:15px}
+.hlist{display:flex;flex-direction:column}
+.hd{display:flex;flex-direction:column;gap:8px;padding:14px 0;border-top:1px solid var(--line)}.hd:first-child{border-top:0;padding-top:0}
+.hd h3{margin:0;font-size:16px;font-weight:600;line-height:1.55;text-wrap:balance}
+.hd p{margin:0;font-size:14px;color:var(--muted);line-height:1.75;max-width:75ch;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.hmeta{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.hbtn{align-self:flex-start;min-height:44px;padding:0 18px;border-radius:var(--r-s);border:1px solid var(--ui);background:var(--ui);color:var(--on-acc);font:inherit;font-weight:600;font-size:14.5px;cursor:pointer;transition:background .15s,transform .15s var(--ease)}
+.hbtn:hover{background:var(--ui-2)}.hbtn:active{transform:translateY(1px)}.hbtn:focus-visible{outline:2px solid var(--ui);outline-offset:2px}
+.hprog{display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600}
+.hbar{height:8px;border-radius:999px;background:var(--track);overflow:hidden}.hbar i{display:block;height:100%;background:var(--warn6);border-radius:inherit}
+.hgaps{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:10px}
+.hgap{display:flex;flex-direction:column;gap:4px;text-align:start;padding:12px 14px;border:1px solid var(--line);border-radius:var(--r-m);background:var(--sunk);color:var(--ink);font:inherit;cursor:pointer;min-height:44px;transition:border-color .15s,background .15s}
+.hgap:hover{border-color:var(--line-2);background:var(--surface)}.hgap:focus-visible{outline:2px solid var(--ui);outline-offset:2px}
+.hgap b{font-weight:600;font-size:14.5px;line-height:1.5}
+.hest{background:var(--sunk);border:1px dashed var(--line-2);border-radius:var(--r-l);padding:2px 20px}
+.hest>summary{cursor:pointer;min-height:48px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;list-style:none}
+.hest>summary::-webkit-details-marker{display:none}
+.hest>summary::after{content:"";margin-inline-start:auto;width:7px;height:7px;border-inline-end:2px solid var(--muted);border-block-end:2px solid var(--muted);transform:rotate(45deg);transition:transform .2s var(--ease)}
+.hest[open]>summary::after{transform:rotate(-135deg)}
+.hest>summary:focus-visible{outline:2px solid var(--ui);outline-offset:2px;border-radius:var(--r-s)}
+.hest-in{display:flex;flex-direction:column;gap:14px;padding:4px 0 18px}
+@media (prefers-reduced-motion:reduce){.hest>summary::after,.hbtn,.hgap,.hchip{transition:none}}
 .dmeta{display:flex;gap:6px;flex-wrap:wrap}
 .why{margin:0;padding-inline-start:18px;font-size:13px}.why li+li{margin-top:2px}
 .wkt th{font-size:12px;font-weight:600;color:var(--muted);text-align:start;padding:6px 2px;border-bottom:1px solid var(--line)}.wkt th:not(:first-child){text-align:end}
@@ -856,6 +887,41 @@ const EN = {
 "صباح الخير": "Good morning",
 "مساء الخير": "Good evening",
 "ابدأ من هنا": "Start here",
+"قرارات تنتظرك": "Decisions waiting for you",
+"الأهم أولاً — يُحسم من هنا": "Most important first — decided from here",
+"لا قرار ينتظرك اليوم ✓": "No decision waits for you today ✓",
+"ناقص يمنع الأرقام الصحيحة": "Missing inputs that keep the figures from being real",
+"أكمله وتصير الأرقام فعلية": "Complete them and the figures become actual",
+"تنبيهات موثوقة": "Reliable alerts",
+"مبنية على أرقام مسجّلة": "Built on recorded figures",
+"لا تنبيهات ✓": "No alerts ✓",
+"لا نواقص عليك ✓": "Nothing missing on you ✓",
+"أرقام تقديرية": "Estimates",
+"لا تُعتمد قبل إكمال الناقص": "Not to rely on before the missing inputs are complete",
+"مبنية على توقع": "Built on a forecast",
+"يدخل · يخرج · النقد": "In · Out · Cash",
+"افتح واحسم": "Open and decide",
+"احسم البند": "Resolve the item",
+"اعتمد أو ارفض": "Approve or reject",
+"حدّث التوقع": "Update the forecast",
+"تعديل ميزانية": "Budget revision",
+"لا قرارات تنتظرك": "No decisions waiting",
+"لا نواقص عليك": "Nothing missing on you",
+"افتح القائمة": "Open the list",
+"كل النواقص عليك ({n})": "Everything missing on you ({n})",
+"يصحّح: {x}": "Corrects: {x}",
+"منذ {x}": "for {x}",
+"قرار ينتظرك": "1 decision waiting",
+"قراران ينتظرانك": "2 decisions waiting",
+"{n} قرارات تنتظرك": "{n} decisions waiting",
+"{n} قراراً ينتظرك": "{n} decisions waiting",
+"بند ناقص عليك": "1 input missing on you",
+"بندان ناقصان عليك": "2 inputs missing on you",
+"{n} بنود ناقصة عليك": "{n} inputs missing on you",
+"{n} بنداً ناقصاً عليك": "{n} inputs missing on you",
+"تنبيهان": "2 alerts",
+"{n} تنبيهات": "{n} alerts",
+"{n} تنبيهاً": "{n} alerts",
 "بالترتيب: الأهم أولاً": "In order: most important first",
 "لا شيء بانتظارك الآن ✓": "Nothing is waiting for you ✓",
 "لا شيء بانتظارك الآن": "Nothing is waiting for you",
@@ -4230,18 +4296,112 @@ function doAct(a, x) {
   }
 }
 const ACT_T = { chat: "افتح واعتمد", dq: "افتح البند", fc: "افتح توقع النقد", cost: "تكلفة المشروع", proj: "افتح المشروع", rev: "تحديث التوقع" };
+// ===== Home (owner's brief 14 Nov 2026, «shape الصفحة الرئيسية»): one line of what waits; then the decisions only YOU can take
+// (3 at most, each acting from here through the record's own action — the bot's buttons, the data item, the budget revision);
+// then what is missing that keeps the figures from being real; then the alerts built on recorded facts; the estimates last,
+// folded, every one marked «تقديري». Forecast-built items (cash shortfall, forecast loss) are never a decision or an alert here.
+const HEST = (x) => x.kind === "cash" || x.kind === "loss";          // built on the forecast
+const HALERT = (x) => x.kind === "floor";                            // recorded commitments above the estimate
+const DEC_K = { mine: "بانتظارك", budget: "تعديل ميزانية", decision: "قرار للإدارة" };
+const DEC_ACT = { chat: "افتح واحسم", dq: "احسم البند", cost: "اعتمد أو ارفض", rev: "حدّث التوقع", proj: "افتح المشروع", fc: "افتح التوقع" };
+function homeDec(x) {
+  const c = el("article", "hd " + (x.tone || ""));
+  const t = el("h3", "", sar(x.title)); c.append(t);
+  if (x.cause) { const p = el("p", "", sar(x.cause)); p.title = x.cause; c.append(p); }
+  const meta = el("div", "hmeta");
+  const k = DEC_K[String(x.kind).split(":")[0]]; if (k) meta.append(el("span", "pill " + (x.tone === "bad" ? "bad" : x.tone === "warn" ? "warn" : ""), k));
+  if (x.impact) meta.append(el("span", "pill", (x.impactT || "المبلغ") + " " + fmt(x.impact)));
+  if (x.since) meta.append(el("span", "pill", "منذ " + arN(x.since, "يوم", "يومين", "أيام", "يوماً")));
+  if (x.owner && !["أنت", "الإدارة"].includes(x.owner)) meta.append(el("span", "small muted", "المسؤول: " + x.owner));
+  if (meta.children.length) c.append(meta);
+  if (x.act && x.act.t !== "none") { const b = el("button", "hbtn", DEC_ACT[x.act.t] || "افتح"); b.type = "button"; b.setAttribute("aria-label", (DEC_ACT[x.act.t] || "افتح") + ": " + x.title); b.onclick = () => doAct(x.act, x); c.append(b); }
+  return c;
+}
 function home3(m) {
   const H = D.home, F = D.fc;
   m.append(hero());
-  const cut = (t) => (t.length > 90 ? t.slice(0, 88).replace(/\s+\S*$/, "") + "…" : t);
-  const steps = H.decide.slice(0, 5).map((x) => [x.title, x.impact ? kf(x.impact) : "افتح", () => doAct(x.act, x), cut([x.owner, x.cause].filter(Boolean).join(" · "))]);
-  const dqN = dqOpen().length;
-  if (dqN) steps.push(["بيانات ناقصة أو غير مطابقة تؤثر على الأرقام", dqN, () => more("dq"), dqMine() ? dqMine() + " منها عليك" : ""]);
-  if (H.counts.queue) steps.push(["تحديث توقعات المشاريع", H.counts.queue, () => more("fcq"), "الأكبر مبلغاً والأقل يقيناً أولاً"]);
-  if (H.decide.length > 5) steps.push(["كل القرارات", H.decide.length, () => more("decide"), ""]);
-  m.append(startHere(steps));
-  m.append(answers(H, F));
-  m.append(w13Box(F, false));
+  const all = H.decide || [];
+  const dec = all.filter((x) => !HEST(x) && !HALERT(x));
+  const decP = new Set(dec.map((x) => x.project).filter(Boolean));
+  // an alert about a project that already has a decision above is said there, not twice
+  const alerts = all.filter((x) => HALERT(x) && !decP.has(x.project));
+  const est = all.filter(HEST);
+  // what is missing and is mine to move — the data items, not the management decisions (those are above)
+  const mine = dqOpen().filter((i) => i.can && i.kind !== "decision" && !(D.dqMe && D.dqMe.admin && i.owner.role !== "admin"));
+  const mineAll = (D.items || []).filter((i) => i.can && i.kind !== "decision" && !(D.dqMe && D.dqMe.admin && i.owner.role !== "admin"));
+  const gaps = mine.slice().sort((a, b) => (b.affects || []).length - (a.affects || []).length);
+
+  // one line: the size of the day
+  const sum = el("div", "hsum"); sum.setAttribute("role", "list");
+  // each chip jumps to its section (the sections carry the same ids)
+  const chip = (n, text, none, tone, id) => {
+    const a = el("a", "hchip " + (n ? tone : "ok"), n ? text : none); a.setAttribute("role", "listitem"); a.href = "#" + id;
+    a.onclick = (e) => { e.preventDefault(); const t = $(id); if (t) t.scrollIntoView({ behavior: "smooth", block: "start" }); };
+    return a;
+  };
+  sum.append(chip(dec.length, arN(dec.length, "قرار ينتظرك", "قراران ينتظرانك", "قرارات تنتظرك", "قراراً ينتظرك"), "لا قرارات تنتظرك", "bad", "h-dec"),
+    ...(D.items ? [chip(mine.length, arN(mine.length, "بند ناقص عليك", "بندان ناقصان عليك", "بنود ناقصة عليك", "بنداً ناقصاً عليك"), "لا نواقص عليك", "warn", "h-gap")] : []),
+    chip(alerts.length, arN(alerts.length, "تنبيه", "تنبيهان", "تنبيهات", "تنبيهاً"), "لا تنبيهات", "eng", "h-al"));
+  m.append(sum);
+
+  // 1. decisions only you can take — three at most
+  {
+    const s = el("section", "hsec"); s.id = "h-dec"; s.setAttribute("aria-labelledby", "h-dec-t");
+    const hd = el("div", "hsh"); const h = el("h2", "", "قرارات تنتظرك"); h.id = "h-dec-t"; hd.append(h, el("span", "small muted", "الأهم أولاً — يُحسم من هنا"));
+    s.append(hd);
+    if (!dec.length) s.append(el("p", "hnone", "لا قرار ينتظرك اليوم ✓"));
+    else {
+      const L = el("div", "hlist"); dec.slice(0, 3).forEach((x) => L.append(homeDec(x))); s.append(L);
+      if (dec.length > 3) { const b = el("button", "lnk", "و" + arN(dec.length - 3, "قرار آخر", "قراران آخران", "قرارات أخرى", "قراراً آخر") + " ←"); b.type = "button"; b.onclick = () => more("decide"); s.append(b); }
+    }
+    m.append(s);
+  }
+
+  // 2. what is missing — until it is entered the figures below stay estimates
+  if (D.items) {
+    const s = el("section", "hsec"); s.id = "h-gap"; s.setAttribute("aria-labelledby", "h-gap-t");
+    const hd = el("div", "hsh"); const h = el("h2", "", "ناقص يمنع الأرقام الصحيحة"); h.id = "h-gap-t"; hd.append(h, el("span", "small muted", "أكمله وتصير الأرقام فعلية"));
+    s.append(hd);
+    if (!mine.length) s.append(el("p", "hnone", "لا نواقص عليك ✓" + (dqOpen().length ? " — " + arN(dqOpen().length, "بند واحد", "بندان", "بنود", "بنداً") + " على غيرك" : "")));
+    else {
+      const done = mineAll.length - mine.length;
+      const pr = el("div", "hprog"); pr.append(el("span", "", "عليك " + mine.length + (mineAll.length > mine.length ? " — أُكمل " + done + " من " + mineAll.length : "")));
+      const bar = el("div", "hbar"); bar.setAttribute("role", "img"); bar.setAttribute("aria-label", "أُكمل " + done + " من " + mineAll.length); const i = el("i"); i.style.width = (mineAll.length ? Math.max(2, 100 * done / mineAll.length) : 0) + "%"; bar.append(i); pr.append(bar);
+      s.append(pr);
+      const g = el("div", "hgaps");
+      gaps.slice(0, 3).forEach((it) => {
+        const b = el("button", "hgap"); b.type = "button";
+        b.append(el("b", "", sar(it.title)));
+        if ((it.affects || []).length) b.append(el("span", "small muted", "يصحّح: " + it.affects.map((a) => DQ_AFF[a] || a).join("، ")));
+        b.onclick = () => dqDialog(it); g.append(b);
+      });
+      s.append(g);
+      const go = el("button", "hbtn", mine.length > 3 ? "كل النواقص عليك (" + mine.length + ")" : "افتح القائمة"); go.type = "button"; go.onclick = () => { DQF = "mine"; more("dq"); }; s.append(go);
+    }
+    m.append(s);
+  }
+
+  // 3. alerts built on recorded facts
+  {
+    const s = el("section", "hsec"); s.id = "h-al"; s.setAttribute("aria-labelledby", "h-al-t");
+    const hd = el("div", "hsh"); const h = el("h2", "", "تنبيهات موثوقة"); h.id = "h-al-t"; hd.append(h, el("span", "small muted", "مبنية على أرقام مسجّلة"));
+    s.append(hd);
+    if (!alerts.length) s.append(el("p", "hnone", "لا تنبيهات ✓"));
+    else { const L = el("div", "hlist"); alerts.slice(0, 3).forEach((x) => L.append(homeDec(x))); s.append(L); if (alerts.length > 3) { const b = el("button", "lnk", "كل التنبيهات (" + alerts.length + ") ←"); b.type = "button"; b.onclick = () => more("decide"); s.append(b); } }
+    m.append(s);
+  }
+
+  // 4. estimates, folded — never the first thing on the page
+  const det = el("details", "hest"), sm = el("summary");
+  sm.append(el("b", "", "أرقام تقديرية"), el("span", "pill prov", "تقديري"), el("span", "small muted", mine.length ? "لا تُعتمد قبل إكمال الناقص" : "مبنية على توقع"));
+  det.append(sm);
+  const inner = el("div", "hest-in");
+  if (est.length) { const L = el("div", "hlist"); est.forEach((x) => L.append(homeDec({ ...x, title: String(x.title).replace(/^تقديري:\s*/, "") }))); inner.append(L); }
+  inner.append(answers(H, F));
+  inner.append(w13Box(F, false));
+  if (H.counts.queue) { const b = el("button", "lnk", "تحديث توقعات " + arN(H.counts.queue, "مشروع", "مشروعين", "مشاريع", "مشروعاً") + " — الأكبر مبلغاً والأقل يقيناً أولاً ←"); b.type = "button"; b.onclick = () => more("fcq"); inner.append(b); }
+  det.append(inner);
+  m.append(det);
   if (AUD) {
     const B = F.cash.scenarios.base;
     const K = homeK(AUD).map((k) => {
@@ -4249,8 +4409,11 @@ function home3(m) {
       if (k.est === "profit") { const bm = F.totals.benchmark || { n: 0 }, cv = F.totals.coverage; return { ...k, label: "ربح المشاريع المشمولة فقط", value: fmt(F.totals.profit), sub: "تقديري · " + (cv ? cv.included.n + " من " + cv.all + " مشروعاً — ليس ربح المحفظة" : "بلا " + (F.totals.unavailable + F.totals.loss) + " مشاريع بلا تقدير كامل"), flag: bm.n ? ["warn", bm.n + " مشاريع ربحها من نسبة غير موثّقة: " + fmt(bm.profit) + " خارج المجموع"] : F.totals.high ? ["warn", F.totals.high + " بهامش يحتاج تحقق"] : null }; }
       return k;
     });
-    m.append(ledger(K));
-    if (D.prov) m.append(provBox());
+    // the money figures, folded: recorded ones as they are, estimated rows keep their own «تقديري» marker
+    const nd = el("details", "hest hnum"), ns = el("summary");
+    ns.append(el("b", "", "الأرقام الرئيسية"), el("span", "small muted", "يدخل · يخرج · النقد"));
+    nd.append(ns); const ni = el("div", "hest-in"); ni.append(ledger(K)); if (D.prov) ni.append(provBox()); nd.append(ni);
+    m.insertBefore(nd, det);
   }
 }
 function answers(H, F) {
