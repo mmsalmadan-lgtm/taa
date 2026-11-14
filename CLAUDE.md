@@ -172,7 +172,7 @@ card or page · finance things live under المالية, purchases under الم
   and sign-out (`acctShut()` in `signedOut`). On the desk `#acctMenu` is `display:contents`; DOM order = screen order = focus order
   (update, language, alerts, PIN, sign out) — no CSS reordering.
 - Header name (owner, 15 Nov 2026): «المهندس/المهندسة» shows as «م.» («Eng.» in English), after trimming spaces and direction marks;
-  the name wraps (`overflow-wrap:break-word`, never mid-letter) instead of being cut — two lines at most below 1080 px, where it shares
+  one helper `nameOf()` (load and language switch; `hero()` uses `nameClean()`); the name wraps instead of being cut — three lines at most on the desk (full name in the tooltip), two below 1080 px, where it shares
   the row with «الحساب».
 - «مساحتي»: an empty «بانتظار اعتمادي» / «متأخر» section is not drawn (its chip already says «لا …»). Chips jump to the section that
   actually holds their first item (`secOf` — an overdue task with no update sits in «يحتاج تحديثاً منك») and move focus there; a count of
