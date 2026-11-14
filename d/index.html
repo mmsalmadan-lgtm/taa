@@ -56,7 +56,7 @@ h1,h2,h3{font-family:var(--f-disp);font-weight:600;letter-spacing:0}
 .brand{display:flex;align-items:center;gap:11px;min-width:0;flex:1}
 .logo{width:36px;height:36px;border-radius:10px;background:var(--brand);color:#fff;font-family:var(--f-disp);font-weight:700;display:grid;place-items:center;font-size:19px;flex:none;line-height:1}
 .gh-t{display:flex;flex-direction:column;line-height:1.3;min-width:0;flex:1}
-.gh-t b{font-family:var(--f-disp);font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gh-t b{font-family:var(--f-disp);font-size:16px;font-weight:600;line-height:1.35;overflow-wrap:break-word;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;line-clamp:3;overflow:hidden} /* a full name wraps instead of being cut («…آل مدن», owner 15 Nov 2026) */
 .gh-t span{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .badge{font-size:12px;padding:3px 10px;border-radius:999px;background:var(--warn1);color:var(--warn);white-space:nowrap;font-weight:600}
 .badge.ok{background:var(--acc1);color:var(--acc9)}.badge.bad{background:var(--crit1);color:var(--crit)}
@@ -71,6 +71,7 @@ h1,h2,h3{font-family:var(--f-disp);font-weight:600;letter-spacing:0}
    opens under «الحساب» without moving it */
 @media (max-width:1079px){
  .gh-t span{white-space:normal}
+ .gh-t b{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;overflow-wrap:break-word}
  .acct-t{display:inline-flex;align-items:center}
  .gh-a{flex-basis:auto;margin-inline-start:auto;flex-wrap:nowrap;position:relative}
  .acct-m{display:none}
@@ -345,7 +346,7 @@ label.chk{display:inline-flex;align-items:center;gap:6px;margin-inline-end:14px;
 /* home (14 Nov 2026): what waits → decisions → missing → alerts → folded figures and estimates */
 .hsum{display:flex;flex-wrap:wrap;gap:8px}
 .hchip{display:inline-flex;align-items:center;min-height:36px;padding:4px 14px;border-radius:999px;font-weight:600;font-size:14px;text-decoration:none;border:1px solid transparent;transition:filter .15s}
-.hchip:hover{filter:brightness(.97)}.hchip:focus-visible{outline:2px solid var(--ui);outline-offset:2px}
+.hchip:hover{filter:brightness(.97)}.hchip.none{cursor:default}.hchip.none:hover{filter:none}.hsec:focus{outline:none}.hsec:focus-visible{outline:2px solid var(--ui);outline-offset:2px}.hchip:focus-visible{outline:2px solid var(--ui);outline-offset:2px}
 .hchip.bad{background:var(--crit1);color:var(--crit)}.hchip.warn{background:var(--warn1);color:var(--warn)}.hchip.eng{background:var(--eng1);color:var(--eng9)}.hchip.ok{background:var(--acc1);color:var(--acc9)}
 @media (pointer:coarse){.hchip{min-height:44px}}
 .hsec{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:18px 20px;display:flex;flex-direction:column;gap:12px;scroll-margin-top:84px}
@@ -531,6 +532,8 @@ main.enter>*:nth-child(2){animation-delay:30ms}main.enter>*:nth-child(3){animati
  main{padding-top:16px;gap:14px}
  .grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}.grid>.card{padding:11px;gap:8px;border-radius:10px}
  .card .t{font-size:13.5px}.card .st{margin-top:-6px}.kv{font-size:12.5px;grid-template-columns:1fr;gap:1px}.kv b{text-align:start;margin-bottom:4px}
+ /* «مساحتي»'s one-column card lists have the width for label | value side by side (scoped there; other lists keep the stacked phone layout) */
+ .hsec .clist .kv,.hest-in .clist .kv{grid-template-columns:auto minmax(0,1fr);gap:4px 12px}.hsec .clist .kv b,.hest-in .clist .kv b{margin-bottom:0}
  .amt{font-size:15.5px}.ring{width:44px;height:44px}.pc .mid{gap:8px}
  .kpis{border-radius:var(--r-m)}.kpi{flex-basis:140px}
  .pill{font-size:11px;padding:1px 8px}.kpi{padding:12px 13px}.kpi .v{font-size:17px}.kpi::before{top:14px}
@@ -3047,9 +3050,14 @@ function applyLang() {
   if (en) { trTree(document.body); TRO.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: TR_ATTR }); }
   else { TRO.disconnect(); unTree(document.body); }
 }
+// a person's name for the header: invisible direction marks removed, «المهندس/المهندسة» shortened to «م.» («Eng.» in English) — owner,
+// 15 Nov 2026. The greeting (hero) takes the same cleaned name.
+const nameClean = (n) => String(n || "").replace(/[\u200e\u200f\u061c\u202a-\u202e\u2066-\u2069\ufeff]/g, "").trim();
+const nameOf = (n) => nameClean(n).replace(/^(المهندس|المهندسة)\s+/, LANG === "en" ? "Eng. " : "م. ");
 function setLang(l) {
   LANG = l; try { localStorage.setItem(LK, l); } catch {}
   if (l === "ar") applyLang();
+  if (D) { const w = $("who"); w.textContent = nameOf(D.name); w.title = w.textContent; } // «م.» / «Eng.» follow the language
   if (D && !$("tabs").hidden) draw(); // dates and greetings are rebuilt in the chosen language
   if (l === "en") applyLang();
 }
@@ -3577,7 +3585,7 @@ function wsLead(l) {
   return c;
 }
 function wsSec(m, id, title, sub, cards, empty, max) {
-  const s = el("section", "hsec"); s.id = id; const hd = el("div", "hsh"); const h = el("h2", "", title); hd.append(h, el("span", "small muted", sub)); s.append(hd);
+  const s = el("section", "hsec"); s.id = id; const hd = el("div", "hsh"); const h = el("h2", "", title); h.id = id + "-t"; s.setAttribute("aria-labelledby", h.id); hd.append(h, el("span", "small muted", sub)); s.append(hd);
   if (!cards.length) { s.append(el("p", "hnone", empty)); m.append(s); return; }
   const g = el("div", "clist"); cards.slice(0, max || 5).forEach((x) => g.append(x.tagName ? x : wsCard(x))); s.append(g);
   if (cards.length > (max || 5)) s.append(el("div", "small muted", "و" + arN(cards.length - (max || 5), "بند آخر", "بندان آخران", "بنود أخرى", "بنداً آخر") + " — في «كل بنودي» أسفل الصفحة"));
@@ -3587,9 +3595,15 @@ function wsView(m) {
   const W = D.ws, card = (id) => W.cards.find((x) => x.id === id), shown = new Set();
   const take = (xs) => xs.filter((x) => x && !shown.has(x.id)).map((x) => (shown.add(x.id), x));
   m.append(hero());
-  m.append(el("div", "small muted ws-who", [...W.who.roles, W.scope.kind === "projects" ? arN(W.scope.n, "مشروع واحد مسند لك", "مشروعان مسندان لك", "مشاريع مسندة لك", "مشروعاً مسنداً لك") : "كل المشاريع"].join(" · ")));
-  for (const p of W.covering || []) { const d = el("div", "banner"); d.append(el("b", "", "تغطّي " + p.name + " حتى " + dmy(p.until)), el("div", "small", "بنوده تظهر هنا بعلامة «نيابة عن»"), el("div", "small", p.roles.join(" · "))); m.append(d); }
   const R = W.who.roles.join(" "), role = WSROLE.find((r) => r.re.test(R));
+  // sales and pricing work on customers, not on projects: no «0 مشاريع مسندة لك» line and no «no project assigned» warning for a
+  // person whose every role is customer work (anyone who also has a project role still sees both) — critique 14 Nov 2026
+  // whole role names as the bot's admin.ts ROLES writes them — a role that merely contains the word (e.g. «مهندس التسعير») is not one
+  const CUST_ROLES = new Set(["المبيعات", "التسعير وعروض الأسعار"]);
+  const custOnly = W.who.roles.length > 0 && W.who.roles.every((r) => CUST_ROLES.has(String(r).trim()));
+  const scopeT = W.scope.kind === "projects" ? (custOnly && !W.scope.n ? "" : arN(W.scope.n, "مشروع واحد مسند لك", "مشروعان مسندان لك", "مشاريع مسندة لك", "مشروعاً مسنداً لك")) : "كل المشاريع";
+  m.append(el("div", "small muted ws-who", [...W.who.roles, scopeT].filter(Boolean).join(" · ")));
+  for (const p of W.covering || []) { const d = el("div", "banner"); d.append(el("b", "", "تغطّي " + p.name + " حتى " + dmy(p.until)), el("div", "small", "بنوده تظهر هنا بعلامة «نيابة عن»"), el("div", "small", p.roles.join(" · "))); m.append(d); }
   // sort: overdue, due today, approvals, decisions, dated, the rest (the server's own «today» order first)
   const ord = new Map(W.today.map((id, i) => [id, i]));
   const byPrio = (a, b) => (ord.has(a.id) ? ord.get(a.id) : 99) - (ord.has(b.id) ? ord.get(b.id) : 99) || (b.overdue - a.overdue) || String(a.due || "9").localeCompare(String(b.due || "9"));
@@ -3604,29 +3618,46 @@ function wsView(m) {
   const late = take(W.overdue.map(card).filter(Boolean));
   const rest = take(live.filter((x) => x.grp === "tasks" || (x.grp === "talks" && x.acts.some((a) => a.t === "chat"))));
   // every approval and overdue item of mine, wherever it is shown (the role's first section may already hold them)
-  const n = (xs) => xs.length, lateAll = W.overdue.length, apprAll = live.filter((x) => x.grp === "approvals").length;
-  // one line: the size of the day
+  const lateCards = W.overdue.map(card).filter(Boolean);   // ids the server lists but did not send as cards are not counted
+  const n = (xs) => xs.length, lateAll = lateCards.length, apprAll = live.filter((x) => x.grp === "approvals").length;
+  // a chip jumps to the section that actually holds its first item (an overdue task with no update sits in «يحتاج تحديثاً منك»)
+  // only the cards a section actually draws count (wsSec shows the first 5, «مهام أخرى» 4, the role section 6 with the leads first);
+  // an item past that is reached through «كل بنودي» opened on its group
+  const SECS = [["ws-first", [...leads, ...first].slice(0, 6)], ["ws-appr", appr.slice(0, 5)], ["ws-upd", upd.slice(0, 5)], ["ws-late", late.slice(0, 5)], ["ws-rest", rest.slice(0, 4)]];
+  const secOf = (xs, grp) => { for (const x of xs) for (const [id, list] of SECS) if (list.some((y) => y.id === x.id) && (id !== "ws-first" || role)) return id; return xs.length ? "ws-all:" + grp : ""; };
+  // one line: the size of the day — a chip with a count is a link to where its first item is; «لا …» is a plain label
   const sum = el("div", "hsum");
-  const chip = (k, t, tone, id) => { const a = el("a", "hchip " + (k ? tone : "ok"), t); a.href = "#" + id; a.onclick = (e) => { e.preventDefault(); const x = $(id); if (x) x.scrollIntoView({ behavior: "smooth", block: "start" }); }; return a; };
+  const chip = (k, t, tone, id) => {
+    if (!k || !id) return el("span", "hchip " + (k ? tone : "ok") + " none", t);
+    const a = el("a", "hchip " + tone, t);
+    if (id.startsWith("ws-all:")) { a.href = "#ws-all"; a.onclick = (e) => { e.preventDefault(); WSG = id.slice(7); WSOPEN = true; draw(); const x = $("ws-all"); if (x) { x.scrollIntoView({ block: "start" }); x.querySelector("summary").focus({ preventScroll: true }); } }; return a; }
+    a.href = "#" + id;
+    a.onclick = (e) => { e.preventDefault(); const x = $(id); if (x) { x.scrollIntoView({ behavior: "smooth", block: "start" }); x.setAttribute("tabindex", "-1"); x.focus({ preventScroll: true }); } };
+    return a;
+  };
   const firstN = n(first) + n(leads);
-  if (role) sum.append(chip(firstN, firstN ? role.t + " " + firstN : role.t + ": لا شيء", "eng", "ws-first"));
-  sum.append(chip(apprAll, apprAll ? arN(apprAll, "اعتماد ينتظرك", "اعتمادان ينتظرانك", "اعتمادات تنتظرك", "اعتماداً ينتظرك") : "لا اعتمادات", "bad", n(appr) || !apprAll ? "ws-appr" : "ws-first"),
-    chip(lateAll, lateAll ? arN(lateAll, "بند متأخر", "بندان متأخران", "بنود متأخرة", "بنداً متأخراً") : "لا متأخر", "bad", n(late) ? "ws-late" : "ws-first"));
+  // the role chip always points at its section (drawn even when empty, with its own «لا شيء» line)
+  if (role) sum.append(chip(1, firstN ? role.t + " " + firstN : role.t + ": لا شيء", firstN ? "eng" : "ok", "ws-first"));
+  sum.append(chip(apprAll, apprAll ? arN(apprAll, "اعتماد ينتظرك", "اعتمادان ينتظرانك", "اعتمادات تنتظرك", "اعتماداً ينتظرك") : "لا اعتمادات", "bad", secOf(live.filter((x) => x.grp === "approvals"), "approvals")),
+    chip(lateAll, lateAll ? arN(lateAll, "بند متأخر", "بندان متأخران", "بنود متأخرة", "بنداً متأخراً") : "لا متأخر", "bad", secOf(lateCards, "overdue")));
   m.append(sum);
   if (role) wsSec(m, "ws-first", role.t, role.sub, [...leads.map(wsLead), ...first], role.leads ? "لا شيء ينتظرك في المبيعات الآن ✓" : "لا شيء عليك اليوم في السجلات ✓", 6);
-  if (n(appr) || !apprAll) wsSec(m, "ws-appr", "بانتظار اعتمادي", "يُحسم من البطاقة نفسها", appr, "لا اعتمادات بانتظارك ✓");
+  // an empty «بانتظار اعتمادي» / «متأخر» is not drawn: its chip already says «لا اعتمادات» / «لا متأخر» (no information twice)
+  if (n(appr)) wsSec(m, "ws-appr", "بانتظار اعتمادي", "يُحسم من البطاقة نفسها", appr, "");
   if (upd.length) wsSec(m, "ws-upd", "يحتاج تحديثاً منك", "بنود عليك بلا تحديث مسجّل أو ينقصها شيء", upd, "");
-  if (n(late) || !lateAll) wsSec(m, "ws-late", "متأخر", "فات موعده", late, "لا بند متأخر عليك ✓");
+  if (n(late)) wsSec(m, "ws-late", "متأخر", "فات موعده", late, "");
   if (rest.length) wsSec(m, "ws-rest", "مهام أخرى عليك", "الأقرب موعداً أولاً", rest, "", 4);
   if (!role && !n(appr) && !n(late) && !n(upd) && !n(rest)) m.append(el("p", "hnone", "لا شيء عليك اليوم ✓"));
-  for (const t of (W.gaps || []).filter((t) => !/^تغطّي /.test(t) && !(W.team && /بلا مسؤول محدد/.test(t)))) m.append(el("div", "banner", t));
+  for (const t of (W.gaps || []).filter((t) => !/^تغطّي /.test(t) && !(W.team && /بلا مسؤول محدد/.test(t)) && !(custOnly && /^لا مشروع مسند لك/.test(t)))) m.append(el("div", "banner", t));
   // folded: everything by type (waiting on others, talks, documents, the full lists)
-  const det = el("details", "hest"), sm = el("summary"); sm.append(el("b", "", "كل بنودي"), el("span", "small muted", "بانتظار غيري · محادثات · مستندات · القوائم كاملة")); det.append(sm);
+  const det = el("details", "hest"), sm = el("summary"); det.id = "ws-all"; sm.append(el("b", "", "كل بنودي"), el("span", "small muted", "بانتظار غيري · محادثات · مستندات · القوائم كاملة")); det.append(sm);
   const inner = el("div", "hest-in"), by = (g) => (g === "today" ? W.today.map(card) : g === "overdue" ? W.overdue.map(card) : W.cards.filter((x) => x.grp === g)).filter(Boolean);
   const bar = el("div", "filters docf");
-  for (const [k, t] of WSGRP) { const c = W.counts[k]; if (!c && !["today", "tasks"].includes(k)) continue; const b = el("button", "chip"); b.append(el("span", "", t), el("span", "k", " " + c)); b.type = "button"; b.setAttribute("aria-pressed", String(WSG === k)); b.onclick = () => { WSG = k; WSOPEN = true; draw(); }; bar.append(b); }
+  // today / overdue are counted from the cards actually listed, the same count as the chips above (one answer per question)
+  const cnt = (k) => (k === "today" || k === "overdue" ? by(k).length : W.counts[k]);
+  for (const [k, t] of WSGRP) { const c = cnt(k); if (!c && !["today", "tasks"].includes(k)) continue; const b = el("button", "chip"); b.append(el("span", "", t), el("span", "k", " " + c)); b.type = "button"; b.setAttribute("aria-pressed", String(WSG === k)); b.onclick = () => { WSG = k; WSOPEN = true; draw(); }; bar.append(b); }
   inner.append(bar);
-  if (!W.counts[WSG] && !["today", "tasks"].includes(WSG)) WSG = "today";
+  if (!cnt(WSG) && !["today", "tasks"].includes(WSG)) WSG = "today";
   const list = by(WSG);
   if (!list.length) inner.append(el("div", "empty", WSEMPTY[WSG]));
   else { const g = el("div", "clist"); for (const x of list.slice(0, 60)) g.append(wsCard(x)); inner.append(g); if (list.length > 60) inner.append(el("div", "small muted", "يظهر أول 60 بنداً")); }
@@ -4980,7 +5011,7 @@ let introDone = false;
 function hero() {
   const h = el("header", "hero"), now = new Date(), hr = now.getHours();
   // the first word that is a name, not a title («م.»، «المهندس», «Eng.»)
-  const first = String((D && D.name) || "").trim().split(/\s+/).find((w) => !/^(م\.?|المهندس|المهندسة|الأستاذ|أ\.|د\.|Eng\.?|Mr\.?)$/i.test(w)) || "";
+  const first = nameClean(D && D.name).split(/\s+/).find((w) => !/^(م\.?|المهندس|المهندسة|الأستاذ|أ\.|د\.|Eng\.?|Mr\.?)$/i.test(w)) || "";
   h.append(el("div", "date", now.toLocaleDateString(LANG === "en" ? "en-GB" : "ar-SA-u-nu-latn-ca-gregory", { weekday: "long", day: "numeric", month: "long", year: "numeric" })));
   h.append(el("h1", "", (hr < 12 ? "صباح الخير" : "مساء الخير") + (first ? "، " + first : "")));
   return h;
@@ -6770,7 +6801,7 @@ async function load(keep) {
     if (!r.ok) return fail(r.status === 403 ? "غير مصرح" : "تعذّر التحميل", j.error || "حاول مرة أخرى بعد قليل.");
     if (j.display) return wallStart(j); // the shared office screen: read-only, statuses only
     D = j;
-    $("who").textContent = D.name; $("roles").textContent = D.roles.join(" · ") + " · آخر تحديث " + new Date(D.at).toLocaleTimeString(LANG === "en" ? "en-GB" : "ar-SA-u-nu-latn", { hour: "2-digit", minute: "2-digit" });
+    $("who").textContent = nameOf(D.name); $("who").title = $("who").textContent; $("roles").textContent = D.roles.join(" · ") + " · آخر تحديث " + new Date(D.at).toLocaleTimeString(LANG === "en" ? "en-GB" : "ar-SA-u-nu-latn", { hour: "2-digit", minute: "2-digit" });
     const mo = $("mode"); mo.hidden = false; mo.replaceChildren(el("span", "bl", "الوضع: "), document.createTextNode(D.mode)); mo.className = "badge" + (D.mode === "فعلي" ? " ok" : D.mode === "إيقاف آمن" ? " bad" : "");
     $("reload").hidden = $("pinBtn").hidden = $("outBtn").hidden = $("bellBtn").hidden = false; pushSync();
     if (!keep) view = D.ws && !D.ws.team ? "ws" : "home"; // management lands on the company overview; everyone else on his own workspace

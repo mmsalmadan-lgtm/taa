@@ -171,6 +171,15 @@ card or page · finance things live under المالية, purchases under الم
   dialog, `ACCT_BACK`), a tap outside (swallowed, so it never presses what lies under it), focus leaving it, Escape, crossing the breakpoint,
   and sign-out (`acctShut()` in `signedOut`). On the desk `#acctMenu` is `display:contents`; DOM order = screen order = focus order
   (update, language, alerts, PIN, sign out) — no CSS reordering.
+- Header name (owner, 15 Nov 2026): «المهندس/المهندسة» shows as «م.» («Eng.» in English), after trimming spaces and direction marks;
+  one helper `nameOf()` (load and language switch; `hero()` uses `nameClean()`); the name wraps instead of being cut — three lines at most on the desk (full name in the tooltip), two below 1080 px, where it shares
+  the row with «الحساب».
+- «مساحتي»: an empty «بانتظار اعتمادي» / «متأخر» section is not drawn (its chip already says «لا …»). Chips jump to the section that
+  actually holds their first item (`secOf` — an overdue task with no update sits in «يحتاج تحديثاً منك») and move focus there; a count of
+  0, or items no section shows, is a plain label (`.hchip.none`); the role chip always links (its section is always drawn). The overdue
+  count is the overdue ids that resolve to cards. A person whose every role is exactly «المبيعات» or «التسعير وعروض الأسعار» (`CUST_ROLES`,
+  the bot's admin.ts labels) gets no «0 مشاريع مسندة لك» line and no «لا مشروع مسند لك» banner; the bot still sends that gap as text —
+  a bot-side code is the follow-up. On phones «مساحتي»'s one-column lists (`.hsec .clist`, `.hest-in .clist`) keep label | value side by side.
 - Not built yet: ranking by «what it unblocks» (the bot ranks by money × urgency), one-press execution for decisions that have no action in
   the bot, and the same layout for non-money roles.
 
