@@ -519,6 +519,83 @@ button.card.act{cursor:pointer;font:inherit}
 body.chatonly footer{display:none}
 .assist{position:relative;max-width:860px}
 .assist .chatin{position:sticky;bottom:0;background:var(--surface);padding:10px 0 calc(6px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);margin-top:6px}
+/* ===== «مركز القيادة»: statuses carry a glyph and a word, never colour alone; freshness is its own line ===== */
+.syncb{display:flex;flex-wrap:wrap;gap:8px}
+.syncb .sy{display:flex;align-items:baseline;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 14px;font-size:13px}
+.syncb .sy span{color:var(--muted)}.syncb .sy b{font-weight:600;font-variant-numeric:tabular-nums}
+.syncb .sy em{font-style:normal;font-size:11.5px;font-weight:600;color:var(--warn);background:var(--warn1);border-radius:999px;padding:0 8px}
+.syncb .sy.old{border-color:color-mix(in srgb,var(--warn6) 45%,var(--line))}
+.stt{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;line-height:1.5}
+.stt i{font-style:normal;display:inline-grid;place-items:center;width:18px;height:18px;border-radius:5px;font-size:11px;font-weight:700;color:#fff;background:var(--muted)}
+.stt.bad{color:var(--crit)}.stt.bad i{background:var(--crit)}
+.stt.warn{color:var(--warn)}.stt.warn i{background:var(--warn6);border-radius:3px 3px 9px 9px}
+.stt.unk{color:var(--muted)}.stt.unk i{background:transparent;color:var(--muted);border:1.5px dashed var(--muted);border-radius:50%}
+.stt.ok{color:var(--acc9)}.stt.ok i{background:var(--acc6);border-radius:50%}
+.cptop{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:space-between}
+.fresh{font-size:12px;color:var(--muted);margin-top:-6px}.fresh.stale,.fresh.none{color:var(--warn);font-weight:600}
+.mapnote{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--muted);background:var(--sunk);border:1px dashed var(--line-2);border-radius:var(--r-m);padding:10px 14px;max-width:96ch}
+.mapnote svg{flex:none;width:18px;height:18px;stroke:var(--muted);fill:none;stroke-width:1.6;margin-top:2px}
+.ivl{display:flex;flex-direction:column;gap:6px;font-size:13px}
+.ivl .pr,.ivl .ac{background:var(--sunk);border-radius:var(--r-s);padding:7px 10px;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center}
+.ivl .pr::before{content:"وعد";font-size:11px;font-weight:600;color:var(--warn);background:var(--warn1);border-radius:999px;padding:0 8px}
+.ivl .ac.done{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--line-2)}
+.ivl .ac .sbtn{margin-inline-start:auto}
+.hist{font-size:12.5px;color:var(--muted)}.hist summary{cursor:pointer;font-weight:600;color:var(--ink)}.hist ol{margin:6px 0 0;padding-inline-start:18px}
+.clist{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:12px}
+.checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px;font-size:13px}
+.checks li{display:grid;grid-template-columns:20px minmax(0,1fr);gap:2px 8px}
+.checks li i{font-style:normal;grid-row:span 2;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700}
+.checks li.ok i{background:var(--acc1);color:var(--acc9)}.checks li.no i{background:var(--crit1);color:var(--crit)}.checks li.unk i{border:1.5px dashed var(--muted);color:var(--muted)}
+.checks li small{color:var(--muted);font-size:12px}
+/* the collection ladder: seven steps on one rule — filled = established by a record, hollow = not yet, dashed = not recorded */
+.lad{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));list-style:none;margin:2px 0 0;padding:0;position:relative}
+.lad::before{content:"";position:absolute;inset-inline:7%;top:6px;height:1.5px;background:var(--line-2)}
+.lad li{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10.5px;color:var(--muted);text-align:center;line-height:1.3}
+.lad li i{width:13px;height:13px;border-radius:50%;background:var(--surface);border:2px solid var(--muted);position:relative}
+.lad li.y i{background:var(--acc6);border-color:var(--acc6)}.lad li.u i{border-style:dashed;border-color:var(--faint)}
+.lad li.cur span{color:var(--ink);font-weight:600}
+.lad.lg{max-width:620px}.lad.lg li{font-size:12px}
+.card .lad span{display:none}.lad li.cur i{box-shadow:0 0 0 3px var(--acc1)}
+.prot{gap:10px}.prot h3{margin:0;font-size:16px;font-family:var(--f-disp);font-weight:600}
+.prot .big{font-family:var(--f-disp);font-size:19px;font-weight:600;line-height:1.4}.prot .big.bad{color:var(--crit)}.prot .big.ok{color:var(--acc9)}
+.prot ul{margin:0;padding-inline-start:18px;font-size:13px}.prot .kv{max-width:520px}
+.w13.d28{grid-template-columns:repeat(28,minmax(0,1fr));gap:2px;height:110px}.w13.d28 .c i{inset-inline:6%}
+.w13 .fl{position:absolute;inset-inline:0;border-top:1.5px dashed var(--warn6)}
+.w13.d28 .c i.u{background:color-mix(in srgb,var(--warn6) 75%,var(--surface))}
+.dsec{margin:14px 0 0}.dsec h4{margin:0 0 6px;font-size:14px;font-family:var(--f-disp);font-weight:600}.dsec ul{margin:0;padding-inline-start:18px;font-size:14px;line-height:1.8}.dsec p{margin:0;font-size:14px}
+.agenda{counter-reset:ag}.agenda>.sec-h h2::before{counter-increment:ag;content:counter(ag) ". ";color:var(--muted)}
+/* the wall display: one shared screen, read-only, large type, no amounts */
+body.wallmode .side,body.wallmode footer{display:none!important}body.wallmode{display:block}
+body.wallmode main{max-width:none;padding:24px 32px;gap:18px}
+.wall{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,26%);gap:22px;align-items:start}
+@media (max-width:980px){.wall{grid-template-columns:1fr}}
+.wtop{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.wtop h1{margin:0;font-family:var(--f-disp);font-size:clamp(24px,2.4vw,40px);font-weight:600}
+.wtop .clock{font-family:var(--f-disp);font-size:clamp(20px,1.8vw,30px);font-variant-numeric:tabular-nums;color:var(--muted)}
+.wtop .wsp{flex:1}
+.wcounts{display:flex;gap:10px;flex-wrap:wrap}.wcounts>span{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 16px;font-size:clamp(14px,1.1vw,19px)}
+.wcounts b{font-family:var(--f-disp);font-size:1.25em;font-variant-numeric:tabular-nums}
+.wpanel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:20px 22px;min-height:60vh;position:relative;overflow:hidden}
+.wpanel h2{margin:0 0 14px;font-family:var(--f-disp);font-size:clamp(20px,1.7vw,30px);font-weight:600}
+.wprog{position:absolute;inset-inline:0;top:0;height:3px;background:var(--track)}.wprog i{display:block;height:100%;background:var(--eng6);width:0}
+.wprog i.run{animation:wprog var(--wdur,20s) linear forwards}.wprog i.hold{animation-play-state:paused}
+@keyframes wprog{to{width:100%}}
+@media (prefers-reduced-motion:reduce){.wprog{display:none}}
+.wgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.wtile{border:1px solid var(--line);border-radius:var(--r-m);padding:12px 14px;display:flex;flex-direction:column;gap:6px;position:relative}
+.wtile.bad{border-color:color-mix(in srgb,var(--crit) 55%,var(--line));box-shadow:inset 3px 0 0 var(--crit)}
+.wtile.warn{box-shadow:inset 3px 0 0 var(--warn6)}
+.wtile .n{font-family:var(--f-disp);font-size:clamp(16px,1.15vw,21px);font-weight:600;line-height:1.35}
+.wtile .m{font-size:clamp(13px,.9vw,16px);color:var(--muted)}.wtile .m.w{color:var(--warn);font-weight:600}
+.wtile .stt{font-size:clamp(13px,.95vw,17px)}
+.wbig{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:16px}
+.wbig div{border:1px solid var(--line);border-radius:var(--r-m);padding:14px 16px}.wbig b{display:block;font-family:var(--f-disp);font-size:clamp(30px,3vw,54px);line-height:1.1;font-variant-numeric:tabular-nums}
+.wbig span{font-size:clamp(14px,1vw,18px);color:var(--muted)}
+.wside{display:flex;flex-direction:column;gap:12px}.wside h2{margin:0;font-family:var(--f-disp);font-size:clamp(18px,1.4vw,24px);font-weight:600}
+.wiv{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);padding:12px 14px;display:flex;flex-direction:column;gap:4px;box-shadow:inset 3px 0 0 var(--warn6)}
+.wiv.bad{box-shadow:inset 3px 0 0 var(--crit)}.wiv b{font-size:clamp(15px,1.05vw,19px);line-height:1.4}.wiv span{font-size:clamp(13px,.9vw,16px);color:var(--muted)}
+.wstale{background:var(--warn1);color:var(--warn);border-radius:var(--r-m);padding:10px 16px;font-weight:600;font-size:clamp(14px,1vw,18px)}
+.wctl{display:flex;gap:8px}
 </style>
 </head>
 <body>
@@ -2027,7 +2104,353 @@ const EN = {
 "تكلفة التنفيذ الموثوقة ({x}) أعلى من المخصص ({n}) — يُعرض للقرار: تعديل النطاق أو الطريقة أو البرنامج أو التجاري. لا يُفرض خفض السعر.": "The credible delivery cost ({x}) is above the allowance ({n}) — for a decision: change the scope, method, programme or commercial terms. The price is not forced down.",
 "بانتظار موافقة المدير المالي": "Awaiting the finance manager's approval", "بانتظار فاتورة المورد": "Awaiting the supplier invoice", "{x} — ناقص": "{x} — short",
 "صباح الخير، {x}": "Good morning, {x}",
-"مساء الخير، {x}": "Good evening, {x}"
+"مساء الخير، {x}": "Good evening, {x}",
+"مركز القيادة": "Command Center",
+"كل المشاريع معاً: ما يجري اليوم، ما يعيقه، ما يحتاج تدخلاً، وما يلزم للوصول إلى كل تحصيل. يقترح النظام، والقرار للمخوّلين.": "Every project at once: what runs today, what blocks it, what needs an intervention, and what it takes to reach each receipt. The system proposes; authorised people decide.",
+"العمليات الآن": "Operations now",
+"خطة الأسبوع": "Weekly plan",
+"بدء المشاريع": "Project starts",
+"التنفيذ والتحصيل": "Execution & collection",
+"اجتماع الإدارة": "Management review",
+"آخر تحديث ميداني": "Last field update",
+"آخر حفظ للأرقام": "Last figures save",
+"آخر مزامنة مع قيود": "Last Qoyod sync",
+"قديم": "Old",
+"منذ يومين": "2 days ago",
+"منذ {n} أيام": "{n} days ago",
+"{n} يوماً": "{n} days",
+"{n} أيام": "{n} days",
+"يوم واحد": "1 day",
+"يومان": "2 days",
+"مشاريع حرجة": "Critical projects",
+"تحتاج متابعة": "Need follow-up",
+"غير متحققة": "Unverified",
+"لا سجل ميداني يُحكم منه": "No field record to judge from",
+"بلا تحديث حديث": "No recent update",
+"التدخلات المطلوبة": "Interventions needed",
+"كل بند بدليله ومسؤوله وموعده وشرط إغلاقه. الوعد يُسجَّل ولا يُغلق البند.": "Each item with its evidence, owner, date and closing condition. A promise is recorded; it does not close the item.",
+"+ تدخل": "+ Intervention",
+"لا تدخلات مفتوحة": "No open interventions",
+"الحالة من السجلات؛ غياب التحديث يعني «غير متحقق» لا «على الوقت» ولا «متأخر»": "Status comes from the records; a missing update means “unverified”, neither “on time” nor “late”",
+"الخريطة: لا توجد إحداثيات موثّقة لمواقع المشاريع بعد، فتظهر المشاريع قائمة. لا يُستعمل مركز المدينة موقعاً للمشروع.": "Map: there are no verified site coordinates yet, so projects are listed. A city centre is never used as a project's location.",
+"حرج": "Critical",
+"لا مشكلة مسجلة": "No recorded problem",
+"محدّث": "Updated",
+"تحديث قديم": "Old update",
+"متوقف التحديث": "Updates stopped",
+"لا تحديث ميداني": "No field update",
+"مغطى في التوقع": "Covered in the forecast",
+"عجز متوقع": "Shortfall expected",
+"مهام اليوم": "Today's tasks",
+"لا مهام معتمدة": "No approved tasks",
+"{n} · {n} متأخر": "{n} · {n} overdue",
+"التمويل": "Funding",
+"التحصيل التالي": "Next receipt",
+"التحصيل التالي: {x}": "Next receipt: {x}",
+"المسؤولون": "Responsible",
+"المهندس: {x}": "Engineer: {x}",
+"مشرف الموقع: {x}": "Site lead: {x}",
+"المشاكل": "Problems",
+"يجري الآن": "Running now",
+"لا نشاط مسجّل كجارٍ": "No activity recorded as running",
+"مهام اليوم وأهدافها": "Today's tasks and targets",
+"لا مهام معتمدة لليوم": "No approved tasks for today",
+"{x}: الهدف {x} · المُبلغ عنه {x} · المقبول {x}": "{x}: target {x} · reported {x} · accepted {x}",
+"الفرق والمعدات": "Teams and equipment",
+"الفرق: {x}": "Teams: {x}",
+"الفرق: لا فريق مسند اليوم": "Teams: none assigned today",
+"المعدات: لا سجل تخصيص معدات — غير معروف": "Equipment: no assignment records — unknown",
+"لا عوائق مفتوحة": "No open constraints",
+"بلا موعد": "No date",
+"الموعد {x}": "Due {x}",
+"(متأخر)": "(overdue)",
+"الجاهزية": "Readiness",
+"طلبات مواد مفتوحة: {n}": "Open material requests: {n}",
+"طلبات مواد مفتوحة: {n} (منها {n} توريد المالك)": "Open material requests: {n} ({n} supplied by the owner)",
+"تصاريح البدء: {n} سارية · {n} موقوفة": "Start permits: {n} active · {n} suspended",
+"فحوصات مفتوحة: {n}": "Open inspections: {n}",
+"البرنامج: مُدخل": "Programme: entered",
+"البرنامج: غير مُدخل": "Programme: not entered",
+"لا تحصيل مجدول في التوقع": "No receipt scheduled in the forecast",
+"من السجلات": "From the records",
+"تدخل مسجّل": "Recorded intervention",
+"مُسند": "Assigned",
+"بانتظار توضيح": "Awaiting clarification",
+"صدر قرار": "Decision made",
+"مغلق بدليل": "Closed with evidence",
+"المتأثر": "Affected",
+"الإجراء التالي": "Next action",
+"ينتظر منذ": "Waiting since",
+"شرط الإغلاق": "Closing condition",
+"الموعد الأصلي": "Original date",
+"{x} — متأخر": "{x} — overdue",
+"بتاريخ {x}": "by {x}",
+"قرار الإدارة: {x}": "Management decision: {x}",
+"متابعة كتدخل": "Follow up as an intervention",
+"السجل ({n})": "History ({n})",
+"إسناد": "Assign",
+"طلب توضيح": "Ask for clarification",
+"تسجيل وعد": "Record a promise",
+"تصعيد": "Escalate",
+"قرار الإدارة": "Management decision",
+"تنفيذ مهمة القرار": "Complete a decision task",
+"ما الذي حدث": "What happened",
+"العمل/المرحلة/التحصيل المتأثر": "Affected work / stage / receipt",
+"السبب": "Reason",
+"السؤال": "Question",
+"من وعد": "Who promised",
+"ماذا وعد": "What was promised",
+"بتاريخ": "By",
+"الوعد يُسجَّل ولا يُغلق البند": "A promise is recorded and does not close the item",
+"المهمة": "Task",
+"الموعد yyyy-mm-dd": "Due yyyy-mm-dd",
+"دليل تحقق شرط الإغلاق": "Evidence the closing condition is met",
+"دليل التنفيذ": "Evidence of completion",
+"— اختر —": "— Choose —",
+"التمويل يُحكم من رصيد التوقع في يوم المهمة مقابل الاحتياطي — الالتزامات محسوبة مرة واحدة في التوقع": "Funding is judged from the forecast balance on the task's day against the reserve — obligations are counted once in the forecast",
+"لا مهام معتمدة لهذا الأسبوع — لا خطط يومية معتمدة بعد": "No approved tasks this week — no approved daily plans yet",
+"جاهز وممول": "Ready and funded",
+"جاهز والتمويل غير محسوم": "Ready, funding unresolved",
+"لا يمكن التحقق": "Cannot be verified",
+"الرصيد المتوقع في يومها تحت الحد": "The forecast balance on that day is under the floor",
+"لا معلومات كافية للحكم": "Not enough information to judge",
+"المهمة متعثرة": "The task is stuck",
+"لا مهام معتمدة لهذا الأسبوع — تُعتمد المهام من «الخطة اليومية» في التنفيذ والجودة": "No approved tasks this week — tasks are approved in “Daily plan” under Site & quality",
+"العقد الموقّع لا يعني الجاهزية التشغيلية؛ أي تغيير في التواريخ يعتمده المخوّل ولا يُعدَّل العقد تلقائياً": "A signed contract does not mean operational readiness; any date change is approved by an authorised person and the contract is never changed automatically",
+"تعارض موارد بين البدايات": "Resource conflicts between starts",
+"{x} مطلوب في {n} بدايات: {x}": "{x} is needed by {n} starts: {x}",
+"مشاريع لم تبدأ": "Projects not started",
+"كل شرط: متحقق ✓ أو ناقص ✗ أو غير معروف ? مع سببه. الاقتراح هنا لا يغيّر عقداً ولا تاريخاً.": "Each condition: met ✓, missing ✗ or unknown ? with its reason. Nothing here changes a contract or a date.",
+"لا مشاريع بحالة «لم يبدأ» في التوقع": "No project is “not started” in the forecast",
+"جاهز للبدء": "Ready to start",
+"العقد ونطاقه": "Contract and scope",
+"تاريخ البدء وشروطه": "Start date and conditions",
+"مقاول أو فريق مؤهل": "Qualified subcontractor or crew",
+"المهندس المسؤول وقدرته": "Responsible engineer and capacity",
+"برنامج وأنشطة متحقق منها": "Verified programme and activities",
+"المواد ومسؤوليتها": "Materials and responsibility",
+"المعدات والوصول": "Equipment and access",
+"التصاريح والجهات الخارجية": "Permits and external parties",
+"النقد حتى أول تحصيل": "Cash until the first receipt",
+"عقد موقّع مُراجَع": "Signed, reviewed contract",
+"ملف عقد غير مُراجَع أو قيمة فقط": "Contract file not reviewed, or a value only",
+"لا دليل على العقد": "No evidence of a contract",
+"لا تاريخ بدء معتمد": "No approved start date",
+"البدء {x}": "Start {x}",
+"لا اتفاقية باطن ولا فريق مسجّل": "No subcontract or crew recorded",
+"لا مهندس مسؤول": "No responsible engineer",
+"{x} — {n} مشاريع": "{x} — {n} projects",
+"لا برنامج مُدخل": "No programme entered",
+"{n} نشاط": "{n} activities",
+"لا متطلبات مواد مسجّلة — غير معروف": "No material requirements recorded — unknown",
+"{n} متطلب مواد": "{n} material requirements",
+"لا سجل معدات أو وصول — غير معروف": "No equipment or access records — unknown",
+"لا سجل تصاريح خارجية — غير معروف": "No external permit records — unknown",
+"مدفوعات قبل أول تحصيل في التوقع: {n}": "Payments before the first receipt in the forecast: {n}",
+"مدفوعات قبل أول تحصيل في التوقع: {n} — لا تحصيل مجدول": "Payments before the first receipt in the forecast: {n} — no receipt scheduled",
+"المدفوعات قبل أول تحصيل محسوبة في التوقع": "Payments before the first receipt are in the forecast",
+"المدفوعات قبل أول تحصيل محسوبة في التوقع — لا تحصيل مجدول": "Payments before the first receipt are in the forecast — no receipt scheduled",
+"{n} ناقص · {n} غير معروف": "{n} missing · {n} unknown",
+"سلّم التحصيل": "Collection ladder",
+"عمل مُبلغ": "Work reported",
+"عمل مقبول": "Work accepted",
+"استحقاق ثابت": "Entitlement established",
+"مطالبة مقدمة": "Claim submitted",
+"ثابت بالسجلات": "established by records",
+"لم يتحقق": "not yet",
+"غير مسجّل": "not recorded",
+"ثابت": "established",
+"الإنجاز الفعلي لا يُثبت الاستحقاق ولا التحصيل؛ كل دفعة مدفوعة تُنسب لتحصيل واحد فقط (أول تحصيل بعدها في نفس المشروع)؛ الأعمال الإضافية غير المعتمدة خارج الإيراد": "Physical progress establishes neither entitlement nor collection; each payment is attributed to one receipt only (the first after it in the same project); unapproved extra works are outside revenue",
+"في كل بطاقة: الدائرة الممتلئة درجة ثابتة بالسجلات، الفارغة لم تتحقق، والمتقطعة غير مسجّلة.": "On each card: a filled circle is a step established by records, an empty one is not yet reached, a dashed one is not recorded.",
+"آخر درجة ثابتة:": "Last established step:",
+"لا شيء بعد": "None yet",
+"المتوقع": "Expected",
+"غير مجدول": "Not scheduled",
+"القيمة شاملة الضريبة": "Value incl. VAT",
+"قبل الضريبة": "Before VAT",
+"محصّل منها سابقاً": "Collected earlier",
+"مدفوعات قبلها في التوقع": "Payments before it in the forecast",
+"المدفوعات المنسوبة لهذا التحصيل": "Payments attributed to this receipt",
+"عمل مستحق لم يُطالب به": "Earned work not yet claimed",
+"عمل منتهٍ بانتظار فحص أو مستندات": "Finished work awaiting inspection or documents",
+"مطالبات بانتظار الاعتماد": "Claims awaiting approval",
+"مستحق ومتأخر بانتظار السداد": "Due and overdue, awaiting payment",
+"مراحل جارية قريبة من الاستحقاق": "Stages in progress close to entitlement",
+"المجموع قبل الضريبة {n}": "Total before VAT {n}",
+"دفعات أخرى في التوقع ({n})": "Other receipts in the forecast ({n})",
+"لا دفعات في التوقع": "No receipts in the forecast",
+"المالية / التحصيل": "Finance / collection",
+"جهّز المطالبة وأدلتها (قياسات، صور، محاضر)": "Prepare the claim and its evidence (measurements, photos, minutes)",
+"تابع اعتماد المطالبة": "Follow up the claim's approval",
+"تابع السداد — الوعد لا يُغلق البند": "Follow up payment — a promise does not close the item",
+"أكمل المتبقي من المرحلة وجهّز الفحص": "Finish the rest of the stage and prepare the inspection",
+"اطلب الفحص/الاستلام وأكمل المستندات": "Request inspection / handover and complete the documents",
+"الاحتجاز واسترداد الدفعة المقدمة والخصومات غير مسجلة على عقود العملاء": "Retention, advance recovery and deductions are not recorded on client contracts",
+"قبول العميل للمرحلة غير مسجّل": "The client's acceptance of the stage is not recorded",
+"لا مطالبة مسجلة لهذه الدفعة": "No claim recorded for this receipt",
+"حماية النقد": "Cash protection",
+"التوقع النقدي غير متاح لهذا الحساب": "The cash forecast is not available to this account",
+"أكبر فجوة تحت الحد": "Largest gap under the floor",
+"القرار مطلوب قبل": "Decision needed before",
+"التزامات في فترة العجز": "Obligations in the shortfall period",
+"لا عجز تحت الحد في السيناريو الأساسي خلال 13 أسبوعاً": "No shortfall under the floor in the base scenario over 13 weeks",
+"الاحتياطي التشغيلي": "Operating reserve",
+"أموال مقيدة لغرضها": "Money restricted to its purpose",
+"الحد الأدنى للرصيد": "Minimum balance (floor)",
+"أدنى رصيد متوقع": "Lowest expected balance",
+"المقيد": "Restricted",
+"الاحتياطي التشغيلي غير معتمد بعد": "The operating reserve is not approved yet",
+"الرصيد اليومي لـ28 يوماً — السيناريو الأساسي": "Daily balance for 28 days — base scenario",
+"الخط المتقطع: الحد الأدنى": "Dashed line: the floor",
+"الرصيد اليومي المتوقع لـ28 يوماً: أدناه {x} في {x}": "Expected daily balance for 28 days: lowest {x} on {x}",
+"الحد = الاحتياطي المعتمد + الأموال المقيدة": "Floor = approved reserve + restricted money",
+"التحصيل المتوقع ليس نقداً متاحاً؛ المال المحتجز لغرض (عهد العملاء) لا يُصرف على غيره؛ الاحتياطي التشغيلي غير معتمد — يُقاس العجز تحت الصفر": "Expected receipts are not available cash; money held for a purpose (client custody) is not spent on anything else; the operating reserve is not approved — shortfall is measured below zero",
+"العمالة المستأجرة في التوقع": "Rented labour in the forecast",
+"متوقع للطلبات المعتمدة: {x}": "Expected for approved requests: {x}",
+"معتمد غير مفوتر: {x}": "Approved, not invoiced: {x}",
+"مفوتر غير مدفوع: {x}": "Invoiced, unpaid: {x}",
+"طلبات معتمدة: {n}": "Approved requests: {n}",
+"كشوف معتمدة غير مفوترة: {n}": "Approved timesheets not invoiced: {n}",
+"فواتير غير مدفوعة: {n}": "Unpaid invoices: {n}",
+"({n} بلا سعر متفق)": "({n} with no agreed rate)",
+"جدول الاجتماع من السجلات: ما يحتاج قراراً أولاً، ثم المشاريع الحرجة والنقد والبدايات والتحصيل. القرار يُسجَّل بمهام لها مسؤول وموعد.": "The meeting agenda from the records: decisions first, then critical projects, cash, starts and collection. A decision is recorded as tasks with an owner and a date.",
+"بنود للقرار": "Items for decision",
+"لا بنود تنتظر قراراً": "No items waiting for a decision",
+"المشاريع الحرجة": "Critical projects",
+"لا مشاريع حرجة": "No critical projects",
+"بدايات غير جاهزة": "Starts not ready",
+"لا بدايات معلقة": "No pending starts",
+"لا تحصيل متأخر أو غير مُطالب به": "No overdue or unclaimed receipts",
+"قرارات سابقة ومتابعة مهامها": "Past decisions and their tasks",
+"عائق متأخر {x}": "Overdue constraint {x}",
+"سجل العوائق": "Constraints log",
+"الأنشطة المرتبطة بالعائق": "Activities linked to the constraint",
+"حل العائق أو اعتماد بديل": "Resolve the constraint or approve an alternative",
+"إغلاق العائق بدليل": "Close the constraint with evidence",
+"{n} تصريح بدء موقوف": "{n} start permit(s) suspended",
+"سجل التصاريح": "Permits log",
+"بدء النشاط": "Starting the activity",
+"معالجة سبب الإيقاف وإعادة التحقق": "Fix the suspension cause and re-verify",
+"تصريح ساري": "An active permit",
+"لا تحديث ميداني منذ {n} يوماً ومشاكل مفتوحة": "No field update for {n} days and open problems",
+"آخر تحديث {x}": "Last update {x}",
+"صحة الصورة الميدانية": "Accuracy of the field picture",
+"تحديث ميداني موثّق": "A documented field update",
+"تقرير يومي معتمد": "An approved daily report",
+"التوقع النقدي — السيناريو الأساسي": "Cash forecast — base scenario",
+"فجوة {n}": "Gap {n}",
+"التزامات المؤسسة": "The company's obligations",
+"المالية والإدارة": "Finance and management",
+"قرار تمويل أو تحصيل أو إعادة جدولة بموافقة": "A funding, collection or rescheduling decision, approved",
+"رصيد متوقع فوق الحد": "Expected balance above the floor",
+"عائق متأخر {x}: {x}": "Overdue constraint {x}: {x}",
+"دفعات متأخرة التحصيل": "Overdue receipts",
+"تصريح بدء موقوف {x}": "Start permit suspended {x}",
+"الرصيد المتوقع خلال الأسبوع فوق الحد": "The expected balance this week is above the floor",
+"التوقع النقدي غير متاح": "The cash forecast is not available",
+"الرصيد المتوقع تحت الحد": "The expected balance is under the floor",
+"فتح التدخل": "Intervention opened",
+"وعد مسجل — البند يبقى مفتوحاً": "Promise recorded — the item stays open",
+"الموارد والعمالة": "Resources & labour",
+"الطلبات والحضور": "Requests & attendance",
+"الموردون والشروط": "Suppliers & terms",
+"العمال": "Workers",
+"العمالة المستأجرة: الطلب، الاعتماد، الإرسال، الوصول، التوزيع، الحضور والإنتاج، الكشف، الفاتورة، ثم الدفع. منفصلة عن رواتب الفرق وعن عقود الباطن بالإنتاج.": "Rented labour: request, approval, dispatch, arrival, assignment, attendance and output, timesheet, invoice, then payment. Kept apart from crew payroll and output-based subcontracts.",
+"المعدات: لا يوجد سجل تخصيص معدات بعد، فتظهر في مركز القيادة «غير معروف».": "Equipment: there are no equipment assignment records yet, so the Command Center shows it as “unknown”.",
+"موردو العمالة وشروطهم": "Labour suppliers and their terms",
+"الشروط كما اتُّفق عليها فقط — ما لم يُتفق عليه يبقى «غير متفق» ولا يُفترض": "Terms only as agreed — anything not agreed stays “not agreed” and is never assumed",
+"أجر اليوم": "Day rate",
+"أجر الساعة": "Hourly rate",
+"ساعات اليوم المشمولة": "Hours included in a day",
+"اليوم الجزئي": "Partial day",
+"التقريب": "Rounding",
+"أجر الساعة الإضافية": "Overtime rate",
+"النقل": "Transport",
+"الأدوات": "Tools",
+"معدات السلامة": "Safety equipment",
+"الغياب": "Absence",
+"الاستبدال": "Replacement",
+"الانتظار": "Waiting",
+"مدة الدفع (أيام)": "Payment term (days)",
+"غير متفق": "Not agreed",
+"بالتناسب مع الساعات": "Pro rata to hours",
+"يوم كامل": "Full day",
+"رقم تشغيلي لكل عامل؛ بيانات الهوية للإدارة والمالية فقط": "An operational number per worker; identity details for management and finance only",
+"الرقم": "No.",
+"الاسم": "Name",
+"المهنة": "Trade",
+"الهوية": "ID",
+"طلبات العمالة": "Labour requests",
+"لا يُطلب عمال لعمل غير جاهز — الاستثناء بسبب مسجل مع التعرض المالي. المطلوب والمرسل والواصل والموزع كلٌ على حدة": "Workers are not called out for work that is not ready — an exception needs a recorded reason with its exposure. Requested, dispatched, arrived and assigned are each kept apart",
+"الطلب": "Request",
+"مطلوب": "Requested",
+"موزع": "Assigned",
+"ينتظر": "Waiting",
+"جاهز": "Ready",
+"أرسله المورد": "Dispatched by the supplier",
+"وصلوا": "Arrived",
+"موزعون": "Assigned",
+"مغلق": "Closed",
+"كشوف الحضور اليومية": "Daily timesheets",
+"الحضور والإنتاج والمقبول والوقت المستحق منفصلة؛ الإنتاج المنخفض يُبحث ولا يُخصم تلقائياً؛ الإضافي مطالبة للمراجعة؛ الأوقات الأصلية محفوظة": "Attendance, output, accepted output and payable time are kept apart; low output is investigated, never deducted automatically; overtime is a claim for review; original times are kept",
+"الساعات": "Hours",
+"الانتظار (دقيقة)": "Waiting (min)",
+"بنود معلقة": "Pending items",
+"المستحق": "Payable",
+"بانتظار تحقق المهندس": "Awaiting the engineer's check",
+"بانتظار رد المورد": "Awaiting the supplier's reply",
+"اعتراض المورد": "Supplier objected",
+"بانتظار اعتماد المالية": "Awaiting finance approval",
+"فواتير موردي العمالة": "Labour supplier invoices",
+"تُطابق الفاتورة مع الكشوف المعتمدة — كل كشف يُفوتر مرة واحدة": "Each invoice is matched to approved timesheets — each timesheet is invoiced once",
+"الفاتورة": "Invoice",
+"المعتمد بالكشوف": "Approved in timesheets",
+"الملاحظات": "Notes",
+"مدفوعة": "Paid",
+"لا فواتير": "No invoices",
+"لا مورد عمالة مسجل": "No labour supplier recorded",
+"لا عمال مسجلون": "No workers recorded",
+"لا طلبات عمالة": "No labour requests",
+"لا كشوف بعد": "No timesheets yet",
+"+ طلب عمالة": "+ Labour request",
+"+ عامل": "+ Worker",
+"+ فاتورة مورد": "+ Supplier invoice",
+"+ مورد عمالة": "+ Labour supplier",
+"اعتماد الطلب": "Approve the request",
+"أرسل المورد": "Supplier dispatched",
+"تسجيل الوصول": "Record arrival",
+"توزيع/نقل": "Assign / transfer",
+"حضور وإنتاج اليوم": "Today's attendance and output",
+"رد المورد": "Supplier's reply",
+"تصحيح": "Correct",
+"اعتماد كشف اليوم": "Approve the day's timesheet",
+"مؤسسة طاء — العمليات الآن": "Taa — operations now",
+"إيقاف مؤقت": "Pause",
+"تشغيل التدوير": "Resume rotation",
+"التالي": "Next",
+"تدخلات مطلوبة ({n})": "Interventions needed ({n})",
+"و{n} غيرها": "and {n} more",
+"المشاريع ({n}/{n})": "Projects ({n}/{n})",
+"لا مشاريع بانتظار البدء": "No projects waiting to start",
+"عجز نقدي متوقع من {x} — القرار مطلوب قبل {x}": "Cash shortfall expected from {x} — decision needed before {x}",
+"لا عجز نقدي متوقع تحت الحد في السيناريو الأساسي": "No cash shortfall expected under the floor in the base scenario",
+"البيانات المعروضة من {x} — تعذّر التحديث منذ {n} دقيقة": "Showing data from {x} — could not refresh for {n} minutes",
+"انتهت جلسة الشاشة — سجّل الدخول من جديد": "The screen's session ended — sign in again",
+"متوقع {n}": "expected {n}",
+"عجز متوقع من {x} إلى {x}": "Shortfall expected from {x} to {x}",
+"({n} أيام)": "({n} days)",
+"({n} يوماً)": "({n} days)",
+"(يوم واحد)": "(1 day)",
+"(يومان)": "(2 days)",
+"— غير معروف": "— unknown",
+"— ناقص": "— missing",
+"غير مسجّل لكل الدفعات:": "Not recorded for any receipt:",
+"الأسبوع {x} – {x}.": "Week {x} – {x}.",
+"عجز نقدي متوقع من {x} لمدة {n} أيام": "Cash shortfall expected from {x} for {n} days",
+"عجز نقدي متوقع من {x} لمدة {n} يوماً": "Cash shortfall expected from {x} for {n} days",
+"عجز نقدي متوقع من {x} لمدة يوم واحد": "Cash shortfall expected from {x} for 1 day",
+"عجز نقدي متوقع من {x} لمدة يومين": "Cash shortfall expected from {x} for 2 days",
+"عجز متوقع من {x}": "Shortfall expected from {x}"
 };
 const EN_X = new Map(), EN_P = [];
 {
@@ -2089,13 +2512,15 @@ const TABS = [
   { v: "home", t: "الرئيسية", fam: "var(--ui)" },
   { v: "bot", t: "المساعد", fam: "var(--ui)" },
   { v: "proj", t: "المشاريع", fam: "var(--acc6)" },
+  { v: "cmd", t: "مركز القيادة", fam: "var(--eng6)", g: "الأقسام" },
   { v: "sales", t: "المبيعات والعقود", ids: ["changes", "leads", "estimates", "quotes", "ccontracts", "variations"], fam: "var(--ui)", g: "الأقسام" },
   { v: "subc", t: "مقاولو الباطن والتعاقدات", ids: ["subreg", "opps", "offers", "awards"], fam: "var(--acc6)", f: "acc", g: "الأقسام" },
   { v: "buy", t: "المشتريات والمواد", ids: ["reqs", "purchases", "sups", "matreq", "ownmat"], fam: "var(--acc6)", f: "acc", g: "الأقسام" },
   { v: "site", t: "التنفيذ والجودة", ids: ["programme", "lookahead", "dailyplan", "ptasks", "constraints", "dreports", "teams", "quality", "defects", "insp", "findings", "gates", "qaplan", "bfqa", "pours", "units"], fam: "var(--eng6)", f: "eng", g: "الأقسام" },
+  { v: "res", t: "الموارد والعمالة", ids: ["lreq", "ltsh", "lsup", "lwk", "linv"], fam: "var(--eng6)", f: "eng", g: "الأقسام" },
   { v: "money", t: "المالية ومراقبة التكلفة", ids: ["receipts", "claims", "custody", "subk", "subrec", "certs"], fam: "var(--acc6)", f: "acc", g: "الأقسام" },
-  { v: "docs", t: "المستندات والسجلات", ids: ["docreg", "doccomplete", "docmatrix"], fam: "var(--out)", g: "الإدارة" },
   { v: "rat", t: "Rent a Tool", ids: ["rat"], fam: "var(--ui)", g: "الأقسام" },
+  { v: "docs", t: "المستندات والسجلات", ids: ["docreg", "doccomplete", "docmatrix"], fam: "var(--out)", g: "الإدارة" },
   { v: "sys", t: "النظام", ids: ["health"], fam: "var(--out)", g: "الإدارة" },
   { v: "data", t: "البيانات", fam: "var(--out)", g: "الإدارة" },
 ];
@@ -2112,6 +2537,9 @@ const ICO = {
   rat: '<path d="M14.5 6.5a4 4 0 0 0-5.3 5.3L4.5 16.5a1.6 1.6 0 0 0 2.3 2.3l4.7-4.7a4 4 0 0 0 5.3-5.3l-2.4 2.4-2.3-.6-.6-2.3z"/>',
   sys: '<path d="M3.5 12h4l2-5 4 10 2-5h5"/>',
   bot: '<path d="M4.5 5.5h15a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H10l-4.5 3.5V16.5h-1a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1z"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01"/>',
+  cmd: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5V6M12 18v3.5M2.5 12H6M18 12h3.5"/>',
+  res: '<path d="M5 15.5a7 7 0 0 1 14 0M3.5 15.5h17v2h-17zM12 8.5V5.5M9.5 9.2 8.4 6.6M14.5 9.2l1.1-2.6"/>',
+  map: '<path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/>',
   data: '<ellipse cx="12" cy="6.5" rx="7" ry="2.5"/><path d="M5 6.5v11c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-11M5 12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5"/>',
 };
 const icon = (k) => { const w = el("span"); w.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + (ICO[k] || ICO.home) + "</svg>"; return w.firstChild; };
@@ -2287,7 +2715,7 @@ function actForm(s, d, row) {
     const v = pre[f.key] !== undefined ? pre[f.key] : f.value;
     if (["text", "number", "date"].includes(f.type)) { const i = el("input"); i.id = id; i.type = f.type === "date" ? "date" : "text"; if (f.type === "number") { i.inputMode = "decimal"; i.dir = "ltr"; } if (v !== undefined && v !== null) i.value = v; box.append(i); get[f.key] = () => i.value; }
     else if (f.type === "area") { const i = el("textarea"); i.id = id; i.rows = 3; if (v) i.value = v; box.append(i); get[f.key] = () => i.value; }
-    else if (f.type === "select") { const i = el("select"); i.id = id; for (const o of f.options || []) { const op = el("option", "", o.t); op.value = o.v; i.append(op); } if (v !== undefined && v !== null) i.value = v; box.append(i); get[f.key] = () => i.value; }
+    else if (f.type === "select") { const i = el("select"); i.id = id; if (f.required && (v === undefined || v === null || v === "") && (f.options || []).length > 1) { const op = el("option", "", "— اختر —"); op.value = ""; i.append(op); } for (const o of f.options || []) { const op = el("option", "", o.t); op.value = o.v; i.append(op); } if (v !== undefined && v !== null) i.value = v; box.append(i); get[f.key] = () => i.value; }
     else if (f.type === "bool") { lab.textContent = ""; const w = el("label", "chk"), c = el("input"); c.type = "checkbox"; c.id = id; c.checked = v === undefined ? false : !!v; w.append(c, document.createTextNode(" " + f.label)); box.append(w); get[f.key] = () => c.checked; }
     else if (f.type === "multi") { const w = el("div", "multi"), chosen = new Set(v || []); for (const o of f.options || []) { const l = el("label"), c = el("input"); c.type = "checkbox"; c.value = o.v; c.checked = chosen.has(o.v); l.append(c, el("span", "", o.t)); w.append(l); } if (!(f.options || []).length) w.append(el("span", "muted", "لا يوجد")); box.append(w); get[f.key] = () => [...w.querySelectorAll("input:checked")].map((x) => x.value); }
     else if (f.type === "lines") {
@@ -2338,7 +2766,7 @@ function renderTabs() {
   const row = $("tabRow"); row.replaceChildren(); delete row.dataset.g;
   for (const T of TABS) {
     if (D.chatOnly && T.v !== "bot") continue; // an executor: the assistant only
-    let show = T.v === "home" || T.v === "bot" || (T.v === "proj" ? !!(D.projects && D.projects.length) : T.v === "audit" ? !!D.projects : T.v === "money" ? !!(AUD || MTABS.some((x) => x.ids.some((i) => sec(i)))) : T.v === "data" ? !!(REG && REG.length) : T.v === "buy" ? canEdit() || T.ids.some((x) => sec(x)) : (T.ids || []).some((x) => sec(x)));
+    let show = T.v === "home" || T.v === "bot" || (T.v === "proj" ? !!(D.projects && D.projects.length) : T.v === "audit" ? !!D.projects : T.v === "money" ? !!(AUD || MTABS.some((x) => x.ids.some((i) => sec(i)))) : T.v === "data" ? !!(REG && REG.length) : T.v === "cmd" ? !!D.cmd : T.v === "buy" ? canEdit() || T.ids.some((x) => sec(x)) : (T.ids || []).some((x) => sec(x)));
     if (!show) continue;
     if (T.g && row.dataset.g !== T.g) { row.dataset.g = T.g; row.append(el("div", "tgrp", T.g)); }
     const b = el("button", "tab"); b.type = "button"; b.style.setProperty("--fam", T.fam);
@@ -2379,6 +2807,348 @@ function subcView(m) {
   for (const x of avail) { const b = el("button", "", x.t); b.type = "button"; b.setAttribute("aria-current", String(SUBT === x.k)); b.onclick = () => { SUBT = x.k; draw(); }; st.append(b); }
   m.append(st);
   for (const id of avail.find((x) => x.k === SUBT).ids) { const s = sec(id); if (!s) continue; m.append(secHead(s.title, s.table ? s.table.rows.length : undefined, noteOf(s)), ...cards(s, "acc")); }
+}
+// ===== «مركز القيادة» (owner's spec, 14 Nov 2026): every project at once — what runs today, what blocks it, what needs a decision, and
+// what it takes to reach each receipt. Drawn from D.cmd (the bot's core/command.ts). The page decides nothing: statuses, funding and
+// the ladder are the bot's; amounts arrive only for money roles (the bot leaves them out for everyone else and for the wall display).
+const CTABS = [{ k: "now", t: "العمليات الآن" }, { k: "week", t: "خطة الأسبوع" }, { k: "starts", t: "بدء المشاريع" }, { k: "coll", t: "التنفيذ والتحصيل" }, { k: "review", t: "اجتماع الإدارة" }];
+let CT = "now", RT = "req";
+const CST = { critical: ["حرج", "!", "bad"], attention: ["يحتاج متابعة", "▲", "warn"], unknown: ["غير متحقق", "?", "unk"], normal: ["لا مشكلة مسجلة", "✓", "ok"] };
+const FRESH = { fresh: "محدّث", aging: "تحديث قديم", stale: "متوقف التحديث", none: "لا تحديث ميداني" };
+const FUND = { covered: "مغطى في التوقع", short: "عجز متوقع", unknown: "غير معروف" };
+const IVST = { open: "مفتوح", assigned: "مُسند", clarify: "بانتظار توضيح", escalated: "مُصعّد للإدارة", decided: "صدر قرار", resolved: "مغلق بدليل" };
+const WCLS = [["ready_funded", "جاهز وممول", "✓", "ok"], ["ready_unfunded", "جاهز والتمويل غير محسوم", "▲", "warn"], ["not_ready", "غير جاهز", "!", "bad"], ["unverifiable", "لا يمكن التحقق", "?", "unk"]];
+const rToday = () => new Date(Date.now() + 3 * 3600e3).toISOString().slice(0, 10);
+const daysSince = (iso) => (iso ? Math.max(0, Math.floor((Date.now() - Date.parse(iso)) / 864e5)) : null);
+const dayN = (n) => (n === 1 ? "يوم واحد" : n === 2 ? "يومان" : n <= 10 ? n + " أيام" : n + " يوماً");
+const ageT = (n) => (n === null || n === undefined ? "لا يوجد" : n === 0 ? "اليوم" : n === 1 ? "أمس" : n === 2 ? "منذ يومين" : n <= 10 ? "منذ " + n + " أيام" : "منذ " + n + " يوماً");
+function stBadge(k, txt) { const [t, g, c] = CST[k] || CST.unknown, b = el("span", "stt " + c), i = el("i", "", g); i.setAttribute("aria-hidden", "true"); b.append(i, el("span", "", txt || t)); return b; }
+function glyph(t, g, c) { const b = el("span", "stt " + c), i = el("i", "", g); i.setAttribute("aria-hidden", "true"); b.append(i, el("span", "", t)); return b; }
+// field and financial update times are kept apart; an old or missing one says so in words
+function syncBar(C) {
+  const s = C.sync || {}, w = el("div", "syncb");
+  const part = (label, iso, lim) => { const n = daysSince(iso), d = el("div", "sy" + (n === null || n > lim ? " old" : "")); d.append(el("span", "", label), el("b", "", iso ? ageT(n) : "لا يوجد")); if (n === null || n > lim) d.append(el("em", "", n === null ? "غير متحقق" : "قديم")); return d; };
+  w.append(part("آخر تحديث ميداني", s.fieldLatest, 2), part("آخر حفظ للأرقام", s.auditAt, 7), part("آخر مزامنة مع قيود", s.qoyodAt, 2));
+  return w;
+}
+const ivSec = () => ({ id: "cmdiv", data: D.cmd.iv || { acts: [], rows: [] } });
+const ivDef = (id) => (ivSec().data.acts || []).find((d) => d.id === id);
+const pName = (id) => { const f = (ivDef("assign") || { fields: [] }).fields.find((x) => x.key === "owner"); const o = f && (f.options || []).find((x) => x.v === id); return o ? o.t : id; };
+const ownerId = (name) => { const f = (ivDef("new") || { fields: [] }).fields.find((x) => x.key === "owner"); const o = f && (f.options || []).find((x) => x.t === name); return o ? o.v : ""; };
+function cmdView(m) {
+  const C = D.cmd, money = !!(C.cash && C.cash.protection && C.cash.protection.floor !== undefined);
+  m.append(page("", "مركز القيادة", "كل المشاريع معاً: ما يجري اليوم، ما يعيقه، ما يحتاج تدخلاً، وما يلزم للوصول إلى كل تحصيل. يقترح النظام، والقرار للمخوّلين.", "var(--eng6)"));
+  m.append(syncBar(C));
+  const st = el("div", "sub-tabs mtabs");
+  for (const x of CTABS) { const b = el("button", "", x.t); b.type = "button"; b.setAttribute("aria-current", String(CT === x.k)); b.onclick = () => { CT = x.k; draw(); }; st.append(b); }
+  m.append(st);
+  if (CT === "now") return cmdNow(m, C, money);
+  if (CT === "week") return cmdWeek(m, C);
+  if (CT === "starts") return cmdStarts(m, C);
+  if (CT === "coll") return cmdColl(m, C, money);
+  return cmdReview(m, C, money);
+}
+function cmdNow(m, C, money) {
+  const k = C.counts || {};
+  m.append(kpiStrip([{ label: "مشاريع حرجة", value: String(k.critical || 0), tone: k.critical ? "bad" : "" }, { label: "تحتاج متابعة", value: String(k.attention || 0), tone: k.attention ? "warn" : "" },
+    { label: "غير متحققة", value: String(k.unknown || 0), sub: "لا سجل ميداني يُحكم منه" }, { label: "بلا تحديث حديث", value: String(k.stale || 0) }]));
+  const open = (C.interventions || []).filter((x) => x.status !== "resolved");
+  const ivs = ivSec(), nw = ivDef("new");
+  m.append(secHead("التدخلات المطلوبة", open.length, "كل بند بدليله ومسؤوله وموعده وشرط إغلاقه. الوعد يُسجَّل ولا يُغلق البند."));
+  if (nw) { const bar = el("div", "ebar2"); bar.append(ebtn(nw.label, () => actForm(ivs, nw, null))); m.append(bar); }
+  if (open.length) { const g = el("div", "clist"); for (const x of open) g.append(ivCard(x)); m.append(g); } else m.append(el("div", "empty", "لا تدخلات مفتوحة"));
+  m.append(secHead("المشاريع", (C.projects || []).length, "الحالة من السجلات؛ غياب التحديث يعني «غير متحقق» لا «على الوقت» ولا «متأخر»"));
+  const mn = el("div", "mapnote"); mn.append(icon("map"), el("span", "", "الخريطة: لا توجد إحداثيات موثّقة لمواقع المشاريع بعد، فتظهر المشاريع قائمة. لا يُستعمل مركز المدينة موقعاً للمشروع."));
+  m.append(mn);
+  const g = el("div", "grid"); for (const p of C.projects || []) g.append(cprojCard(p, money)); m.append(g);
+}
+function cprojCard(p, money) {
+  const c = el("button", "card cp" + (p.status === "critical" ? " bad" : p.status === "attention" ? " warn" : "")); c.type = "button";
+  const top = el("div", "cptop"); top.append(stBadge(p.status)); if (p.code) top.append(el("span", "pcode", p.code)); c.append(top, el("div", "t", p.name));
+  c.append(el("div", "fresh " + p.fresh, FRESH[p.fresh] + (p.fieldDays !== null && p.fieldDays !== undefined ? " · " + ageT(p.fieldDays) : "")));
+  const kv = el("div", "kv"), add = (k, v, cls) => { if (v === null || v === undefined || v === "") return; kv.append(el("span", "", k), el("b", cls || "", v)); };
+  add("المهندس", (p.engineer || []).join("، ") || "غير محدد", (p.engineer || []).length ? "" : "wv");
+  add("مهام اليوم", p.today.length ? String(p.today.length) : "لا مهام معتمدة");
+  const late = p.blockers.filter((b) => b.overdue).length;
+  if (p.blockers.length) add("العوائق", String(p.blockers.length) + (late ? " · " + late + " متأخر" : ""), late ? "neg" : "wv");
+  add("التمويل", FUND[p.funding.state], p.funding.state === "short" ? "neg" : p.funding.state === "unknown" ? "wv" : "");
+  if (p.next) add("التحصيل التالي", String(p.next.label).replace(p.name + " — ", "") + (p.next.date ? " · " + dmy(p.next.date) : ""));
+  c.append(kv);
+  if (p.problems.length) { const tg = el("div", "tags"); for (const t of p.problems.slice(0, 2)) tg.append(el("span", "pill bad", t)); if (p.problems.length > 2) tg.append(el("span", "pill", "+" + (p.problems.length - 2))); c.append(tg); }
+  c.onclick = () => cprojDlg(p, money);
+  return c;
+}
+function dsec(title, items, emptyT) {
+  const s = el("div", "dsec"); s.append(el("h4", "", title));
+  if (!items || !items.length) { s.append(el("p", "muted", emptyT || "لا شيء")); return s; }
+  const u = el("ul"); for (const t of items) u.append(t instanceof Node ? (() => { const li = el("li"); li.append(t); return li; })() : el("li", "", t)); s.append(u); return s;
+}
+function cprojDlg(p, money) {
+  const body = $("dlgBody"); body.replaceChildren(el("h3", "", p.name + (p.code ? " — " + p.code : "")));
+  const hd = el("div", "cptop"); hd.append(stBadge(p.status), el("span", "fresh " + p.fresh, FRESH[p.fresh] + (p.fieldAt ? " · آخر تحديث ميداني " + dmy(p.fieldAt) : ""))); body.append(hd);
+  body.append(dsec("المسؤولون", ["المهندس: " + ((p.engineer || []).join("، ") || "غير محدد"), "مشرف الموقع: " + ((p.siteLead || []).join("، ") || "غير محدد")]));
+  if (p.problems.length) body.append(dsec("المشاكل", p.problems));
+  body.append(dsec("يجري الآن", p.running.map((a) => a.code + " " + a.name + (a.areas && a.areas.length ? " — " + a.areas.join("، ") : "")), "لا نشاط مسجّل كجارٍ"));
+  body.append(dsec("مهام اليوم وأهدافها", p.today.map((t) => [t.no, t.scope, t.team].filter(Boolean).join(" — ") + ": الهدف " + (t.target ?? "—") + " " + (t.unit || "") + " · المُبلغ عنه " + (t.reported ?? "—") + " · المقبول " + (t.accepted ?? "—")), "لا مهام معتمدة لليوم"));
+  body.append(dsec("الفرق والمعدات", [(p.teams.length ? "الفرق: " + p.teams.join("، ") : "الفرق: لا فريق مسند اليوم"), "المعدات: لا سجل تخصيص معدات — غير معروف"]));
+  body.append(dsec("العوائق", p.blockers.map((b) => [b.no, b.action || b.cat, b.owner || "بلا مسؤول", b.due ? "الموعد " + dmy(b.due) : "بلا موعد"].join(" — ") + (b.overdue ? " (متأخر)" : "")), "لا عوائق مفتوحة"));
+  const r = p.readiness;
+  body.append(dsec("الجاهزية", ["طلبات مواد مفتوحة: " + r.materialsOpen + (r.ownerItems ? " (منها " + r.ownerItems + " توريد المالك)" : ""), "تصاريح البدء: " + r.permits.active + " سارية · " + r.permits.suspended + " موقوفة",
+    "فحوصات مفتوحة: " + r.inspectionsOpen, "البرنامج: " + (r.planned ? "مُدخل" : "غير مُدخل")]));
+  body.append(dsec("التمويل", [p.funding.t]));
+  body.append(dsec("التحصيل التالي", p.next ? [String(p.next.label) + (p.next.date ? " · متوقع " + dmy(p.next.date) : "") + (money && p.next.amount !== undefined ? " · " + fmt(p.next.amount) : "")] : [], "لا تحصيل مجدول في التوقع"));
+  const bar = el("div", "dbar"), close = el("button", "sbtn", "إغلاق"); close.type = "button"; close.onclick = () => $("dlg").close(); bar.append(close); body.append(bar);
+  $("dlg").showModal();
+}
+function ivCard(x) {
+  const today = rToday(), late = !!(x.due && x.due < today && x.status !== "resolved");
+  const c = el("div", "card iv" + (late || x.status === "escalated" ? " bad" : x.status === "resolved" ? "" : " warn"));
+  const top = el("div", "cptop"); top.append(el("span", "pill " + (x.src === "derived" ? "" : "eng"), x.src === "derived" ? "من السجلات" : x.no || "تدخل مسجّل"), el("span", "pill" + (x.status === "escalated" ? " bad" : ""), IVST[x.status] || x.status)); c.append(top);
+  c.append(el("div", "t", x.what), el("div", "st", x.project || "—"));
+  const kv = el("div", "kv"), add = (k, v, cls) => { if (v === null || v === undefined || v === "") return; kv.append(el("span", "", k), el("b", cls || "", v)); };
+  add("الدليل", x.evidence); add("المتأثر", x.affects); add("المسؤول", x.ownerName || x.owner || "غير محدد", x.owner ? "" : "wv"); add("الإجراء التالي", x.next);
+  add("الموعد", x.due ? dmy(x.due) + (late ? " — متأخر" : "") : "بلا موعد", late ? "neg" : ""); if (x.waited) add("ينتظر منذ", ageT(x.waited)); add("شرط الإغلاق", x.resolve);
+  if (x.dueOrig && x.dueOrig !== x.due) add("الموعد الأصلي", dmy(x.dueOrig));
+  c.append(kv);
+  const S = ivSec(), rows = S.data.rows || [], l = el("div", "ivl");
+  for (const p of x.promises || []) { const d = el("div", "pr"); d.append(el("span", "", (p.who || "") + ": " + (p.what || "")), el("span", "muted", "بتاريخ " + dmy(p.by))); l.append(d); }
+  for (const d of x.decisions || []) l.append(el("div", "small", "قرار الإدارة: " + d.text));
+  for (const a of x.actions || []) {
+    const d = el("div", "ac" + (a.status === "done" ? " done" : "")); d.append(el("span", "", a.what), el("span", "muted", pName(a.owner) + (a.due ? " · " + dmy(a.due) : "")));
+    const ra = rows.find((r) => r.id === a.id), dn = ivDef("done");
+    if (ra && dn && a.status === "open") d.append(ebtn(dn.label, () => actForm(S, dn, ra)));
+    l.append(d);
+  }
+  if (l.children.length) c.append(l);
+  const R = rows.find((r) => r.id === x.id);
+  if (R && R.acts.length) { const bar = el("div", "cacts"); for (const id of R.acts) { const d = ivDef(id); if (d) bar.append(ebtn(d.label, () => actForm(S, d, R))); } c.append(bar); }
+  else if (x.src === "derived" && ivDef("new")) { const bar = el("div", "cacts"); bar.append(ebtn("متابعة كتدخل", () => actForm(S, ivDef("new"), { id: "", data: { pid: x.pid || "", owner: ownerId(x.owner), what: x.what, evidence: x.evidence, affects: x.affects, next: x.next, resolve: x.resolve, due: x.due && x.due >= today ? x.due : "" } }))); c.append(bar); }
+  if ((x.history || []).length) { const h = el("details", "hist"), ol = el("ol"); h.append(el("summary", "", "السجل (" + x.history.length + ")")); for (const e of x.history) { const li = el("li"); li.append(el("span", "", dmy(e.at) + " — " + (e.name || "") + ":"), " ", el("span", "", e.what)); ol.append(li); } h.append(ol); c.append(h); }
+  return c;
+}
+function cmdWeek(m, C) {
+  const W = C.week || { rows: [], counts: {} };
+  const wp = el("p", "small muted"); wp.append(el("span", "", "الأسبوع " + dmy(W.from) + " – " + dmy(W.to) + "."), " ", el("span", "", W.note || "")); m.append(wp);
+  m.append(kpiStrip(WCLS.map(([k, t]) => ({ label: t, value: String((W.counts || {})[k] || 0), tone: k === "not_ready" && W.counts[k] ? "bad" : k === "ready_unfunded" && W.counts[k] ? "warn" : "" }))));
+  for (const [k, t, g, c] of WCLS) {
+    const rows = W.rows.filter((r) => r.cls === k); if (!rows.length) continue;
+    const h = secHead(t, rows.length); h.querySelector("h2").prepend(glyph("", g, c), " "); m.append(h);
+    const gr = el("div", "grid fam-eng");
+    for (const r of rows) {
+      const cd = el("div", "card" + (c === "bad" ? " bad" : c === "warn" ? " warn" : "")); cd.append(el("div", "t", r.scope || r.no || "مهمة"), el("div", "st", (r.project || "") + " · " + dmy(r.date)));
+      const kv = el("div", "kv"); kv.append(el("span", "", "الفريق"), el("b", "", r.team || "غير محدد"), el("span", "", "الهدف"), el("b", "", (r.target ?? "—") + " " + (r.unit || "")));
+      if (r.why) kv.append(el("span", "", "السبب"), el("b", c === "bad" ? "neg" : "wv", r.why));
+      cd.append(kv); gr.append(cd);
+    }
+    m.append(gr);
+  }
+  if (!W.rows.length) m.append(el("div", "empty", "لا مهام معتمدة لهذا الأسبوع — تُعتمد المهام من «الخطة اليومية» في التنفيذ والجودة"));
+}
+function startCard(s) {
+  const c = el("div", "card" + (s.ready ? "" : s.blocked.length ? " bad" : " warn"));
+  const top = el("div", "cptop"); top.append(s.ready ? glyph("جاهز للبدء", "✓", "ok") : glyph(s.blocked.length ? "غير جاهز" : "غير متحقق", s.blocked.length ? "!" : "?", s.blocked.length ? "bad" : "unk")); if (s.code) top.append(el("span", "pcode", s.code));
+  c.append(top, el("div", "t", s.name));
+  const u = el("ul", "checks");
+  for (const k of s.checks) { const li = el("li", k.ok === true ? "ok" : k.ok === false ? "no" : "unk"), i = el("i", "", k.ok === true ? "✓" : k.ok === false ? "✗" : "?"); i.setAttribute("aria-hidden", "true"); const nm = el("span", "", k.t); if (k.ok !== true) nm.append(" ", el("span", "", k.ok === null ? "— غير معروف" : "— ناقص")); li.append(i, nm, el("small", "", k.why)); u.append(li); }
+  c.append(u); return c;
+}
+function cmdStarts(m, C) {
+  const S = C.starts || { starts: [], conflicts: [] };
+  m.append(el("p", "small muted", S.note || ""));
+  if (S.conflicts.length) { const r = el("div", "res warn"); r.append(el("b", "", "تعارض موارد بين البدايات"), ...S.conflicts.map((t) => el("div", "", t))); m.append(r); }
+  m.append(secHead("مشاريع لم تبدأ", S.starts.length, "كل شرط: متحقق ✓ أو ناقص ✗ أو غير معروف ? مع سببه. الاقتراح هنا لا يغيّر عقداً ولا تاريخاً."));
+  if (!S.starts.length) { m.append(el("div", "empty", "لا مشاريع بحالة «لم يبدأ» في التوقع")); return; }
+  const g = el("div", "clist"); for (const s of S.starts) g.append(startCard(s)); m.append(g);
+}
+function ladder(st, L, reached) {
+  const w = el("ol", "lad"); w.setAttribute("aria-label", "سلّم التحصيل");
+  for (const { k, t } of L) {
+    const v = st ? st[k] : null, li = el("li", (v === true ? "y" : v === false ? "n" : "u") + (k === reached ? " cur" : "")), i = el("i");
+    li.title = t + " · " + (v === true ? "ثابت بالسجلات" : v === false ? "لم يتحقق" : "غير مسجّل"); li.append(i, el("span", "", t), el("b", "sr-only", v === true ? "ثابت" : v === false ? "لم يتحقق" : "غير مسجّل")); w.append(li);
+  }
+  return w;
+}
+function rcvCard(r, L, money, common) {
+  const c = el("div", "card" + (r.queue === "overdue" ? " bad" : r.queue === "accepted_unclaimed" ? " warn" : ""));
+  c.append(el("div", "t", r.label), el("div", "st", r.code || r.project || ""));
+  const lt = (L.find((x) => x.k === r.reached) || {}).t;
+  const rl = el("div", "small"); rl.append(el("span", "muted", "آخر درجة ثابتة:"), " ", el("b", "", lt || "لا شيء بعد")); c.append(ladder(r.ladder, L, r.reached), rl);
+  const kv = el("div", "kv"), add = (k, v, cls) => { if (v === null || v === undefined || v === "") return; kv.append(el("span", "", k), el("b", cls || "", v)); };
+  add("المتوقع", r.expected ? dmy(r.expected) + (r.basis ? " · " + (BASIS[r.basis] || r.basis) : "") : "غير مجدول", r.expected ? "" : "wv");
+  if (r.overdue) add("متأخر", ageT(r.overdue).replace("منذ ", ""), "neg");
+  add("الخطوة التالية", r.next); add("المسؤول", r.owner);
+  if (money && r.money) { add("القيمة شاملة الضريبة", fmt(r.money.gross)); add("قبل الضريبة", fmt(r.money.netExVat)); if (r.money.prior) add("محصّل منها سابقاً", fmt(r.money.prior)); add("مدفوعات قبلها في التوقع", fmt(r.money.payBefore)); }
+  c.append(kv);
+  if (money && r.money && r.money.payBeforeItems.length) { const h = el("details", "hist"), ol = el("ol"); h.append(el("summary", "", "المدفوعات المنسوبة لهذا التحصيل")); for (const e of r.money.payBeforeItems) ol.append(el("li", "", e.label + " — " + fmt(e.amount) + " · " + (BASIS[e.basis] || e.basis || ""))); h.append(ol); c.append(h); }
+  const unk = (r.unknown || []).filter((t) => !(common || []).includes(t));
+  if (unk.length) { const tg = el("div", "tags"); for (const t of unk) tg.append(el("span", "pill", t)); c.append(tg); }
+  return c;
+}
+function nearChart(near, floor) {
+  const box = el("div"), vals = near.map((x) => x.bal).concat([floor || 0, 0]), mx = Math.max(...vals), mn = Math.min(...vals), sp = (mx - mn) || 1, y = (v) => ((mx - v) / sp) * 100;
+  const ch = el("div", "w13 d28"), z = el("i", "z"); z.style.top = y(0) + "%"; ch.append(z);
+  if (floor) { const f = el("i", "fl"); f.style.top = y(floor) + "%"; ch.append(f); }
+  for (const x of near) { const c = el("div", "c"), b = el("i", x.bal < 0 ? "n" : x.bal < (floor || 0) ? "u" : ""), t = Math.min(y(0), y(x.bal)); b.style.top = t + "%"; b.style.height = Math.max(0.8, Math.abs(y(0) - y(x.bal))) + "%"; c.title = dmy(x.date) + ": " + acc(x.bal); c.append(b); ch.append(c); }
+  const low = near.reduce((a, x) => (x.bal < a.bal ? x : a), near[0]);
+  ch.setAttribute("role", "img"); ch.setAttribute("aria-label", "الرصيد اليومي المتوقع لـ28 يوماً: أدناه " + acc(low.bal) + " في " + dmy(low.date));
+  const ax = el("div", "w13x"); ax.style.gridTemplateColumns = "repeat(28,minmax(0,1fr))"; near.forEach((x, i) => ax.append(el("span", "", i % 7 === 0 ? dmy(x.date) : "")));
+  const lg = el("div", "w13l"); lg.append(el("span", "", "الرصيد اليومي لـ28 يوماً — السيناريو الأساسي")); if (floor) lg.append(el("span", "", "الخط المتقطع: الحد الأدنى"));
+  box.append(ch, ax, lg); return box;
+}
+function protPanel(C, money) {
+  const box = el("section", "panel prot"); box.append(el("h3", "", "حماية النقد"));
+  if (!C.cash) { box.append(el("p", "muted", "التوقع النقدي غير متاح لهذا الحساب")); return box; }
+  const pr = C.cash.protection || {}, b = (C.cash.scenarios || {}).base || {};
+  if (b.protect) {
+    const bg = el("div", "big bad"); bg.append(el("span", "", "عجز متوقع من " + dmy(b.protect.from) + (b.protect.to ? " إلى " + dmy(b.protect.to) : "")), " ", el("span", "", "(" + dayN(b.protect.days) + ")")); box.append(bg);
+    const kv = el("div", "kv"); if (money) kv.append(el("span", "", "أكبر فجوة تحت الحد"), el("b", "neg", fmt(b.protect.gap)));
+    kv.append(el("span", "", "القرار مطلوب قبل"), el("b", "wv", dmy(b.protect.decideBy))); box.append(kv);
+    if ((b.protect.affected || []).length) box.append(dsec("التزامات في فترة العجز", b.protect.affected.slice(0, 8).map((a) => typeof a === "string" ? a : a.label + " · " + dmy(a.date) + (money && a.amount !== undefined ? " · " + fmt(a.amount) : "") + (a.basis ? " · " + (BASIS[a.basis] || a.basis) : ""))));
+  } else box.append(el("div", "big ok", "لا عجز تحت الحد في السيناريو الأساسي خلال 13 أسبوعاً"));
+  if (money) {
+    const kv = el("div", "kv");
+    kv.append(el("span", "", "الاحتياطي التشغيلي"), el("b", pr.reserveSet ? "" : "wv", pr.reserveSet ? fmt(pr.reserve) : "غير معتمد"), el("span", "", "أموال مقيدة لغرضها"), el("b", "", fmt(pr.restricted || 0)), el("span", "", "الحد الأدنى للرصيد"), el("b", "", fmt(pr.floor || 0)));
+    if (b.lowest) kv.append(el("span", "", "أدنى رصيد متوقع"), el("b", b.lowest.amount < 0 ? "neg" : "", acc(b.lowest.amount) + " · " + dmy(b.lowest.date)));
+    box.append(kv);
+    if ((pr.restrictedParts || []).length) box.append(dsec("المقيد", pr.restrictedParts.map((x) => x.why + " · " + fmt(x.amount))));
+    if ((b.near || []).length) box.append(nearChart(b.near, pr.floor));
+    if (pr.note) box.append(el("p", "small muted", pr.note));
+  } else if (!pr.reserveSet) box.append(el("p", "small muted", "الاحتياطي التشغيلي غير معتمد بعد"));
+  const L = C.labour;
+  if (L) {
+    const s = (a) => (Array.isArray(a) ? a.reduce((t, x) => t + (+x.expected || +x.amount || 0), 0) : null);
+    box.append(dsec("العمالة المستأجرة في التوقع", money && Array.isArray(L.expected) ? ["متوقع للطلبات المعتمدة: " + fmt(s(L.expected)) + (L.expectedUnknown ? " (" + L.expectedUnknown + " بلا سعر متفق)" : ""), "معتمد غير مفوتر: " + fmt(s(L.payable)), "مفوتر غير مدفوع: " + fmt(s(L.invoiced))]
+      : ["طلبات معتمدة: " + (Array.isArray(L.expected) ? L.expected.length : L.expected), "كشوف معتمدة غير مفوترة: " + (Array.isArray(L.payable) ? L.payable.length : L.payable), "فواتير غير مدفوعة: " + (Array.isArray(L.invoiced) ? L.invoiced.length : L.invoiced)]));
+  }
+  return box;
+}
+function cmdColl(m, C, money) {
+  const K = C.collection || { rows: [], queues: [], ladder: [] };
+  m.append(protPanel(C, money));
+  m.append(secHead("سلّم التحصيل", undefined, K.note));
+  const lg = ladder(Object.fromEntries(K.ladder.map((x) => [x.k, true])), K.ladder, null); lg.classList.add("lg"); m.append(lg);
+  m.append(el("p", "small muted", "في كل بطاقة: الدائرة الممتلئة درجة ثابتة بالسجلات، الفارغة لم تتحقق، والمتقطعة غير مسجّلة."));
+  const common = K.rows.length ? (K.rows[0].unknown || []).filter((t) => K.rows.every((r) => (r.unknown || []).includes(t))) : [];
+  if (common.length) { const cp = el("p", "small wv"); cp.append(el("span", "", "غير مسجّل لكل الدفعات:")); common.forEach((t, i) => cp.append(i ? "؛ " : " ", el("span", "", t))); m.append(cp); }
+  for (const q of K.queues) {
+    if (!q.items.length) continue;
+    m.append(secHead(q.t, q.items.length, money && q.total ? "المجموع قبل الضريبة " + fmt(q.total) : undefined));
+    const g = el("div", "grid fam-acc"); for (const r of q.items) g.append(rcvCard(r, K.ladder, money, common)); m.append(g);
+  }
+  const rest = K.rows.filter((r) => !r.queue);
+  if (rest.length) { const d = el("details", "hist"); d.append(el("summary", "", "دفعات أخرى في التوقع (" + rest.length + ")")); const g = el("div", "grid fam-acc"); for (const r of rest) g.append(rcvCard(r, K.ladder, money, common)); d.append(g); m.append(d); }
+  if (!K.rows.length) m.append(el("div", "empty", "لا دفعات في التوقع"));
+}
+function cmdReview(m, C, money) {
+  m.append(el("p", "small muted", "جدول الاجتماع من السجلات: ما يحتاج قراراً أولاً، ثم المشاريع الحرجة والنقد والبدايات والتحصيل. القرار يُسجَّل بمهام لها مسؤول وموعد."));
+  const today = rToday(), iv = (C.interventions || []).filter((x) => x.status !== "resolved");
+  const need = iv.filter((x) => x.status === "escalated" || x.id === "d:cash" || (x.due && x.due < today) || x.status === "open");
+  const ag = el("div", "agenda"); m.append(ag);
+  ag.append(secHead("بنود للقرار", need.length));
+  if (need.length) { const g = el("div", "clist"); for (const x of need) g.append(ivCard(x)); ag.append(g); } else ag.append(el("div", "empty", "لا بنود تنتظر قراراً"));
+  const crit = (C.projects || []).filter((p) => p.status === "critical");
+  ag.append(secHead("المشاريع الحرجة", crit.length));
+  if (crit.length) { const g = el("div", "grid"); for (const p of crit) g.append(cprojCard(p, money)); ag.append(g); } else ag.append(el("div", "empty", "لا مشاريع حرجة"));
+  ag.append(secHead("النقد", undefined)); ag.append(protPanel(C, money));
+  const ns = ((C.starts || {}).starts || []).filter((s) => !s.ready);
+  ag.append(secHead("بدايات غير جاهزة", ns.length));
+  if (ns.length) { const g = el("div", "clist"); for (const s of ns) g.append(startCard(s)); ag.append(g); } else ag.append(el("div", "empty", "لا بدايات معلقة"));
+  const qs = ((C.collection || {}).queues || []).filter((q) => q.items.length && ["overdue", "accepted_unclaimed", "awaiting_approval"].includes(q.k));
+  ag.append(secHead("التحصيل", qs.reduce((t, q) => t + q.items.length, 0)));
+  if (qs.length) { const kv = el("div", "box"), k2 = el("div", "kv"); for (const q of qs) k2.append(el("span", "", q.t), el("b", "", q.items.length + (money && q.total ? " · " + fmt(q.total) : ""))); kv.append(k2); ag.append(kv); }
+  else ag.append(el("div", "empty", "لا تحصيل متأخر أو غير مُطالب به"));
+  const done = (C.interventions || []).filter((x) => (x.decisions || []).length);
+  if (done.length) { ag.append(secHead("قرارات سابقة ومتابعة مهامها", done.length)); const g = el("div", "clist"); for (const x of done) g.append(ivCard(x)); ag.append(g); }
+}
+// «الموارد والعمالة → العمالة المستأجرة»: the bot's sections (core/labour.ts) with their actions; equipment has no records yet
+const RTABS = [{ k: "req", t: "الطلبات والحضور", ids: ["lreq", "ltsh"] }, { k: "sup", t: "الموردون والشروط", ids: ["lsup"] }, { k: "wk", t: "العمال", ids: ["lwk"] }, { k: "inv", t: "الفواتير", ids: ["linv"] }];
+function resView(m) {
+  const T = TABS.find((x) => x.v === "res");
+  m.append(page("", T.t, "العمالة المستأجرة: الطلب، الاعتماد، الإرسال، الوصول، التوزيع، الحضور والإنتاج، الكشف، الفاتورة، ثم الدفع. منفصلة عن رواتب الفرق وعن عقود الباطن بالإنتاج.", T.fam));
+  m.append(el("p", "small muted", "المعدات: لا يوجد سجل تخصيص معدات بعد، فتظهر في مركز القيادة «غير معروف»."));
+  const avail = RTABS.filter((x) => x.ids.some((i) => sec(i)));
+  if (!avail.length) return;
+  if (!avail.some((x) => x.k === RT)) RT = avail[0].k;
+  const st = el("div", "sub-tabs mtabs");
+  for (const x of avail) { const b = el("button", "", x.t); b.type = "button"; b.setAttribute("aria-current", String(RT === x.k)); b.onclick = () => { RT = x.k; draw(); }; st.append(b); }
+  m.append(st);
+  for (const id of avail.find((x) => x.k === RT).ids) { const s = sec(id); if (!s) continue; m.append(secHead(s.title, s.table ? s.table.rows.length : undefined, noteOf(s)), ...cards(s, "eng")); }
+}
+// ===== the office wall display (role «display»): one shared screen, read-only. The bot sends statuses only (no amounts, no personal
+// data) and refuses every action from this account; approvals happen in each person's own session. Panels rotate (pause / next);
+// critical interventions stay on the side; the data refreshes every 5 minutes and an old copy says so.
+let WALL = { i: 0, paused: false, t: null, r: null, ok: 0, lock: null };
+const WDUR = 20000;
+function wallStart(j) {
+  D = { ...j, sections: [], roles: [], wall: true }; WALL.ok = Date.now();
+  document.body.classList.add("wallmode"); $("tabs").hidden = true;
+  try { if (navigator.wakeLock && !WALL.lock) navigator.wakeLock.request("screen").then((l) => { WALL.lock = l; }).catch(() => {}); } catch {}
+  if (!WALL.r) WALL.r = setInterval(wallRefresh, 5 * 60000);
+  draw();
+}
+async function wallRefresh() {
+  try { const r = await fetch(API, { headers: { "x-form-token": token } }); if (r.status === 401) { clearInterval(WALL.r); WALL.r = null; return signIn("", "انتهت جلسة الشاشة — سجّل الدخول من جديد"); } const j = await r.json(); if (r.ok && j.display) { D = { ...j, sections: [], roles: [], wall: true }; WALL.ok = Date.now(); } } catch {}
+  if (D && D.wall) draw();
+}
+function wallPanels(X) {
+  const ps = X.projects || [], P = [];
+  for (let i = 0; i < Math.max(1, ps.length); i += 20) P.push(["المشاريع" + (ps.length > 20 ? " (" + (i / 20 + 1) + "/" + Math.ceil(ps.length / 20) + ")" : ""), (b) => {
+    const g = el("div", "wgrid");
+    for (const p of ps.slice(i, i + 20)) {
+      const t = el("div", "wtile" + (p.status === "critical" ? " bad" : p.status === "attention" ? " warn" : "")), top = el("div", "cptop"); top.append(stBadge(p.status)); if (p.code) top.append(el("span", "pcode", p.code));
+      t.append(top, el("div", "n", p.name), el("div", "m" + (p.fresh === "stale" || p.fresh === "none" ? " w" : ""), FRESH[p.fresh] + (p.fieldDays !== null && p.fieldDays !== undefined ? " · " + ageT(p.fieldDays) : "")));
+      if (p.problems.length) t.append(el("div", "m w", p.problems[0] + (p.problems.length > 1 ? " · +" + (p.problems.length - 1) : "")));
+      if (p.next) t.append(el("div", "m", "التحصيل التالي: " + String(p.next.label).replace(p.name + " — ", "") + (p.next.date ? " · " + dmy(p.next.date) : "")));
+      g.append(t);
+    }
+    if (!ps.length) g.append(el("div", "empty", "لا مشاريع"));
+    b.append(g);
+  }]);
+  P.push(["خطة الأسبوع", (b) => {
+    const W = X.week || { rows: [], counts: {} }, big = el("div", "wbig");
+    for (const [k, t, g, c] of WCLS) { const d = el("div"); d.append(el("b", "", String(W.counts[k] || 0)), glyph(t, g, c)); big.append(d); }
+    b.append(big);
+    const nr = W.rows.filter((r) => r.cls === "not_ready"); if (nr.length) { const g = el("div", "wgrid"); for (const r of nr.slice(0, 9)) { const t = el("div", "wtile bad"); t.append(el("div", "n", (r.scope || r.no) + " — " + r.project), el("div", "m w", r.why)); g.append(t); } b.append(g); }
+    else if (!W.rows.length) b.append(el("p", "m", W.note || ""));
+  }]);
+  P.push(["التنفيذ والتحصيل", (b) => {
+    const K = X.collection || { queues: [] }, big = el("div", "wbig");
+    for (const q of K.queues) { const d = el("div"); d.append(el("b", "", String(q.items.length)), el("span", "", q.t)); big.append(d); }
+    b.append(big);
+    const pr = X.cash && X.cash.scenarios && X.cash.scenarios.base && X.cash.scenarios.base.protect;
+    b.append(el("div", "wstale", pr ? "عجز نقدي متوقع من " + dmy(pr.from) + " — القرار مطلوب قبل " + dmy(pr.decideBy) : "لا عجز نقدي متوقع تحت الحد في السيناريو الأساسي"));
+  }]);
+  P.push(["بدء المشاريع", (b) => {
+    const S = (X.starts || {}).starts || [], g = el("div", "wgrid");
+    for (const s of S) { const t = el("div", "wtile" + (s.ready ? "" : s.blocked.length ? " bad" : " warn")); t.append(el("div", "n", s.name), s.ready ? glyph("جاهز للبدء", "✓", "ok") : glyph(s.blocked.length + " ناقص · " + s.unknown.length + " غير معروف", s.blocked.length ? "!" : "?", s.blocked.length ? "bad" : "unk")); g.append(t); }
+    if (!S.length) g.append(el("div", "empty", "لا مشاريع بانتظار البدء")); b.append(g);
+  }]);
+  return P;
+}
+function wallView(m) {
+  m.replaceChildren(); m.classList.remove("full"); clearTimeout(WALL.t); clearInterval(WALL.c);
+  const X = D.display, P = wallPanels(X); if (WALL.i >= P.length) WALL.i = 0;
+  const top = el("div", "wtop"), clock = el("div", "clock"), tick = () => { clock.textContent = new Date().toLocaleTimeString(LANG === "en" ? "en-GB" : "ar-SA-u-nu-latn", { hour: "2-digit", minute: "2-digit" }); };
+  tick(); top.append(el("h1", "", "مؤسسة طاء — العمليات الآن"), clock, el("span", "wsp"));
+  const k = X.counts || {}, cn = el("div", "wcounts");
+  for (const [n, s] of [[k.critical || 0, "critical"], [k.attention || 0, "attention"], [k.unknown || 0, "unknown"]]) { const sp = el("span"); sp.append(stBadge(s), el("b", "", String(n))); cn.append(sp); }
+  top.append(cn);
+  const ctl = el("div", "wctl"), pz = el("button", "sbtn", WALL.paused ? "تشغيل التدوير" : "إيقاف مؤقت"), nx = el("button", "sbtn", "التالي");
+  pz.type = nx.type = "button"; pz.onclick = () => { WALL.paused = !WALL.paused; draw(); }; nx.onclick = () => { WALL.i = (WALL.i + 1) % P.length; draw(); }; ctl.append(pz, nx); top.append(ctl);
+  m.append(top);
+  const age = Math.floor((Date.now() - Date.parse(D.at)) / 60000);
+  if (age > 15) m.append(el("div", "wstale", "البيانات المعروضة من " + new Date(D.at).toLocaleTimeString(LANG === "en" ? "en-GB" : "ar-SA-u-nu-latn", { hour: "2-digit", minute: "2-digit" }) + " — تعذّر التحديث منذ " + age + " دقيقة"));
+  m.append(syncBar(X));
+  const w = el("div", "wall"), pn = el("section", "wpanel"), pg = el("div", "wprog"), bar = el("i", WALL.paused ? "" : "run");
+  pn.style.setProperty("--wdur", WDUR / 1000 + "s"); pg.append(bar); pn.setAttribute("aria-live", "polite");
+  const [title, fill] = P[WALL.i]; pn.append(pg, el("h2", "", title)); fill(pn);
+  const side = el("aside", "wside"), today = rToday(), iv = (X.interventions || []).filter((x) => x.status !== "resolved").sort((a, b) => (b.status === "escalated" || (b.due && b.due < today) ? 1 : 0) - (a.status === "escalated" || (a.due && a.due < today) ? 1 : 0));
+  side.append(el("h2", "", "تدخلات مطلوبة (" + iv.length + ")"));
+  for (const x of iv.slice(0, 7)) { const late = x.due && x.due < today, d = el("div", "wiv" + (late || x.status === "escalated" ? " bad" : "")); d.append(el("b", "", x.what), el("span", "", (x.project || "") + " · " + (x.ownerName || x.owner || "بلا مسؤول") + (x.due ? " · " + dmy(x.due) + (late ? " — متأخر" : "") : ""))); side.append(d); }
+  if (!iv.length) side.append(el("div", "empty", "لا تدخلات مفتوحة"));
+  if (iv.length > 7) side.append(el("div", "small muted", "و" + (iv.length - 7) + " غيرها"));
+  w.append(pn, side); m.append(w);
+  WALL.c = setInterval(tick, 30000); WALL.t = setTimeout(() => { if (!WALL.paused) { WALL.i = (WALL.i + 1) % P.length; } if (D && D.wall) draw(); }, WALL.paused ? 60000 : WDUR);
 }
 // «المشتريات»: what the sites asked for, what was bought (and on whose account), and the suppliers with what we owe them
 // owner, 10 Nov 2026 («ادارة المشتريات مبعثرة»): three questions, three tabs — who do we owe (one card per supplier = his Qoyod
@@ -2533,7 +3303,7 @@ function moneyView(m) {
 // History: every place in the dashboard is a history entry (same URL — the hash holds the personal token), so the phone's
 // back gesture goes back one step instead of leaving the dashboard.
 let navRestoring = false;
-const navState = () => ({ view, rec, recTab, MT, BT, ST, MORE });
+const navState = () => ({ view, rec, recTab, MT, BT, ST, MORE, CT, RT });
 function navSync() {
   const s = navState(), k = JSON.stringify(s), cur = history.state && history.state.k;
   if (cur === k) return;
@@ -2553,14 +3323,14 @@ window.addEventListener("popstate", (e) => {
   const s = e.state && e.state.s; if (!s || !D) return;
   if ($("dlg").open) { navPopping = true; try { $("dlg").close(); } finally { navPopping = false; } }
   if (e.state.k === JSON.stringify(navState())) return; // only the dialog step was left
-  ({ view, rec, recTab, MT, BT, ST, MORE } = s);
+  ({ view, rec, recTab, MT, BT, ST, MORE } = s); if (s.CT) CT = s.CT; if (s.RT) RT = s.RT;
   navRestoring = true; try { draw(); } finally { navRestoring = false; }
   window.scrollTo(0, 0);
 });
 let lastPlace = "";
 function draw() {
   drawView(); navSync(); showActiveTabs();
-  const m = $("main"), k = [view, rec, MORE, MT, BT, ST, recTab].join("|");
+  const m = $("main"), k = [view, rec, MORE, MT, BT, ST, recTab, CT, RT].join("|");
   if (k !== lastPlace) { const first = !lastPlace; lastPlace = k; m.classList.remove("enter"); void m.offsetWidth; m.classList.add("enter"); if (!first && !navRestoring) m.focus({ preventScroll: true }); }
 }
 // the active tab and sub-tab are always visible on a phone: the bar scrolls sideways only (never the page up or down)
@@ -2581,6 +3351,7 @@ function linkLabels(root) {
   }
 }
 function drawView() {
+  if (D.wall) return wallView($("main"));
   renderTabs();
   const m = $("main"); m.replaceChildren(); m.classList.remove("full");
   document.body.classList.toggle("chatonly", !!D.chatOnly);
@@ -2595,6 +3366,8 @@ function drawView() {
   if (view === "data") return renderData(m);
   if (view === "sales") return salesContracts(m);
   if (view === "subc") return subcView(m);
+  if (view === "cmd") return D.cmd ? cmdView(m) : (view = "home", home(m));
+  if (view === "res") return resView(m);
   const T = TABS.find((x) => x.v === view);
   m.append(page(T.t.slice(0, 1), T.t, null, T.fam));
   for (const id of T.ids) { const s = sec(id); if (!s) continue; m.append(secHead(s.title, s.table ? s.table.rows.length : undefined, noteOf(s)), ...cards(s, T.f)); }
@@ -4894,6 +5667,7 @@ async function load(keep) {
     const j = await r.json().catch(() => ({}));
     if (r.status === 401) return signIn("", j.error || "انتهت الجلسة — سجّل الدخول من جديد");
     if (!r.ok) return fail(r.status === 403 ? "غير مصرح" : "تعذّر التحميل", j.error || "حاول مرة أخرى بعد قليل.");
+    if (j.display) return wallStart(j); // the shared office screen: read-only, statuses only
     D = j;
     $("who").textContent = D.name; $("roles").textContent = D.roles.join(" · ") + " · آخر تحديث " + new Date(D.at).toLocaleTimeString(LANG === "en" ? "en-GB" : "ar-SA-u-nu-latn", { hour: "2-digit", minute: "2-digit" });
     const mo = $("mode"); mo.hidden = false; mo.replaceChildren(el("span", "bl", "الوضع: "), document.createTextNode(D.mode)); mo.className = "badge" + (D.mode === "فعلي" ? " ok" : D.mode === "إيقاف آمن" ? " bad" : "");

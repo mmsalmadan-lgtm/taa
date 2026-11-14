@@ -187,6 +187,23 @@ card or page · finance things live under المالية, purchases under الم
   at 390/1280/EN: every new sub-tab, no horizontal scroll, an action form submitted (body checked). The only console errors come from the
   mock answering `op purchases`/`op matbudget` with `{ok:true}` (pre-existing boxes that expect real data).
 
+## Project Command Center, rented labour, wall display (spec 14 Nov 2026, stage 1)
+- Nav «مركز القيادة» (`TABS` cmd, shown when `D.cmd`; `cmdView`, sub-tabs `CTABS`/`CT`): العمليات الآن (`cmdNow`: counts, `syncBar` — field /
+  figures / Qoyod times kept apart, old or missing says so in words —, interventions `ivCard`, the map note, project cards `cprojCard` →
+  `cprojDlg`), خطة الأسبوع (`cmdWeek`, classes `WCLS`), بدء المشاريع (`cmdStarts`/`startCard`, checks ✓ ✗ ?), التنفيذ والتحصيل (`cmdColl`:
+  `protPanel` with the 28-day `nearChart`, the ladder `ladder()`, queues of `rcvCard`; what is unknown on every receipt is said once),
+  اجتماع الإدارة (`cmdReview`, an agenda). Statuses carry a glyph AND a word (`stBadge`, `glyph`), never colour alone.
+- Interventions act through the generic `actForm` with the pseudo-section `ivSec()` = `{id:"cmdiv", data: D.cmd.iv}`; a derived item offers
+  «متابعة كتدخل» (the «new» form prefilled from the record). Amounts appear only when the bot sent them (`cash.protection.floor` present).
+- Nav «الموارد والعمالة» (`resView`, `RTABS`/`RT`): the bot's lsup/lwk/lreq/ltsh/linv sections, generic cards and actions.
+- Wall display: a GET answer with `display` (role «display») → `wallStart` (body.wallmode, no nav) → `wallView`: rotating panels
+  (`wallPanels`, 20 s, pause / next, progress rule off under reduced motion), open interventions always on the side, refresh every 5 min
+  (`wallRefresh`), a stale banner when the data is older than 15 min, a screen wake lock. The bot strips amounts; the page shows none.
+- `actForm`: a required select with no value starts on «— اختر —» (no silent first-option default).
+- Checked with `scratchpad rd/cc.cjs` (mocks `p7/dash_cc.json`, `dash_cc_eng.json`, `dash_wall.json` from `p7/gen_cc.mts`: the bot's own
+  command.ts/labour.ts on controlled records): 390/1280/EN, engineer view has no riyal sign, wall 1920×1080 + phone, rotation and pause,
+  an intervention action body, no horizontal scroll, no console errors.
+
 ## How to change and verify (the owner expects Claude to check its own work)
 1. `git fetch && git checkout -B <branch> origin/main` (always from a fresh main — PRs are squash-merged).
 2. Test locally: `python3 -m http.server 8765` in the repo + Playwright (Chromium is pre-installed), routing the API to mock
