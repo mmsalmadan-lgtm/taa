@@ -34,7 +34,7 @@
  --f-disp:"SAR","Readex Pro","IBM Plex Sans Arabic","Segoe UI",Tahoma,system-ui,sans-serif;
  --r-s:8px;--r-m:12px;--r-l:16px;
  --sh-lift:0 10px 24px -14px rgb(29 37 51/.28);--sh-pop:0 28px 70px -20px rgb(29 37 51/.42);
- --ease:cubic-bezier(.2,.8,.2,1);--spring:cubic-bezier(.34,1.4,.5,1);
+ --ease:cubic-bezier(.2,.8,.2,1);--spring:cubic-bezier(.22,1,.36,1); /* no overshoot: a settle, not a bounce (pilot detector, 15 Nov 2026) */
  color-scheme:light;
 }
 *{box-sizing:border-box}[hidden]{display:none!important}
@@ -135,7 +135,7 @@ body:has(#tabs[hidden]) .gh{display:none}body:has(#tabs[hidden]) main{padding-to
 .kpi .s{font-size:12px;color:var(--muted);margin-top:2px}
 .kpi[data-f="in"]{--fam:var(--acc6);--vc:var(--acc9)}.kpi[data-f="out"]{--fam:var(--out);--vc:var(--out)}.kpi[data-f="cash"]{--fam:var(--acc6)}
 .kpi[data-f="eng"]{--fam:var(--eng6);--vc:var(--eng9)}.kpi[data-t="warn"]{--fam:var(--warn6)}.kpi[data-t="bad"]{--fam:var(--crit)}
-.flag{display:inline-block;margin-top:6px;font-size:12px;font-weight:600;padding:1px 9px;border-radius:999px}.flag.warn{background:var(--warn1);color:var(--warn)}.flag.bad{background:var(--crit1);color:var(--crit)}
+.flag{display:inline-block;margin-top:6px;font-size:12px;font-weight:600;padding:4px 10px;line-height:1.4;border-radius:999px}.flag.warn{background:var(--warn1);color:var(--warn)}.flag.bad{background:var(--crit1);color:var(--crit)}
 .kpi.dep,.fcbox.dep,.ldg .dep{opacity:.55}
 
 /* the money ledger on home: what comes in, what goes out, the cash */
@@ -172,7 +172,7 @@ button.card:active,.tl:active,.al1:active,.step:active{transform:scale(.985)}
 .pc .mid{display:flex;align-items:center;gap:14px}
 .ring{flex:none}.ring text{font-family:var(--f-text);font-weight:600;font-size:13.5px;fill:var(--ink)}
 .amt{font-family:var(--f-disp);font-size:21px;font-weight:600;color:var(--acc9);white-space:nowrap;font-variant-numeric:tabular-nums;line-height:1.25}.amt-l{font-size:12px;color:var(--muted)}
-.bar{height:6px;background:var(--track);border-radius:3px;overflow:hidden}.bar i{display:block;height:100%;background:var(--acc6);border-radius:3px;transition:width .6s var(--ease)}
+.bar{height:6px;background:var(--track);border-radius:3px;overflow:hidden}.bar i{display:block;height:100%;background:var(--acc6);border-radius:3px} /* no width animation: a layout property (pilot detector) */
 .pcode{display:inline-block;font:600 11.5px/1.65 var(--f-text);direction:ltr;background:var(--ui-1);color:var(--ui-2);border-radius:6px;padding:0 7px;margin-inline-end:7px;vertical-align:2px;font-variant-numeric:tabular-nums;letter-spacing:.02em}
 .mix{display:flex;height:8px;border-radius:4px;overflow:hidden;background:var(--track);gap:1px}.mix i{display:block;height:100%}
 .legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted)}.legend span{display:inline-flex;align-items:center;gap:6px}.legend i,.dot{width:9px;height:9px;border-radius:3px;display:inline-block;flex:none}
@@ -397,7 +397,7 @@ label.chk{display:inline-flex;align-items:center;gap:6px;margin-inline-end:14px;
 .wkt th{font-size:12px;font-weight:600;color:var(--muted);text-align:start;padding:6px 2px;border-bottom:1px solid var(--line)}.wkt th:not(:first-child){text-align:end}
 .subh{margin:12px 0 2px;font-weight:600}
 .pill.prov,.aq .q .prov{background:var(--warn1);color:var(--warn);border-color:color-mix(in srgb,var(--warn6) 35%,var(--surface))}
-.aq .q .prov{font-style:normal;font-size:10.5px;font-weight:600;border:1px solid;border-radius:999px;padding:0 6px;margin-inline-start:6px;white-space:nowrap}
+.aq .q .prov{font-style:normal;font-size:11.5px;font-weight:600;border:1px solid;border-radius:999px;padding:0 6px;margin-inline-start:6px;white-space:nowrap}
 .bsb{display:flex;height:10px;border-radius:5px;overflow:hidden;margin:10px 0 6px;background:var(--track)}.bsb i{display:block;min-width:2px}
 .b-documented{background:var(--acc6)}.b-terms{background:var(--eng6)}.b-assumed{background:var(--warn6)}.b-fallback{background:color-mix(in srgb,var(--crit) 70%,var(--surface))}
 .sw{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px}
@@ -4575,11 +4575,12 @@ function home3(m) {
   const gaps = mine.slice().sort((a, b) => (b.affects || []).length - (a.affects || []).length);
 
   // one line: the size of the day
-  const sum = el("div", "hsum"); sum.setAttribute("role", "list");
-  // each chip jumps to its section (the sections carry the same ids)
+  const sum = el("div", "hsum");
+  // each chip jumps to its section (the sections carry the same ids, always drawn) and moves focus there, so a keyboard or screen-
+  // reader user lands where the eye does; the chips stay plain links (a role on <a> would hide them as links — pilot review)
   const chip = (n, text, none, tone, id) => {
-    const a = el("a", "hchip " + (n ? tone : "ok"), n ? text : none); a.setAttribute("role", "listitem"); a.href = "#" + id;
-    a.onclick = (e) => { e.preventDefault(); const t = $(id); if (t) t.scrollIntoView({ behavior: "smooth", block: "start" }); };
+    const a = el("a", "hchip " + (n ? tone : "ok"), n ? text : none); a.href = "#" + id;
+    a.onclick = (e) => { e.preventDefault(); const t = $(id); if (t) { t.scrollIntoView({ behavior: "smooth", block: "start" }); t.setAttribute("tabindex", "-1"); t.focus({ preventScroll: true }); } };
     return a;
   };
   sum.append(chip(dec.length, arN(dec.length, "قرار ينتظرك", "قراران ينتظرانك", "قرارات تنتظرك", "قراراً ينتظرك"), "لا قرارات تنتظرك", "bad", "h-dec"),
