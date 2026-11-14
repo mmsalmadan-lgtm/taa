@@ -213,6 +213,9 @@ card or page · finance things live under المالية, purchases under الم
 - English covers the page's own labels and the bot's fixed labels; issue titles, evidence and policy reasons come from the bot in Arabic.
 - Checked with `rd/cc.cjs` (mock `p7/dash_cc.json` incl. quality from the bot's `quality.ts`): 390/1280/EN, trace and issue sheets open, no errors.
 
+## Reconciliation questions (14 Nov 2026)
+- The bot's section `asks` («أسئلة المطابقة») sits in «المستندات والسجلات» (generic cards and actions: new / resend / close). EN strings added.
+
 ## How to change and verify (the owner expects Claude to check its own work)
 1. `git fetch && git checkout -B <branch> origin/main` (always from a fresh main — PRs are squash-merged).
 2. Test locally: `python3 -m http.server 8765` in the repo + Playwright (Chromium is pre-installed), routing the API to mock
