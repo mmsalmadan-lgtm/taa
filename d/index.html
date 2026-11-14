@@ -34,7 +34,7 @@
  --f-disp:"SAR","Readex Pro","IBM Plex Sans Arabic","Segoe UI",Tahoma,system-ui,sans-serif;
  --r-s:8px;--r-m:12px;--r-l:16px;
  --sh-lift:0 10px 24px -14px rgb(29 37 51/.28);--sh-pop:0 28px 70px -20px rgb(29 37 51/.42);
- --ease:cubic-bezier(.2,.8,.2,1);--spring:cubic-bezier(.34,1.4,.5,1);
+ --ease:cubic-bezier(.2,.8,.2,1);--spring:cubic-bezier(.22,1,.36,1); /* no overshoot: a settle, not a bounce (pilot detector, 15 Nov 2026) */
  color-scheme:light;
 }
 *{box-sizing:border-box}[hidden]{display:none!important}
@@ -135,7 +135,7 @@ body:has(#tabs[hidden]) .gh{display:none}body:has(#tabs[hidden]) main{padding-to
 .kpi .s{font-size:12px;color:var(--muted);margin-top:2px}
 .kpi[data-f="in"]{--fam:var(--acc6);--vc:var(--acc9)}.kpi[data-f="out"]{--fam:var(--out);--vc:var(--out)}.kpi[data-f="cash"]{--fam:var(--acc6)}
 .kpi[data-f="eng"]{--fam:var(--eng6);--vc:var(--eng9)}.kpi[data-t="warn"]{--fam:var(--warn6)}.kpi[data-t="bad"]{--fam:var(--crit)}
-.flag{display:inline-block;margin-top:6px;font-size:12px;font-weight:600;padding:1px 9px;border-radius:999px}.flag.warn{background:var(--warn1);color:var(--warn)}.flag.bad{background:var(--crit1);color:var(--crit)}
+.flag{display:inline-block;margin-top:6px;font-size:12px;font-weight:600;padding:4px 10px;line-height:1.4;border-radius:999px}.flag.warn{background:var(--warn1);color:var(--warn)}.flag.bad{background:var(--crit1);color:var(--crit)}
 .kpi.dep,.fcbox.dep,.ldg .dep{opacity:.55}
 
 /* the money ledger on home: what comes in, what goes out, the cash */
@@ -172,7 +172,7 @@ button.card:active,.tl:active,.al1:active,.step:active{transform:scale(.985)}
 .pc .mid{display:flex;align-items:center;gap:14px}
 .ring{flex:none}.ring text{font-family:var(--f-text);font-weight:600;font-size:13.5px;fill:var(--ink)}
 .amt{font-family:var(--f-disp);font-size:21px;font-weight:600;color:var(--acc9);white-space:nowrap;font-variant-numeric:tabular-nums;line-height:1.25}.amt-l{font-size:12px;color:var(--muted)}
-.bar{height:6px;background:var(--track);border-radius:3px;overflow:hidden}.bar i{display:block;height:100%;background:var(--acc6);border-radius:3px;transition:width .6s var(--ease)}
+.bar{height:6px;background:var(--track);border-radius:3px;overflow:hidden}.bar i{display:block;height:100%;background:var(--acc6);border-radius:3px} /* no width animation: a layout property (pilot detector) */
 .pcode{display:inline-block;font:600 11.5px/1.65 var(--f-text);direction:ltr;background:var(--ui-1);color:var(--ui-2);border-radius:6px;padding:0 7px;margin-inline-end:7px;vertical-align:2px;font-variant-numeric:tabular-nums;letter-spacing:.02em}
 .mix{display:flex;height:8px;border-radius:4px;overflow:hidden;background:var(--track);gap:1px}.mix i{display:block;height:100%}
 .legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted)}.legend span{display:inline-flex;align-items:center;gap:6px}.legend i,.dot{width:9px;height:9px;border-radius:3px;display:inline-block;flex:none}
@@ -397,7 +397,7 @@ label.chk{display:inline-flex;align-items:center;gap:6px;margin-inline-end:14px;
 .wkt th{font-size:12px;font-weight:600;color:var(--muted);text-align:start;padding:6px 2px;border-bottom:1px solid var(--line)}.wkt th:not(:first-child){text-align:end}
 .subh{margin:12px 0 2px;font-weight:600}
 .pill.prov,.aq .q .prov{background:var(--warn1);color:var(--warn);border-color:color-mix(in srgb,var(--warn6) 35%,var(--surface))}
-.aq .q .prov{font-style:normal;font-size:10.5px;font-weight:600;border:1px solid;border-radius:999px;padding:0 6px;margin-inline-start:6px;white-space:nowrap}
+.aq .q .prov{font-style:normal;font-size:11.5px;font-weight:600;border:1px solid;border-radius:999px;padding:0 6px;margin-inline-start:6px;display:inline-block;max-width:100%;white-space:normal;vertical-align:middle} /* wraps rather than cut: the estimate mark stays readable */
 .bsb{display:flex;height:10px;border-radius:5px;overflow:hidden;margin:10px 0 6px;background:var(--track)}.bsb i{display:block;min-width:2px}
 .b-documented{background:var(--acc6)}.b-terms{background:var(--eng6)}.b-assumed{background:var(--warn6)}.b-fallback{background:color-mix(in srgb,var(--crit) 70%,var(--surface))}
 .sw{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px}
@@ -695,7 +695,14 @@ const BOT = "966551313729";
 const TK = "taa.dash.session";
 const store = { get() { try { const x = JSON.parse(localStorage.getItem(TK) || "null"); return x && x.token && Date.parse(x.exp) > Date.now() ? x : null; } catch { return null; } },
   set(x) { try { localStorage.setItem(TK, JSON.stringify(x)); } catch {} }, clear() { try { localStorage.removeItem(TK); } catch {} } };
-let token = decodeURIComponent((location.hash || "").slice(1)) || (store.get() || {}).token || "";
+// the hash carries a signed link's token — but never one of the page's own section anchors (#h-dec, #ws-first, #ws-all …): a chip
+// opened in a new tab would otherwise send «h-dec» as a token, get 401 and sign the device out of every tab (pilot review, 15 Nov 2026)
+// A malformed hash (a link cut short) is ignored instead of stopping the page; so is a hash naming an element on the page (#main, the
+// skip link) or a section anchor drawn later (#h-…, #ws-…). A hash token that the server rejects falls back to the saved session (load).
+const HASH = (() => { try { return decodeURIComponent((location.hash || "").slice(1)); } catch { return ""; } })();
+const HASH_TOKEN = HASH && !document.getElementById(HASH) && !/^(h|ws)-[a-z]+$/.test(HASH) ? HASH : "";
+let TOKEN_FROM_HASH = !!HASH_TOKEN;
+let token = HASH_TOKEN || (store.get() || {}).token || "";
 const $ = (id) => document.getElementById(id);
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined && text !== null) e.textContent = text; return e; };
 const SAR = "\u20C1";
@@ -3132,7 +3139,7 @@ async function call(body) {
   const r = await fetch(API, { method: "POST", headers: { "content-type": "application/json", ...(token ? { "x-form-token": token } : {}) }, body: JSON.stringify(body) });
   return { status: r.status, j: await r.json().catch(() => ({})) };
 }
-function remember(j) { token = j.token; store.set({ token: j.token, exp: j.exp, name: j.name }); clearHash(); }
+function remember(j) { token = j.token; TOKEN_FROM_HASH = false; store.set({ token: j.token, exp: j.exp, name: j.name }); clearHash(); }
 function signIn(mode, msg) {
   signedOut(); $("tabs").hidden = true;
   const m = $("main"); m.replaceChildren();
@@ -3632,7 +3639,7 @@ function wsView(m) {
     const a = el("a", "hchip " + tone, t);
     if (id.startsWith("ws-all:")) { a.href = "#ws-all"; a.onclick = (e) => { e.preventDefault(); WSG = id.slice(7); WSOPEN = true; draw(); const x = $("ws-all"); if (x) { x.scrollIntoView({ block: "start" }); x.querySelector("summary").focus({ preventScroll: true }); } }; return a; }
     a.href = "#" + id;
-    a.onclick = (e) => { e.preventDefault(); const x = $(id); if (x) { x.scrollIntoView({ behavior: "smooth", block: "start" }); x.setAttribute("tabindex", "-1"); x.focus({ preventScroll: true }); } };
+    a.onclick = (e) => { e.preventDefault(); jumpTo(id); };
     return a;
   };
   const firstN = n(first) + n(leads);
@@ -4575,11 +4582,13 @@ function home3(m) {
   const gaps = mine.slice().sort((a, b) => (b.affects || []).length - (a.affects || []).length);
 
   // one line: the size of the day
-  const sum = el("div", "hsum"); sum.setAttribute("role", "list");
-  // each chip jumps to its section (the sections carry the same ids)
+  const sum = el("div", "hsum");
+  // each chip jumps to its section (the sections carry the same ids, always drawn) and moves focus there, so a keyboard or screen-
+  // reader user lands where the eye does; the chips stay plain links (a role on <a> would hide them as links — pilot review)
   const chip = (n, text, none, tone, id) => {
-    const a = el("a", "hchip " + (n ? tone : "ok"), n ? text : none); a.setAttribute("role", "listitem"); a.href = "#" + id;
-    a.onclick = (e) => { e.preventDefault(); const t = $(id); if (t) t.scrollIntoView({ behavior: "smooth", block: "start" }); };
+    if (!n) return el("span", "hchip ok none", none);  // «لا …»: a label, as in «مساحتي»
+    const a = el("a", "hchip " + tone, text); a.href = "#" + id;
+    a.onclick = (e) => { e.preventDefault(); jumpTo(id); };
     return a;
   };
   sum.append(chip(dec.length, arN(dec.length, "قرار ينتظرك", "قراران ينتظرانك", "قرارات تنتظرك", "قراراً ينتظرك"), "لا قرارات تنتظرك", "bad", "h-dec"),
@@ -5007,6 +5016,15 @@ function setDialog() {
   $("dlg").showModal();
 }
 let introDone = false;
+// a chip's jump to its section (home and «مساحتي»): instant when the device asks for reduced motion (an explicit «smooth» would
+// override the CSS rule), and focus moves there for keyboard and screen-reader users; the temporary tabindex goes when focus leaves
+const smoothB = () => (matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"); // read at each jump: follows a setting changed mid-session
+function jumpTo(id) {
+  const x = $(id); if (!x) return;
+  x.scrollIntoView({ behavior: smoothB(), block: "start" });
+  if (!x.hasAttribute("tabindex")) { x.setAttribute("tabindex", "-1"); x.addEventListener("blur", () => x.removeAttribute("tabindex"), { once: true }); }
+  x.focus({ preventScroll: true });
+}
 // home: the date and a greeting — the figures follow once, below (nothing on home is said twice)
 function hero() {
   const h = el("header", "hero"), now = new Date(), hr = now.getHours();
@@ -5289,7 +5307,7 @@ function chatPanel(first, opts = {}) {
   log.setAttribute("aria-live", "polite"); log.setAttribute("role", "log"); ti.rows = 1; ti.placeholder = opts.placeholder || "اكتب ردك إن طلبه البوت"; ti.setAttribute("aria-label", "ردك"); sb.type = "submit";
   form.append(att, ti, sb); wrap.append(log, form);
   const st = { busy: false, moved: false };
-  const scroll = () => { log.scrollTop = log.scrollHeight; if (opts.page) wrap.scrollIntoView({ block: "end", behavior: "smooth" }); };
+  const scroll = () => { log.scrollTop = log.scrollHeight; if (opts.page) wrap.scrollIntoView({ block: "end", behavior: smoothB() }); };
   const mine = (t) => { log.append(el("div", "bub me", t)); scroll(); };
   const say = (m) => {
     const b = el("div", "bub");
@@ -5358,7 +5376,7 @@ function chatPanel(first, opts = {}) {
       if (status !== 200 || !(j.msgs || []).length) return 0;
       const n = j.msgs.length, mark = el("div", "bnote", n === 1 ? "وصلتك هذه الرسالة من البوت" : n === 2 ? "وصلتك رسالتان من البوت" : "وصلتك " + n + " رسائل من البوت");
       log.append(mark); for (const m of j.msgs) say(m);
-      if (opts.page) mark.scrollIntoView({ block: "start", behavior: "smooth" }); else log.scrollTop = mark.offsetTop - log.offsetTop;
+      if (opts.page) mark.scrollIntoView({ block: "start", behavior: smoothB() }); else log.scrollTop = mark.offsetTop - log.offsetTop;
       return j.msgs.length;
     } catch { return 0; }
   }
@@ -6797,7 +6815,12 @@ async function load(keep) {
   try {
     const r = await fetch(API, { headers: { "x-form-token": token } });
     const j = await r.json().catch(() => ({}));
-    if (r.status === 401) return signIn("", j.error || "انتهت الجلسة — سجّل الدخول من جديد");
+    if (r.status === 401) {
+      // a rejected token from the URL never costs a good saved session: drop the hash and use the saved one instead of signing out
+      const saved = store.get();
+      if (TOKEN_FROM_HASH && saved && saved.token !== token) { TOKEN_FROM_HASH = false; token = saved.token; clearHash(); return load(keep); }
+      return signIn("", j.error || "انتهت الجلسة — سجّل الدخول من جديد");
+    }
     if (!r.ok) return fail(r.status === 403 ? "غير مصرح" : "تعذّر التحميل", j.error || "حاول مرة أخرى بعد قليل.");
     if (j.display) return wallStart(j); // the shared office screen: read-only, statuses only
     D = j;
