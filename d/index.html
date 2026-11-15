@@ -3908,7 +3908,7 @@ function mapGeoMarkers(G) {
   const seen = new Set();
   for (const p of G.ps) {
     seen.add(p.id); let mk = G.markers.get(p.id);
-    const wrap = mk ? mk.getElement() : document.createElement("div"); wrap.className = "mgeo";
+    const wrap = mk ? mk.getElement() : document.createElement("div"); wrap.classList.add("mgeo"); // ADD, never replace: Mapbox keeps its own mapboxgl-marker / anchor classes on this element — replacing them on a refresh unpinned every marker (production 15 Nov 2026)
     const b = isoBeacon(p, G.wall); b.classList.toggle("sel", MAPV.sel === p.id); wrap.replaceChildren(b);
     if (!mk) { mk = new mb.Marker({ element: wrap, anchor: "bottom" }).setLngLat([p.geo.lng, p.geo.lat]).addTo(G.map); G.markers.set(p.id, mk); } else mk.setLngLat([p.geo.lng, p.geo.lat]);
   }
