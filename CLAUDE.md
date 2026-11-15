@@ -317,11 +317,17 @@ Known good totals (2026-11-09): contracts 14,259,433.75 · collected 7,751,477.4
 - Ahmed Zaki (S-25-003): see the reconciliation item in «اكتمال البيانات» (audit 600k vs Qoyod 450k).
 
 ## «الخريطة» — first tab of «مركز القيادة» (owner's brief 15 Nov 2026; server: taa-bot core/sitemap.ts)
-- `cmdMap(m, M, wall)` draws `D.cmd.map` (or `D.display.map` on the wall, read-only): projects at their documented coordinates on a light grid
-  with scale and north, or over a Mapbox base map when `M.base` is set (`mapGeo`: ONE map instance per session, markers updated in place,
-  Arabic labels, attribution on; 10 s load timeout or a refused token → the LABELLED grid fallback), each as `mapBuilding()` — footings, beams, columns and slab per
-  floor by recorded state (concrete / formwork + rebar / dashed «غير محدد») with the colour on the base plate AND a glyph; pump + mixer only after a
-  RECORDED start (no spin under reduced motion or on the wall). Zoom buttons, wheel, drag; sizes simplify when small; overlapping sites fan out.
+- `cmdMap(m, M, wall)` draws `D.cmd.map` (or `D.display.map` on the wall) through ONE persistent site model (`ISO`, `isoMount`/`isoUpdate`/`isoRender`; a
+  refresh updates it in place, the camera keeps its place). Isometric, metres; projects at their documented coordinates (`mapPlane`). Far out: lit
+  beacons `.mk.mproj` (code, name, status colour AND drawn icon; overlapping plates collapse by priority red > yellow > grey > green). From
+  `ISO_KM` px/m or on selection: each project's structure from its RECORDED stages (`isoStack`/`isoMode`): concrete (done), fresh concrete (a
+  poured pour still curing), plywood formwork with protruding rebar (pour stages), blue dashed = planned (none), grey dashed = the audit says the
+  floor is in progress but not which part (unk/work), red dashed outline = violation. Starter bars stay above poured columns until their slab is
+  concrete. No machinery, nothing moves at rest; the ONLY stage animation is a recorded change formwork → concrete arriving with fresh data
+  (`ISO.prev` vs now, 1.5 s: concrete rises, formwork goes). Reduced motion: no camera flight, no rise. Zoom: Ctrl/⌘ + wheel, two fingers,
+  buttons, double-click (a plain wheel / one finger keep scrolling the page). Wall: beacons only, no controls. Phone (≤760 px): the details open
+  in a bottom sheet (`isoSheet`, peek 42vh ↔ full). With Mapbox the markers are the same beacons and the panel shows `isoThumb` of the model.
+  The model is a representation of the stage on a standard footprint, said on the page; not the drawings.
 - Side: the alert list (red, yellow, grey) synchronised with the map, then «يحتاج تحديد الموقع» (admin: «تحديد الموقع» → `map.geo`). A chosen
   project replaces the side with `mapPanel` (colour reasons, progress only with an approved method — reported vs verified, levels with source,
   today's recorded work, pours with `mapPour`: readiness, conflict, the three inspection cards with their notes, the next action, obstacles, the next

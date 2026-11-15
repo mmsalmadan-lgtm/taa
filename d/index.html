@@ -599,28 +599,58 @@ body.chatonly footer{display:none}
 .mstat{font-size:12.5px;color:var(--muted);margin:-4px 0 8px}.mstat.old{color:var(--warn)}.mstat b{color:var(--crit)}
 .mwrap{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:14px;align-items:start}
 @media (max-width:980px){.mwrap{grid-template-columns:1fr}}
-.mstage{position:relative;height:min(68vh,600px);min-height:360px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);overflow:hidden;touch-action:pan-x pan-y}
-.msvg{width:100%;height:100%;display:block;cursor:grab;user-select:none}.msvg:active{cursor:grabbing}
-.mgrid line{stroke:#E6EBF0;stroke-width:1}.mscale line{stroke:var(--ink);stroke-width:1.5}.mscale text,.mnorth text{font-size:11px;fill:var(--muted);text-anchor:middle}
-.mnorth path{fill:var(--ink)}.mlead{stroke:var(--field-in);stroke-dasharray:3 3}.mdot{fill:var(--ink)}
-.mctl{position:absolute;top:10px;inset-inline-start:10px;display:flex;flex-direction:column;gap:4px}.mctl .sbtn{min-width:36px;min-height:36px;padding:0;font-size:18px}
-@media (pointer:coarse){.mctl .sbtn{min-width:44px;min-height:44px}}
-.mproj{cursor:pointer;outline:none}.mproj:focus-visible .mb-plate,.mproj.sel .mb-plate{stroke:var(--ink);stroke-width:2.5}
-.mlab{font:600 11px var(--f-disp);text-anchor:middle;paint-order:stroke;stroke:#fff;stroke-width:3px;fill:var(--ink)}
-.mlab.red{fill:var(--crit)}.mlab.yellow{fill:var(--warn)}.mlab.green{fill:var(--acc9)}.mlab.grey{fill:var(--muted)}
-.mb-plate{stroke:#fff;stroke-width:1}.mb-plate.green{fill:#7BC59C}.mb-plate.yellow{fill:#F1C35B}.mb-plate.red{fill:#E57368}.mb-plate.grey{fill:#C3CAD2}
-.mb-el,.mb-col{stroke:#6B7480;stroke-width:.8}
-.mb-el.done,.mb-col.done{fill:#B9C0C8}.mb-el.done.top{fill:#D3D8DE}.mb-col.back{opacity:.7}
-.mb-el.none,.mb-col.none{display:none}
-.mb-el.unk,.mb-col.unk,.mb-el.work,.mb-col.work{fill:none;stroke:#8A94A0;stroke-dasharray:3 2}
-.mb-el.approvals,.mb-el.supply,.mb-el.ready,.mb-col.approvals,.mb-col.supply,.mb-col.ready{fill:#fff}
-.mb-el.form,.mb-col.form{fill:#EBCB9B;stroke:#A0683A}.mb-col.rebar:not(.form){fill:none;stroke:#8B3A2A;stroke-width:1.4}
-.mb-bar{stroke:#8B3A2A;stroke-width:.9}
-.mb-el.pouring,.mb-col.pouring,.mb-el.stale,.mb-col.stale{fill:#9AA3AD;stroke:#4E5662}.mb-el.violation,.mb-col.violation{fill:#E8A29B;stroke:#B42318}
-.mb-pump{stroke:#B45309;stroke-width:2.2;stroke-linecap:round}.mb-drum{fill:#F59E0B;stroke:#92400E;stroke-width:1;transform-box:fill-box;transform-origin:center}
-@media (prefers-reduced-motion:no-preference){.mb-drum.spin{animation:mdrum 1.8s linear infinite}}
-@keyframes mdrum{to{transform:rotate(360deg)}}
-.mb-q{font:700 16px var(--f-disp);fill:var(--warn);text-anchor:middle}.mb-ok{font:700 15px var(--f-disp);fill:var(--acc6);text-anchor:middle}.mb-more{font:600 11px var(--f-text);fill:var(--eng9);text-anchor:end}
+/* the site model (visual brief 15 Nov 2026): lit beacons far out, the structure close in; materials apart from the status colours */
+.mstage{position:relative;height:min(68vh,600px);min-height:360px;background:radial-gradient(120% 90% at 50% 40%,#FAFBF9 0%,#F4F5F2 60%,#ECEFEC 100%);border:1px solid var(--line);border-radius:var(--r-l);overflow:hidden}
+.miso{position:absolute;inset:0;touch-action:pan-y;user-select:none;-webkit-user-select:none;cursor:grab}.miso.drag{cursor:grabbing}.miso.wall{cursor:default}
+.msvg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.mmodel{transition:opacity .28s var(--spring)}.mmodel.off{opacity:0}
+.mov{position:absolute;inset:0;pointer-events:none}
+.mk{position:absolute;left:0;top:0;pointer-events:auto;border:0;background:none;padding:0;margin:0;display:flex;flex-direction:column;align-items:center;transition:opacity .28s var(--spring);will-change:transform;font:inherit;color:inherit;cursor:pointer}
+.mk.off{opacity:0;pointer-events:none}
+.mgeo .mk{position:static;will-change:auto}
+.mk-plate{display:flex;flex-direction:column;align-items:flex-start;gap:1px;background:var(--surface);border-radius:12px;padding:6px 11px;box-shadow:0 12px 26px -16px rgb(29 37 51/.55),0 2px 4px -2px rgb(29 37 51/.18);text-align:start;white-space:nowrap;transition:transform .2s var(--spring),box-shadow .2s var(--spring),opacity .2s var(--spring)}
+.mk-plate b{font:600 13px/1.25 var(--f-disp);font-variant-numeric:tabular-nums}
+.mk-plate .nm{font-size:12px;color:var(--muted);line-height:1.35;max-width:190px;overflow:hidden;text-overflow:ellipsis}
+.mk:hover .mk-plate,.mk:focus-visible .mk-plate{transform:translateY(-3px);box-shadow:0 18px 32px -16px rgb(29 37 51/.6),0 2px 4px -2px rgb(29 37 51/.2)}
+.mk:focus-visible{outline:none}.mk:focus-visible .mk-plate{box-shadow:0 0 0 2px var(--ui),0 18px 32px -16px rgb(29 37 51/.6)}
+.mk.sel .mk-plate{box-shadow:0 0 0 2px var(--ink),0 18px 32px -16px rgb(29 37 51/.6)}
+.mk.mini .mk-plate{opacity:0;pointer-events:none}.mk.mini:hover .mk-plate,.mk.mini:focus-visible .mk-plate{opacity:1}
+.msts{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;line-height:1.2;margin-top:3px;border-radius:999px;padding:2px 8px 2px 7px;width:max-content}
+.msts svg{width:13px;height:13px;flex:none}
+.msts.green{background:var(--acc1);color:var(--acc9)}.msts.yellow{background:var(--warn1);color:var(--warn)}.msts.red{background:var(--crit1);color:var(--crit)}.msts.grey{background:var(--ui-1);color:var(--muted)}
+.mk-stem{width:2px;height:16px;background:linear-gradient(var(--line-2),rgb(29 37 51/.45))}
+.mk-dot{width:16px;height:16px;border-radius:50%;margin-top:-1px;position:relative;background:radial-gradient(circle at 35% 30%,#fff 0 14%,var(--c) 42%,color-mix(in srgb,var(--c) 70%,#000) 100%);box-shadow:0 0 0 5px color-mix(in srgb,var(--c) 22%,transparent),0 0 18px 3px color-mix(in srgb,var(--c) 45%,transparent),0 6px 10px -2px rgb(29 37 51/.35)}
+.mk-dot::after{content:"";position:absolute;left:50%;top:100%;width:26px;height:8px;margin:-2px 0 0 -13px;border-radius:50%;background:radial-gradient(closest-side,rgb(29 37 51/.28),transparent)}
+.st-green{--c:var(--acc6)}.st-yellow{--c:var(--warn6)}.st-red{--c:var(--crit)}.st-grey{--c:#6B7584}
+.mtag2{position:absolute;left:0;top:0;pointer-events:auto;border:0;margin:0;background:rgb(255 255 255/.97);border-radius:10px;padding:4px 10px;display:flex;gap:8px;align-items:center;box-shadow:0 10px 24px -14px rgb(29 37 51/.4);font:inherit;font-size:12px;color:inherit;white-space:nowrap;cursor:pointer}
+.mtag2 b{font:600 12.5px var(--f-disp)}.mtag2 .msts{margin:0}
+.mlvl2{position:absolute;left:0;top:0;font-size:11.5px;color:var(--muted);white-space:nowrap;display:flex;align-items:center;gap:6px;pointer-events:none}
+.mlvl2::after{content:"";width:22px;height:1px;background:var(--line-2)}.mlvl2 b{font-weight:600;color:var(--ink)}
+.mcall2{position:absolute;left:0;top:0;pointer-events:none;direction:ltr;color:var(--ink)}.mcall2.bad{color:var(--crit)}
+.mcall2 svg{position:absolute;left:0;top:0;overflow:visible}.mcall2.flip svg{transform:scaleX(-1)}.mcall2.flip .mcb{left:auto;right:34px}
+.mcb{position:absolute;left:34px;bottom:26px;direction:rtl;width:max-content;max-width:250px;background:var(--ink);color:#fff;border-radius:10px;padding:7px 11px;font-size:12px;line-height:1.45;box-shadow:var(--sh-pop);display:flex;flex-direction:column}
+.mcall2.bad .mcb{background:var(--crit)}.mcb b{font:600 13px var(--f-disp)}.mcb small{color:#D5DBE3;font-size:11.5px}
+.mctl2{position:absolute;top:12px;inset-inline-end:12px;display:flex;flex-direction:column;gap:6px;z-index:3}
+.mz{width:40px;height:40px;border-radius:10px;border:0;margin:0;background:var(--surface);box-shadow:0 8px 20px -10px rgb(29 37 51/.45),0 1px 2px rgb(29 37 51/.12);display:grid;place-items:center;padding:0}
+.mz:hover{background:var(--sunk)}.mz svg{width:18px;height:18px;stroke:var(--ink);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+@media (pointer:coarse){.mz{width:44px;height:44px}}
+.miso.wall .mctl2,.miso.wall .mhint{display:none}
+.mnorth{position:absolute;top:14px;inset-inline-start:14px;width:38px;height:38px;border-radius:50%;background:rgb(255 255 255/.92);display:grid;place-items:center;box-shadow:0 4px 12px -8px rgb(29 37 51/.4);pointer-events:none}.mnorth svg{width:26px;height:26px}
+.mscale2{position:absolute;bottom:12px;inset-inline-start:12px;display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);background:rgb(255 255 255/.92);border-radius:999px;padding:3px 10px;pointer-events:none;font-variant-numeric:tabular-nums}
+.mscale2 i{display:block;height:6px;border:1.5px solid var(--muted);border-top:0}
+.mhint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgb(29 37 51/.84);color:#fff;border-radius:10px;padding:8px 14px;font-size:13px;pointer-events:none;z-index:4}
+.mthumb{width:100%;height:auto;max-height:220px;display:block;background:#F4F5F2;border-radius:var(--r-m)}
+@media (prefers-reduced-motion:reduce){.mk,.mk-plate,.mmodel,.mtag2,.mside.msheet{transition-property:opacity!important;transition-duration:.12s!important}}
+/* phone: the map keeps the full width; the chosen project's details open in a bottom sheet (peek ↔ full, by tap or drag) */
+@media (max-width:760px){
+ .mside.msheet{position:fixed;inset-inline:0;bottom:0;z-index:40;height:84vh;background:var(--surface);border-radius:18px 18px 0 0;box-shadow:0 -18px 40px -22px rgb(29 37 51/.55);transform:translateY(calc(100% - 42vh));transition:transform .36s var(--spring);display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,0px)}
+ .mside.msheet.full{transform:translateY(0)}
+ .mside.msheet.dragging{transition:none}
+ .msheet>.mhandle{flex:none;height:30px;border:0;margin:0;background:none;width:100%;display:flex;justify-content:center;align-items:center;touch-action:none;padding:0}
+ .msheet>.mhandle::before{content:"";width:44px;height:5px;border-radius:99px;background:var(--line-2)}
+ .msheet>.mhandle~*{border:0;border-radius:0;overflow:auto;flex:1;min-height:0}
+}
+
 .mtip{position:absolute;max-width:280px;background:var(--ink);color:#fff;font-size:12.5px;line-height:1.6;padding:8px 10px;border-radius:var(--r-s);pointer-events:none;box-shadow:var(--sh-pop);z-index:4}
 .mside{min-width:0}.malist,.mpanel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:14px 16px;display:flex;flex-direction:column;gap:8px}
 .malist h3,.mpanel h3{margin:4px 0 0;font:600 15px var(--f-disp)}
@@ -3473,50 +3503,351 @@ function mapPlane(ps) {
   const lat0 = ps.reduce((t, p) => t + p.geo.lat, 0) / ps.length, lng0 = ps.reduce((t, p) => t + p.geo.lng, 0) / ps.length, kx = 111.32 * Math.cos((lat0 * Math.PI) / 180);
   return (g) => [(g.lng - lng0) * kx, -(g.lat - lat0) * 110.57];
 }
-// the building: levels from the bottom; each part drawn by its recorded state (no BIM: a picture of the stage, said in the panel)
-function mapBuilding(p, s, detail) {
-  const ns = "http://www.w3.org/2000/svg", g = document.createElementNS(ns, "g"), sv = (t, a) => { const e = document.createElementNS(ns, t); for (const k in a) e.setAttribute(k, a[k]); return e; };
-  const W = s, d = s * 0.28, lv = p.levels, act = (p.pours || []).find((x) => x.id === p.active);
-  const work = p.work || [], hasRebar = work.some((w) => w.k === "rebar"), hasForm = work.some((w) => w.k === "form"), both = !hasRebar && !hasForm; // a pour request reports both
-  // base plate in the project's colour + its glyph (never colour alone)
-  g.append(sv("path", { d: `M${-W / 2},0 L${W / 2},0 L${W / 2 + d},${-d} L${-W / 2 + d},${-d} Z`, class: "mb-plate " + p.colour.k }));
-  let y = -d * 0.2;
-  const box = (h, st, wfrac = 1, kind = "slab") => { // one element: a front face + a top face, styled by state
-    const w = W * wfrac, x0 = -w / 2;
-    const cls = "mb-el " + st + (st === "approvals" || st === "supply" || st === "ready" ? (both || hasForm ? " form" : "") + (both || hasRebar ? " rebar" : "") : "");
-    const f = sv("rect", { x: x0, y: y - h, width: w, height: h, class: cls });
-    const top = sv("path", { d: `M${x0},${y - h} L${x0 + w},${y - h} L${x0 + w + d},${y - h - d} L${x0 + d},${y - h - d} Z`, class: cls + " top" });
-    g.append(f, top);
-    if (detail && /approvals|supply|ready|pouring|stale/.test(st) && (both || hasRebar)) for (let i = 1; i < 4; i++) g.append(sv("line", { x1: x0 + (w * i) / 4, y1: y - h + 1, x2: x0 + (w * i) / 4, y2: y - 1, class: "mb-bar" }));
-    y -= h;
-  };
-  const cols = (st) => { // four columns, drawn as bars (rebar cages / formwork / concrete by state)
-    const h = s * 0.42, cls = "mb-col " + st + (/approvals|supply|ready/.test(st) ? (both || hasForm ? " form" : "") + (both || hasRebar ? " rebar" : "") : "");
-    for (const fx of [-0.42, -0.14, 0.14, 0.42]) g.append(sv("rect", { x: fx * W - s * 0.035, y: y - h, width: s * 0.07, height: h, class: cls }));
-    for (const fx of [-0.3, 0.3]) g.append(sv("rect", { x: fx * W + d * 0.6 - s * 0.03, y: y - h - d * 0.6, width: s * 0.06, height: h, class: cls + " back" }));
-    y -= h;
-  };
+// ===== the site model (owner's visual brief 15 Nov 2026, direction approved on the S-99-001 prototype): an isometric engineering site
+// in metres. Far out: lit beacons with name and status (colour AND a drawn icon). Close in, or on selection: each project's structure
+// from its RECORDED stages — completed concrete, fresh concrete (still curing), formwork with protruding rebar (the pour stages), planned
+// work as blue outlines, a floor the records say is in progress without saying which part as grey outlines. Nothing moves at rest; the
+// only stage animation is a recorded pour arriving with fresh data. One instance for the session: a refresh updates it in place.
+const ISO_C = Math.cos(Math.PI / 6), ISO_S = 0.5, isoP = (x, y, z = 0) => [(x - y) * ISO_C, (x + y) * ISO_S - z];
+const ISO_KM = 5.2, ISO_KD = 11, ISO_XS = [0.5, 5.5, 10.5, 15.5], ISO_YS = [0.5, 6, 11.5], ISO_NS = "http://www.w3.org/2000/svg";
+const ISO_SITE = ["approvals", "supply", "ready", "pouring", "stale", "violation"];
+const ISO_ICON = {
+  green: '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="currentColor" opacity=".16"/><path d="M4.6 8.3l2.2 2.2 4.6-4.8" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  yellow: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.8l6.6 11.6H1.4z" fill="currentColor" opacity=".18" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M8 6v3.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="8" cy="11.6" r="1" fill="currentColor"/></svg>',
+  red: '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="currentColor"/><path d="M8 4.2v4.6" stroke="#fff" stroke-width="1.9" stroke-linecap="round"/><circle cx="8" cy="11.4" r="1.1" fill="#fff"/></svg>',
+  grey: '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="2.2 1.8"/><path d="M6.3 6.2a1.8 1.8 0 1 1 2.4 1.7c-.5.2-.7.6-.7 1.1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="11.4" r=".95" fill="currentColor"/></svg>',
+};
+const ISO_MAT = { conc: ["#E1E4E6", "url(#iso-conc-l)", "url(#iso-conc-r)"], fresh: ["#BFC6CC", "url(#iso-fresh-l)", "url(#iso-fresh-r)"], ply: ["#EBC07E", "url(#iso-ply-l)", "url(#iso-ply-r)"] };
+const ISO_DEFS = `<filter id="iso-soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="0.9"/></filter>` +
+  [["conc-l", "#D2D6DA", "#BBC1C6"], ["conc-r", "#B4BAC0", "#9AA2A9"], ["fresh-l", "#AEB6BD", "#99A2AA"], ["fresh-r", "#959EA6", "#7E8891"], ["ply-l", "#DDA962", "#CB944C"], ["ply-r", "#C08A43", "#A97536"]]
+    .map(([id, a, b]) => `<linearGradient id="iso-${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>`).join("");
+const ISO = { el: null, cam: { px: 0, py: 0, k: 1 }, tgt: { px: 0, py: 0, k: 1 }, raf: 0, tau: 140, last: 0, W: 1, H: 1, M: null, ps: [], at: new Map(), wall: false,
+  fitted: false, sel: null, home: null, prev: null, anim: new Map(), cache: new Map(), marks: new Map(), tip: null, animRaf: 0 };
+const isoReduce = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+function isoEl(t, a, parent) { const e = document.createElementNS(ISO_NS, t); for (const k in a) e.setAttribute(k, a[k]); if (parent) parent.append(e); return e; }
+const isoPts = (a) => a.map((q) => q[0].toFixed(3) + "," + q[1].toFixed(3)).join(" ");
+const isoEase = (x) => 1 - Math.pow(1 - Math.min(1, Math.max(0, x)), 3);
+const ISO_EDGE = { "vector-effect": "non-scaling-stroke", stroke: "rgb(29 37 51/.22)", "stroke-width": "0.8", "stroke-linejoin": "round" };
+function isoBox(g, x0, y0, z0, x1, y1, z1, mat, op = 1) {
+  const m = ISO_MAT[mat];
+  isoEl("polygon", { points: isoPts([isoP(x0, y1, z0), isoP(x1, y1, z0), isoP(x1, y1, z1), isoP(x0, y1, z1)]), fill: m[1], "fill-opacity": op, ...ISO_EDGE, "stroke-opacity": op }, g);
+  isoEl("polygon", { points: isoPts([isoP(x1, y0, z0), isoP(x1, y1, z0), isoP(x1, y1, z1), isoP(x1, y0, z1)]), fill: m[2], "fill-opacity": op, ...ISO_EDGE, "stroke-opacity": op }, g);
+  isoEl("polygon", { points: isoPts([isoP(x0, y0, z1), isoP(x1, y0, z1), isoP(x1, y1, z1), isoP(x0, y1, z1)]), fill: m[0], "fill-opacity": op, ...ISO_EDGE, "stroke-opacity": op }, g);
+}
+// planned (blue) or recorded as in progress without saying which part (grey): outlines only — never drawn as work being done
+function isoGhost(g, x0, y0, z0, x1, y1, z1, kind, faint) {
+  const c = kind === "plan" ? "#2F6FCB" : "#7A8494", o = faint ? 0.35 : 0.6;
+  const a = { fill: kind === "plan" ? "rgb(47 111 203/.05)" : "rgb(122 132 148/.07)", stroke: c, "stroke-opacity": o, "stroke-width": "1", "stroke-dasharray": kind === "plan" ? "4 3" : "2 3", "vector-effect": "non-scaling-stroke", "stroke-linejoin": "round" };
+  isoEl("polygon", { points: isoPts([isoP(x0, y1, z0), isoP(x1, y1, z0), isoP(x1, y0, z0), isoP(x1, y0, z1), isoP(x0, y0, z1), isoP(x0, y1, z1)]), ...a }, g);
+  isoEl("polyline", { points: isoPts([isoP(x0, y1, z1), isoP(x1, y1, z1), isoP(x1, y0, z1)]), fill: "none", stroke: c, "stroke-opacity": o * 0.75, "stroke-width": "1", "stroke-dasharray": a["stroke-dasharray"], "vector-effect": "non-scaling-stroke" }, g);
+  const f0 = isoP(x1, y1, z0), f1 = isoP(x1, y1, z1);
+  isoEl("line", { x1: f0[0], y1: f0[1], x2: f1[0], y2: f1[1], stroke: c, "stroke-opacity": o * 0.75, "stroke-width": "1", "stroke-dasharray": a["stroke-dasharray"], "vector-effect": "non-scaling-stroke" }, g);
+}
+function isoLine(g, a, b, stroke, w, extra = {}) { isoEl("line", { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke, "stroke-width": w, "vector-effect": "non-scaling-stroke", "stroke-linecap": "round", ...extra }, g); }
+function isoSeams(g, x0, y0, z0, x1, y1, z1, op) { // plywood joints and clamps on the two visible faces
+  for (let z = z0 + 0.7; z < z1 - 0.2; z += 0.85) { isoLine(g, isoP(x0, y1, z), isoP(x1, y1, z), "#8A5A22", 1.1, { "stroke-opacity": 0.55 * op }); isoLine(g, isoP(x1, y0, z), isoP(x1, y1, z), "#8A5A22", 1.1, { "stroke-opacity": 0.55 * op }); }
+}
+function isoCage(g, cx, cy, zFrom, zTop, op = 1) { // a column cage: 8 bars and ties, shown where it stands out of the formwork / concrete
+  const r = 0.17, bars = [[-r, -r], [0, -r], [r, -r], [r, 0], [r, r], [0, r], [-r, r], [-r, 0]], st = { "stroke-opacity": op };
+  for (const [dx, dy] of bars.filter(([a, b]) => a + b < 0)) isoLine(g, isoP(cx + dx, cy + dy, zFrom), isoP(cx + dx, cy + dy, zTop), "#6A3A22", 1.7, st);
+  for (let z = zFrom + 0.2; z < zTop - 0.05; z += 0.24) isoEl("polygon", { points: isoPts([isoP(cx - r, cy - r, z), isoP(cx + r, cy - r, z), isoP(cx + r, cy + r, z), isoP(cx - r, cy + r, z)]), fill: "none", stroke: "#6A3A22", "stroke-width": "1", "stroke-opacity": 0.8 * op, "vector-effect": "non-scaling-stroke" }, g);
+  for (const [dx, dy] of bars.filter(([a, b]) => a + b >= 0)) isoLine(g, isoP(cx + dx, cy + dy, zFrom), isoP(cx + dx, cy + dy, zTop), "#6A3A22", 1.7, st);
+}
+function isoMesh(g, x0, y0, x1, y1, z, op = 1) { // the reinforcement on a slab / footing top
+  const st = { "stroke-opacity": 0.75 * op };
+  for (let x = x0 + 0.4; x < x1; x += 0.8) isoLine(g, isoP(x, y0 + 0.1, z), isoP(x, y1 - 0.1, z), "#6A3A22", 1, st);
+  for (let y = y0 + 0.4; y < y1; y += 0.8) isoLine(g, isoP(x0 + 0.1, y, z), isoP(x1 - 0.1, y, z), "#6A3A22", 1, st);
+}
+function isoProps(g, x0, y0, x1, y1, zb, zt) { // shoring under a slab's formwork deck
+  for (let x = x0 + 1.2; x < x1; x += 2.4) for (let y = y0 + 1.2; y < y1; y += 2.4) isoLine(g, isoP(x, y, zb), isoP(x, y, zt), "#7C858F", 1, { "stroke-opacity": 0.7 });
+}
+// a part's look from its RECORDED state
+function isoMode(p, L, part) {
+  const st = part.st;
+  if (st === "done") return (p.pours || []).some((x) => x.level === L.key && x.part === part.k && x.poured && x.cureLeft > 0) ? "fresh" : "conc";
+  if (st === "none") return "plan";
+  if (ISO_SITE.includes(st)) return "site";
+  return "unk"; // «unk» / «work»: the floor is in progress per the audit, which part is not recorded
+}
+// the structure, bottom up, in metres: foundations, then each recorded floor (columns + slab), the annex on part of the roof
+function isoStack(p) {
+  const out = [], lv = p.levels || [];
+  const has = (k) => lv.some((L) => L.key === k), upper = lv.some((L) => !["foot", "beam"].includes(L.key));
+  const implied = (key, t, k) => ({ L: { key, t }, part: { k, st: "unk" }, mode: "unk", key: key + "|" + k, implied: true });
+  if (!has("foot") && upper) out.push({ ...implied("foot", "القواعد والرقاب", "foot"), kind: "pad", z0: 0, z1: 0.45 }, { ...implied("foot", "القواعد والرقاب", "neck"), kind: "neck", z0: 0.45, z1: 1.3 });
+  if (!has("beam") && upper) out.push({ ...implied("beam", "الميدات", "beam"), kind: "beam", z0: 0.95, z1: 1.3 });
+  let top = 1.3;
   for (const L of lv) {
-    const part = (k) => (L.parts.find((x) => x.k === k) || { st: "none" }).st;
-    if (L.key === "foot") { const st = [part("foot"), part("neck")].find((x) => x !== "done" && x !== "none") || (part("foot") === "done" ? "done" : "none"); if (st !== "none") box(s * 0.08, st, 1.05, "foot"); continue; }
-    if (L.key === "beam") { const st = part("beam"); if (st !== "none") box(s * 0.07, st, 1, "beam"); continue; }
-    const c = part("cols"), sl = part("slab");
-    if (c === "none" && sl === "none") continue;
-    if (c !== "none") cols(c); else y -= s * 0.42;
-    if (sl !== "none") box(s * 0.06, sl, 1.02); else y -= s * 0.06;
+    for (const part of L.parts) {
+      const mode = isoMode(p, L, part), key = L.key + "|" + part.k;
+      if (L.key === "foot") out.push({ L, part, mode, key, kind: part.k === "foot" ? "pad" : "neck", z0: part.k === "foot" ? 0 : 0.45, z1: part.k === "foot" ? 0.45 : 1.3 });
+      else if (L.key === "beam") out.push({ L, part, mode, key, kind: "beam", z0: 0.95, z1: 1.3 });
+      else if (part.k === "cols") out.push({ L, part, mode, key, kind: "cols", roof: L.key === "roof", z0: top, z1: top + 3.3 });
+      else if (part.k === "slab") out.push({ L, part, mode, key, kind: "slab", roof: L.key === "roof", z0: top + 3.3, z1: top + 3.65 });
+    }
+    if (!["foot", "beam"].includes(L.key)) top += 3.65;
   }
-  // the pour in progress: a pump boom and a mixer drum (moving only after a RECORDED start, never under reduced motion)
-  if (act && (act.stage === "pouring" || act.stage === "stale")) {
-    const px = W / 2 + s * 0.35;
-    g.append(sv("line", { x1: px, y1: 0, x2: px - s * 0.1, y2: y - s * 0.15, class: "mb-pump" }), sv("line", { x1: px - s * 0.1, y1: y - s * 0.15, x2: 0, y2: y - s * 0.05, class: "mb-pump" }));
-    const drum = sv("ellipse", { cx: px + s * 0.18, cy: -s * 0.12, rx: s * 0.13, ry: s * 0.09, class: "mb-drum" + (act.stage === "pouring" && motionOK() && !MAPWALL ? " spin" : "") });
-    g.append(drum);
-    if (act.stage === "stale") { const q = sv("text", { x: px, y: y - s * 0.2, class: "mb-q" }); q.textContent = "?"; g.append(q); }
+  for (const e of out) if (e.kind === "cols") { const sl = out.find((x) => x.kind === "slab" && x.L.key === e.L.key); e.barsUp = !sl || !["conc", "fresh"].includes(sl.mode); }
+  return out;
+}
+function isoCols(roof) {
+  const xs = roof ? [ISO_XS[2], ISO_XS[3]] : ISO_XS, ys = roof ? [ISO_YS[1], ISO_YS[2]] : ISO_YS, c = [];
+  for (const y of ys) for (const x of xs) c.push([x, y]);
+  return c.sort((a, b) => a[0] + a[1] - (b[0] + b[1]));
+}
+// one element in its mode; `t` = progress of a recorded pour arriving (concrete rises inside the formwork, then the formwork goes)
+function isoPart(g, e, t) {
+  const pour = t != null, { mode, z0, z1 } = e;
+  const conc = (x0, y0, a, x1, y1, b) => (mode === "fresh" ? isoBox(g, x0, y0, a, x1, y1, b, "fresh") : isoBox(g, x0, y0, a, x1, y1, b, "conc"));
+  const fill = pour ? isoEase(t / 0.65) : 0, fop = pour ? (t < 0.65 ? 1 - 0.8 * (t / 0.65) : 0.2 * (1 - (t - 0.65) / 0.35)) : 1;
+  if (e.kind === "pad" || e.kind === "neck" || e.kind === "cols") {
+    const h = e.kind === "pad" ? 0.85 : 0.25, pts = e.kind === "cols" ? isoCols(e.roof) : isoCols(false);
+    for (const [x, y] of pts) {
+      if (mode === "conc" || mode === "fresh") { conc(x - h, y - h, z0, x + h, y + h, z1); if (e.barsUp) isoCage(g, x, y, z1 - 0.02, z1 + 1.05); continue; }
+      if (mode === "plan" || mode === "unk") { isoGhost(g, x - h, y - h, z0, x + h, y + h, z1, mode, e.kind !== "pad"); continue; }
+      const f = h + (e.kind === "pad" ? 0.06 : 0.06); // site: formwork around the reinforcement
+      if (pour && fill > 0) isoBox(g, x - h + 0.02, y - h + 0.02, z0, x + h - 0.02, y + h - 0.02, z0 + (z1 - z0) * fill + 0.001, "fresh");
+      if (fop > 0.01) { isoBox(g, x - f, y - f, z0, x + f, y + f, z1, "ply", fop); isoSeams(g, x - f, y - f, z0, x + f, y + f, z1, Math.max(fop, pour ? fop : 0.75)); }
+      if (e.kind === "pad") { if (!pour) isoMesh(g, x - h, y - h, x + h, y + h, z1 + 0.01); }
+      else isoCage(g, x, y, z1 - 0.02, z1 + 1.05);
+      if (e.flag === "violation" && !pour) isoEl("polygon", { points: isoPts([isoP(x - f - 0.15, y + f + 0.15, z0), isoP(x + f + 0.15, y + f + 0.15, z0), isoP(x + f + 0.15, y - f - 0.15, z0), isoP(x + f + 0.15, y - f - 0.15, z1 + 1.1), isoP(x - f - 0.15, y - f - 0.15, z1 + 1.1), isoP(x - f - 0.15, y + f + 0.15, z1 + 1.1)]), fill: "none", stroke: "#B42318", "stroke-width": "1.6", "stroke-dasharray": "5 3", "vector-effect": "non-scaling-stroke" }, g);
+    }
+    return;
   }
-  if (act && act.stage === "ready") { const t = sv("text", { x: 0, y: y - s * 0.12, class: "mb-ok" }); t.textContent = "✓"; g.append(t); }
-  if (detail && p.others && p.others.length) { const t = sv("text", { x: -W / 2 - 4, y: y, class: "mb-more" }); t.textContent = "+" + p.others.length; g.append(t); }
+  // horizontal: tie beams (segments) or a slab (whole floor / the annex) — the slab's front edge beams with it
+  const segs = e.kind === "beam"
+    ? [...ISO_YS.flatMap((y) => [0, 1, 2].map((i) => [ISO_XS[i], y - 0.15, ISO_XS[i + 1], y + 0.15])), ...ISO_XS.flatMap((x) => [0, 1].map((i) => [x - 0.15, ISO_YS[i], x + 0.15, ISO_YS[i + 1]]))].sort((a, b) => a[0] + a[1] - (b[0] + b[1]))
+    : [e.roof ? [10.2, 5.7, 15.8, 11.8] : [-0.15, -0.15, 16.15, 12.15]];
+  for (const [x0, y0, x1, y1] of segs) {
+    if (mode === "conc" || mode === "fresh") {
+      if (e.kind === "slab") { conc(x0, y1 - 0.3, z0 - 0.45, x1, y1, z0); conc(x1 - 0.3, y0, z0 - 0.45, x1, y1, z0); }
+      conc(x0, y0, z0, x1, y1, z1); continue;
+    }
+    if (mode === "plan" || mode === "unk") { isoGhost(g, x0, y0, z0, x1, y1, z1, mode); continue; }
+    if (e.kind === "slab" && !pour) isoProps(g, x0, y0, x1, y1, z0 - 3.3, z0);
+    if (pour && fill > 0) isoBox(g, x0 + 0.03, y0 + 0.03, z0, x1 - 0.03, y1 - 0.03, z0 + (z1 - z0) * fill + 0.001, "fresh");
+    if (fop > 0.01) isoBox(g, x0 - 0.05, y0 - 0.05, z0 - (e.kind === "slab" ? 0.1 : 0), x1 + 0.05, y1 + 0.05, z1, "ply", e.kind === "slab" ? Math.min(fop, pour ? fop : 1) : fop);
+    if (!pour || fill < 0.4) isoMesh(g, x0, y0, x1, y1, z1 + 0.02, pour ? 1 - fill / 0.4 : 1);
+    if (e.flag === "violation" && !pour) isoEl("polygon", { points: isoPts([isoP(x0 - 0.3, y1 + 0.3, z0), isoP(x1 + 0.3, y1 + 0.3, z0), isoP(x1 + 0.3, y0 - 0.3, z0), isoP(x1 + 0.3, y0 - 0.3, z1 + 0.3), isoP(x0 - 0.3, y0 - 0.3, z1 + 0.3), isoP(x0 - 0.3, y1 + 0.3, z1 + 0.3)]), fill: "none", stroke: "#B42318", "stroke-width": "1.6", "stroke-dasharray": "5 3", "vector-effect": "non-scaling-stroke" }, g);
+  }
+}
+const ISO_STC = { green: "#1D8456", yellow: "#D08A12", red: "#B42318", grey: "#6B7584" };
+function isoModel(p, at) {
+  const g = isoEl("g", { class: "mmodel", transform: `translate(${isoP(at[0], at[1])[0]},${isoP(at[0], at[1])[1]})` });
+  isoEl("polygon", { points: isoPts([isoP(-5, -4), isoP(21, -4), isoP(21, 16.5), isoP(-5, 16.5)]), fill: "#EEE8DC", stroke: "#D9CFBC", "stroke-width": "1", "vector-effect": "non-scaling-stroke" }, g);
+  isoEl("polygon", { points: isoPts([isoP(-4.2, -3.2), isoP(20.2, -3.2), isoP(20.2, 15.7), isoP(-4.2, 15.7)]), fill: "none", stroke: ISO_STC[p.colour.k], "stroke-width": "1.6", "stroke-opacity": ".75", "stroke-dasharray": "10 5", "vector-effect": "non-scaling-stroke" }, g);
+  const stack = isoStack(p);
+  if (stack.length) isoEl("polygon", { points: isoPts([isoP(1.2, 0.8), isoP(19.5, 0.8), isoP(19.5, 15.2), isoP(1.2, 15.2)]), fill: "rgb(29 37 51/.18)", filter: "url(#iso-soft)" }, g);
+  // the active pour's flag (a violation is outlined in red on the element)
+  const act = (p.pours || []).find((x) => x.id === p.active);
+  for (const e of stack) {
+    if (act && act.level === e.L.key && act.part === e.part.k && act.stage === "violation") e.flag = "violation";
+    const a = ISO.anim.get(p.id + "|" + e.key);
+    isoPart(g, e, a ? a.t : null);
+  }
   return g;
 }
+
+// ---------------- the instance: built once, re-attached on every draw ----------------
+function isoMount(stage, M, ps, wall, tip) {
+  if (!ISO.el) isoCreate();
+  ISO.tip = tip; ISO.wall = !!wall; ISO.el.classList.toggle("wall", !!wall);
+  stage.append(ISO.el);
+  isoUpdate(M, ps);
+}
+function isoCreate() {
+  const root = el("div", "miso");
+  root.innerHTML = `<svg class="msvg" aria-hidden="true"><defs>${ISO_DEFS}</defs><g class="mworld"><g class="mgrid"></g><g class="mplots"></g><g class="mmodels"></g></g></svg><div class="mov"></div>
+    <div class="mnorth" aria-hidden="true"><svg viewBox="-13 -13 26 26"><g><path d="M0 -10 L4 4 L0 1.5 L-4 4 Z" fill="#1D2533"/><text x="0" y="11" text-anchor="middle" font-size="7" fill="#5B6474">ش</text></g></svg></div>
+    <div class="mctl2"><button type="button" class="mz" data-z="in" aria-label="تكبير"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button><button type="button" class="mz" data-z="out" aria-label="تصغير"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button><button type="button" class="mz" data-z="fit" aria-label="ملاءمة كل المشاريع"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button></div>
+    <div class="mscale2" aria-hidden="true"><i></i><span></span></div><div class="mhint" hidden>للتكبير: Ctrl + العجلة، أو بإصبعين</div>`;
+  ISO.el = root; ISO.svg = root.querySelector(".msvg"); ISO.world = root.querySelector(".mworld"); ISO.gridG = root.querySelector(".mgrid"); ISO.plots = root.querySelector(".mplots"); ISO.models = root.querySelector(".mmodels"); ISO.ov = root.querySelector(".mov");
+  const v = [ISO_C, -ISO_S]; root.querySelector(".mnorth g").setAttribute("transform", `rotate(${(Math.atan2(v[0], -v[1]) * 180) / Math.PI})`);
+  root.querySelectorAll(".mz").forEach((b) => b.addEventListener("click", () => { const z = b.dataset.z; if (z === "fit") { if (MAPV.sel) { MAPV.sel = null; draw(); } else isoFit(170); } else isoZoom(z === "in" ? 1.8 : 1 / 1.8); }));
+  // input: Ctrl/⌘ + wheel or two fingers zoom (a plain wheel and one finger keep scrolling the page); a mouse drag pans
+  root.addEventListener("wheel", (e) => {
+    if (ISO.wall) return;
+    if (!e.ctrlKey && !e.metaKey) { const h = root.querySelector(".mhint"); h.hidden = false; clearTimeout(ISO.hintT); ISO.hintT = setTimeout(() => (h.hidden = true), 1600); return; }
+    e.preventDefault(); const r = root.getBoundingClientRect(); isoZoom(Math.exp(-e.deltaY * 0.0016), e.clientX - r.left, e.clientY - r.top);
+  }, { passive: false });
+  const ptr = new Map(); let pinch = null, drag = null;
+  root.addEventListener("pointerdown", (e) => {
+    if (ISO.wall || e.target.closest(".mk,.mtag2,.mctl2,button")) return;
+    ptr.set(e.pointerId, [e.clientX, e.clientY]);
+    if (ptr.size === 2) { const [a, b] = [...ptr.values()]; pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]), k: ISO.tgt.k }; drag = null; root.setPointerCapture(e.pointerId); }
+    else if (e.pointerType !== "touch") { drag = { x: e.clientX, y: e.clientY }; root.setPointerCapture(e.pointerId); root.classList.add("drag"); }
+  });
+  root.addEventListener("pointermove", (e) => {
+    if (!ptr.has(e.pointerId)) return; ptr.set(e.pointerId, [e.clientX, e.clientY]);
+    if (pinch && ptr.size === 2) { const [a, b] = [...ptr.values()], r = root.getBoundingClientRect(); isoZoom((pinch.k * Math.hypot(a[0] - b[0], a[1] - b[1])) / pinch.d / ISO.tgt.k, (a[0] + b[0]) / 2 - r.left, (a[1] + b[1]) / 2 - r.top, 0); return; }
+    if (!drag) return;
+    ISO.cam.px -= (e.clientX - drag.x) / ISO.cam.k; ISO.cam.py -= (e.clientY - drag.y) / ISO.cam.k; drag.x = e.clientX; drag.y = e.clientY;
+    Object.assign(ISO.tgt, ISO.cam); isoRender();
+  });
+  const up = (e) => { ptr.delete(e.pointerId); if (ptr.size < 2) pinch = null; if (!ptr.size) { drag = null; root.classList.remove("drag"); } };
+  root.addEventListener("pointerup", up); root.addEventListener("pointercancel", up);
+  root.addEventListener("dblclick", (e) => { if (ISO.wall || e.target.closest(".mk,.mtag2,button")) return; const r = root.getBoundingClientRect(); isoZoom(2, e.clientX - r.left, e.clientY - r.top); });
+  new ResizeObserver(() => { if (!ISO.el.isConnected) return; const r = ISO.el.getBoundingClientRect(); if (r.width < 40 || r.height < 40) return; ISO.W = r.width; ISO.H = r.height; if (!ISO.fitted && ISO.ps.length) { ISO.fitted = true; isoFit(0); if (MAPV.sel) isoFly(); } else isoRender(); }).observe(root);
+}
+function isoUpdate(M, ps) {
+  ISO.M = M; ISO.ps = ps;
+  const plane = ps.length ? mapPlane(ps) : null;
+  ISO.at = new Map(ps.map((p) => { const km = plane(p.geo); return [p.id, [km[0] * 1000, km[1] * 1000]]; }));
+  // a RECORDED pour arriving with fresh data: formwork-and-rebar before, concrete now → animate that part once (never on first load)
+  const now = new Map();
+  for (const p of ps) for (const e of isoStack(p)) now.set(p.id + "|" + e.key, e.mode);
+  if (ISO.prev && !isoReduce()) for (const [k, m] of now) if ((m === "conc" || m === "fresh") && ISO.prev.get(k) === "site") ISO.anim.set(k, { t: 0, t0: performance.now() });
+  ISO.prev = now;
+  if (ISO.anim.size) isoAnimate();
+  // beacons: one per project, reused across refreshes
+  const seen = new Set();
+  for (const p of ps) {
+    seen.add(p.id); let b = ISO.marks.get(p.id);
+    const sig = p.colour.k + "|" + (p.code || "") + "|" + p.name;
+    if (!b || b.dataset.sig !== sig) { const nb = isoBeacon(p, ISO.wall); nb.dataset.sig = sig; if (b) b.replaceWith(nb); else ISO.ov.append(nb); b = nb; ISO.marks.set(p.id, b); }
+  }
+  for (const [id, b] of ISO.marks) if (!seen.has(id)) { b.remove(); ISO.marks.delete(id); ISO.cache.delete(id); }
+  isoPlots();
+  if (ISO.W > 40 && !ISO.fitted && ps.length) { ISO.fitted = true; isoFit(0); }
+  if (MAPV.sel !== ISO.sel) isoFly(); else isoRender();
+}
+function isoBeacon(p, wall) {
+  const b = el(wall ? "div" : "button", "mk mproj st-" + p.colour.k); b.dataset.pid = p.id;
+  b.setAttribute("aria-label", `${p.name}${p.code ? " " + p.code : ""}: ${MCOL[p.colour.k][0]}`);
+  const plate = el("span", "mk-plate"); plate.append(el("b", "", p.code || p.name)); if (p.code) plate.append(el("span", "nm", p.name));
+  const s = el("span", "msts " + p.colour.k); s.innerHTML = ISO_ICON[p.colour.k]; s.append(MCOL[p.colour.k][0]); plate.append(s);
+  b.append(plate, el("span", "mk-stem"), el("span", "mk-dot"));
+  if (!wall) {
+    b.type = "button";
+    const open = () => { MAPV.sel = p.id; MAPV.pour = p.active; MAPV.scroll = true; if (ISO.tip) ISO.tip.hidden = true; draw(); };
+    b.addEventListener("click", (e) => { e.stopPropagation(); open(); });
+    b.addEventListener("pointerenter", (e) => { if (e.pointerType !== "mouse" || !ISO.tip || !ISO.el || !ISO.el.isConnected || !ISO.el.contains(b)) return; const q = ISO.M.projects.find((x) => x.id === p.id) || p; ISO.tip.replaceChildren(...mapTip(q).map((s, i) => el(i ? "div" : "b", "", s))); ISO.tip.hidden = false; const r = ISO.el.getBoundingClientRect(); ISO.tip.style.left = Math.min(r.width - 290, Math.max(8, e.clientX - r.left + 16)) + "px"; ISO.tip.style.top = Math.max(8, e.clientY - r.top + 16) + "px"; });
+    b.addEventListener("pointerleave", () => { if (ISO.tip) ISO.tip.hidden = true; });
+  }
+  return b;
+}
+function isoPlots() {
+  ISO.plots.replaceChildren();
+  for (const p of ISO.ps) { const [x, y] = ISO.at.get(p.id); isoEl("polygon", { points: isoPts([isoP(x - 5, y - 4), isoP(x + 21, y - 4), isoP(x + 21, y + 16.5), isoP(x - 5, y + 16.5)]), fill: "#EEE8DC", stroke: "#D9CFBC", "stroke-width": 1, "vector-effect": "non-scaling-stroke" }, ISO.plots); }
+}
+// ---------------- camera: one exponential ease for zoom, pan and selection; none under reduced motion ----------------
+function isoTarget(t, ms = 140) { Object.assign(ISO.tgt, t); ISO.tau = isoReduce() ? 0 : ms; if (!ISO.raf) { ISO.last = performance.now(); ISO.raf = requestAnimationFrame(isoStep); } }
+function isoStep(now) {
+  const dt = Math.min(64, now - ISO.last); ISO.last = now;
+  const a = ISO.tau ? 1 - Math.exp(-dt / ISO.tau) : 1, c = ISO.cam, t = ISO.tgt;
+  c.px += (t.px - c.px) * a; c.py += (t.py - c.py) * a; c.k = Math.exp(Math.log(c.k) + (Math.log(t.k) - Math.log(c.k)) * a);
+  const done = Math.abs(t.px - c.px) * c.k < 0.3 && Math.abs(t.py - c.py) * c.k < 0.3 && Math.abs(t.k / c.k - 1) < 0.002;
+  if (done) Object.assign(c, t);
+  isoRender(); ISO.raf = done ? 0 : requestAnimationFrame(isoStep);
+}
+function isoFit(ms) {
+  if (!ISO.ps.length) return;
+  const q = ISO.ps.map((p) => { const a = ISO.at.get(p.id); return isoP(a[0] + 8, a[1] + 6); });
+  const x0 = Math.min(...q.map((v) => v[0])), x1 = Math.max(...q.map((v) => v[0])), y0 = Math.min(...q.map((v) => v[1])), y1 = Math.max(...q.map((v) => v[1]));
+  const padT = 120, padB = 50, padX = 120;
+  const k = Math.min(18, Math.max(0.02, Math.min((ISO.W - padX * 2) / Math.max(1, x1 - x0), (ISO.H - padT - padB) / Math.max(1, y1 - y0))));
+  const t = { k, px: (x0 + x1) / 2, py: (y0 + y1) / 2 - (padT - padB) / 2 / k };
+  if (ms === 0) { Object.assign(ISO.cam, t); Object.assign(ISO.tgt, t); isoRender(); } else isoTarget(t, ms);
+}
+function isoFly() {
+  const id = MAPV.sel, p = ISO.ps.find((x) => x.id === id);
+  if (id && !ISO.sel) ISO.home = { ...ISO.tgt };
+  ISO.sel = id;
+  if (!p) { if (!id) { if (ISO.home) isoTarget(ISO.home, 170); else isoFit(170); ISO.home = null; } isoRender(); return; }
+  const a = ISO.at.get(p.id), c = isoP(a[0] + 8, a[1] + 6, 5.2), top = isoStack(p).reduce((m, e) => Math.max(m, e.z1), 4);
+  const k = Math.min((ISO.W * 0.62) / 26, (ISO.H * 0.6) / (14 + top));
+  const sheet = matchMedia("(max-width:760px)").matches ? (ISO.H * 0.2) / k : 0;
+  isoTarget({ k, px: c[0], py: c[1] - (top - 8) / 2 + sheet }, 170);
+}
+function isoZoom(f, sx = ISO.W / 2, sy = ISO.H / 2, ms = 110) {
+  const k = Math.min(60, Math.max(0.02, ISO.tgt.k * f)), wx = (sx - ISO.W / 2) / ISO.tgt.k + ISO.tgt.px, wy = (sy - ISO.H / 2) / ISO.tgt.k + ISO.tgt.py;
+  isoTarget({ k, px: wx - (sx - ISO.W / 2) / k, py: wy - (sy - ISO.H / 2) / k }, ms);
+}
+function isoAnimate() {
+  if (ISO.animRaf) return;
+  const f = (now) => {
+    const ids = new Set();
+    for (const [k, a] of ISO.anim) { a.t = Math.min(1, (now - a.t0) / 1500); ids.add(k.split("|")[0]); if (a.t >= 1) ISO.anim.delete(k); }
+    for (const id of ids) { const ch = ISO.cache.get(id); if (ch) ch.sig = ""; } // rebuilt this frame; the last frame draws the final state
+    isoRender(); ISO.animRaf = ISO.anim.size ? requestAnimationFrame(f) : 0;
+  };
+  ISO.animRaf = requestAnimationFrame(f);
+}
+const isoScr = (x, y, z = 0) => { const q = isoP(x, y, z), c = ISO.cam; return [(q[0] - c.px) * c.k + ISO.W / 2, (q[1] - c.py) * c.k + ISO.H / 2]; };
+function isoRender() {
+  if (!ISO.el || !ISO.el.isConnected) return;
+  const c = ISO.cam, W = ISO.W, H = ISO.H;
+  ISO.world.setAttribute("transform", `translate(${W / 2},${H / 2}) scale(${c.k}) translate(${-c.px},${-c.py})`);
+  // the ground grid: a «nice» step that keeps lines ≥ 34 px apart, drawn for what is on screen
+  const inv = (sx, sy) => { const X = (sx - W / 2) / c.k + c.px, Y = (sy - H / 2) / c.k + c.py; return [(X / ISO_C + Y / ISO_S) / 2, (Y / ISO_S - X / ISO_C) / 2]; };
+  const cs = [inv(0, 0), inv(W, 0), inv(0, H), inv(W, H)], gx0 = Math.min(...cs.map((v) => v[0])), gx1 = Math.max(...cs.map((v) => v[0])), gy0 = Math.min(...cs.map((v) => v[1])), gy1 = Math.max(...cs.map((v) => v[1]));
+  const step = [5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000].find((s) => s * c.k * 0.87 >= 34) || 10000;
+  ISO.gridG.replaceChildren();
+  for (let v = Math.floor(gx0 / step) * step; v <= gx1; v += step) { const a = isoP(v, gy0), b = isoP(v, gy1); isoEl("line", { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: v % (step * 5) === 0 ? "#CDD4DB" : "#DCE1E6", "stroke-width": 0.8, "vector-effect": "non-scaling-stroke" }, ISO.gridG); }
+  for (let v = Math.floor(gy0 / step) * step; v <= gy1; v += step) { const a = isoP(gx0, v), b = isoP(gx1, v); isoEl("line", { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: v % (step * 5) === 0 ? "#CDD4DB" : "#DCE1E6", "stroke-width": 0.8, "vector-effect": "non-scaling-stroke" }, ISO.gridG); }
+  // models: drawn lazily for what is on screen, at model zoom or when selected; cached until its data or a recorded pour changes
+  const showAll = c.k >= ISO_KM, vis = new Set();
+  for (const p of ISO.ps) {
+    const a = ISO.at.get(p.id), s = isoScr(a[0] + 8, a[1] + 6), on = s[0] > -400 && s[0] < W + 400 && s[1] > -400 && s[1] < H + 400;
+    const model = (showAll || ISO.sel === p.id) && on && !ISO.wall;
+    if (model) vis.add(p.id);
+    const sig = JSON.stringify([p.levels, p.colour.k, p.active, (p.pours || []).map((x) => [x.id, x.stage, x.level, x.part, x.cureLeft])]);
+    let ch = ISO.cache.get(p.id);
+    if (model && (!ch || ch.sig !== sig)) { const g = isoModel(p, a); if (ch) ch.g.replaceWith(g); else ISO.models.append(g); ch = { sig, g }; ISO.cache.set(p.id, ch); }
+    if (ch) ch.g.classList.toggle("off", !model);
+  }
+  // overlay: beacons (decluttered by priority), then each visible model's tag, the chosen project's floors and its pour callout
+  const order = [...ISO.ps].sort((a, b) => (a.id === ISO.sel ? -1 : b.id === ISO.sel ? 1 : 0) || ({ red: 0, yellow: 1, grey: 2, green: 3 }[a.colour.k] - { red: 0, yellow: 1, grey: 2, green: 3 }[b.colour.k]));
+  const boxes = [];
+  for (const p of order) {
+    const b = ISO.marks.get(p.id); if (!b) continue;
+    const a = ISO.at.get(p.id), [x, y] = isoScr(a[0] + 8, a[1] + 6);
+    const off = vis.has(p.id) || x < -200 || x > W + 200 || y < -100 || y > H + 240;
+    b.classList.toggle("off", off); b.classList.toggle("sel", ISO.sel === p.id);
+    b.style.transform = `translate(${x}px,${y}px) translate(-50%,calc(-100% + 8px))`;
+    if (off) continue;
+    const w = b._w || (b._w = b.offsetWidth || 150), h = b._h || (b._h = b.offsetHeight || 80), r = [x - w / 2, y - h, x + w / 2, y - 10];
+    const hit = boxes.some((q) => r[0] < q[2] && r[2] > q[0] && r[1] < q[3] && r[3] > q[1]);
+    b.classList.toggle("mini", hit); if (!hit) boxes.push(r);
+    b.style.zIndex = String((hit ? 0 : 5000) + Math.max(0, Math.round(y)));
+  }
+  for (const n of ISO.ov.querySelectorAll(".mtag2,.mlvl2,.mcall2")) n.remove();
+  const detail = c.k >= ISO_KD && !ISO.wall;
+  for (const id of vis) {
+    const p = ISO.ps.find((x) => x.id === id), a = ISO.at.get(id);
+    const tg = el(ISO.wall ? "div" : "button", "mtag2"); tg.append(el("b", "", p.code || p.name)); const s = el("span", "msts " + p.colour.k); s.innerHTML = ISO_ICON[p.colour.k]; s.append(MCOL[p.colour.k][0]); tg.append(s);
+    if (!ISO.wall) { tg.type = "button"; tg.setAttribute("aria-label", `${p.name}: ${MCOL[p.colour.k][0]}`); tg.addEventListener("click", (e) => { e.stopPropagation(); MAPV.sel = p.id; MAPV.pour = p.active; MAPV.scroll = true; draw(); }); }
+    const [tx, ty] = isoScr(a[0] + 21, a[1] + 16.5); tg.style.transform = `translate(${Math.min(W - 180, Math.max(8, tx))}px,${Math.min(H - 84, ty)}px) translate(-10%,10px)`; ISO.ov.append(tg);
+    if (!detail || (ISO.sel && ISO.sel !== id) || (!ISO.sel && vis.size > 1)) continue;
+    const stack = isoStack(p), seenL = new Set();
+    for (const e of stack) {
+      if (seenL.has(e.L.key) || e.kind === "slab" || e.kind === "pad" || e.kind === "beam") continue; seenL.add(e.L.key);
+      const [lx, ly] = isoScr(a[0] - 0.4, a[1] + 12.4, (e.z0 + e.z1) / 2), d = el("div", "mlvl2"); d.append(el("b", "", e.L.t));
+      d.style.transform = `translate(${lx}px,${ly}px) translate(-100%,-50%) translateX(-14px)`; ISO.ov.append(d);
+    }
+    const act = (p.pours || []).find((x) => x.id === p.active), at = act && stack.find((e) => e.L.key === act.level && e.part.k === act.part);
+    if (act && at) {
+      const [cx, cy] = isoScr(a[0] + (at.roof ? 15.5 : 15.5), a[1] + (at.roof ? 6 : 0.5), at.z1 + (at.kind === "slab" ? 0.1 : 1));
+      const box = el("div", "mcall2" + (act.stage === "violation" ? " bad" : "")), inner = el("div", "mcb");
+      const nOk = (act.rx || []).filter((r) => r.st === "approved").length;
+      inner.append(el("b", "", act.el), el("span", "", act.stageT), el("small", "", `الاستلامات ${nOk} من 3` + (act.ready ? " · جاهز للصب" : "")));
+      box.innerHTML = '<svg width="1" height="1" aria-hidden="true"><circle r="3.2" fill="currentColor"/><circle r="6.5" fill="none" stroke="currentColor" stroke-opacity=".25"/><path d="M0 0 L34 -26" stroke="currentColor" stroke-width="1.5"/></svg>';
+      box.append(inner); box.style.transform = `translate(${cx}px,${cy}px)`; ISO.ov.append(box);
+      if (cx + 34 + inner.offsetWidth > W - 8) box.classList.add("flip"); // no room on the right: the callout goes to the left of its leader
+    }
+  }
+  // scale: a round length near 90 px along the ground
+  const m = 90 / (c.k * ISO_C), nice = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000].find((v) => v >= m * 0.6) || 10000;
+  const sb = ISO.el.querySelector(".mscale2"); sb.querySelector("i").style.width = Math.round(nice * c.k * ISO_C) + "px"; sb.querySelector("span").textContent = nice >= 1000 ? nice / 1000 + " كم" : nice + " م";
+}
+// a still picture of one project's model (the panel, when the Mapbox base map draws the projects as beacons)
+function isoThumb(p) {
+  const s = document.createElementNS(ISO_NS, "svg"), g = isoModel(p, [0, 0]), top = isoStack(p).reduce((m, e) => Math.max(m, e.z1), 4) + 1.4;
+  const xs = [isoP(-5, 16.5)[0], isoP(21, -4)[0]], ys = [isoP(-5, -4, top)[1], isoP(21, 16.5)[1]];
+  s.setAttribute("viewBox", `${xs[0] - 1} ${ys[0] - 1} ${xs[1] - xs[0] + 2} ${ys[1] - ys[0] + 2}`); s.setAttribute("class", "mthumb"); s.setAttribute("aria-hidden", "true");
+  s.innerHTML = `<defs>${ISO_DEFS}</defs>`; s.append(g); return s;
+}
+
 // who moves an inspection next, by its state (the party itself while a visit or a result is awaited)
 const RX_NEXT = { none: () => "يطلبه طالب الصبة (مهندس الموقع)", requested: () => "يتابع طالب الصبة حجز الزيارة", scheduled: (r) => "بانتظار زيارة " + r.t, awaiting: (r) => "بانتظار نتيجة " + r.t,
   notes: () => "الإصلاح على طالب الصبة، والإغلاق للجهة التي أصدرت الملاحظة" };
@@ -3573,22 +3904,12 @@ function mapGeo(stage, M, ps, wall, tip) {
 }
 function mapGeoMarkers(G) {
   const mb = window.mapboxgl; if (!G.map || !mb) return;
-  const seen = new Set(), stage = G.el.parentNode;
+  const seen = new Set();
   for (const p of G.ps) {
-    seen.add(p.id); let mk = G.markers.get(p.id); const node = mk ? mk.getElement() : document.createElement("div");
-    node.className = "mmk" + (MAPV.sel === p.id ? " sel" : ""); node.replaceChildren();
-    const sz = 52, svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("viewBox", `${-sz} ${-sz * 1.9} ${sz * 2} ${sz * 2.05}`); svg.setAttribute("width", String(sz * 1.4)); svg.setAttribute("height", String(sz * 1.45)); svg.append(mapBuilding(p, sz, true));
-    node.append(svg, el("span", "mlab2 " + p.colour.k, MCOL[p.colour.k][1] + " " + (p.code || p.name)));
-    node.setAttribute("role", G.wall ? "img" : "button"); node.tabIndex = G.wall ? -1 : 0; node.setAttribute("aria-label", `${p.name}: ${MCOL[p.colour.k][0]}`);
-    if (!G.wall) {
-      const open = (e) => { e.stopPropagation(); MAPV.sel = p.id; MAPV.pour = p.active; MAPV.scroll = true; if (G.tip) G.tip.hidden = true; draw(); };
-      node.onclick = open; node.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(e); } };
-      node.onmouseenter = () => { const t = G.tip; if (!t || !stage) return; t.replaceChildren(...mapTip(p).map((x, i) => el(i ? "div" : "b", "", x))); t.hidden = false;
-        const r = stage.getBoundingClientRect(), q = node.getBoundingClientRect(); t.style.left = Math.min(r.width - 280, Math.max(8, q.right - r.left + 8)) + "px"; t.style.top = Math.max(8, q.top - r.top) + "px"; };
-      node.onmouseleave = () => { if (G.tip) G.tip.hidden = true; };
-    }
-    if (!mk) { mk = new mb.Marker({ element: node, anchor: "bottom" }).setLngLat([p.geo.lng, p.geo.lat]).addTo(G.map); G.markers.set(p.id, mk); } else mk.setLngLat([p.geo.lng, p.geo.lat]);
+    seen.add(p.id); let mk = G.markers.get(p.id);
+    const wrap = mk ? mk.getElement() : document.createElement("div"); wrap.className = "mgeo";
+    const b = isoBeacon(p, G.wall); b.classList.toggle("sel", MAPV.sel === p.id); wrap.replaceChildren(b);
+    if (!mk) { mk = new mb.Marker({ element: wrap, anchor: "bottom" }).setLngLat([p.geo.lng, p.geo.lat]).addTo(G.map); G.markers.set(p.id, mk); } else mk.setLngLat([p.geo.lng, p.geo.lat]);
   }
   for (const [id, mk] of G.markers) if (!seen.has(id)) { mk.remove(); G.markers.delete(id); }
 }
@@ -3606,71 +3927,32 @@ if (!wall) st.append(el("span", "small muted", " · المجسم تمثيل لل
   if (!wall && M.canGeo) { const b = el("button", "lnk", "إعداد الخريطة الجغرافية"); b.type = "button"; b.onclick = () => mapAct(M, "base", ""); st.append(b); }
   m.append(st);
   if (!ps.length) stage.append(el("div", "empty", "لا مشروع بموقع موثّق بعد — حدّد المواقع من «يحتاج تحديد الموقع»."));
-  // a group (not an image): its buildings are buttons a screen reader must reach
-  const svgNS = "http://www.w3.org/2000/svg", svg = document.createElementNS(svgNS, "svg"); svg.setAttribute("class", "msvg"); svg.setAttribute("role", wall ? "img" : "group");
-  svg.setAttribute("aria-label", "خريطة المشاريع: " + ps.map((p) => `${p.code || p.name} ${MCOL[p.colour.k][0]}`).join("، "));
   const tip = el("div", "mtip"); tip.hidden = true; tip.setAttribute("role", "tooltip");
-  if (ps.length && !useGeo) stage.append(svg); if (ps.length) stage.append(tip);
-  const ctl = el("div", "mctl"); [["+", 1.5], ["−", 1 / 1.5], ["⤢", 0]].forEach(([t, f]) => { const b = el("button", "sbtn", t); b.type = "button"; b.setAttribute("aria-label", f === 0 ? "ملاءمة كل المشاريع" : f > 1 ? "تكبير" : "تصغير"); b.onclick = () => { if (f === 0) MAPV.fit = true; else { MAPV.k = Math.min(40, Math.max(0.3, MAPV.k * f)); MAPV.fit = false; } paint(); }; ctl.append(b); });
-  if (ps.length && !useGeo) stage.append(ctl);
-  const xy = ps.length ? mapPlane(ps) : null, P = ps.map((p) => ({ p, km: xy(p.geo) }));
-  function paint() {
-    const W = stage.clientWidth || 600, H = stage.clientHeight || 420;
-    const xs = P.map((q) => q.km[0]), ys = P.map((q) => q.km[1]), spanX = Math.max(0.6, Math.max(...xs) - Math.min(...xs)), spanY = Math.max(0.6, Math.max(...ys) - Math.min(...ys));
-    if (MAPV.fit || MAPV.cx === null) { MAPV.cx = (Math.max(...xs) + Math.min(...xs)) / 2; MAPV.cy = (Math.max(...ys) + Math.min(...ys)) / 2; MAPV.k = 1; MAPV.fit = false; }
-    const base = Math.min((W - 140) / spanX, (H - 140) / spanY), sc = base * MAPV.k; // px per km
-    MAPV.sc = sc; // the drag reads the same scale (one formula)
-    const sx = (km) => [W / 2 + (km[0] - MAPV.cx) * sc, H / 2 + (km[1] - MAPV.cy) * sc];
-    const had = document.activeElement && document.activeElement.closest && document.activeElement.closest(".mproj"), hadId = had ? had.dataset.pid : null; // keep keyboard focus across repaints
-    svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.replaceChildren();
-    const sv = (t, a) => { const e = document.createElementNS(svgNS, t); for (const k in a) e.setAttribute(k, a[k]); return e; };
-    // grid: a «nice» step near 90 px, scale bar and north
-    const step = [0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50].find((v) => v * sc >= 90) || 50, gx = sv("g", { class: "mgrid" });
-    const x0 = MAPV.cx - W / 2 / sc, y0 = MAPV.cy - H / 2 / sc;
-    for (let v = Math.floor(x0 / step) * step; v < x0 + W / sc; v += step) { const [px] = sx([v, 0]); gx.append(sv("line", { x1: px, y1: 0, x2: px, y2: H })); }
-    for (let v = Math.floor(y0 / step) * step; v < y0 + H / sc; v += step) { const [, py] = sx([0, v]); gx.append(sv("line", { x1: 0, y1: py, x2: W, y2: py })); }
-    svg.append(gx);
-    const sb = sv("g", { class: "mscale" }); sb.append(sv("line", { x1: 16, y1: H - 18, x2: 16 + step * sc, y2: H - 18 }), sv("line", { x1: 16, y1: H - 23, x2: 16, y2: H - 13 }), sv("line", { x1: 16 + step * sc, y1: H - 23, x2: 16 + step * sc, y2: H - 13 }));
-    const sbt = sv("text", { x: 16 + step * sc / 2, y: H - 26 }); sbt.textContent = step >= 1 ? step + " كم" : Math.round(step * 1000) + " م"; sb.append(sbt); svg.append(sb);
-    const nt = sv("g", { class: "mnorth", transform: "translate(26,30)" }); nt.append(sv("path", { d: "M0,-14 L6,6 L0,2 L-6,6 Z" })); const nl = sv("text", { x: 0, y: 20 }); nl.textContent = "ش"; nt.append(nl); svg.append(nt);
-    // size by zoom (simpler buildings when small); overlapping sites fan out with a leader line to their true point
-    const size = Math.max(matchMedia("(pointer:coarse)").matches ? 44 : 26, Math.min(90, 44 + 12 * Math.log2(MAPV.k) - Math.max(0, P.length - 8) * 1.5)), detail = size >= 40; // ≥44 px to tap
-    const pts = P.map((q) => { const at = sx(q.km); return { q, at, pos: at }; }); // pos moves only when fanned out (then a leader line)
-    for (let i = 0; i < pts.length; i++) for (let j = 0; j < i; j++) { const a = pts[i], b = pts[j]; if (Math.hypot(a.pos[0] - b.pos[0], a.pos[1] - b.pos[1]) < size * 1.1) { const ang = (i * 2.4) % (2 * Math.PI); a.pos = [a.pos[0] + Math.cos(ang) * size * 1.15, a.pos[1] + Math.sin(ang) * size * 0.9]; } }
-    for (const t of pts) {
-      const p = t.q.p, g = sv("g", { class: "mproj" + (MAPV.sel === p.id ? " sel" : ""), transform: `translate(${t.pos[0]},${t.pos[1]})`, tabindex: wall ? "-1" : "0", role: wall ? "img" : "button" });
-      g.setAttribute("aria-label", `${p.name}: ${MCOL[p.colour.k][0]}`); g.dataset.pid = p.id;
-      if (t.pos !== t.at) svg.append(sv("line", { x1: t.at[0], y1: t.at[1], x2: t.pos[0], y2: t.pos[1], class: "mlead" }), sv("circle", { cx: t.at[0], cy: t.at[1], r: 2.5, class: "mdot" }));
-      g.append(mapBuilding(p, size, detail));
-      const lab = sv("text", { x: 0, y: 16, class: "mlab " + p.colour.k }); lab.textContent = MCOL[p.colour.k][1] + " " + (p.code || p.name); g.append(lab);
-      if (!wall) {
-        g.addEventListener("pointerenter", (e) => { if (e.pointerType !== "mouse") return; tip.replaceChildren(...mapTip(p).map((s, i) => el(i ? "div" : "b", "", s))); tip.hidden = false; const r = stage.getBoundingClientRect(); tip.style.left = Math.min(r.width - 280, Math.max(8, e.clientX - r.left + 14)) + "px"; tip.style.top = Math.max(8, e.clientY - r.top + 14) + "px"; });
-        g.addEventListener("pointerleave", () => (tip.hidden = true));
-        const open = () => { MAPV.sel = p.id; MAPV.pour = p.active; MAPV.scroll = true; tip.hidden = true; draw(); };
-        g.addEventListener("click", open); g.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } });
-      }
-      svg.append(g);
-    }
-    if (hadId) { const f = svg.querySelector(`.mproj[data-pid="${CSS.escape(hadId)}"]`); if (f) f.focus({ preventScroll: true }); }
-  }
-  // pan: drag with a mouse or pen (a finger scrolls the page — the map never traps a phone's scroll; zoom with the buttons);
-  // zoom: Ctrl/⌘ + wheel (a plain wheel scrolls the page)
-  let drag = null;
-  svg.addEventListener("pointerdown", (e) => { if (e.pointerType === "touch" || (e.target.closest && e.target.closest(".mproj"))) return; drag = { x: e.clientX, y: e.clientY, cx: MAPV.cx, cy: MAPV.cy }; svg.setPointerCapture(e.pointerId); });
-  svg.addEventListener("pointermove", (e) => { if (!drag || !MAPV.sc) return; MAPV.cx = drag.cx - (e.clientX - drag.x) / MAPV.sc; MAPV.cy = drag.cy - (e.clientY - drag.y) / MAPV.sc; cmdMapPaint(paint); });
-  svg.addEventListener("pointerup", () => (drag = null)); svg.addEventListener("pointercancel", () => (drag = null));
-  svg.addEventListener("wheel", (e) => { if (!e.ctrlKey && !e.metaKey) return; e.preventDefault(); MAPV.k = Math.min(40, Math.max(0.3, MAPV.k * (e.deltaY < 0 ? 1.25 : 0.8))); cmdMapPaint(paint); }, { passive: false });
+  if (ps.length) stage.append(tip);
   // the side: the synchronized alert list (so a stalled project is never lost under another or off-screen), then the unplaced ones;
   // a chosen project replaces the list with its panel — the map stays
   const sel = all.find((p) => p.id === MAPV.sel);
   if (sel && !wall) side.append(mapPanel(sel, M)); else side.append(mapList(M, all, wall));
   wrap.append(stage, side); m.append(wrap);
-  if (MAPRO) MAPRO.disconnect(); MAPRO = null; // the previous draw's watcher would keep its detached map alive
-  if (ps.length && !useGeo) { cmdMapPaint(paint); MAPRO = new ResizeObserver(() => cmdMapPaint(paint)); MAPRO.observe(stage); }
+  if (ps.length && !useGeo) isoMount(stage, M, ps, wall, tip);
   if (useGeo) mapGeo(stage, M, ps, wall, tip);
-  // on a phone the panel sits under the map: bring it into view once when a project is opened (the map stays above)
-  if (MAPV.scroll && sel && matchMedia("(max-width:980px)").matches) requestAnimationFrame(() => side.scrollIntoView({ block: "start", behavior: smoothB() }));
+  // with the Mapbox base map the projects are beacons: the chosen one's model is shown at the top of its panel
+  if (useGeo && sel && sel.levels && side.firstChild) side.firstChild.prepend(isoThumb(sel));
+  // phone: a full-width map and the details in a bottom sheet; a tablet keeps them under the map
+  if (sel && !wall && matchMedia("(max-width:760px)").matches) { isoSheet(side, MAPV.scroll); if (MAPV.scroll) requestAnimationFrame(() => stage.scrollIntoView({ block: "start", behavior: smoothB() })); }
+  else if (MAPV.scroll && sel && matchMedia("(max-width:980px)").matches) requestAnimationFrame(() => side.scrollIntoView({ block: "start", behavior: smoothB() }));
   MAPV.scroll = false;
+}
+function isoSheet(side, fresh) {
+  if (fresh) MAPV.sheet = "peek";
+  side.classList.add("msheet"); side.classList.toggle("full", MAPV.sheet === "full");
+  const h = el("button", "mhandle"); h.type = "button"; h.setAttribute("aria-label", "توسيع التفاصيل أو طيّها"); side.prepend(h);
+  const set = (v) => { MAPV.sheet = v; side.classList.toggle("full", v === "full"); };
+  h.onclick = () => set(side.classList.contains("full") ? "peek" : "full");
+  let y0 = null, base = 0, H = 0;
+  h.addEventListener("pointerdown", (e) => { y0 = e.clientY; H = side.getBoundingClientRect().height; base = side.classList.contains("full") ? 0 : H - innerHeight * 0.42; side.classList.add("dragging"); h.setPointerCapture(e.pointerId); });
+  h.addEventListener("pointermove", (e) => { if (y0 == null) return; side.style.transform = `translateY(${Math.min(H - 120, Math.max(0, base + e.clientY - y0))}px)`; });
+  h.addEventListener("pointerup", (e) => { if (y0 == null) return; const d = e.clientY - y0; side.classList.remove("dragging"); side.style.transform = ""; if (Math.abs(d) > 24) set(d < 0 ? "full" : "peek"); y0 = null; });
 }
 function mapList(M, all, wall) {
   const box = el("div", "malist");
