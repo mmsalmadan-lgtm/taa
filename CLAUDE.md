@@ -54,7 +54,7 @@ card or page · finance things live under المالية, purchases under الم
   token): the phone's back gesture goes one step back. An open dialog is its own step (wrapped `showModal`/`close`).
 - Touch targets ≥44px on `pointer:coarse`. Run `npx impeccable detect --json d/index.html` before a PR (must come back `[]`).
 
-## Visual language «طاولة الرسم» (redesign 2026-11-13, owner asked for one coherent language)
+## Visual language «طاولة الرسم» (redesign 2026-11-13; surfaces, heads, status marks and buttons superseded by «لوح الموقع» below)
 - Light only (owner: light background). Cool concrete page `--bg #F1F3F4`, white surfaces, the company navy `#1D2533` for text
   and actions (`--ui`), the logo red `--brand #C62026` only in the mark. Colour = meaning: ledger green, blueprint blue,
   red/amber alerts. `--faint` is the lightest text allowed (4.5:1 on the page).
@@ -62,7 +62,7 @@ card or page · finance things live under المالية, purchases under الم
   the "SAR" face so the riyal sign renders everywhere.
 - Shell: `<aside class="side">` holds the header and the nav. ≥1080px it is a sticky side navigation (groups «الأقسام» /
   «الإدارة» from `TABS[].g`, icons from `ICO`); below that it is `display:contents` → top bar + sticky sideways pill strip.
-- Page head `page(icon, title, sub, fam)` → `header.ph` with the family colour as the rule beside the title (title may be a
+- Page head `page(icon, title, sub, fam)` → `header.ph` (since 16 Nov: title over a hairline with a short family-colour stroke, see «لوح الموقع») (title may be a
   node, e.g. the project number badge). Sub-tabs are a segmented control; `.panel` is a separate surface under it.
 - Home: `hero()` (date + greeting only, no figures), `startHere()` («ابدأ من هنا»: the waiting items in order, cash first while
   it is not entered), `ledger(K)` (the same KPI list grouped يدخل / يخرج / النقد), the forecast, then alerts + health.
@@ -81,8 +81,8 @@ Owner's references: track3d.ai for layout and spacing, siteaware.com/platform fo
 no logos, illustrations, wording or layouts copied. It is a layer at the end of the `<style>` block over «طاولة الرسم» above;
 markup and JavaScript are unchanged.
 - Page `--bg #F5F6F7`, white flat surfaces with hairline borders (`--line`), no lifting shadows; radii 6 / 8 / 10 px.
-- One navy board per page: the page-level figure strip (`main>.kpis`) is `--board` navy with white labels; money in = mint
-  `--b-in`, out `--b-out`, engineering `--b-eng`, warn/bad flags tinted for the dark ground. Nested `.kpis` stay light.
+- One navy board per page: the FIRST page-level figure strip (`main>.kpis:not(.kpis~.kpis)`; later strips stay light) is `--board` navy with white labels; money in = mint
+  `--b-in`, out `--b-out`, engineering `--b-eng`, warn/bad flags and negative figures (`.v.neg` → `--b-bad`) tinted for the dark ground. Nested `.kpis` stay light.
 - A figure's family is a dot before its label (`.kpi .l::before`), not a side bar. A status is a 3-px rule across the TOP of its
   card (`.card.warn/.bad`, `.aq`, `.dcard`, `.dqc`, `.alx`, `.ovtodo`, wall tiles) — no coloured side stripes anywhere new.
 - Page head `.ph`: title over a full-width hairline with a short family-colour stroke on it. Section titles (`.hsh`, `.fch2`,

@@ -34,7 +34,7 @@
  --f-disp:"SAR","Readex Pro","IBM Plex Sans Arabic","Segoe UI",Tahoma,system-ui,sans-serif;
  --r-s:6px;--r-m:8px;--r-l:10px;
  /* «اللوح» — the navy board: one dark field per page carries its headline figures (siteaware's bands, track3d's data panel) */
- --board:#1D2533;--board-2:#2A3549;--on-board:#FFFFFF;--on-board-m:#AEB8C7;--board-line:rgb(255 255 255/.10);
+ --board:#1D2533;--on-board:#FFFFFF;--on-board-m:#AEB8C7;--board-line:rgb(255 255 255/.10);
  --b-in:#5ED6A0;--b-out:#D3DAE4;--b-eng:#9CC2F7;--b-warn:#F4C36F;--b-bad:#FF9E94;
  --sh-lift:0 10px 24px -14px rgb(29 37 51/.28);--sh-pop:0 28px 70px -20px rgb(29 37 51/.42);
  --ease:cubic-bezier(.2,.8,.2,1);--spring:cubic-bezier(.22,1,.36,1); /* no overshoot: a settle, not a bounce (pilot detector, 15 Nov 2026) */
@@ -556,7 +556,6 @@ main.enter>*:nth-child(2){animation-delay:30ms}main.enter>*:nth-child(3){animati
 /* English (left to right): only what logical properties cannot say */
 [dir=ltr] .step .chev{transform:rotate(-135deg)}
 [dir=ltr] .auth .f input,[dir=ltr] .dlg .f input[type=password]{text-align:left}
-[dir=ltr] .card.warn::after,[dir=ltr] .card.bad::after,[dir=ltr] .sc.warn::after,[dir=ltr] .sc.bad::after,[dir=ltr] .kpi::before{border-radius:0 3px 3px 0}
 [dir=ltr] .fc-tip{direction:ltr}
 [dir=ltr] body{font-family:"SAR","IBM Plex Sans Arabic","Segoe UI",system-ui,sans-serif}
 .lang{font-weight:600;color:var(--ink)}
@@ -800,17 +799,18 @@ main{gap:20px}
 .ph h1{font-size:clamp(26px,3vw,36px);line-height:1.2}
 .sec-h{margin:20px 2px 0}.sec-h h2{font-size:20px}
 /* the navy board: the page-level figure strip */
-main>.kpis,.hest-in>.kpis{background:var(--board);border:0;color:var(--on-board)}
-main>.kpis .kpi,.hest-in>.kpis .kpi{box-shadow:-1px 0 0 var(--board-line),0 1px 0 var(--board-line);padding:20px 22px 18px}
-main>.kpis .kpi .l,.hest-in>.kpis .kpi .l{color:var(--on-board-m)}
-main>.kpis .kpi .s,.hest-in>.kpis .kpi .s{color:var(--on-board-m)}
-main>.kpis .kpi .v,.hest-in>.kpis .kpi .v{color:var(--b-v,var(--on-board));font-size:clamp(20px,1.75vw,26px);white-space:nowrap;overflow-wrap:normal}
+main>.kpis:not(.kpis~.kpis){background:var(--board);border:0;color:var(--on-board)}
+main>.kpis:not(.kpis~.kpis) .kpi{box-shadow:-1px 0 0 var(--board-line),0 1px 0 var(--board-line);padding:20px 22px 18px}
+main>.kpis:not(.kpis~.kpis) .kpi .l{color:var(--on-board-m)}
+main>.kpis:not(.kpis~.kpis) .kpi .s{color:var(--on-board-m)}
+main>.kpis:not(.kpis~.kpis) .kpi .v{color:var(--b-v,var(--on-board));font-size:clamp(19px,1.6vw,22px)}
+main>.kpis:not(.kpis~.kpis) .kpi .v.neg{color:var(--b-bad)!important} /* a deficit stays red, in a red that reads on navy */
 /* the project overview's sections sit straight on the page (no box inside a box) */
 .panel:has(>.ovg){background:transparent;border:0;padding:0}
-main>.kpis .kpi[data-f="in"],.hest-in>.kpis .kpi[data-f="in"]{--b-v:var(--b-in)}main>.kpis .kpi[data-f="out"],.hest-in>.kpis .kpi[data-f="out"]{--b-v:var(--b-out)}main>.kpis .kpi[data-f="eng"],.hest-in>.kpis .kpi[data-f="eng"]{--b-v:var(--b-eng)}
-main>.kpis .kpi[data-f="in"],main>.kpis .kpi[data-f="cash"]{--fam:var(--b-in)}main>.kpis .kpi[data-f="out"]{--fam:var(--b-out)}main>.kpis .kpi[data-f="eng"]{--fam:var(--b-eng)}main>.kpis .kpi[data-t="warn"]{--fam:var(--b-warn)}main>.kpis .kpi[data-t="bad"]{--fam:var(--b-bad)}
-main>.kpis .flag.warn,.hest-in>.kpis .flag.warn{background:rgb(244 195 111/.16);color:var(--b-warn)}main>.kpis .flag.bad,.hest-in>.kpis .flag.bad{background:rgb(255 158 148/.16);color:var(--b-bad)}
-main>.kpis :focus-visible{outline-color:var(--on-board)}
+main>.kpis:not(.kpis~.kpis) .kpi[data-f="in"]{--b-v:var(--b-in)}main>.kpis:not(.kpis~.kpis) .kpi[data-f="out"]{--b-v:var(--b-out)}main>.kpis:not(.kpis~.kpis) .kpi[data-f="eng"]{--b-v:var(--b-eng)}
+main>.kpis:not(.kpis~.kpis) .kpi[data-f="in"],main>.kpis:not(.kpis~.kpis) .kpi[data-f="cash"]{--fam:var(--b-in)}main>.kpis:not(.kpis~.kpis) .kpi[data-f="out"]{--fam:var(--b-out)}main>.kpis:not(.kpis~.kpis) .kpi[data-f="eng"]{--fam:var(--b-eng)}main>.kpis:not(.kpis~.kpis) .kpi[data-t="warn"]{--fam:var(--b-warn)}main>.kpis:not(.kpis~.kpis) .kpi[data-t="bad"]{--fam:var(--b-bad)}
+main>.kpis:not(.kpis~.kpis) .flag.warn{background:rgb(244 195 111/.16);color:var(--b-warn)}main>.kpis:not(.kpis~.kpis) .flag.bad{background:rgb(255 158 148/.16);color:var(--b-bad)}
+main>.kpis:not(.kpis~.kpis) :focus-visible{outline-color:var(--on-board)}
 /* a figure's family is a dot before its label (the side bar is gone) */
 .kpi::before{display:none}
 .kpi .l{display:flex;align-items:center;gap:7px}.kpi .l::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--fam,var(--line-2));flex:none}
@@ -828,7 +828,7 @@ main>.kpis :focus-visible{outline-color:var(--on-board)}
 .aq::before,.dcard::before{inset-block:-1px auto;inset-inline:-1px;width:auto;height:3px;border-radius:var(--r-l) var(--r-l) 0 0}
 .dcard{padding-inline-start:18px}.aq{padding-inline-start:16px}
 .alx::before,.ovtodo::before{inset-block:0 auto;inset-inline:0;width:auto;height:3px}
-.dqc.decision,.dqc.review,.dqc.reconcile{border-inline-start-width:1px;border-top-width:3px}
+.dqc.decision,.dqc.review,.dqc.reconcile{border-inline-start:1px solid var(--line);border-top-width:3px;border-top-style:solid}
 .dqc.decision{border-top-color:var(--warn6)}.dqc.review{border-top-color:var(--crit)}.dqc.reconcile{border-top-color:var(--acc6)}
 /* actions: navy pills; secondary = outlined pill */
 .pbtn,.hbtn,.sbtn,.login{border-radius:999px}
@@ -852,7 +852,7 @@ main>.kpis :focus-visible{outline-color:var(--on-board)}
 @media (max-width:560px){
  main{gap:16px}
  .ph h1{font-size:24px}
- main>.kpis .kpi{padding:14px 14px 13px}main>.kpis .kpi .v{font-size:18px}
+ main>.kpis:not(.kpis~.kpis) .kpi{padding:14px 14px 13px}main>.kpis:not(.kpis~.kpis) .kpi .v{font-size:18px}
  .card{padding:12px}.box,.panel,.hsec{padding:16px}
  .hsh h2{font-size:18px}
 }
