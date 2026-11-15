@@ -3737,6 +3737,7 @@ function mapPour(x, M) {
   // every action carries the version of the pour this page showed: changed meanwhile → refused, reloaded, re-checked (never overwritten)
   const box = el("div", "mpour"), act = new Set(x.acts || []), rid = x.id + (x.ver ? "@" + x.ver : "");
   const top = el("div", "mpt"); top.append(el("b", "", x.el), el("span", "pill", x.stageT), el("span", "small muted", (x.zone ? "المنطقة " + x.zone : "المنطقة غير محددة") + (x.date ? " · موعد الصبة " + dmy(x.date) : "")));
+  if (x.startVoid) pw.append(el("div", "notice warn", "بدء صب مسجّل في " + dmy(String(x.startVoid.at).slice(0, 10)) + (x.startVoid.date ? " لموعد " + dmy(x.startVoid.date) : "") + " — " + x.startVoid.now + ". يبقى في سجل الصبة؛ يُسجّل بدء جديد بعد إفراج البوت."));
   box.append(top);
   if (x.conflict) box.append(el("div", "banner bad", x.conflict));
   // readiness is a question before the pour; once poured (or started) the record speaks instead
