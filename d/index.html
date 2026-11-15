@@ -827,6 +827,16 @@ const pct = (f) => Math.round((f || 0) * 100) + "%";
 const LK = "taa.dash.lang";
 let LANG = (() => { try { return localStorage.getItem(LK) === "en" ? "en" : "ar"; } catch { return "ar"; } })();
 const EN = {
+"سباكة وكهرباء": "Plumbing and electrical",
+"تجهيز الموقع": "Site set-up",
+"السور المؤقت": "Temporary fence",
+"لوحة المشروع": "Project signboard",
+"مؤكد في الموقع": "Confirmed on site",
+"غير موجود في الموقع": "Not on site",
+"غير مؤكد": "Not confirmed",
+"تأكيد / تحديث": "Confirm / update",
+"لا يلزم قبل بدء الحفر": "Not needed before excavation",
+"استُبدل بالسور الدائم": "Replaced by the permanent wall",
 "أعتاب وأكتاف الدور الأرضي": "Ground floor lintels and shoulders",
 "أعتاب وأكتاف الدور الأول": "First floor lintels and shoulders",
 "أعتاب وأكتاف الدور الإضافي": "Extra floor lintels and shoulders",
@@ -3648,6 +3658,14 @@ function isoTruckBoxes(e) {
     B(mx, fy, mx + 6.5, fy + 2.5, 0.4, 1.3, "cab"), B(mx + 0.5, fy + 0.25, mx + 5, fy + 2.25, 1.3, 3.5, "truck"), B(mx + 6.5, fy, mx + 8.5, fy + 2.5, 0.4, 3.1, "cab")],
     boom: [[px + 2.25, fy + 1.25, 2.6], [px + 2.25, fy - 2, 9], [cx, (P.bb[1] + P.bb[3]) / 2 + 3, (e.tz || 4) + 4], [cx, (P.bb[1] + P.bb[3]) / 2, (e.tz || 4) + 0.3]] };
 }
+// the temporary fence panels on the plot edge; the signboard (two posts, a board) inside the plot at the façade street
+function isoSetupPieces(e) {
+  const P = isoPlan(), plot = P.plot || isoGrow(isoBase(P), 4), out = [];
+  if (e.kind === "tfence") { for (let i = 0; i < plot.length; i++) { const a = plot[i], b = plot[(i + 1) % plot.length]; for (const pc of isoWallPieces([a[0], a[1], b[0], b[1], 0.06, []], 0, 2.0)) out.push({ ...pc, c: "tsheet" }); } return out; }
+  const fy = Math.max(...plot.map((q) => q[1])) - 0.6, cx = (P.bb[0] + P.bb[2]) / 2, B = (x0, y0, x1, y1, z0, z1, c) => ({ ring: [[x0, y0], [x1, y0], [x1, y1], [x0, y1]], z0, z1, c });
+  if (e.mode === "missing") return [B(cx - 1.6, fy - 0.3, cx + 1.6, fy + 0.3, 0, 0, "board")];
+  return [B(cx - 1.45, fy - 0.06, cx - 1.35, fy + 0.06, 0, 2.0, "cab"), B(cx + 1.35, fy - 0.06, cx + 1.45, fy + 0.06, 0, 2.0, "cab"), B(cx - 1.6, fy - 0.05, cx + 1.6, fy + 0.05, 2.0, 3.6, "board")];
+}
 function isoTrucks(g, e) {
   const t = isoTruckBoxes(e);
   for (const b of t.boxes.sort((a, c) => a.d - c.d)) isoPrism(g, b.ring, b.z0, b.z1, b.c);
@@ -3680,7 +3698,7 @@ const ISO_ICON = {
   red: '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="currentColor"/><path d="M8 4.2v4.6" stroke="#fff" stroke-width="1.9" stroke-linecap="round"/><circle cx="8" cy="11.4" r="1.1" fill="#fff"/></svg>',
   grey: '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="2.2 1.8"/><path d="M6.3 6.2a1.8 1.8 0 1 1 2.4 1.7c-.5.2-.7.6-.7 1.1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="11.4" r=".95" fill="currentColor"/></svg>',
 };
-const ISO_MAT = { truck: ["#F3C64F", "#DDB03C", "#C49A2E"], cab: ["#E9ECEF", "#CDD2D7", "#B4BAC1"], earth: ["#DCCDAE", "#C9B794", "#B5A27C"], blk: ["#EFEAE1", "#DCD4C6", "#C9C0B0"], conc: ["#E1E4E6", "url(#iso-conc-l)", "url(#iso-conc-r)"], fresh: ["#BFC6CC", "url(#iso-fresh-l)", "url(#iso-fresh-r)"], ply: ["#EBC07E", "url(#iso-ply-l)", "url(#iso-ply-r)"] };
+const ISO_MAT = { tsheet: ["#DCE2E7", "#C2CBD3", "#AAB4BE"], board: ["#2A3445", "#1D2533", "#151B26"], truck: ["#F3C64F", "#DDB03C", "#C49A2E"], cab: ["#E9ECEF", "#CDD2D7", "#B4BAC1"], earth: ["#DCCDAE", "#C9B794", "#B5A27C"], blk: ["#EFEAE1", "#DCD4C6", "#C9C0B0"], conc: ["#E1E4E6", "url(#iso-conc-l)", "url(#iso-conc-r)"], fresh: ["#BFC6CC", "url(#iso-fresh-l)", "url(#iso-fresh-r)"], ply: ["#EBC07E", "url(#iso-ply-l)", "url(#iso-ply-r)"] };
 const ISO_DEFS = `<filter id="iso-soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="0.9"/></filter>` +
   [["conc-l", "#D2D6DA", "#BBC1C6"], ["conc-r", "#B4BAC0", "#9AA2A9"], ["fresh-l", "#AEB6BD", "#99A2AA"], ["fresh-r", "#959EA6", "#7E8891"], ["ply-l", "#DDA962", "#CB944C"], ["ply-r", "#C08A43", "#A97536"]]
     .map(([id, a, b]) => `<linearGradient id="iso-${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>`).join("");
@@ -3741,6 +3759,12 @@ function isoMeshPoly(g, r, z, op = 1) {
   for (let y = y0 + 0.4; y < y1; y += 0.8) for (const [a, b] of isoCut(r, y, 0)) if (b - a > 0.3) isoLine(g, isoP(a + 0.1, y, z), isoP(b - 0.1, y, z), "#6A3A22", 1, st);
   for (let x = x0 + 0.4; x < x1; x += 0.8) for (const [a, b] of isoCut(r, x, 1)) if (b - a > 0.3) isoLine(g, isoP(x, a + 0.1, z), isoP(x, b - 0.1, z), "#6A3A22", 1, st);
 }
+// structural MEP on a deck: electrical conduits (blue) along it, sleeves (orange) through it — the items of the pour's MEP check
+function isoMepOn(g, r, z) {
+  const [x0, y0, x1, y1] = isoBBox(r), dy = (y1 - y0) / 4;
+  for (let k = 1; k < 4; k++) for (const [a, b] of isoCut(r, y0 + dy * k, 0)) if (b - a > 0.6) isoLine(g, isoP(a + 0.3, y0 + dy * k, z), isoP(b - 0.3, y0 + dy * k, z), "#2F6FCB", 1.8);
+  for (let x = x0 + 1.6; x < x1; x += 3.2) for (let y = y0 + 1.6; y < y1; y += 3.2) if (isoIn(r, x, y)) isoLine(g, isoP(x, y, z - 0.3), isoP(x, y, z + 0.25), "#E07A1F", 3.2);
+}
 function isoPropsPoly(g, r, zb, zt) { const [x0, y0, x1, y1] = isoBBox(r); for (let x = x0 + 1.2; x < x1; x += 2.4) for (let y = y0 + 1.2; y < y1; y += 2.4) if (isoIn(r, x, y)) isoLine(g, isoP(x, y, zb), isoP(x, y, zt), "#7C858F", 1, { "stroke-opacity": 0.7 }); }
 function isoLine(g, a, b, stroke, w, extra = {}) { isoEl("line", { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke, "stroke-width": w, "vector-effect": "non-scaling-stroke", "stroke-linecap": "round", ...extra }, g); }
 function isoSeams(g, x0, y0, z0, x1, y1, z1, op) { // plywood joints and clamps on the two visible faces
@@ -3773,11 +3797,11 @@ function isoMode(p, L, part) {
 // the structure, bottom up, in metres: foundations, then each recorded floor (columns + slab), the annex on part of the roof
 // the building's stages in the order of work, each with its recorded state: earthworks, footings, ground beams, backfill, ground slab, then per
 // floor its columns, its slab and its blockwork, the boundary wall last. One step = the building as it stands up to that stage.
-const ISO_STEPK = { pad: "foot", neck: "foot", beam: "beam", pit: "dig", fill: "fill", gslab: "gslab", fence: "fence", parapet: "parapet" };
+const ISO_STEPK = { pad: "foot", neck: "foot", beam: "beam", pit: "dig", fill: "fill", gslab: "gslab", fence: "fence", parapet: "parapet", tfence: "tfence", sign: "sign" };
 const isoStepOf = (e) => ISO_STEPK[e.kind] || e.L.key + "|" + (e.kind === "walls" ? "blk" : e.kind);
 // a contractor phase drawn on an element: columns / necks / footings take their steel first (rebar, then formwork); slabs, beams and the
 // ground slab their formwork first (formwork, then rebar); the second phase is formwork with rebar, the third the concrete
-const isoPhaseMode = (kind, ph) => (ph === 1 ? (["pad", "neck", "cols"].includes(kind) ? "rebar" : "form") : "site");
+const isoPhaseMode = (kind, ph) => (ph === 1 ? (["pad", "neck", "cols"].includes(kind) ? "rebar" : "form") : ph === 3 ? "mep" : "site");
 // the building's stages in the order of work, each with its recorded state: earthworks, footings, ground beams, backfill, ground slab, then each
 // floor (owner 15 Nov 2026: «sometimes the blockwork and the lintels come before the slab»): its columns, then its slab / blockwork / lintels in
 // the order the records show (done before in progress before not started; when all are done the usual order), the parapet, the boundary wall.
@@ -3788,24 +3812,34 @@ function isoSteps(p) {
   const lvl = (k) => (p.levels || []).find((L) => L.key === k), part = (L, k) => L && (L.parts || []).find((x) => x.k === k);
   const cls = (st) => (st === "done" ? "done" : st === "none" || !st ? "none" : "work"), site = (st) => !["done", "none", "unk", "work", null, undefined].includes(st);
   const phS = (st, i) => (st === "done" ? "منتهي" : st === "none" || !st ? "لم يبدأ" : site(st) ? (i < 2 ? "منفّذ" : MPART[st] || st) : "غير محدد في السجلات");
-  const out = [], add = (key, t0, st, s, vert) => {
+  // a phase's state: the element's own pour check when the bot holds one (pours.ts CHECKS rebar / form / mep, the MEP engineer's confirmation),
+  // otherwise what the element's recorded state implies
+  const CK = { "حدادة": "rebar", "نجارة": "form", "سباكة وكهرباء": "mep" }, CKS = { ok: "مطابق — فحص الصبة", na: "لا ينطبق", note: "ملاحظة مفتوحة", wait: "بانتظار تأكيد مهندس الكهرباء والسباكة" };
+  const pourOf = (lk, pk) => [...(p.pours || [])].reverse().find((x) => x.level === lk && x.part === pk && x.stage !== "cancelled") || null;
+  const out = [], add = (key, t0, st, s, phases, po) => {
     if (!keys.has(key)) return;
-    if (vert === undefined) { out.push({ key, base: key, t0, t: t0, s: s || "—", c: cls(st) }); return; }
-    (vert ? ["حدادة", "نجارة"] : ["نجارة", "حدادة"]).forEach((nm, i) => out.push({ key: key + "@" + (i + 1), base: key, ph: i + 1, nm, t0, t: t0 + " — " + nm, s: phS(st, i), c: site(st) || st === "done" ? "done" : cls(st) }));
-    out.push({ key, base: key, ph: 3, nm: "صب", t0, t: t0 + " — صب", s: s || phS(st, 2), c: cls(st) });
+    if (!phases) { out.push({ key, base: key, t0, t: t0, s: s || "—", c: cls(st) }); return; }
+    phases.forEach((nm, i) => { const v = po && po.chk ? po.chk[CK[nm]] : null;
+      out.push({ key: key + "@" + (i + 1), base: key, ph: i + 1, nm, t0, t: t0 + " — " + nm, s: v ? CKS[v] : po && site(st) ? "لم يُفحص بعد" : phS(st, 0),
+        c: v === "ok" || v === "na" ? "done" : v ? "work" : site(st) ? (po ? "work" : "done") : st === "done" ? "done" : cls(st) }); });
+    out.push({ key, base: key, ph: phases.length + 1, pour: true, nm: "صب", t0, t: t0 + " — صب", s: s || phS(st, 2), c: cls(st) });
   };
+  const PV = ["حدادة", "نجارة", "سباكة وكهرباء"], PH = ["نجارة", "حدادة", "سباكة وكهرباء"];
+  // site set-up first: the temporary fence and the signboard (from excavation the bot flags a missing one)
+  const su = p.setup || {}, suS = (k) => (su[k] && su[k].st === "yes" ? ["مؤكد في الموقع", "done"] : su[k] && su[k].st === "no" ? ["غير موجود في الموقع", "work"] : ["غير مؤكد", "none"]);
+  for (const [k, t] of [["tfence", "السور المؤقت"], ["sign", "لوحة المشروع"]]) if (keys.has(k)) { const [a, c] = suS(k === "tfence" ? "fence" : "sign"); out.push({ key: k, base: k, t0: t, t, s: a, c }); }
   add("dig", elT("dig"), isoSt(p, "dig"), raw("dig")); add("repl", elT("repl"), isoSt(p, "repl"), raw("repl"));
-  const F = lvl("foot"), fp = part(F, "foot"); add("foot", F ? F.t : elT("foot"), fp ? fp.st : "unk", fp ? MPART[fp.st] || fp.st : "", true);
-  const Bm = lvl("beam"), bp = part(Bm, "beam"); add("beam", Bm ? Bm.t : "الميدات", bp ? bp.st : "unk", bp ? MPART[bp.st] || bp.st : "", false);
+  const F = lvl("foot"), fp = part(F, "foot"); add("foot", F ? F.t : elT("foot"), fp ? fp.st : "unk", fp ? MPART[fp.st] || fp.st : "", ["حدادة", "نجارة"], pourOf("foot", "foot"));
+  const Bm = lvl("beam"), bp = part(Bm, "beam"); add("beam", Bm ? Bm.t : "الميدات", bp ? bp.st : "unk", bp ? MPART[bp.st] || bp.st : "", PH, pourOf("beam", "beam"));
   add("fill", elT("fill"), isoSt(p, "fill"), raw("fill"));
-  const gs = isoSt(p, "gslab"); add("gslab", elT("gslab"), gs, raw("gslab"), false);
+  const gs = isoSt(p, "gslab"); add("gslab", elT("gslab"), gs, raw("gslab"), ["نجارة", "حدادة"], null);
   const BK = { bslab: "bwall", gf: "blkg", ff: "blkf", xf: "blkx", roof: "blkr" }, LN = { gf: "lntg", ff: "lntf", xf: "lntx", roof: "lntr" }, rk = (st) => (st === "done" ? 0 : st === "none" || !st ? 2 : 1);
   const lvs = (p.levels || []).filter((L) => !["foot", "beam"].includes(L.key)), top = [...lvs].reverse().find((L) => L.key !== "roof");
   for (const L of lvs) {
     const c = part(L, "cols"), sl = part(L, "slab"), bk = part(L, "blk"), ln = LN[L.key] && isoSt(p, LN[L.key]);
-    if (c) add(L.key + "|cols", c.t, c.st, MPART[c.st] || c.st, true);
+    if (c) add(L.key + "|cols", c.t, c.st, MPART[c.st] || c.st, PV, pourOf(L.key, "cols"));
     const rest = [];
-    if (sl) rest.push({ o: 0, st: sl.st, f: () => add(L.key + "|slab", sl.t, sl.st, MPART[sl.st] || sl.st, false) });
+    if (sl) rest.push({ o: 0, st: sl.st, f: () => add(L.key + "|slab", sl.t, sl.st, MPART[sl.st] || sl.st, PH, pourOf(L.key, "slab")) });
     if (bk) rest.push({ o: 1, st: bk.st, f: () => add(L.key + "|blk", BK[L.key] ? elT(BK[L.key]) : bk.t, bk.st, MBLK[bk.st] || bk.st) });
     if (ln) rest.push({ o: 2, st: ln, f: () => add(L.key + "|lnt", elT(LN[L.key]), ln, raw(LN[L.key])) });
     rest.sort((a, b) => rk(a.st) - rk(b.st) || a.o - b.o).forEach((x) => x.f());
@@ -3858,6 +3892,11 @@ function isoStack(p, all) {
   const rf = isoSt(p, "roof"), topSlab = [...out].reverse().find((x) => x.kind === "slab" && !x.roof);
   if (rf && topSlab) { const r = PL.std ? isoBase(PL) : PL.ring; out.push({ L: { key: "parapet", t: "الوارش (سترة السطح)" }, part: { k: "parapet", st: rf }, mode: isoWallMode(rf), key: "parapet|parapet", kind: "parapet",
     z0: topSlab.z1, z1: topSlab.z1 + 1.5, ring: r }); }
+  // site set-up: the temporary fence (sheet panels on the plot edge until the permanent wall is done) and the signboard at the street; from
+  // excavation an unconfirmed one is marked red dashed where it belongs (the bot's reason says the same)
+  { const su = p.setup || {}, need = (p.setupWhy || []).join(" "), perm = isoSt(p, "fence") === "done";
+    if (!perm && ((su.fence && su.fence.st === "yes") || /السور المؤقت/.test(need))) out.unshift({ L: { key: "tfence", t: "السور المؤقت" }, part: { k: "tfence" }, mode: su.fence && su.fence.st === "yes" ? "tsheet" : "missing", key: "tfence|tfence", kind: "tfence", z0: 0, z1: 2.0 });
+    if ((su.sign && su.sign.st === "yes") || /لوحة المشروع/.test(need)) out.push({ L: { key: "sign", t: "لوحة المشروع" }, part: { k: "sign" }, mode: su.sign && su.sign.st === "yes" ? "board" : "missing", key: "sign|sign", kind: "sign", z0: 0, z1: 3.6 }); }
   // a recorded pour in progress (stage «pouring»: started on a released pour, not finished): the pump and a mixer at the street, the boom to the element
   const pouring = (p.pours || []).find((x) => x.stage === "pouring");
   if (pouring) { const tgt = out.find((x) => x.L.key === pouring.level && x.part && x.part.k === pouring.part); out.push({ L: { key: "trucks", t: "" }, part: { k: "trucks" }, mode: "truck", key: "trucks|trucks", kind: "trucks", z0: 0, z1: 4, tz: tgt ? tgt.z1 : 4 }); }
@@ -3885,6 +3924,7 @@ function isoPart(g, e, t) {
   if (e.kind === "parapet") { const r = e.ring, n = r.length; for (let i = 0; i < n; i++) { const a = r[i], b = r[(i + 1) % n]; isoWalls(g, { ...e, kind: "parapet", list: [[a[0], a[1], b[0], b[1], 0.2, []]] }); } return; }
   if (e.kind === "lnt") { const P = isoPlan(); for (const pc of (P.walls[e.L.key] || []).flatMap((w) => isoLintels(w, e.z0, e.z1)).sort((a, b) => a.d - b.d)) { if (e.mode === "conc") isoPrism(g, pc.ring, pc.z0, pc.z1, "conc"); else isoGhostPoly(g, pc.ring, pc.z0, pc.z1, e.mode); } return; }
   if (e.kind === "trucks") { isoTrucks(g, e); return; }
+  if (e.kind === "tfence" || e.kind === "sign") { for (const pc of isoSetupPieces(e)) { if (e.mode === "missing") isoEl("polygon", { points: isoPts(pc.ring.map(([x, y]) => isoP(x, y, 0.03))), fill: "none", stroke: "#B42318", "stroke-width": "2", "stroke-dasharray": "6 4", "vector-effect": "non-scaling-stroke" }, g); else isoPrism(g, pc.ring, pc.z0, pc.z1, pc.c); } return; }
   if (e.kind === "fill" || e.kind === "pit" || e.kind === "gslab") {
     const P = isoPlan(), r = e.kind === "gslab" ? isoBase(P) : isoGrow(isoBase(P), e.kind === "pit" ? 1.2 : 0.8);
     if (e.kind === "pit") { isoEl("polygon", { points: isoPts(r.map(([x, y]) => isoP(x, y, 0.01))), fill: e.mode === "gravel" ? "#CFC8B8" : "#D5C4A3", stroke: "#9C8A68", "stroke-width": "1", "stroke-dasharray": e.mode === "unk" ? "3 3" : "", "fill-opacity": e.mode === "unk" ? ".45" : ".85", "vector-effect": "non-scaling-stroke" }, g); return; }
@@ -3901,6 +3941,7 @@ function isoPart(g, e, t) {
       if (mode === "conc" || mode === "fresh") { conc(x - hx, y - hy, z0, x + hx, y + hy, z1); if (e.barsUp) isoCage(g, x, y, z1 - 0.02, z1 + 1.05); continue; }
       if (mode === "plan" || mode === "unk") { isoGhost(g, x - hx, y - hy, z0, x + hx, y + hy, z1, mode, e.kind !== "pad"); continue; }
       if (mode === "rebar") { if (e.kind === "pad") isoMesh(g, x - hx, y - hy, x + hx, y + hy, z0 + 0.08); else isoCage(g, x, y, z0, z1 + 1.05); continue; }
+      if (mode === "mep" && e.kind === "cols") isoLine(g, isoP(x + hx + 0.12, y, z0 + 0.3), isoP(x + hx + 0.12, y, z1), "#E07A1F", 2.2);
       const fx = hx + 0.06 * kx, fy = hy + 0.06 * ky, f = h + 0.06; // site: formwork around the reinforcement
       if (pour && fill > 0) isoBox(g, x - hx + 0.02, y - hy + 0.02, z0, x + hx - 0.02, y + hy - 0.02, z0 + (z1 - z0) * fill + 0.001, "fresh");
       if (fop > 0.01) { isoBox(g, x - fx, y - fy, z0, x + fx, y + fy, z1, "ply", fop); isoSeams(g, x - fx, y - fy, z0, x + fx, y + fy, z1, Math.max(fop, pour ? fop : 0.75)); }
@@ -3920,6 +3961,7 @@ function isoPart(g, e, t) {
     if (pour && fill > 0) isoPrism(g, r, z0, z0 + (z1 - z0) * fill + 0.001, "fresh");
     if (fop > 0.01) isoPrism(g, r, z0 - 0.1, z1, "ply", Math.min(fop, pour ? fop : 1));
     if (mode !== "form" && (!pour || fill < 0.4)) isoMeshPoly(g, r, z1 + 0.02, pour ? 1 - fill / 0.4 : 1);
+    if (mode === "mep") isoMepOn(g, r, z1 + 0.04);
     if (e.flag === "violation" && !pour) isoEl("polygon", { points: isoPts(r.map(([x, y]) => isoP(x, y, z1 + 0.3))), fill: "none", stroke: "#B42318", "stroke-width": "1.6", "stroke-dasharray": "5 3", "vector-effect": "non-scaling-stroke" }, g);
     return;
   }
@@ -3937,6 +3979,7 @@ function isoPart(g, e, t) {
     if (pour && fill > 0) isoBox(g, x0 + 0.03, y0 + 0.03, z0, x1 - 0.03, y1 - 0.03, z0 + (z1 - z0) * fill + 0.001, "fresh");
     if (fop > 0.01) isoBox(g, x0 - 0.05, y0 - 0.05, z0 - (e.kind === "slab" ? 0.1 : 0), x1 + 0.05, y1 + 0.05, z1, "ply", e.kind === "slab" ? Math.min(fop, pour ? fop : 1) : fop);
     if (mode !== "form" && (!pour || fill < 0.4)) isoMesh(g, x0, y0, x1, y1, z1 + 0.02, pour ? 1 - fill / 0.4 : 1);
+    if (mode === "mep") isoMepOn(g, [[x0, y0], [x1, y0], [x1, y1], [x0, y1]], z1 + 0.04);
     if (e.flag === "violation" && !pour) isoEl("polygon", { points: isoPts([isoP(x0 - 0.3, y1 + 0.3, z0), isoP(x1 + 0.3, y1 + 0.3, z0), isoP(x1 + 0.3, y0 - 0.3, z0), isoP(x1 + 0.3, y0 - 0.3, z1 + 0.3), isoP(x0 - 0.3, y0 - 0.3, z1 + 0.3), isoP(x0 - 0.3, y1 + 0.3, z1 + 0.3)]), fill: "none", stroke: "#B42318", "stroke-width": "1.6", "stroke-dasharray": "5 3", "vector-effect": "non-scaling-stroke" }, g);
   }
 }
@@ -4148,7 +4191,7 @@ function isoRender() {
     if (!detail || sc > 1 || (ISO.sel && ISO.sel !== id) || (!ISO.sel && vis.size > 1)) continue;
     const stack = isoStack(p), seenL = new Set(), pb = isoPlanOf(p).bb;
     for (const e of stack) {
-      if (seenL.has(e.L.key) || ["slab", "pad", "beam", "walls", "fence", "fill", "pit", "gslab"].includes(e.kind)) continue; seenL.add(e.L.key);
+      if (seenL.has(e.L.key) || ["slab", "pad", "beam", "walls", "fence", "fill", "pit", "gslab", "tfence", "sign", "trucks", "parapet", "lnt"].includes(e.kind)) continue; seenL.add(e.L.key);
       const [lx, ly] = isoScrL(p, a, pb[0] - 0.4, pb[3] + 0.4, (e.z0 + e.z1) / 2), d = el("div", "mlvl2"); d.append(el("b", "", e.L.t));
       d.style.transform = `translate(${lx}px,${ly}px) translate(-100%,-50%) translateX(-14px)`; ISO.ov.append(d);
     }
@@ -4252,7 +4295,7 @@ function mapGeoMarkers(G) {
 }
 // ---- the building in 3D ON the map (owner, 15 Nov 2026: «in the direction it is really built»): from MAP3D_Z the drawing marker gives way to
 // extruded geometry at the true place, orientation and size — the same recorded stages as the drawing (concrete, fresh, formwork, rebar, planned)
-const MAP3D_Z = 16.5, M3C = { truck: "#E8B93E", cab: "#C9CED3", earth: "#CDBB97", blk: "#D9D1C3", conc: "#C9CED3", fresh: "#98A1A9", ply: "#D29C52", steel: "#6A3A22", plan: "#B4BBC3", unk: "#97A0AA" };
+const MAP3D_Z = 16.5, M3C = { tsheet: "#C2CBD3", board: "#1D2533", missing: "#B42318", truck: "#E8B93E", cab: "#C9CED3", earth: "#CDBB97", blk: "#D9D1C3", conc: "#C9CED3", fresh: "#98A1A9", ply: "#D29C52", steel: "#6A3A22", plan: "#B4BBC3", unk: "#97A0AA" };
 function isoSolids(p) {
   const P0 = ISO_PL; ISO_PL = isoPlanOf(p);
   try { return isoSolidsIn(p, ISO_PL); } finally { ISO_PL = P0; }
@@ -4260,10 +4303,11 @@ function isoSolids(p) {
 function isoSolidsIn(p, P) {
   const out = [], kx = P.std ? 16 / ((p.geo && +p.geo.len) || 16) : 1, ky = P.std ? 12 / ((p.geo && +p.geo.wid) || 12) : 1, box = (x0, y0, x1, y1, z0, z1, c) => out.push({ x0, y0, x1, y1, z0, z1, c });
   for (const e of isoStack(p)) {
-    const { mode, z0, z1 } = e, solid = mode === "conc" || mode === "fresh" ? mode : mode === "site" || mode === "form" ? "ply" : mode === "rebar" ? "steel" : mode;
+    const { mode, z0, z1 } = e, solid = mode === "conc" || mode === "fresh" ? mode : mode === "site" || mode === "form" || mode === "mep" ? "ply" : mode === "rebar" ? "steel" : mode;
     if (e.hidden) continue;
     if (e.kind === "fill" || e.kind === "gslab") { out.push({ ring: e.kind === "gslab" ? isoBase(P) : isoGrow(isoBase(P), 0.8), z0, z1, c: solid }); continue; }
     if (e.kind === "pit") continue; // the excavation floor is a drawing mark only
+    if (e.kind === "tfence" || e.kind === "sign") { if (e.mode !== "missing") for (const pc of isoSetupPieces(e)) out.push({ ring: pc.ring, z0: pc.z0, z1: pc.z1, c: pc.c }); continue; }
     if (e.kind === "trucks") { for (const bx of isoTruckBoxes(e).boxes) out.push({ ring: bx.ring, z0: bx.z0, z1: bx.z1, c: bx.c }); continue; }
     if (e.kind === "parapet") { const r = e.ring; for (let i = 0; i < r.length; i++) { const a = r[i], b = r[(i + 1) % r.length]; for (const pc of isoWallPieces([a[0], a[1], b[0], b[1], 0.2, []], e.z0, e.z1)) out.push({ ring: pc.ring, z0: pc.z0, z1: pc.z1, c: e.mode }); } continue; }
     if (e.kind === "lnt") { for (const w of P.walls[e.L.key] || []) for (const pc of isoLintels(w, e.z0, e.z1)) out.push({ ring: pc.ring, z0: pc.z0, z1: pc.z1, c: solid }); continue; }
@@ -4504,6 +4548,16 @@ function mapPanel(p, M) {
     const sb = el("button", "sbtn", p.geo.shape ? "شكل المبنى من المخططات ✓ — تغيير" : "شكل المبنى من المخططات"); sb.type = "button"; sb.onclick = () => shapeDialog(M, p); box.append(ob, sb); }
   else if (p.geo && p.geo.bearing === undefined) box.append(el("p", "small muted", "اتجاه المبنى وأبعاده غير مسجّلة — يُرسم بالاتجاه والمقاس القياسي."));
   if (p.geo && p.geo.shape) box.append(el("p", "small muted", "الشكل والأعمدة من مخططات المشروع؛ المراحل والألوان من السجلات."));
+  // site set-up (owner 15 Nov 2026): the temporary fence and the signboard, as confirmed on site; the bot raises the alert from excavation
+  { const su = p.setup || {}, dug = ["جاري", "منتهي"].includes((p.el || {}).dig), perm = (p.el || {}).fence === "منتهي", def = (M.defs || []).some((x) => x.id === "setup");
+    const sec2 = el("div", "msec"); sec2.append(el("h4", "", "تجهيز الموقع"));
+    for (const [k, t] of [["fence", "السور المؤقت"], ["sign", "لوحة المشروع"]]) {
+      const r = su[k], row = el("div", "mlvr"), st = k === "fence" && perm ? ["استُبدل بالسور الدائم", "done"] : r && r.st === "yes" ? ["مؤكد في الموقع", "done"] : r && r.st === "no" ? ["غير موجود في الموقع", "work"] : dug ? ["غير مؤكد", "work"] : ["لا يلزم قبل بدء الحفر", "none"];
+      row.append(el("b", "", t), el("span", "mst " + st[1], st[0] + (r && r.at ? " · " + dmy(r.at) + (r.byName ? " · " + r.byName : "") : "") + (r && r.note ? " · " + r.note : "")));
+      if (def && !(k === "fence" && perm)) { const b = el("button", "lnk", "تأكيد / تحديث"); b.type = "button"; b.onclick = () => mapAct(M, "setup", "", { pid: p.id, item: k, st: r ? r.st : "" }); row.append(b); }
+      sec2.append(row);
+    }
+    box.append(sec2); }
   // stage by stage (owner 15 Nov 2026: «more detailed, by each stage»): the building as it stands up to the chosen stage — on the drawing, the panel
   // picture and the 3D map; a floor's blockwork step opens that floor so its walls are seen from above
   const steps = p.geo && p.geo.shape ? isoSteps(p) : [];
@@ -4518,7 +4572,7 @@ function mapPanel(p, M) {
     if (ci >= 0) now.append(el("b", "", `${ci + 1} من ${n}: ${steps[ci].t}`), el("span", "mst " + steps[ci].c, steps[ci].s || "—")); else now.append(el("b", "", "المبنى كاملاً — كل المراحل"));
     head.append(prev, whole, next); box.append(el("h4", "", "مراحل البناء"), now, head);
     const row = el("div", "mcut"); row.setAttribute("role", "group"); row.setAttribute("aria-label", "مراحل البناء");
-    steps.forEach((x, i) => { if (x.ph && x.ph < 3) return; const on = x.base === base, b = el("button", "sbtn mchip " + x.c + (on ? " on" : ""), x.t0); b.type = "button"; b.title = x.s; b.setAttribute("aria-pressed", String(on)); b.onclick = () => goTo(i); row.append(b); });
+    steps.forEach((x, i) => { if (x.ph && !x.pour) return; const on = x.base === base, b = el("button", "sbtn mchip " + x.c + (on ? " on" : ""), x.t0); b.type = "button"; b.title = x.s; b.setAttribute("aria-pressed", String(on)); b.onclick = () => goTo(i); row.append(b); });
     const phs = base ? steps.map((x, i) => [x, i]).filter(([x]) => x.base === base && x.ph) : [];
     if (phs.length) { const pr2 = el("div", "mcut mphase"); pr2.setAttribute("role", "group"); pr2.setAttribute("aria-label", "مرحلة المقاول"); pr2.append(el("span", "small", "مرحلة المقاول:"));
       for (const [x, i] of phs) { const b = el("button", "sbtn mchip " + x.c + (i === ci ? " on" : ""), x.nm); b.type = "button"; b.title = x.s; b.setAttribute("aria-pressed", String(i === ci)); b.onclick = () => goTo(i); pr2.append(b); }
