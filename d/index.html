@@ -3767,6 +3767,7 @@ function isoBeacon(p, wall) {
 }
 function isoPlots() {
   ISO.plots.replaceChildren();
+  return; // every building draws its own (turned) plot now; the shared standard plots stayed unturned underneath
   for (const p of ISO.ps) { const [x, y] = ISO.at.get(p.id); isoEl("polygon", { points: isoPts([isoP(x - 5, y - 4), isoP(x + 21, y - 4), isoP(x + 21, y + 16.5), isoP(x - 5, y + 16.5)]), fill: "#EEE8DC", stroke: "#D9CFBC", "stroke-width": 1, "vector-effect": "non-scaling-stroke" }, ISO.plots); }
 }
 // ---------------- camera: one exponential ease for zoom, pan and selection; none under reduced motion ----------------
@@ -3834,7 +3835,7 @@ function isoRender() {
     const a = ISO.at.get(p.id), s = isoScr(a[0] + 8, a[1] + 6), on = s[0] > -400 && s[0] < W + 400 && s[1] > -400 && s[1] < H + 400;
     const model = on;
     if (model) vis.add(p.id);
-    const sig = JSON.stringify([p.levels, p.colour.k, p.active, (p.pours || []).map((x) => [x.id, x.stage, x.level, x.part, x.cureLeft])]);
+    const sig = JSON.stringify([p.levels, p.colour.k, p.active, (p.pours || []).map((x) => [x.id, x.stage, x.level, x.part, x.cureLeft]), p.geo && [p.geo.bearing, p.geo.len, p.geo.wid]]);
     let ch = ISO.cache.get(p.id);
     if (model && (!ch || ch.sig !== sig)) { const g = isoModel(p, a); if (ch) ch.g.replaceWith(g); else ISO.models.append(g); ch = { sig, g }; ISO.cache.set(p.id, ch); }
     if (ch) { ch.g.classList.toggle("off", !model); const o = isoP(a[0], a[1]); ch.g.setAttribute("transform", `translate(${o[0] + cc[0]},${o[1] + cc[1]}) scale(${sc}) translate(${-cc[0]},${-cc[1]})`); ch.g.dataset.pid = p.id; ch.depth = a[0] + a[1]; }
@@ -3959,6 +3960,7 @@ function mapGeoMarkers(G) {
     if (!mk) { mk = new mb.Marker({ element: wrap, anchor: "top-left" }).setLngLat([p.geo.lng, p.geo.lat]).addTo(G.map); G.markers.set(p.id, mk); } else mk.setLngLat([p.geo.lng, p.geo.lat]);
   }
   for (const [id, mk] of G.markers) if (!seen.has(id)) { mk.remove(); G.markers.delete(id); }
+  if (!G.noRotate) { G.noRotate = true; G.map.dragRotate.disable(); G.map.touchZoomRotate.disableRotation(); } // north stays up: the drawing markers do not turn with the map
   mapGeoSize(G);
   try { mapGeo3D(G); } catch (e) { console.error("map 3d", e); }
   if (!G.zoomHooked) { G.zoomHooked = true; G.map.on("zoom", () => mapGeoSize(G)); }
@@ -4015,7 +4017,7 @@ function mapGeoSize(G) {
 // the chosen project comes into view (once per choice); on a phone the bottom sheet's part of the map is left as padding
 function mapGeoFocus(G) {
   const id = MAPV.sel; if (!G.map || id === G.focus) return; G.focus = id;
-  const p = id && G.ps.find((x) => x.id === id); if (!p) return;
+  const p = id && G.ps.find((x) => x.id === id); if (!p) { if (!id && G.map.getPitch() > 1) G.map.easeTo({ pitch: 0, duration: isoReduce() ? 0 : 600 }); return; }
   const o = { center: [p.geo.lng, p.geo.lat], zoom: Math.max(G.map.getZoom(), 18.8), pitch: 55, padding: { top: 40, left: 20, right: 20, bottom: matchMedia("(max-width:760px)").matches ? Math.round(innerHeight * 0.42) : 40 } };
   if (isoReduce()) G.map.jumpTo(o); else G.map.easeTo({ ...o, duration: 700 });
 }
@@ -4118,7 +4120,8 @@ function orientDialog(M, p) {
   if (geoOk) loadMapbox().then((mb) => {
     mb.accessToken = M.base.token;
     gmap = new mb.Map({ container: view, style: "mapbox://styles/mapbox/satellite-streets-v12", center: [st.lng, st.lat], zoom: 19, language: "ar", dragRotate: false, pitchWithRotate: false, touchPitch: false, attributionControl: true });
-    gmap.touchZoomRotate.disableRotation();
+    gmap.touchZoomRotate.disableRotation(); gmap.scrollZoom.enable({ around: "center" }); gmap.touchZoomRotate.enable({ around: "center" }); gmap.touchZoomRotate.disableRotation(); gmap.doubleClickZoom.disable(); // zoom never moves the centre: only a drag does
+    gmap.on("error", (e) => { const er = (e && e.error) || {}; if (res.textContent) return; res.className = "res bad"; res.textContent = "تعذّر تحميل الصورة الجوية" + (er.status ? " (" + er.status + ")" : "") + " — يمكن ضبط الزاوية والأبعاد، ثم أعد المحاولة لاحقاً للمحاذاة على الصورة."; });
     gmap.addControl(new mb.NavigationControl({ showCompass: false }), "top-left");
     gmap.on("load", () => {
       gmap.addSource("or", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
