@@ -619,6 +619,11 @@ body.chatonly footer{display:none}
 .shprev:empty{display:none}
 .shprev .orprev{width:100%;height:100%}
 .shinfo{margin:6px 0}.shinfo.bad{color:#B42318}
+.r3d{position:relative;height:min(78vh,760px);border-radius:var(--r-m);overflow:hidden;background:#cfd8e0;margin:6px 0 10px}
+.r3d canvas{display:block;width:100%;height:100%;touch-action:none}
+.r3dbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:4px 0}
+.r3dbar .sbtn{flex:0 0 auto}.r3dst{flex:1 1 200px;font-weight:600}
+dialog.wide3d{width:min(1200px,96vw);max-width:96vw}
 .mcut{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0}
 .mcut .sbtn.on,.mstep .sbtn.on{background:var(--ui);color:#fff;border-color:var(--ui)}
 .mstep{display:flex;gap:6px;margin:6px 0}.mstep .sbtn{flex:1}
@@ -827,6 +832,10 @@ const pct = (f) => Math.round((f || 0) * 100) + "%";
 const LK = "taa.dash.lang";
 let LANG = (() => { try { return localStorage.getItem(LK) === "en" ? "en" : "ar"; } catch { return "ar"; } })();
 const EN = {
+"عرض واقعي ثلاثي الأبعاد": "Realistic 3D view",
+"جارٍ تجهيز العرض…": "Preparing the view…",
+"تعذّر تحميل مكتبة العرض ثلاثي الأبعاد": "The 3D library could not be loaded",
+"اسحب للتدوير، وقرّب بإصبعين أو بعجلة الفأرة": "Drag to turn, pinch or scroll to zoom",
 "سباكة وكهرباء": "Plumbing and electrical",
 "تجهيز الموقع": "Site set-up",
 "السور المؤقت": "Temporary fence",
@@ -3736,6 +3745,170 @@ function isoStairs(g, e) {
     if (mode === "plan" || mode === "unk") isoGhost(g, x0, y0, za, x1, y1, zb, mode, true); else isoBox(g, x0, y0, za, x1, y1, zb, mode === "conc" || mode === "fresh" ? mode : "ply");
   }
 }
+// ================= the realistic 3D view (owner 15 Nov 2026: «more realistic, like a real site») =================
+// three.js (pinned) builds the SAME records as the drawing — isoStack(p) with its stage cut, the shape's walls, columns, slab type — as solids
+// with materials (concrete, plywood, steel, blocks, sand, bitumen), sunlight and shadows, in perspective; nothing is drawn that the drawing
+// does not draw. Coordinates: three X = x, Y = z (up), Z = -y.
+const R3_LIB = ["https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js", "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"];
+function load3d() {
+  if (window.THREE && THREE.OrbitControls) return Promise.resolve(THREE);
+  if (load3d.p) return load3d.p;
+  const one = (u) => new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = u; sc.onload = res; sc.onerror = () => rej(new Error("تعذّر تحميل مكتبة العرض ثلاثي الأبعاد")); document.head.append(sc); });
+  load3d.p = one(R3_LIB[0]).then(() => one(R3_LIB[1])).then(() => THREE).catch((e) => { load3d.p = null; throw e; });
+  return load3d.p;
+}
+// procedural textures (no image files): concrete, plywood, block courses, sand, corrugated sheet, hollow blocks
+function r3Tex(kind) {
+  const T = THREE, c = document.createElement("canvas"), W = 256; c.width = W; c.height = kind === "block" ? 128 : W; const x = c.getContext("2d");
+  const noise = (base, amp, n) => { x.fillStyle = base; x.fillRect(0, 0, c.width, c.height); for (let i = 0; i < n; i++) { const v = Math.random() * amp - amp / 2; x.fillStyle = `rgba(${v > 0 ? 255 : 0},${v > 0 ? 255 : 0},${v > 0 ? 255 : 0},${Math.abs(v) / 255})`; x.fillRect(Math.random() * c.width, Math.random() * c.height, 1 + Math.random() * 2, 1 + Math.random() * 2); } };
+  if (kind === "concrete") { noise("#b9bcbe", 70, 9000); x.strokeStyle = "rgba(0,0,0,.05)"; for (let i = 0; i < 6; i++) { x.beginPath(); x.moveTo(0, Math.random() * W); x.lineTo(W, Math.random() * W); x.stroke(); } }
+  else if (kind === "fresh") noise("#8e969c", 50, 7000);
+  else if (kind === "ply") { x.fillStyle = "#c9935a"; x.fillRect(0, 0, W, W); for (let i = 0; i < 70; i++) { x.strokeStyle = `rgba(${120 + Math.random() * 40},${70 + Math.random() * 30},30,.35)`; x.lineWidth = 1 + Math.random() * 2; x.beginPath(); const y = Math.random() * W; x.moveTo(0, y); x.bezierCurveTo(W / 3, y + 8 * Math.random(), (2 * W) / 3, y - 8 * Math.random(), W, y + 4); x.stroke(); } x.strokeStyle = "rgba(80,50,20,.5)"; x.lineWidth = 2; x.strokeRect(1, 1, W - 2, W - 2); }
+  else if (kind === "block") { x.fillStyle = "#b9b3a8"; x.fillRect(0, 0, W, 128); x.fillStyle = "#d6d0c4"; for (let r = 0; r < 2; r++) for (let k = -1; k < 3; k++) { const ox = r ? 64 : 0; x.fillRect(k * 128 + ox + 3, r * 64 + 3, 122, 58); } noise("rgba(0,0,0,0)", 40, 2500); }
+  else if (kind === "sand") noise("#d8c7a2", 60, 14000);
+  else if (kind === "sheet") { for (let i = 0; i < W; i += 16) { const g = x.createLinearGradient(i, 0, i + 16, 0); g.addColorStop(0, "#9faab4"); g.addColorStop(0.5, "#dfe5ea"); g.addColorStop(1, "#9faab4"); x.fillStyle = g; x.fillRect(i, 0, 16, W); } }
+  else if (kind === "hourdi") { x.fillStyle = "#ecebe6"; x.fillRect(0, 0, W, W); x.strokeStyle = "#b8b5ab"; x.lineWidth = 3; for (let i = 0; i <= W; i += 128) { x.beginPath(); x.moveTo(i, 0); x.lineTo(i, W); x.stroke(); } noise("rgba(0,0,0,0)", 30, 2000); }
+  const t = new T.CanvasTexture(c); t.wrapS = t.wrapT = T.RepeatWrapping; t.anisotropy = 4; if (T.sRGBEncoding) t.encoding = T.sRGBEncoding; return t;
+}
+function r3Mats() {
+  const T = THREE, tx = {}, tex = (k) => tx[k] || (tx[k] = r3Tex(k)), M = (o) => new T.MeshStandardMaterial({ roughness: 0.85, metalness: 0, ...o });
+  return { tex,
+    conc: M({ map: tex("concrete"), color: 0xffffff, roughness: 0.92 }), fresh: M({ map: tex("fresh"), color: 0xffffff, roughness: 0.55 }),
+    ply: M({ map: tex("ply"), color: 0xffffff, roughness: 0.75 }), steel: M({ color: 0x5a3a26, roughness: 0.45, metalness: 0.65 }),
+    blk: M({ map: tex("block"), color: 0xffffff, roughness: 0.95 }), hourdi: M({ map: tex("hourdi"), color: 0xffffff }),
+    earth: M({ map: tex("sand"), color: 0xffffff, roughness: 1 }), gravel: M({ map: tex("sand"), color: 0xbdb7aa, roughness: 1 }), lean: M({ map: tex("concrete"), color: 0xd2d6da }),
+    bitum: M({ color: 0x0e0f10, roughness: 0.3, metalness: 0.15 }), tsheet: M({ map: tex("sheet"), color: 0xffffff, roughness: 0.45, metalness: 0.4 }),
+    board: M({ color: 0x1d2533, roughness: 0.6 }), brand: M({ color: 0xc62026, roughness: 0.5 }), render: M({ color: 0xe7dfd0, roughness: 0.7 }),
+    truck: M({ color: 0xf3c64f, roughness: 0.4, metalness: 0.3 }), cab: M({ color: 0xe9ecef, roughness: 0.35, metalness: 0.3 }), conduit: M({ color: 0x2f6fcb, roughness: 0.5 }), sleeve: M({ color: 0xe07a1f, roughness: 0.5 }),
+    prop: M({ color: 0x8a939c, roughness: 0.4, metalness: 0.7 }), joist: M({ color: 0x9c6b32, roughness: 0.8 }),
+    ghost: new T.MeshStandardMaterial({ color: 0x9aa3ad, transparent: true, opacity: 0.16, depthWrite: false, roughness: 1 }), ghostu: new T.MeshStandardMaterial({ color: 0x7a8494, transparent: true, opacity: 0.24, depthWrite: false, roughness: 1 }),
+    plot: M({ map: tex("sand"), color: 0xefe6d2, roughness: 1 }) };
+}
+// the scene of one project, from the same stack the drawing uses
+function r3Build(p, scene, MAT) {
+  const T = THREE, P0 = ISO_PL, X0 = ISO_XF; ISO_PL = isoPlanOf(p); ISO_XF = null;
+  try {
+    const P = ISO_PL, root = new T.Group(); scene.add(root);
+    const add = (geo, mat, shadow = true) => { const m = new T.Mesh(geo, mat); m.castShadow = shadow && !mat.transparent; m.receiveShadow = !mat.transparent; root.add(m); return m; };
+    const ghostOf = (mode) => (mode === "unk" ? MAT.ghostu : MAT.ghost);
+    const matOf = (k) => MAT[k] || MAT.conc;
+    // an axis-aligned box in plan metres
+    const box = (x0, y0, z0, x1, y1, z1, mat, rep) => { if (x1 - x0 < 0.005 || y1 - y0 < 0.005 || z1 - z0 < 0.005) return; const g = new T.BoxGeometry(x1 - x0, z1 - z0, y1 - y0); const m = add(g, mat); m.position.set((x0 + x1) / 2, (z0 + z1) / 2, -(y0 + y1) / 2); if (rep && mat.map) { m.material = mat.clone(); m.material.map = mat.map.clone(); m.material.map.needsUpdate = true; m.material.map.repeat.set(rep[0], rep[1]); } return m; };
+    // a rotated rectangle given as a 4-point ring (wall pieces, lintels, fence, banner)
+    const rbox = (ring, z0, z1, mat, tile) => { const [a, b, c] = ring, L = Math.hypot(b[0] - a[0], b[1] - a[1]), t = Math.hypot(c[0] - b[0], c[1] - b[1]); if (L < 0.005 || t < 0.005 || z1 - z0 < 0.005) return;
+      const g = new T.BoxGeometry(L, z1 - z0, t), m = add(g, mat), cx = (a[0] + c[0]) / 2, cy = (a[1] + c[1]) / 2; m.position.set(cx, (z0 + z1) / 2, -cy); m.rotation.y = Math.atan2(b[1] - a[1], b[0] - a[0]);
+      if (tile && mat.map) { m.material = mat.clone(); m.material.map = mat.map.clone(); m.material.map.needsUpdate = true; m.material.map.repeat.set(L / tile[0], (z1 - z0) / tile[1]); } return m; };
+    // an extruded outline (slabs, backfill, ground slab)
+    const prism = (ring, z0, z1, mat) => { if (z1 - z0 < 0.005) return; const sh = new T.Shape(ring.map(([x, y]) => new T.Vector2(x, y))); const g = new T.ExtrudeGeometry(sh, { depth: z1 - z0, bevelEnabled: false }); g.rotateX(-Math.PI / 2); g.translate(0, z0, 0); let mm = mat; if (mat.map) { mm = mat.clone(); mm.map = mat.map.clone(); mm.map.needsUpdate = true; mm.map.repeat.set(0.5, 0.5); } return add(g, mm); };
+    const bar = (x0, y0, z0, x1, y1, z1, r = 0.012, mat = MAT.steel) => { const a = new T.Vector3(x0, z0, -y0), b = new T.Vector3(x1, z1, -y1), L = a.distanceTo(b); if (L < 0.01) return; const g = new T.CylinderGeometry(r, r, L, 5); const m = add(g, mat, false); m.position.copy(a).add(b).multiplyScalar(0.5); m.quaternion.setFromUnitVectors(new T.Vector3(0, 1, 0), b.clone().sub(a).normalize()); };
+    const cage = (x, y, hx, hy, z0, z1) => { const ix = Math.max(0.03, hx - 0.04), iy = Math.max(0.03, hy - 0.04); for (const [dx, dy] of [[-ix, -iy], [ix, -iy], [ix, iy], [-ix, iy], [0, -iy], [0, iy]]) bar(x + dx, y + dy, z0, x + dx, y + dy, z1);
+      for (let z = z0 + 0.15; z < z1; z += 0.2) { bar(x - ix, y - iy, z, x + ix, y - iy, z, 0.006); bar(x + ix, y - iy, z, x + ix, y + iy, z, 0.006); bar(x + ix, y + iy, z, x - ix, y + iy, z, 0.006); bar(x - ix, y + iy, z, x - ix, y - iy, z, 0.006); } };
+    const mesh = (r, z, step = 0.25) => { const [x0, y0, x1, y1] = isoBBox(r); for (let y = y0 + step / 2; y < y1; y += step) for (const [a, b] of isoCut(r, y, 0)) if (b - a > 0.1) bar(a + 0.04, y, z, b - 0.04, y, z, 0.007); for (let x = x0 + step / 2; x < x1; x += step) for (const [a, b] of isoCut(r, x, 1)) if (b - a > 0.1) bar(x, a + 0.04, z, x, b - 0.04, z, 0.007); };
+    const rect = (x0, y0, x1, y1) => [[x0, y0], [x1, y0], [x1, y1], [x0, y1]];
+    const props = (r, zb, zt) => { const [x0, y0, x1, y1] = isoBBox(r); for (let x = x0 + 0.6; x < x1; x += 1.2) for (let y = y0 + 0.6; y < y1; y += 1.2) if (isoIn(r, x, y)) bar(x, y, zb, x, y, zt, 0.03, MAT.prop);
+      for (let y = y0 + 0.6; y < y1; y += 1.2) for (const [a, b] of isoCut(r, y, 0)) if (b - a > 0.3) box(a + 0.05, y - 0.05, zt, b - 0.05, y + 0.05, zt + 0.1, MAT.joist); };
+    // the plot, the ground around it
+    const plot = P.plot || isoGrow(isoBase(P), 4), [px0, py0, px1, py1] = isoBBox(plot);
+    const gm = MAT.earth.clone(); gm.map = MAT.earth.map.clone(); gm.map.needsUpdate = true; gm.map.repeat.set(90, 90); const gnd = add(new T.PlaneGeometry(260, 260), gm, false); gnd.rotation.x = -Math.PI / 2; gnd.position.set((px0 + px1) / 2, -0.03, -(py0 + py1) / 2);
+    prism(plot, -0.02, 0, MAT.plot);
+    for (const e of isoStack(p)) {
+      if (e.hidden) continue; const { mode, z0, z1 } = e, ghost = mode === "plan" || mode === "unk";
+      if (e.kind === "walls" || e.kind === "fence" || e.kind === "parapet") {
+        const list = e.kind === "parapet" ? e.ring.map((a, i) => { const b = e.ring[(i + 1) % e.ring.length]; return [a[0], a[1], b[0], b[1], 0.2, []]; }) : e.kind === "fence" ? P.fence : (P.walls || {})[e.L.key] || [];
+        for (const w of list) for (const pc of isoWallPieces(w, z0, z1)) rbox(pc.ring, pc.z0, pc.z1, ghost ? ghostOf(mode) : mode === "blk" ? MAT.blk : ghostOf("unk"), mode === "blk" ? [0.8, 0.4] : null);
+        continue;
+      }
+      if (e.kind === "lnt") { for (const w of P.walls[e.L.key] || []) for (const pc of isoLintels(w, z0, z1)) rbox(pc.ring, pc.z0, pc.z1, ghost ? ghostOf(mode) : MAT.conc); continue; }
+      if (e.kind === "tfence" || e.kind === "sign") { if (mode !== "missing") for (const pc of isoSetupPieces(e)) rbox(pc.ring, pc.z0, pc.z1, matOf(pc.c), pc.c === "tsheet" ? [1, 2] : null); continue; }
+      if (e.kind === "trucks") { const t = isoTruckBoxes(e); for (const bx of t.boxes) rbox(bx.ring, bx.z0, bx.z1, matOf(bx.c)); for (let i = 1; i < t.boom.length; i++) { const a = t.boom[i - 1], b = t.boom[i]; bar(a[0], a[1], a[2], b[0], b[1], b[2], 0.14, MAT.truck); } continue; }
+      if (e.kind === "fill") { prism(isoGrow(isoBase(P), 0.8), z0, z1, ghost ? ghostOf(mode) : MAT.earth); continue; }
+      if (e.kind === "pit") { prism(isoGrow(isoBase(P), 1.2), -0.01, 0.02, mode === "gravel" ? MAT.gravel : MAT.earth); continue; }
+      if (e.kind === "gslab") { prism(isoBase(P), z0, z1, ghost ? ghostOf(mode) : MAT.conc); continue; }
+      if (e.kind === "stairs") { for (const [x0, y0, x1, y1] of P.stairs) { const long = x1 - x0 >= y1 - y0, L = long ? x1 - x0 : y1 - y0, Wd = long ? y1 - y0 : x1 - x0, w = Wd / 2 - 0.05, land = Math.min(1.3, L * 0.3), run = (L - land) / 12, rise = (z1 - z0) / 24;
+          const B = (s0, s1, t0, t1, za, zb) => (long ? box(x0 + s0, y0 + t0, za, x0 + s1, y0 + t1, zb, ghost ? ghostOf(mode) : mode === "conc" || mode === "fresh" ? MAT[mode] : MAT.ply) : box(x0 + t0, y0 + s0, za, x0 + t1, y0 + s1, zb, ghost ? ghostOf(mode) : mode === "conc" || mode === "fresh" ? MAT[mode] : MAT.ply));
+          for (let i = 0; i < 12; i++) B(L - (i + 1) * run, L - i * run, 0, w, z0 + Math.max(0, i * rise - 0.2), z0 + (i + 1) * rise);
+          B(0, land, 0, Wd, z0 + 12 * rise - 0.18, z0 + 12 * rise);
+          for (let i = 0; i < 12; i++) B(land + i * run, land + (i + 1) * run, Wd - w, Wd, z0 + 12 * rise + Math.max(0, i * rise - 0.2), z0 + 12 * rise + (i + 1) * rise); } continue; }
+      if (e.kind === "pad" && P.real && P.found === "strip") {
+        for (const [a, b, c, d] of P.beams) { const hz = Math.abs(c - a) >= Math.abs(d - b), yc = (b + d) / 2, xc = (a + c) / 2, w = 0.6, [x0, y0, x1, y1] = hz ? [a - w, yc - w, c + w, yc + w] : [xc - w, b - w, xc + w, d + w];
+          if (!ghost) box(x0 - 0.1, y0 - 0.1, z0 - 0.1, x1 + 0.1, y1 + 0.1, z0, MAT.lean);
+          if (ghost) box(x0, y0, z0, x1, y1, z1, ghostOf(mode)); else if (mode === "conc" || mode === "fresh") box(x0, y0, z0, x1, y1, z1, e.bitum && mode === "conc" ? MAT.bitum : MAT[mode]); else if (mode === "rebar") mesh(rect(x0, y0, x1, y1), z0 + 0.08, 0.2); else { box(x0 - 0.03, y0 - 0.03, z0, x1 + 0.03, y1 + 0.03, z1, MAT.ply); mesh(rect(x0, y0, x1, y1), z1 + 0.02, 0.2); } }
+        continue;
+      }
+      if (e.kind === "pad" || e.kind === "neck" || e.kind === "cols") {
+        const h = e.kind === "pad" ? 0.85 : 0.25;
+        for (const q of isoCols(e.kind === "cols" && e.roof)) { const [x, y] = q, hx = q.length >= 4 && e.kind !== "pad" ? q[2] / 2 : h, hy = q.length >= 4 && e.kind !== "pad" ? q[3] / 2 : h;
+          if (ghost) { box(x - hx, y - hy, z0, x + hx, y + hy, z1, ghostOf(mode)); continue; }
+          if (mode === "conc" || mode === "fresh") { box(x - hx, y - hy, z0, x + hx, y + hy, z1, e.bitum && mode === "conc" ? MAT.bitum : MAT[mode]); if (e.barsUp && e.kind === "cols") cage(x, y, hx, hy, z1, z1 + 1.0); continue; }
+          if (mode === "rebar") { if (e.kind === "pad") mesh(rect(x - hx, y - hy, x + hx, y + hy), z0 + 0.08, 0.2); else cage(x, y, hx, hy, z0, z1 + 1.0); continue; }
+          box(x - hx - 0.03, y - hy - 0.03, z0, x + hx + 0.03, y + hy + 0.03, z1, MAT.ply); if (e.kind !== "pad") cage(x, y, hx, hy, z1, z1 + 1.0);
+          if (mode === "mep" && e.kind === "cols") bar(x + hx + 0.06, y, z0 + 0.3, x + hx + 0.06, y, z1, 0.016, MAT.sleeve); }
+        continue;
+      }
+      if (e.kind === "beam") {
+        for (const sg of P.std ? [] : P.beams) { const [a, b, c, d] = sg, hz = Math.abs(c - a) >= Math.abs(d - b), w = P.real ? 0.1 : 0.15, [x0, y0, x1, y1] = hz ? [a, (b + d) / 2 - w, c, (b + d) / 2 + w] : [(a + c) / 2 - w, b, (a + c) / 2 + w, d];
+          if (ghost) box(x0, y0, z0, x1, y1, z1, ghostOf(mode)); else if (mode === "conc" || mode === "fresh") box(x0, y0, z0, x1, y1, z1, e.bitum && mode === "conc" ? MAT.bitum : MAT[mode]); else box(x0 - 0.03, y0 - 0.03, z0, x1 + 0.03, y1 + 0.03, z1, MAT.ply); }
+        continue;
+      }
+      if (e.kind === "slab") {
+        const r = P.std ? isoBase(P) : e.roof ? P.annex || P.ring : P.ring;
+        if (ghost) { prism(r, z0, z1, ghostOf(mode)); continue; }
+        const edge = (zA, zB, mat, t = 0.2) => { for (let i = 0; i < r.length; i++) { const a = r[i], b = r[(i + 1) % r.length]; for (const pc of isoWallPieces([a[0], a[1], b[0], b[1], t, []], zA, zB)) rbox(pc.ring, pc.z0, pc.z1, mat); } };
+        if (mode === "conc" || mode === "fresh") { prism(r, z0, z1, MAT[mode]); if (P.real && P.slabT === "ribbed") edge(z0 - 0.28, z0, MAT[mode]); continue; }
+        props(r, z0 - (P.fh - 0.35) + 0.05, z0 - 0.15); prism(r, z0 - 0.05, z0, MAT.ply);
+        if (mode === "form") { edge(z0, z1, MAT.ply, 0.04); continue; }
+        if (P.real && P.slabT === "ribbed") {
+          const [bx0, by0, bx1, by1] = isoBBox(r), bands = P.beams.map(([a, b, c, d]) => { const hz = Math.abs(c - a) >= Math.abs(d - b); return hz ? { hz, at: (b + d) / 2, lo: Math.min(a, c), hi: Math.max(a, c) } : { hz, at: (a + c) / 2, lo: Math.min(b, d), hi: Math.max(b, d) }; });
+          for (let y = by0 + 0.35; y + 0.4 < by1 - 0.2; y += 0.55) { if (bands.some((bd) => bd.hz && Math.abs(y + 0.2 - bd.at) < 0.55)) continue;
+            for (const [a, b] of isoCut(r, y + 0.2, 0)) { let pcs = [[a + 0.25, b - 0.25]];
+              for (const bd of bands) if (!bd.hz && y + 0.2 >= bd.lo - 0.3 && y + 0.2 <= bd.hi + 0.3) pcs = pcs.flatMap(([u, v]) => (bd.at - 0.35 > u && bd.at + 0.35 < v ? [[u, bd.at - 0.35], [bd.at + 0.35, v]] : bd.at + 0.35 <= u || bd.at - 0.35 >= v ? [[u, v]] : bd.at - 0.35 <= u ? [[Math.max(u, bd.at + 0.35), v]] : [[u, Math.min(v, bd.at - 0.35)]]));
+              for (const [u, v] of pcs) if (v - u > 0.3 && isoIn(r, (u + v) / 2, y + 0.2)) { box(u, y, z0, v, y + 0.4, z0 + 0.25, MAT.hourdi, [(v - u) / 0.8, 1]); bar(u, y + 0.475, z0 + 0.05, v, y + 0.475, z0 + 0.05, 0.008); bar(u, y + 0.475, z0 + 0.27, v, y + 0.475, z0 + 0.27, 0.008); } } }
+        }
+        edge(z0, z1, MAT.ply, 0.04); mesh(r, z1 - 0.03, 0.3);
+        if (mode === "mep") { const [x0, y0, x1, y1] = isoBBox(r), dy = (y1 - y0) / 4; for (let k = 1; k < 4; k++) for (const [a, b] of isoCut(r, y0 + dy * k, 0)) if (b - a > 0.6) bar(a + 0.3, y0 + dy * k, z1 - 0.02, b - 0.3, y0 + dy * k, z1 - 0.02, 0.012, MAT.conduit);
+          for (let x = x0 + 1.6; x < x1; x += 3.2) for (let y = y0 + 1.6; y < y1; y += 3.2) if (isoIn(r, x, y)) bar(x, y, z0, x, y, z1 + 0.1, 0.05, MAT.sleeve); }
+        continue;
+      }
+    }
+    return root;
+  } finally { ISO_PL = P0; ISO_XF = X0; }
+}
+// the dialog: the view, the stage it shows, previous / next through the same steps as the panel
+function real3d(M, p) {
+  const body = $("dlgBody"), dlg = $("dlg"); dlg.classList.add("wide3d");
+  body.replaceChildren(el("h3", "", "عرض واقعي ثلاثي الأبعاد — " + (p.code || p.name)));
+  const bar = el("div", "r3dbar"), st = el("div", "r3dst"), prev = el("button", "sbtn", "→ السابقة"), next = el("button", "sbtn", "التالية ←"), whole = el("button", "sbtn", "المبنى كاملاً"), close = el("button", "sbtn", "إغلاق");
+  for (const b of [prev, next, whole, close]) b.type = "button"; bar.append(prev, whole, next, st, close);
+  const view = el("div", "r3d"); view.append(el("div", "muted", "جارٍ تجهيز العرض…")); body.append(bar, view, el("p", "small muted", "اسحب للتدوير، وقرّب بإصبعين أو بعجلة الفأرة"));
+  let ren = null, scene = null, cam = null, ctl = null, root = null, MAT = null, raf = 0, alive = true;
+  const steps = () => (p.geo && p.geo.shape ? isoSteps(p) : []);
+  const label = () => { const S = steps(), cur = isoCutOf(p), i = cur ? S.findIndex((x) => x.key === cur) : -1; st.textContent = i >= 0 ? `${i + 1} من ${S.length}: ${S[i].t} — ${S[i].s}` : "المبنى كاملاً — كل المراحل"; prev.disabled = i === 0; whole.classList.toggle("on", i < 0); return { S, i }; };
+  const render = () => { if (!alive || !ren) return; raf = 0; ren.render(scene, cam); };
+  const ask = () => { if (!raf) raf = requestAnimationFrame(render); };
+  const rebuild = () => { if (!scene) return; if (root) { scene.remove(root); root.traverse((o) => { if (o.geometry) o.geometry.dispose(); }); } root = r3Build(p, scene, MAT); label(); ask(); };
+  const go = (i) => { const S = steps(); MAPV.sel = p.id; MAPV.cut = i < 0 || i >= S.length ? null : { pid: p.id, key: S[i].key }; rebuild(); };
+  prev.onclick = () => { const { S, i } = label(); go(i < 0 ? S.length - 1 : Math.max(0, i - 1)); }; next.onclick = () => { const { i } = label(); go(i < 0 ? 0 : i + 1); }; whole.onclick = () => go(-1);
+  const stop = () => { alive = false; if (raf) cancelAnimationFrame(raf); try { if (ren) { ren.dispose(); ren.forceContextLoss(); } } catch {} dlg.classList.remove("wide3d"); draw(); };
+  close.onclick = () => dlg.close(); dlg.addEventListener("close", stop, { once: true });
+  dlg.showModal();
+  load3d().then((T) => {
+    if (!alive) return;
+    view.replaceChildren();
+    ren = new T.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true }); ren.setPixelRatio(Math.min(1.5, devicePixelRatio || 1)); ren.setSize(view.clientWidth, view.clientHeight);
+    ren.shadowMap.enabled = true; ren.shadowMap.type = T.PCFSoftShadowMap; if (T.sRGBEncoding) ren.outputEncoding = T.sRGBEncoding; ren.toneMapping = T.ACESFilmicToneMapping; ren.toneMappingExposure = 1.05;
+    view.append(ren.domElement);
+    scene = new T.Scene(); scene.background = new T.Color(0xc9d7e3); scene.fog = new T.Fog(0xc9d7e3, 70, 190);
+    scene.add(new T.HemisphereLight(0xe8f1fb, 0xb9a98a, 0.75));
+    const sun = new T.DirectionalLight(0xfff1dc, 1.25); sun.position.set(-22, 34, 18); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048);
+    Object.assign(sun.shadow.camera, { left: -30, right: 30, top: 30, bottom: -30, near: 1, far: 120 }); sun.shadow.bias = -0.0004; scene.add(sun);
+    MAT = r3Mats();
+    const P = isoPlanOf(p), [x0, y0, x1, y1] = P.bb, cx = (x0 + x1) / 2, cy = (y0 + y1) / 2; sun.target.position.set(cx, 0, -cy); scene.add(sun.target);
+    cam = new T.PerspectiveCamera(40, view.clientWidth / view.clientHeight, 0.3, 600); cam.position.set(cx + 24, 19, -cy + 27);
+    ctl = new T.OrbitControls(cam, ren.domElement); ctl.target.set(cx, 3, -cy); ctl.enableDamping = false; ctl.maxPolarAngle = Math.PI * 0.48; ctl.minDistance = 4; ctl.maxDistance = 120; ctl.addEventListener("change", ask); ctl.update();
+    new ResizeObserver(() => { if (!ren || !alive) return; ren.setSize(view.clientWidth, view.clientHeight); cam.aspect = view.clientWidth / view.clientHeight; cam.updateProjectionMatrix(); ask(); }).observe(view);
+    rebuild();
+  }).catch((e) => { view.replaceChildren(el("div", "res bad", e.message)); });
+}
 function isoTrucks(g, e) {
   const t = isoTruckBoxes(e);
   for (const b of t.boxes.sort((a, c) => a.d - c.d)) isoPrism(g, b.ring, b.z0, b.z1, b.c);
@@ -4627,6 +4800,7 @@ function mapPanel(p, M) {
   box.append(back, h, cb);
   if (M.canGeo && p.geo) { const ob = el("button", "sbtn", p.geo.bearing !== undefined ? "ضبط اتجاه المبنى (" + Math.round(p.geo.bearing) + "°)" : "ضبط اتجاه المبنى — غير مضبوط بعد"); ob.type = "button"; ob.onclick = () => orientDialog(M, p);
     const sb = el("button", "sbtn", p.geo.shape ? "شكل المبنى من المخططات ✓ — تغيير" : "شكل المبنى من المخططات"); sb.type = "button"; sb.onclick = () => shapeDialog(M, p); box.append(ob, sb); }
+  if (p.geo && p.geo.shape) { const rb = el("button", "pbtn", "عرض واقعي ثلاثي الأبعاد"); rb.type = "button"; rb.onclick = () => real3d(M, p); box.append(rb); }
   else if (p.geo && p.geo.bearing === undefined) box.append(el("p", "small muted", "اتجاه المبنى وأبعاده غير مسجّلة — يُرسم بالاتجاه والمقاس القياسي."));
   if (p.geo && p.geo.shape) box.append(el("p", "small muted", "الشكل والأعمدة من مخططات المشروع؛ المراحل والألوان من السجلات."));
   // site set-up (owner 15 Nov 2026): the temporary fence and the signboard, as confirmed on site; the bot raises the alert from excavation
