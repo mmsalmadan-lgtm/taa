@@ -76,6 +76,20 @@ card or page · finance things live under المالية, purchases under الم
   and the funding page is identical to the previous version, and the edit-in-place saves (stages, installment, contract, cash
   and fixed costs) produce the same audit state.
 
+## «لوح الموقع» (16 Nov 2026, owner approved the direction from before/after of home and a project)
+Owner's references: track3d.ai for layout and spacing, siteaware.com/platform for colours and cards. Borrowed as ideas only —
+no logos, illustrations, wording or layouts copied. It is a layer at the end of the `<style>` block over «طاولة الرسم» above;
+markup and JavaScript are unchanged.
+- Page `--bg #F5F6F7`, white flat surfaces with hairline borders (`--line`), no lifting shadows; radii 6 / 8 / 10 px.
+- One navy board per page: the page-level figure strip (`main>.kpis`) is `--board` navy with white labels; money in = mint
+  `--b-in`, out `--b-out`, engineering `--b-eng`, warn/bad flags tinted for the dark ground. Nested `.kpis` stay light.
+- A figure's family is a dot before its label (`.kpi .l::before`), not a side bar. A status is a 3-px rule across the TOP of its
+  card (`.card.warn/.bad`, `.aq`, `.dcard`, `.dqc`, `.alx`, `.ovtodo`, wall tiles) — no coloured side stripes anywhere new.
+- Page head `.ph`: title over a full-width hairline with a short family-colour stroke on it. Section titles (`.hsh`, `.fch2`,
+  `.kh`, `.ovg h3`) sit over a hairline rule.
+- Actions are pills (`.pbtn`, `.hbtn` navy; `.sbtn` outlined). Sub-tabs are an underlined row. Desk nav: the current place is a
+  navy pill. The project overview's sections sit on the page (no box inside a box).
+
 ## English (2026-11-13)
 - «English / العربية» button in the header (and on the sign-in card); the choice is kept per device (`localStorage taa.dash.lang`).
   English sets `<html dir="ltr" lang="en">`; layout uses logical properties (`text-align:start/end`, `inset-inline-*`).

@@ -24,7 +24,7 @@
    blueprint blue, alerts = red / amber (an alert never colours a number). Readex Pro for headings and big figures, IBM Plex
    Sans Arabic for reading. Desk: a fixed side navigation; phone: a top bar and a sideways section strip. */
 :root{
- --bg:#F1F3F4;--surface:#FFFFFF;--sunk:#F5F7F8;--ink:#1D2533;--muted:#5B6474;--faint:#646D7A;--line:#E3E7EA;--line-2:#D4DAE0;--field:#CBD2D9;--field-in:#828B97;
+ --bg:#F5F6F7;--surface:#FFFFFF;--sunk:#F3F5F6;--ink:#1D2533;--muted:#5B6474;--faint:#646D7A;--line:#E4E7EB;--line-2:#CFD5DC;--field:#CBD2D9;--field-in:#828B97;
  --ui:#1D2533;--ui-2:#34425C;--ui-1:#E9EDF3;--brand:#C62026;
  --eng9:#123F78;--eng6:#2F6FCB;--eng1:#E6EEF9;
  --acc9:#0E5A3A;--acc6:#1D8456;--acc1:#E2F2E9;--out:#4A5565;--neg:#A3241B;
@@ -32,7 +32,10 @@
  --on-acc:#FFFFFF;
  --f-text:"SAR","IBM Plex Sans Arabic","Segoe UI",Tahoma,system-ui,sans-serif;
  --f-disp:"SAR","Readex Pro","IBM Plex Sans Arabic","Segoe UI",Tahoma,system-ui,sans-serif;
- --r-s:8px;--r-m:12px;--r-l:16px;
+ --r-s:6px;--r-m:8px;--r-l:10px;
+ /* «اللوح» — the navy board: one dark field per page carries its headline figures (siteaware's bands, track3d's data panel) */
+ --board:#1D2533;--board-2:#2A3549;--on-board:#FFFFFF;--on-board-m:#AEB8C7;--board-line:rgb(255 255 255/.10);
+ --b-in:#5ED6A0;--b-out:#D3DAE4;--b-eng:#9CC2F7;--b-warn:#F4C36F;--b-bad:#FF9E94;
  --sh-lift:0 10px 24px -14px rgb(29 37 51/.28);--sh-pop:0 28px 70px -20px rgb(29 37 51/.42);
  --ease:cubic-bezier(.2,.8,.2,1);--spring:cubic-bezier(.22,1,.36,1); /* no overshoot: a settle, not a bounce (pilot detector, 15 Nov 2026) */
  color-scheme:light;
@@ -770,8 +773,8 @@ body.wallmode main{max-width:none;padding:24px 32px;gap:18px}
 @media (prefers-reduced-motion:reduce){.wprog{display:none}}
 .wgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
 .wtile{border:1px solid var(--line);border-radius:var(--r-m);padding:12px 14px;display:flex;flex-direction:column;gap:6px;position:relative}
-.wtile.bad{border-color:color-mix(in srgb,var(--crit) 55%,var(--line));box-shadow:inset 3px 0 0 var(--crit)}
-.wtile.warn{box-shadow:inset 3px 0 0 var(--warn6)}
+.wtile.bad{border-color:color-mix(in srgb,var(--crit) 55%,var(--line));border-top:3px solid var(--crit)}
+.wtile.warn{border-top:3px solid var(--warn6)}
 .wtile .n{font-family:var(--f-disp);font-size:clamp(16px,1.15vw,21px);font-weight:600;line-height:1.35}
 .wtile .m{font-size:clamp(13px,.9vw,16px);color:var(--muted)}.wtile .m.w{color:var(--warn);font-weight:600}
 .wtile .stt{font-size:clamp(13px,.95vw,17px)}
@@ -779,10 +782,80 @@ body.wallmode main{max-width:none;padding:24px 32px;gap:18px}
 .wbig div{border:1px solid var(--line);border-radius:var(--r-m);padding:14px 16px}.wbig b{display:block;font-family:var(--f-disp);font-size:clamp(30px,3vw,54px);line-height:1.1;font-variant-numeric:tabular-nums}
 .wbig span{font-size:clamp(14px,1vw,18px);color:var(--muted)}
 .wside{display:flex;flex-direction:column;gap:12px}.wside h2{margin:0;font-family:var(--f-disp);font-size:clamp(18px,1.4vw,24px);font-weight:600}
-.wiv{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);padding:12px 14px;display:flex;flex-direction:column;gap:4px;box-shadow:inset 3px 0 0 var(--warn6)}
-.wiv.bad{box-shadow:inset 3px 0 0 var(--crit)}.wiv b{font-size:clamp(15px,1.05vw,19px);line-height:1.4}.wiv span{font-size:clamp(13px,.9vw,16px);color:var(--muted)}
+.wiv{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);padding:12px 14px;display:flex;flex-direction:column;gap:4px;border-top:3px solid var(--warn6)}
+.wiv.bad{border-top:3px solid var(--crit)}.wiv b{font-size:clamp(15px,1.05vw,19px);line-height:1.4}.wiv span{font-size:clamp(13px,.9vw,16px);color:var(--muted)}
 .wstale{background:var(--warn1);color:var(--warn);border-radius:var(--r-m);padding:10px 16px;font-weight:600;font-size:clamp(14px,1vw,18px)}
 .wctl{display:flex;gap:8px}
+
+/* ===== «لوح الموقع» (16 Nov 2026, owner's references: track3d.ai for layout and spacing, siteaware.com for colours and cards).
+   One 8-px rhythm with more room between sections than inside them; flat white surfaces on a light page, hairline borders, no
+   lifting shadows; every section opens with its title over a hairline rule; the page's headline figures sit on ONE navy board;
+   primary actions are navy pills; a status is a rule across the top of its card, never a side bar. Colour still = meaning. */
+body{font-size:15px}
+main{gap:20px}
+@media (min-width:1080px){main.wrapx{padding:40px 56px 48px}footer{padding:0 56px 32px}main{gap:24px}}
+/* page head: the title over a full-width hairline, the family colour a short stroke on it */
+.ph{border-inline-start:0;padding:0 0 16px;margin-block:4px 4px;border-bottom:1px solid var(--line);position:relative}
+.ph::after{content:"";position:absolute;bottom:-1px;inset-inline-start:0;width:56px;height:2px;background:var(--fam,var(--ui))}
+.ph h1{font-size:clamp(26px,3vw,36px);line-height:1.2}
+.sec-h{margin:20px 2px 0}.sec-h h2{font-size:20px}
+/* the navy board: the page-level figure strip */
+main>.kpis,.hest-in>.kpis{background:var(--board);border:0;color:var(--on-board)}
+main>.kpis .kpi,.hest-in>.kpis .kpi{box-shadow:-1px 0 0 var(--board-line),0 1px 0 var(--board-line);padding:20px 22px 18px}
+main>.kpis .kpi .l,.hest-in>.kpis .kpi .l{color:var(--on-board-m)}
+main>.kpis .kpi .s,.hest-in>.kpis .kpi .s{color:var(--on-board-m)}
+main>.kpis .kpi .v,.hest-in>.kpis .kpi .v{color:var(--b-v,var(--on-board));font-size:clamp(20px,1.75vw,26px);white-space:nowrap;overflow-wrap:normal}
+/* the project overview's sections sit straight on the page (no box inside a box) */
+.panel:has(>.ovg){background:transparent;border:0;padding:0}
+main>.kpis .kpi[data-f="in"],.hest-in>.kpis .kpi[data-f="in"]{--b-v:var(--b-in)}main>.kpis .kpi[data-f="out"],.hest-in>.kpis .kpi[data-f="out"]{--b-v:var(--b-out)}main>.kpis .kpi[data-f="eng"],.hest-in>.kpis .kpi[data-f="eng"]{--b-v:var(--b-eng)}
+main>.kpis .kpi[data-f="in"],main>.kpis .kpi[data-f="cash"]{--fam:var(--b-in)}main>.kpis .kpi[data-f="out"]{--fam:var(--b-out)}main>.kpis .kpi[data-f="eng"]{--fam:var(--b-eng)}main>.kpis .kpi[data-t="warn"]{--fam:var(--b-warn)}main>.kpis .kpi[data-t="bad"]{--fam:var(--b-bad)}
+main>.kpis .flag.warn,.hest-in>.kpis .flag.warn{background:rgb(244 195 111/.16);color:var(--b-warn)}main>.kpis .flag.bad,.hest-in>.kpis .flag.bad{background:rgb(255 158 148/.16);color:var(--b-bad)}
+main>.kpis :focus-visible{outline-color:var(--on-board)}
+/* a figure's family is a dot before its label (the side bar is gone) */
+.kpi::before{display:none}
+.kpi .l{display:flex;align-items:center;gap:7px}.kpi .l::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--fam,var(--line-2));flex:none}
+/* surfaces: flat, hairline, one radius family */
+.card,.box,.panel,.hsec,.ldg,.sc,.finder,.steps-box,.prov,.aq{box-shadow:none}
+.card{padding:18px;gap:12px}
+.box,.panel{padding:20px 22px}.hsec{padding:20px 22px 22px;gap:14px}
+@media (hover:hover){button.card:hover,.sc>summary:hover,.tl:hover,.al1:hover,.hc:hover,.step:hover{box-shadow:none;border-color:color-mix(in srgb,var(--ink) 38%,var(--line))}}
+/* every section opens with its title over a hairline rule */
+.hsh,.fch2,.kh,.ovg h3{padding-bottom:12px;border-bottom:1px solid var(--line)}
+.hsh h2{font-size:20px}.fch2>b:first-child{font-size:18px}
+.hd:first-child{padding-top:4px}
+/* a status is a rule across the top of its card */
+.card.warn::after,.card.bad::after,.sc.warn::after,.sc.bad::after{inset-inline:-1px;top:-1px;bottom:auto;width:auto;height:3px;border-radius:var(--r-m) var(--r-m) 0 0}
+.aq::before,.dcard::before{inset-block:-1px auto;inset-inline:-1px;width:auto;height:3px;border-radius:var(--r-l) var(--r-l) 0 0}
+.dcard{padding-inline-start:18px}.aq{padding-inline-start:16px}
+.alx::before,.ovtodo::before{inset-block:0 auto;inset-inline:0;width:auto;height:3px}
+.dqc.decision,.dqc.review,.dqc.reconcile{border-inline-start-width:1px;border-top-width:3px}
+.dqc.decision{border-top-color:var(--warn6)}.dqc.review{border-top-color:var(--crit)}.dqc.reconcile{border-top-color:var(--acc6)}
+/* actions: navy pills; secondary = outlined pill */
+.pbtn,.hbtn,.sbtn,.login{border-radius:999px}
+.pbtn,.hbtn{padding-inline:20px}.sbtn{padding-inline:15px}
+.sbtn:hover{border-color:var(--ink);background:var(--sunk)}
+/* sub-tabs: an underlined row (track3d), not a grey capsule */
+.sub-tabs{background:transparent;border-radius:0;padding:0;gap:4px;border-bottom:1px solid var(--line);align-self:stretch}
+.sub-tabs button{border-radius:0;padding:10px 12px 11px;box-shadow:inset 0 -2px 0 transparent}
+.sub-tabs button[aria-current="true"]{background:transparent;box-shadow:inset 0 -2px 0 var(--ink);color:var(--ink)}
+/* desk side navigation: the current place is a navy pill */
+@media (min-width:1080px){
+ .side{background:var(--surface)}
+ .tab{border-radius:999px;padding:9px 14px}
+ .tab[aria-current="page"]{background:var(--ui);color:var(--on-acc)}
+ .tab[aria-current="page"] svg{stroke:var(--on-acc)}
+ .tab[aria-current="page"] .n{background:var(--on-acc);color:var(--crit)}
+}
+/* home charts: lighter bars, more air between rows */
+.crows{gap:6px}.cbar{height:10px;border-radius:999px}
+.hero.sm h1{font-size:24px}
+@media (max-width:560px){
+ main{gap:16px}
+ .ph h1{font-size:24px}
+ main>.kpis .kpi{padding:14px 14px 13px}main>.kpis .kpi .v{font-size:18px}
+ .card{padding:12px}.box,.panel,.hsec{padding:16px}
+ .hsh h2{font-size:18px}
+}
 </style>
 </head>
 <body>
