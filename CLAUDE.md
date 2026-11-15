@@ -351,7 +351,11 @@ Known good totals (2026-11-09): contracts 14,259,433.75 · collected 7,751,477.4
   WALLS: with `shape.walls[level]` and that floor's blockwork part (`blk`, from the audit) each floor gets its walls (`isoWallPieces`: solid between openings,
   under/over windows 0.9/2.2 m, over doors 2.1 m; `isoWalls`) — blockwork done = blocks (`ISO_MAT.blk`), otherwise dashed; `shape.fence` + `p.fence` = the
   boundary wall (2.5 m, gates open). No record → nothing drawn. STAGE STEPS «مراحل البناء» (panel, shaped projects; owner: «more detailed, by each stage»): `isoSteps(p)` = the stages in the order of work
-  (dig, repl, foot, beam, fill, gslab, per floor cols / slab / blk, fence) with states; `MAPV.cut {pid, key: step}` shows the building up to that step
+  (dig, repl, foot, beam, fill, gslab, per floor cols then slab / blk / lnt IN THE ORDER THE RECORDS SHOW — done before in progress before not
+  started, the usual order when all are done —, the parapet, fence) with states; concrete elements carry contractor phases `<key>@1/@2` (columns: rebar → formwork,
+  slabs/beams: formwork → rebar; `isoPhaseMode` → modes rebar / form / site) then the pour; DETAIL: block courses on finished walls (`isoCourses`), lintels and
+  shoulders over/beside every opening (`isoLintels`, audit lnt*, weight 1, optional), the roof parapet (الوارش, from the roof stage), a pump + mixer with the boom
+  to the element ONLY while a pour is «pouring» (`isoTrucks`, static); `MAPV.cut {pid, key: step}` shows the building up to that step
   (`isoStepOf`), a blockwork step opens its floor (slab hidden), steps before the backfill show the footings in the open excavation. Earlier: FLOOR CUT `MAPV.cut {pid, key}` hid that floor's
   slab and everything above in `isoStack` — the drawing, the panel picture and the Mapbox solids alike.
   STAGES: `p.el` (the audit's states) drives the earthworks: dug and not backfilled → excavation floor (`pit`, gravel once «الإحلال» is done);

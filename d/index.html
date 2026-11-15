@@ -624,6 +624,7 @@ body.chatonly footer{display:none}
 .mstep{display:flex;gap:6px;margin:6px 0}.mstep .sbtn{flex:1}
 .mstepn{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:4px 0 2px}
 .mcut .mchip{font-size:12px;padding:4px 9px;min-height:32px;border-inline-start:4px solid #B4BBC3}
+.mphase{margin-top:2px;padding-inline-start:10px;border-inline-start:2px solid var(--line,#D5DAE0)}
 .mcut .mchip.done{border-inline-start-color:#1D8456}.mcut .mchip.work{border-inline-start-color:#D08A12}
 @media (pointer:coarse){.mcut .mchip{min-height:44px}}
 .ormap::after{content:"";position:absolute;left:50%;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border:2px solid #fff;border-radius:50%;box-shadow:0 0 0 1px rgb(0 0 0/.4);pointer-events:none}
@@ -826,6 +827,16 @@ const pct = (f) => Math.round((f || 0) * 100) + "%";
 const LK = "taa.dash.lang";
 let LANG = (() => { try { return localStorage.getItem(LK) === "en" ? "en" : "ar"; } catch { return "ar"; } })();
 const EN = {
+"أعتاب وأكتاف الدور الأرضي": "Ground floor lintels and shoulders",
+"أعتاب وأكتاف الدور الأول": "First floor lintels and shoulders",
+"أعتاب وأكتاف الدور الإضافي": "Extra floor lintels and shoulders",
+"أعتاب وأكتاف الملحق": "Annex lintels and shoulders",
+"الوارش (سترة السطح)": "Roof parapet",
+"حدادة": "Rebar",
+"نجارة": "Formwork",
+"صب": "Pour",
+"مرحلة المقاول:": "Contractor stage:",
+"مضخة وسيارة خرسانة — صبة جارية مسجّلة": "Pump and mixer — a recorded pour in progress",
 "مراحل البناء": "Construction stages",
 "→ السابقة": "← Previous",
 "التالية ←": "Next →",
@@ -3609,8 +3620,46 @@ function isoWallPieces(w, z0, z1) {
 }
 // the walls of one floor (or the boundary wall) in their recorded state: blockwork done = blocks, otherwise faded in their place
 function isoWalls(g, e) {
-  const P = isoPlan(), list = e.kind === "fence" ? P.fence : (P.walls || {})[e.L.key]; if (!list || !list.length) return;
-  for (const pc of list.flatMap((w) => isoWallPieces(w, e.z0, e.z1)).sort((a, b) => a.d - b.d)) { if (e.mode === "blk") isoPrism(g, pc.ring, pc.z0, pc.z1, "blk"); else isoGhostPoly(g, pc.ring, pc.z0, pc.z1, e.mode); } // not built: faded walls in their place
+  const P = isoPlan(), list = e.list || (e.kind === "fence" ? P.fence : (P.walls || {})[e.L.key]); if (!list || !list.length) return;
+  for (const pc of list.flatMap((w) => isoWallPieces(w, e.z0, e.z1)).sort((a, b) => a.d - b.d)) {
+    if (e.mode !== "blk") { isoGhostPoly(g, pc.ring, pc.z0, pc.z1, e.mode); continue; } // not built: faded walls in their place
+    isoPrism(g, pc.ring, pc.z0, pc.z1, "blk");
+    if (e.kind === "fence" || e.kind === "parapet" || e.kind === "walls") isoCourses(g, pc);
+  }
+}
+// the block pattern on a finished wall piece's visible faces: one path per face (bed joints every 20 cm, head joints every 40 cm, staggered)
+function isoCourses(g, pc) {
+  const { faces } = isoPolyFaces(pc.ring);
+  for (const f of faces) {
+    const L = Math.hypot(f.b[0] - f.a[0], f.b[1] - f.a[1]); if (L < 0.25) continue;
+    const at = (t, z) => isoPr(f.a[0] + ((f.b[0] - f.a[0]) * t) / L, f.a[1] + ((f.b[1] - f.a[1]) * t) / L, z); let d = "";
+    for (let z = pc.z0 + 0.2, k = 0; z < pc.z1 - 0.02; z += 0.2, k++) { const p0 = at(0, z), p1 = at(L, z); d += `M${p0[0].toFixed(3)} ${p0[1].toFixed(3)}L${p1[0].toFixed(3)} ${p1[1].toFixed(3)}`; }
+    for (let z = pc.z0, k = 0; z < pc.z1 - 0.02; z += 0.2, k++) for (let t = k % 2 ? 0.2 : 0.4; t < L - 0.05; t += 0.4) { const p0 = at(t, z), p1 = at(t, Math.min(pc.z1, z + 0.2)); d += `M${p0[0].toFixed(3)} ${p0[1].toFixed(3)}L${p1[0].toFixed(3)} ${p1[1].toFixed(3)}`; }
+    if (d) isoEl("path", { d, fill: "none", stroke: "#A89E8C", "stroke-opacity": ".55", "stroke-width": "0.5", "vector-effect": "non-scaling-stroke" }, g);
+  }
+}
+// lintels over every door and window, shoulders at their sides, poured concrete (owner: «the lintels and shoulders pour»)
+// the concrete pump (boom raised to the element being poured) and a mixer truck, parked at the street in front of the façade; static
+function isoTruckBoxes(e) {
+  const P = isoPlan(), fy = (P.plot ? Math.max(...P.plot.map((q) => q[1])) : P.bb[3] + 4.5) + 2.2, cx = (P.bb[0] + P.bb[2]) / 2;
+  const B = (x0, y0, x1, y1, z0, z1, c) => ({ ring: [[x0, y0], [x1, y0], [x1, y1], [x0, y1]], z0, z1, c, d: isoDepth((x0 + x1) / 2, (y0 + y1) / 2) });
+  const px = cx - 6, mx = cx + 2;
+  return { boxes: [B(px, fy, px + 9, fy + 2.5, 0.4, 1.5, "truck"), B(px + 9, fy, px + 11, fy + 2.5, 0.4, 3.1, "cab"), B(px + 1.5, fy + 0.6, px + 3, fy + 1.9, 1.5, 2.6, "cab"),
+    B(mx, fy, mx + 6.5, fy + 2.5, 0.4, 1.3, "cab"), B(mx + 0.5, fy + 0.25, mx + 5, fy + 2.25, 1.3, 3.5, "truck"), B(mx + 6.5, fy, mx + 8.5, fy + 2.5, 0.4, 3.1, "cab")],
+    boom: [[px + 2.25, fy + 1.25, 2.6], [px + 2.25, fy - 2, 9], [cx, (P.bb[1] + P.bb[3]) / 2 + 3, (e.tz || 4) + 4], [cx, (P.bb[1] + P.bb[3]) / 2, (e.tz || 4) + 0.3]] };
+}
+function isoTrucks(g, e) {
+  const t = isoTruckBoxes(e);
+  for (const b of t.boxes.sort((a, c) => a.d - c.d)) isoPrism(g, b.ring, b.z0, b.z1, b.c);
+  for (let i = 1; i < t.boom.length; i++) { const a = t.boom[i - 1], b = t.boom[i]; isoLine(g, isoP(a[0], a[1], a[2]), isoP(b[0], b[1], b[2]), "#C49A2E", 3.2); }
+  isoEl("title", {}, g).textContent = "مضخة وسيارة خرسانة — صبة جارية مسجّلة";
+}
+function isoLintels(w, z0, z1) {
+  const [x1, y1, x2, y2, t, ops] = w, L = Math.hypot(x2 - x1, y2 - y1) || 1, ux = (x2 - x1) / L, uy = (y2 - y1) / L, nx = (-uy * (t + 0.02)) / 2, ny = (ux * (t + 0.02)) / 2, out = [];
+  const q = (a, b, za, zb) => { a = Math.max(0, a); b = Math.min(L, b); if (b - a < 0.02 || zb - za < 0.02) return; const A = [x1 + ux * a, y1 + uy * a], B = [x1 + ux * b, y1 + uy * b];
+    out.push({ ring: [[A[0] + nx, A[1] + ny], [B[0] + nx, B[1] + ny], [B[0] - nx, B[1] - ny], [A[0] - nx, A[1] - ny]], z0: za, z1: zb, d: isoDepth((A[0] + B[0]) / 2, (A[1] + B[1]) / 2) }); };
+  for (const [o, wd, k] of ops || []) { if (k === "g") continue; const head = Math.min(z1 - 0.2, z0 + (k === "w" ? 2.2 : 2.1)); q(o - 0.2, o + wd + 0.2, head, head + 0.2); q(o - 0.2, o, z0, head); q(o + wd, o + wd + 0.2, z0, head); }
+  return out;
 }
 const isoWallMode = (st) => (st === "done" ? "blk" : st === "none" ? "plan" : "unk");
 // the audit's state of a stage (p.el from the bot): done | work | none | null (غير مشمول / not recorded)
@@ -3631,7 +3680,7 @@ const ISO_ICON = {
   red: '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="currentColor"/><path d="M8 4.2v4.6" stroke="#fff" stroke-width="1.9" stroke-linecap="round"/><circle cx="8" cy="11.4" r="1.1" fill="#fff"/></svg>',
   grey: '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="2.2 1.8"/><path d="M6.3 6.2a1.8 1.8 0 1 1 2.4 1.7c-.5.2-.7.6-.7 1.1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="11.4" r=".95" fill="currentColor"/></svg>',
 };
-const ISO_MAT = { earth: ["#DCCDAE", "#C9B794", "#B5A27C"], blk: ["#EFEAE1", "#DCD4C6", "#C9C0B0"], conc: ["#E1E4E6", "url(#iso-conc-l)", "url(#iso-conc-r)"], fresh: ["#BFC6CC", "url(#iso-fresh-l)", "url(#iso-fresh-r)"], ply: ["#EBC07E", "url(#iso-ply-l)", "url(#iso-ply-r)"] };
+const ISO_MAT = { truck: ["#F3C64F", "#DDB03C", "#C49A2E"], cab: ["#E9ECEF", "#CDD2D7", "#B4BAC1"], earth: ["#DCCDAE", "#C9B794", "#B5A27C"], blk: ["#EFEAE1", "#DCD4C6", "#C9C0B0"], conc: ["#E1E4E6", "url(#iso-conc-l)", "url(#iso-conc-r)"], fresh: ["#BFC6CC", "url(#iso-fresh-l)", "url(#iso-fresh-r)"], ply: ["#EBC07E", "url(#iso-ply-l)", "url(#iso-ply-r)"] };
 const ISO_DEFS = `<filter id="iso-soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="0.9"/></filter>` +
   [["conc-l", "#D2D6DA", "#BBC1C6"], ["conc-r", "#B4BAC0", "#9AA2A9"], ["fresh-l", "#AEB6BD", "#99A2AA"], ["fresh-r", "#959EA6", "#7E8891"], ["ply-l", "#DDA962", "#CB944C"], ["ply-r", "#C08A43", "#A97536"]]
     .map(([id, a, b]) => `<linearGradient id="iso-${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>`).join("");
@@ -3724,23 +3773,46 @@ function isoMode(p, L, part) {
 // the structure, bottom up, in metres: foundations, then each recorded floor (columns + slab), the annex on part of the roof
 // the building's stages in the order of work, each with its recorded state: earthworks, footings, ground beams, backfill, ground slab, then per
 // floor its columns, its slab and its blockwork, the boundary wall last. One step = the building as it stands up to that stage.
-const ISO_STEPK = { pad: "foot", neck: "foot", beam: "beam", pit: "dig", fill: "fill", gslab: "gslab", fence: "fence" };
+const ISO_STEPK = { pad: "foot", neck: "foot", beam: "beam", pit: "dig", fill: "fill", gslab: "gslab", fence: "fence", parapet: "parapet" };
 const isoStepOf = (e) => ISO_STEPK[e.kind] || e.L.key + "|" + (e.kind === "walls" ? "blk" : e.kind);
+// a contractor phase drawn on an element: columns / necks / footings take their steel first (rebar, then formwork); slabs, beams and the
+// ground slab their formwork first (formwork, then rebar); the second phase is formwork with rebar, the third the concrete
+const isoPhaseMode = (kind, ph) => (ph === 1 ? (["pad", "neck", "cols"].includes(kind) ? "rebar" : "form") : "site");
+// the building's stages in the order of work, each with its recorded state: earthworks, footings, ground beams, backfill, ground slab, then each
+// floor (owner 15 Nov 2026: «sometimes the blockwork and the lintels come before the slab»): its columns, then its slab / blockwork / lintels in
+// the order the records show (done before in progress before not started; when all are done the usual order), the parapet, the boundary wall.
+// Concrete elements carry the contractor's phases (owner: «carpentry, rebar and the pour»): <key>@1, <key>@2, then <key> = the pour.
 function isoSteps(p) {
-  const lv = (p.levels || []).filter((L) => !["foot", "beam"].includes(L.key)), li = (k) => lv.findIndex((L) => L.key === k);
-  const rank = (k) => ({ dig: 0, repl: 1, foot: 2, beam: 3, fill: 4, gslab: 5, fence: 9999 })[k] ?? 10 + li(k.split("|")[0]) * 3 + { cols: 0, slab: 1, blk: 2 }[k.split("|")[1]];
   const keys = new Set(isoStack(p, true).map(isoStepOf)); if (isoSt(p, "repl") && keys.has("dig")) keys.add("repl");
   const elT = (k) => { const E = ELEMENTS["عظم"].find((x) => x[0] === k); return E ? E[1] : k; }, raw = (k) => (p.el || {})[k];
-  const part = (L, k) => (L.parts || []).find((x) => x.k === k), cls = (st) => (st === "done" ? "done" : st === "none" || st === "plan" ? "none" : "work");
-  return [...keys].sort((a, b) => rank(a) - rank(b)).map((k) => {
-    if (!k.includes("|")) { const L = (p.levels || []).find((x) => x.key === k), pt = L && L.parts[0];
-      if (L && pt) return { key: k, t: L.t, s: MPART[pt.st] || pt.st, c: cls(pt.st) };
-      if (k === "fence") return { key: k, t: "السور", s: raw("fence") || MBLK[p.fence] || "", c: cls(p.fence) };
-      return { key: k, t: elT(k), s: raw(k) || "", c: cls(isoSt(p, k)) }; }
-    const [lk, pk] = k.split("|"), L = lv[li(lk)], pt = L && part(L, pk);
-    const BK = { bslab: "bwall", gf: "blkg", ff: "blkf", xf: "blkx", roof: "blkr" };
-    return { key: k, t: pk === "blk" && BK[lk] ? elT(BK[lk]) : pt ? pt.t : k, s: pt ? (pk === "blk" ? MBLK[pt.st] || pt.st : MPART[pt.st] || pt.st) : "", c: cls(pt && pt.st) };
-  });
+  const lvl = (k) => (p.levels || []).find((L) => L.key === k), part = (L, k) => L && (L.parts || []).find((x) => x.k === k);
+  const cls = (st) => (st === "done" ? "done" : st === "none" || !st ? "none" : "work"), site = (st) => !["done", "none", "unk", "work", null, undefined].includes(st);
+  const phS = (st, i) => (st === "done" ? "منتهي" : st === "none" || !st ? "لم يبدأ" : site(st) ? (i < 2 ? "منفّذ" : MPART[st] || st) : "غير محدد في السجلات");
+  const out = [], add = (key, t0, st, s, vert) => {
+    if (!keys.has(key)) return;
+    if (vert === undefined) { out.push({ key, base: key, t0, t: t0, s: s || "—", c: cls(st) }); return; }
+    (vert ? ["حدادة", "نجارة"] : ["نجارة", "حدادة"]).forEach((nm, i) => out.push({ key: key + "@" + (i + 1), base: key, ph: i + 1, nm, t0, t: t0 + " — " + nm, s: phS(st, i), c: site(st) || st === "done" ? "done" : cls(st) }));
+    out.push({ key, base: key, ph: 3, nm: "صب", t0, t: t0 + " — صب", s: s || phS(st, 2), c: cls(st) });
+  };
+  add("dig", elT("dig"), isoSt(p, "dig"), raw("dig")); add("repl", elT("repl"), isoSt(p, "repl"), raw("repl"));
+  const F = lvl("foot"), fp = part(F, "foot"); add("foot", F ? F.t : elT("foot"), fp ? fp.st : "unk", fp ? MPART[fp.st] || fp.st : "", true);
+  const Bm = lvl("beam"), bp = part(Bm, "beam"); add("beam", Bm ? Bm.t : "الميدات", bp ? bp.st : "unk", bp ? MPART[bp.st] || bp.st : "", false);
+  add("fill", elT("fill"), isoSt(p, "fill"), raw("fill"));
+  const gs = isoSt(p, "gslab"); add("gslab", elT("gslab"), gs, raw("gslab"), false);
+  const BK = { bslab: "bwall", gf: "blkg", ff: "blkf", xf: "blkx", roof: "blkr" }, LN = { gf: "lntg", ff: "lntf", xf: "lntx", roof: "lntr" }, rk = (st) => (st === "done" ? 0 : st === "none" || !st ? 2 : 1);
+  const lvs = (p.levels || []).filter((L) => !["foot", "beam"].includes(L.key)), top = [...lvs].reverse().find((L) => L.key !== "roof");
+  for (const L of lvs) {
+    const c = part(L, "cols"), sl = part(L, "slab"), bk = part(L, "blk"), ln = LN[L.key] && isoSt(p, LN[L.key]);
+    if (c) add(L.key + "|cols", c.t, c.st, MPART[c.st] || c.st, true);
+    const rest = [];
+    if (sl) rest.push({ o: 0, st: sl.st, f: () => add(L.key + "|slab", sl.t, sl.st, MPART[sl.st] || sl.st, false) });
+    if (bk) rest.push({ o: 1, st: bk.st, f: () => add(L.key + "|blk", BK[L.key] ? elT(BK[L.key]) : bk.t, bk.st, MBLK[bk.st] || bk.st) });
+    if (ln) rest.push({ o: 2, st: ln, f: () => add(L.key + "|lnt", elT(LN[L.key]), ln, raw(LN[L.key])) });
+    rest.sort((a, b) => rk(a.st) - rk(b.st) || a.o - b.o).forEach((x) => x.f());
+    if (top && L.key === top.key) add("parapet", "الوارش (سترة السطح)", isoSt(p, "roof"), raw("roof"));
+  }
+  add("fence", "السور", p.fence, raw("fence") || MBLK[p.fence] || "");
+  return out;
 }
 function isoStack(p, all) {
   const out = [], lv = p.levels || [], fh = isoPlanOf(p).fh, ch = fh - 0.35; // floor to floor (3.65 standard, or the drawings' own)
@@ -3777,13 +3849,27 @@ function isoStack(p, all) {
   if (dig === "done" || dig === "work") out.unshift({ L: gL("dig", "الحفر"), part: { k: "dig", st: dig }, mode: repl === "done" ? "gravel" : dig === "work" ? "unk" : "earth", key: "dig|dig", kind: "pit", z0: 0, z1: 0.02, hidden: fill === "done" });
   if (gs) { const j = out.findIndex((e) => !["fill", "pit", "pad", "neck", "beam", "fence"].includes(e.kind)), e = { L: gL("gslab", "صبة الأرضية"), part: { k: "gslab", st: gs }, mode: gs === "done" ? "conc" : gs === "none" ? "plan" : "unk", key: "gslab|gslab", kind: "gslab", z0: 1.15, z1: 1.3 };
     if (j >= 0) out.splice(j, 0, e); else out.push(e); }
+  // lintels and shoulders per floor (the audit's lnt*), after that floor's walls
+  const LNT = { gf: "lntg", ff: "lntf", xf: "lntx", roof: "lntr" };
+  if (!PL.std) for (const L of lv) { const st = isoSt(p, LNT[L.key]), c = tops.get(L.key); if (!st || !c || !(PL.walls[L.key] || []).length) continue;
+    const w = out.findIndex((x) => x.kind === "walls" && x.L.key === L.key), e = { L, part: { k: "lnt", st }, mode: st === "done" ? "conc" : st === "none" ? "plan" : "unk", key: L.key + "|lnt", kind: "lnt", z0: c.z0, z1: c.z1 };
+    if (w >= 0) out.splice(w + 1, 0, e); else out.push(e); }
+  // the roof parapet (الوارش, part of the audit's «الملحق وسترة السطح والوارش»): a 1.5 m block wall on the edge of the main roof
+  const rf = isoSt(p, "roof"), topSlab = [...out].reverse().find((x) => x.kind === "slab" && !x.roof);
+  if (rf && topSlab) { const r = PL.std ? isoBase(PL) : PL.ring; out.push({ L: { key: "parapet", t: "الوارش (سترة السطح)" }, part: { k: "parapet", st: rf }, mode: isoWallMode(rf), key: "parapet|parapet", kind: "parapet",
+    z0: topSlab.z1, z1: topSlab.z1 + 1.5, ring: r }); }
+  // a recorded pour in progress (stage «pouring»: started on a released pour, not finished): the pump and a mixer at the street, the boom to the element
+  const pouring = (p.pours || []).find((x) => x.stage === "pouring");
+  if (pouring) { const tgt = out.find((x) => x.L.key === pouring.level && x.part && x.part.k === pouring.part); out.push({ L: { key: "trucks", t: "" }, part: { k: "trucks" }, mode: "truck", key: "trucks|trucks", kind: "trucks", z0: 0, z1: 4, tz: tgt ? tgt.z1 : 4 }); }
   if (!PL.std && PL.fence.length && p.fence) out.unshift({ L: { key: "fence", t: "السور" }, part: { k: "fence", st: p.fence }, mode: isoWallMode(p.fence), key: "fence|fence", kind: "fence", z0: 0, z1: 2.5 });
   const cut = all ? null : isoCutOf(p);
-  if (cut) { const S = isoSteps(p).map((x) => x.key), ci = S.indexOf(cut);
-    if (ci >= 0) { const open = cut.endsWith("|blk") ? cut.split("|")[0] + "|slab" : null;
+  if (cut) { const S = isoSteps(p).map((x) => x.key), ci = S.indexOf(cut), base = cut.split("@")[0], ph = cut.includes("@") ? +cut.split("@")[1] : 0;
+    if (ci >= 0) { const open = /\|(blk|lnt)$/.test(base) ? base.split("|")[0] + "|slab" : null;
       if (S.indexOf("repl") > ci) for (const e of out) if (e.kind === "pit" && e.mode === "gravel") e.mode = "earth"; // before the replacement layer: bare excavation
       if (S.indexOf("fill") > ci) for (const e of out) { if (e.kind === "pad" || e.kind === "pit") e.hidden = false; if (e.zo != null) e.z0 = e.zo; } // before the backfill: footings in the open excavation
-      return out.filter((e) => { const k = isoStepOf(e), i = S.indexOf(k); return k !== open && i >= 0 && i <= ci; }); } }
+      return out.filter((e) => { const k = isoStepOf(e); if (k === open) return false;
+        if (k === base) { if (ph && !["plan", "unk"].includes(e.mode)) e.mode = isoPhaseMode(e.kind, ph); return true; } // the element in the chosen contractor phase
+        const i = S.indexOf(k); return i >= 0 && i <= ci; }); } }
   return out;
 }
 function isoCols(roof) {
@@ -3796,6 +3882,9 @@ function isoCols(roof) {
 function isoPart(g, e, t) {
   if (e.kind === "walls" || e.kind === "fence") { isoWalls(g, e); return; }
   if (e.hidden) return; // a footing buried by the recorded backfill
+  if (e.kind === "parapet") { const r = e.ring, n = r.length; for (let i = 0; i < n; i++) { const a = r[i], b = r[(i + 1) % n]; isoWalls(g, { ...e, kind: "parapet", list: [[a[0], a[1], b[0], b[1], 0.2, []]] }); } return; }
+  if (e.kind === "lnt") { const P = isoPlan(); for (const pc of (P.walls[e.L.key] || []).flatMap((w) => isoLintels(w, e.z0, e.z1)).sort((a, b) => a.d - b.d)) { if (e.mode === "conc") isoPrism(g, pc.ring, pc.z0, pc.z1, "conc"); else isoGhostPoly(g, pc.ring, pc.z0, pc.z1, e.mode); } return; }
+  if (e.kind === "trucks") { isoTrucks(g, e); return; }
   if (e.kind === "fill" || e.kind === "pit" || e.kind === "gslab") {
     const P = isoPlan(), r = e.kind === "gslab" ? isoBase(P) : isoGrow(isoBase(P), e.kind === "pit" ? 1.2 : 0.8);
     if (e.kind === "pit") { isoEl("polygon", { points: isoPts(r.map(([x, y]) => isoP(x, y, 0.01))), fill: e.mode === "gravel" ? "#CFC8B8" : "#D5C4A3", stroke: "#9C8A68", "stroke-width": "1", "stroke-dasharray": e.mode === "unk" ? "3 3" : "", "fill-opacity": e.mode === "unk" ? ".45" : ".85", "vector-effect": "non-scaling-stroke" }, g); return; }
@@ -3811,6 +3900,7 @@ function isoPart(g, e, t) {
       const hx = h * kx, hy = h * ky; // the section in metres whatever the plan's stretch
       if (mode === "conc" || mode === "fresh") { conc(x - hx, y - hy, z0, x + hx, y + hy, z1); if (e.barsUp) isoCage(g, x, y, z1 - 0.02, z1 + 1.05); continue; }
       if (mode === "plan" || mode === "unk") { isoGhost(g, x - hx, y - hy, z0, x + hx, y + hy, z1, mode, e.kind !== "pad"); continue; }
+      if (mode === "rebar") { if (e.kind === "pad") isoMesh(g, x - hx, y - hy, x + hx, y + hy, z0 + 0.08); else isoCage(g, x, y, z0, z1 + 1.05); continue; }
       const fx = hx + 0.06 * kx, fy = hy + 0.06 * ky, f = h + 0.06; // site: formwork around the reinforcement
       if (pour && fill > 0) isoBox(g, x - hx + 0.02, y - hy + 0.02, z0, x + hx - 0.02, y + hy - 0.02, z0 + (z1 - z0) * fill + 0.001, "fresh");
       if (fop > 0.01) { isoBox(g, x - fx, y - fy, z0, x + fx, y + fy, z1, "ply", fop); isoSeams(g, x - fx, y - fy, z0, x + fx, y + fy, z1, Math.max(fop, pour ? fop : 0.75)); }
@@ -3829,7 +3919,7 @@ function isoPart(g, e, t) {
     if (!pour) isoPropsPoly(g, r, z0 - (P.fh - 0.35), z0);
     if (pour && fill > 0) isoPrism(g, r, z0, z0 + (z1 - z0) * fill + 0.001, "fresh");
     if (fop > 0.01) isoPrism(g, r, z0 - 0.1, z1, "ply", Math.min(fop, pour ? fop : 1));
-    if (!pour || fill < 0.4) isoMeshPoly(g, r, z1 + 0.02, pour ? 1 - fill / 0.4 : 1);
+    if (mode !== "form" && (!pour || fill < 0.4)) isoMeshPoly(g, r, z1 + 0.02, pour ? 1 - fill / 0.4 : 1);
     if (e.flag === "violation" && !pour) isoEl("polygon", { points: isoPts(r.map(([x, y]) => isoP(x, y, z1 + 0.3))), fill: "none", stroke: "#B42318", "stroke-width": "1.6", "stroke-dasharray": "5 3", "vector-effect": "non-scaling-stroke" }, g);
     return;
   }
@@ -3846,7 +3936,7 @@ function isoPart(g, e, t) {
     if (e.kind === "slab" && !pour) isoProps(g, x0, y0, x1, y1, z0 - (P.fh - 0.35), z0);
     if (pour && fill > 0) isoBox(g, x0 + 0.03, y0 + 0.03, z0, x1 - 0.03, y1 - 0.03, z0 + (z1 - z0) * fill + 0.001, "fresh");
     if (fop > 0.01) isoBox(g, x0 - 0.05, y0 - 0.05, z0 - (e.kind === "slab" ? 0.1 : 0), x1 + 0.05, y1 + 0.05, z1, "ply", e.kind === "slab" ? Math.min(fop, pour ? fop : 1) : fop);
-    if (!pour || fill < 0.4) isoMesh(g, x0, y0, x1, y1, z1 + 0.02, pour ? 1 - fill / 0.4 : 1);
+    if (mode !== "form" && (!pour || fill < 0.4)) isoMesh(g, x0, y0, x1, y1, z1 + 0.02, pour ? 1 - fill / 0.4 : 1);
     if (e.flag === "violation" && !pour) isoEl("polygon", { points: isoPts([isoP(x0 - 0.3, y1 + 0.3, z0), isoP(x1 + 0.3, y1 + 0.3, z0), isoP(x1 + 0.3, y0 - 0.3, z0), isoP(x1 + 0.3, y0 - 0.3, z1 + 0.3), isoP(x0 - 0.3, y0 - 0.3, z1 + 0.3), isoP(x0 - 0.3, y1 + 0.3, z1 + 0.3)]), fill: "none", stroke: "#B42318", "stroke-width": "1.6", "stroke-dasharray": "5 3", "vector-effect": "non-scaling-stroke" }, g);
   }
 }
@@ -4162,7 +4252,7 @@ function mapGeoMarkers(G) {
 }
 // ---- the building in 3D ON the map (owner, 15 Nov 2026: «in the direction it is really built»): from MAP3D_Z the drawing marker gives way to
 // extruded geometry at the true place, orientation and size — the same recorded stages as the drawing (concrete, fresh, formwork, rebar, planned)
-const MAP3D_Z = 16.5, M3C = { earth: "#CDBB97", blk: "#D9D1C3", conc: "#C9CED3", fresh: "#98A1A9", ply: "#D29C52", steel: "#6A3A22", plan: "#B4BBC3", unk: "#97A0AA" };
+const MAP3D_Z = 16.5, M3C = { truck: "#E8B93E", cab: "#C9CED3", earth: "#CDBB97", blk: "#D9D1C3", conc: "#C9CED3", fresh: "#98A1A9", ply: "#D29C52", steel: "#6A3A22", plan: "#B4BBC3", unk: "#97A0AA" };
 function isoSolids(p) {
   const P0 = ISO_PL; ISO_PL = isoPlanOf(p);
   try { return isoSolidsIn(p, ISO_PL); } finally { ISO_PL = P0; }
@@ -4170,10 +4260,13 @@ function isoSolids(p) {
 function isoSolidsIn(p, P) {
   const out = [], kx = P.std ? 16 / ((p.geo && +p.geo.len) || 16) : 1, ky = P.std ? 12 / ((p.geo && +p.geo.wid) || 12) : 1, box = (x0, y0, x1, y1, z0, z1, c) => out.push({ x0, y0, x1, y1, z0, z1, c });
   for (const e of isoStack(p)) {
-    const { mode, z0, z1 } = e, solid = mode === "conc" || mode === "fresh" ? mode : mode === "site" ? "ply" : mode;
+    const { mode, z0, z1 } = e, solid = mode === "conc" || mode === "fresh" ? mode : mode === "site" || mode === "form" ? "ply" : mode === "rebar" ? "steel" : mode;
     if (e.hidden) continue;
     if (e.kind === "fill" || e.kind === "gslab") { out.push({ ring: e.kind === "gslab" ? isoBase(P) : isoGrow(isoBase(P), 0.8), z0, z1, c: solid }); continue; }
     if (e.kind === "pit") continue; // the excavation floor is a drawing mark only
+    if (e.kind === "trucks") { for (const bx of isoTruckBoxes(e).boxes) out.push({ ring: bx.ring, z0: bx.z0, z1: bx.z1, c: bx.c }); continue; }
+    if (e.kind === "parapet") { const r = e.ring; for (let i = 0; i < r.length; i++) { const a = r[i], b = r[(i + 1) % r.length]; for (const pc of isoWallPieces([a[0], a[1], b[0], b[1], 0.2, []], e.z0, e.z1)) out.push({ ring: pc.ring, z0: pc.z0, z1: pc.z1, c: e.mode }); } continue; }
+    if (e.kind === "lnt") { for (const w of P.walls[e.L.key] || []) for (const pc of isoLintels(w, e.z0, e.z1)) out.push({ ring: pc.ring, z0: pc.z0, z1: pc.z1, c: solid }); continue; }
     if (e.kind === "walls" || e.kind === "fence") { for (const w of (e.kind === "fence" ? P.fence : P.walls[e.L.key]) || []) for (const pc of isoWallPieces(w, e.z0, e.z1)) out.push({ ring: pc.ring, z0: pc.z0, z1: pc.z1, c: solid }); continue; }
     if (e.kind === "pad" || e.kind === "neck" || e.kind === "cols") {
       const h = e.kind === "pad" ? 0.85 : 0.25, hx = h * kx, hy = h * ky;
@@ -4415,7 +4508,7 @@ function mapPanel(p, M) {
   // picture and the 3D map; a floor's blockwork step opens that floor so its walls are seen from above
   const steps = p.geo && p.geo.shape ? isoSteps(p) : [];
   if (steps.length) {
-    const cur = isoCutOf(p), ci = cur ? steps.findIndex((x) => x.key === cur) : -1, n = steps.length;
+    const cur = isoCutOf(p), ci = cur ? steps.findIndex((x) => x.key === cur) : -1, n = steps.length, base = ci >= 0 ? steps[ci].base : null;
     const goTo = (i) => { MAPV.cut = i < 0 || i >= n ? null : { pid: p.id, key: steps[i].key }; draw(); };
     const head = el("div", "mstep"), prev = el("button", "sbtn", "→ السابقة"), next = el("button", "sbtn", "التالية ←"), whole = el("button", "sbtn" + (ci < 0 ? " on" : ""), "المبنى كاملاً");
     for (const b of [prev, next, whole]) b.type = "button";
@@ -4425,8 +4518,12 @@ function mapPanel(p, M) {
     if (ci >= 0) now.append(el("b", "", `${ci + 1} من ${n}: ${steps[ci].t}`), el("span", "mst " + steps[ci].c, steps[ci].s || "—")); else now.append(el("b", "", "المبنى كاملاً — كل المراحل"));
     head.append(prev, whole, next); box.append(el("h4", "", "مراحل البناء"), now, head);
     const row = el("div", "mcut"); row.setAttribute("role", "group"); row.setAttribute("aria-label", "مراحل البناء");
-    steps.forEach((x, i) => { const b = el("button", "sbtn mchip " + x.c + (i === ci ? " on" : ""), x.t); b.type = "button"; b.title = x.s; b.setAttribute("aria-pressed", String(i === ci)); b.onclick = () => goTo(i); row.append(b); });
-    box.append(row, el("p", "small muted", "يظهر المبنى حتى المرحلة المختارة: المنجز بلونه الحقيقي، وغير المنجز باهت في مكانه." + (cur && cur.endsWith("|blk") ? " مرحلة الطابوق تُظهر الدور بلا سقفه لرؤية الجدران." : "")));
+    steps.forEach((x, i) => { if (x.ph && x.ph < 3) return; const on = x.base === base, b = el("button", "sbtn mchip " + x.c + (on ? " on" : ""), x.t0); b.type = "button"; b.title = x.s; b.setAttribute("aria-pressed", String(on)); b.onclick = () => goTo(i); row.append(b); });
+    const phs = base ? steps.map((x, i) => [x, i]).filter(([x]) => x.base === base && x.ph) : [];
+    if (phs.length) { const pr2 = el("div", "mcut mphase"); pr2.setAttribute("role", "group"); pr2.setAttribute("aria-label", "مرحلة المقاول"); pr2.append(el("span", "small", "مرحلة المقاول:"));
+      for (const [x, i] of phs) { const b = el("button", "sbtn mchip " + x.c + (i === ci ? " on" : ""), x.nm); b.type = "button"; b.title = x.s; b.setAttribute("aria-pressed", String(i === ci)); b.onclick = () => goTo(i); pr2.append(b); }
+      box.append(row, pr2); } else box.append(row);
+    box.append( el("p", "small muted", "يظهر المبنى حتى المرحلة المختارة: المنجز بلونه الحقيقي، وغير المنجز باهت في مكانه." + (cur && /\|(blk|lnt)$/.test(cur) ? " مرحلة الطابوق تُظهر الدور بلا سقفه لرؤية الجدران." : "") + (phs.length ? " الحدادة والنجارة تُرسم كما تكون في الموقع قبل الصب." : "")));
   }
   // progress: planned vs achieved only with an approved method; reported and verified kept apart
   const pr = el("div", "msec"); pr.append(el("h4", "", "التقدم ومصدره"));
@@ -6523,9 +6620,9 @@ function assistView(m) {
 // ===== Editing in place: every figure is edited where it is shown. The data lives in the audit state (settings/audit),
 // saved through the bot (op audit_save), which writes it back into the projects, suppliers and finance settings.
 // the audit's optional stages (audit.html OPT_EL): with no record they are «غير مشمول» — never «لم يبدأ», which would move the project's figures
-const EL_OPT = ["xf", "blkx", "bdig", "bwall", "bins", "bslab", "dewat", "shor", "gslab"];
+const EL_OPT = ["xf", "blkx", "bdig", "bwall", "bins", "bslab", "dewat", "shor", "gslab", "lntg", "lntf", "lntx", "lntr"];
 const ELEMENTS = {
-  "عظم": [["dig", "الحفر"], ["repl", "الإحلال"], ["fill", "الدفان"], ["gslab", "صبة الأرضية"], ["dewat", "نزح المياه"], ["shor", "الإسناد"], ["bdig", "حفر القبو"], ["foot", "القواعد والرقاب"], ["bwall", "أرضية وجدران القبو"], ["bins", "عزل القبو"], ["bslab", "أعمدة وسقف القبو"], ["beam", "الميدات وسباكة العظم الأرضية"], ["gf", "أعمدة وسقف الدور الأرضي"], ["ff", "أعمدة وسقف الدور الأول"], ["xf", "أعمدة وسقف دور إضافي"], ["roof", "الملحق وسترة السطح والوارش"], ["blkg", "طابوق الدور الأرضي"], ["blkf", "طابوق الدور الأول"], ["blkx", "طابوق الدور الإضافي"], ["blkr", "طابوق الملحق"], ["fence", "السور"]],
+  "عظم": [["dig", "الحفر"], ["repl", "الإحلال"], ["fill", "الدفان"], ["gslab", "صبة الأرضية"], ["dewat", "نزح المياه"], ["shor", "الإسناد"], ["bdig", "حفر القبو"], ["foot", "القواعد والرقاب"], ["bwall", "أرضية وجدران القبو"], ["bins", "عزل القبو"], ["bslab", "أعمدة وسقف القبو"], ["beam", "الميدات وسباكة العظم الأرضية"], ["gf", "أعمدة وسقف الدور الأرضي"], ["ff", "أعمدة وسقف الدور الأول"], ["xf", "أعمدة وسقف دور إضافي"], ["roof", "الملحق وسترة السطح والوارش"], ["blkg", "طابوق الدور الأرضي"], ["lntg", "أعتاب وأكتاف الدور الأرضي"], ["blkf", "طابوق الدور الأول"], ["lntf", "أعتاب وأكتاف الدور الأول"], ["blkx", "طابوق الدور الإضافي"], ["lntx", "أعتاب وأكتاف الدور الإضافي"], ["blkr", "طابوق الملحق"], ["lntr", "أعتاب وأكتاف الملحق"], ["fence", "السور"]],
   "تشطيب": [["elec", "الكهرباء (تأسيس وتشطيب)"], ["plmb", "السباكة (تأسيس وتشطيب)"], ["plas", "اللياسة"], ["insu", "العزل"], ["tilein", "البلاط الداخلي"], ["tileout", "البلاط الخارجي"], ["gyp", "الجبس"], ["pntin", "الدهان الداخلي"], ["pntout", "الدهان الخارجي"]],
 };
 const EXPC = {
@@ -7488,7 +7585,7 @@ function mbLoad() {
 }
 const AUDK = { rebar: "steel", concrete: "concrete", building: "block" };
 // construction order for the stage strip (the edit form keeps its own order): backfill comes after the ground beams
-const STG_ORDER = ["dig", "repl", "dewat", "shor", "bdig", "foot", "bwall", "bins", "bslab", "beam", "fill", "gslab", "gf", "ff", "xf", "roof", "blkg", "blkf", "blkx", "blkr", "fence",
+const STG_ORDER = ["dig", "repl", "dewat", "shor", "bdig", "foot", "bwall", "bins", "bslab", "beam", "fill", "gslab", "gf", "ff", "xf", "roof", "blkg", "lntg", "blkf", "lntf", "blkx", "lntx", "blkr", "lntr", "fence",
   "elec", "plmb", "plas", "insu", "tilein", "gyp", "tileout", "pntin", "pntout"];
 // the project's subcontractors, one source for the overview and the «مقاولو الباطن» tab: the «مقاولو الباطن» cards
 // (work from each subcontractor's own Qoyod account; the bot's certificates only for one without an account)
