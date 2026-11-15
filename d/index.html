@@ -3595,7 +3595,7 @@ function isoPlanOf(p) {
   if (ISO_PLC.has(sh)) return ISO_PLC.get(sh);
   const b0 = isoBBox(sh.ring), cx = (b0[0] + b0[2]) / 2, cy = (b0[1] + b0[3]) / 2, m = (q) => [8 - (q[0] - cx), 6 - (q[1] - cy)];
   const ring = sh.ring.map(m), annex = Array.isArray(sh.annex) ? sh.annex.map(m) : null, plot = Array.isArray(sh.plot) ? sh.plot.map(m) : null;
-  const cols = (sh.cols || []).map(m).filter((q) => isoNear(ring, q[0], q[1], 0.4)), annexCols = annex ? cols.filter((q) => isoNear(annex, q[0], q[1], 0.4)) : cols;
+  const cols = (sh.cols || []).map((q) => (q.length >= 4 && +q[2] > 0 && +q[3] > 0 ? [...m(q), +q[2], +q[3]] : m(q))).filter((q) => isoNear(ring, q[0], q[1], 0.4)), annexCols = annex ? cols.filter((q) => isoNear(annex, q[0], q[1], 0.4)) : cols;
   // tie beams: between neighbouring columns on one grid line, where the span lies on the building
   const beams = [];
   for (const ax of [0, 1]) {
@@ -3611,7 +3611,8 @@ function isoPlanOf(p) {
   }
   const mw = (w) => { const a = m([w[0], w[1]]), b = m([w[2], w[3]]); return [a[0], a[1], b[0], b[1], +w[4] || 0.2, Array.isArray(w[5]) ? w[5] : []]; }, ok = (l) => Array.isArray(l) ? l.filter((w) => Array.isArray(w) && w.length >= 5).map(mw) : [];
   const walls = {}; for (const [k, l] of Object.entries(sh.walls && typeof sh.walls === "object" ? sh.walls : {})) walls[k] = ok(l);
-  const P = { std: false, ring, annex, plot, cols, annexCols, beams, walls, fence: ok(sh.fence), bb: isoBBox(ring), fh: +sh.fh >= 2.5 && +sh.fh <= 6 ? +sh.fh : 3.65 };
+  const real = cols.some((q) => q.length >= 4), stairs = (Array.isArray(sh.stairs) ? sh.stairs : []).map((b) => { const a = m([b[0], b[1]]), c = m([b[2], b[3]]); return [Math.min(a[0], c[0]), Math.min(a[1], c[1]), Math.max(a[0], c[0]), Math.max(a[1], c[1])]; });
+  const P = { std: false, real, found: sh.found || null, slabT: sh.slab || null, stairs, ring, annex, plot, cols, annexCols, beams, walls, fence: ok(sh.fence), bb: isoBBox(ring), fh: +sh.fh >= 2.5 && +sh.fh <= 6 ? +sh.fh : 3.65 };
   ISO_PLC.set(sh, P); return P;
 }
 const isoPlan = () => ISO_PL || ISO_PSTD;
@@ -3670,6 +3671,71 @@ function isoSetupPieces(e) {
   if (e.mode === "missing") return seg(0.1, 0.9, 0, 0.02, "board", 0.5);
   return [...seg(0.1, 0.9, 0.3, 2.4, "board"), ...seg(0.6, 0.66, 0.9, 1.9, "brand", 0.1), ...seg(0.7, 0.86, 0.6, 2.1, "render", 0.1)];
 }
+// strip footings (S-1): a 1.20 m strip under every grade beam on a 10 cm lean-concrete bed; steel, formwork and concrete as recorded
+function isoStrips(g, e, pour, fill, fop) {
+  const P = isoPlan(), wide = (s, w) => { const [a, b, c, d] = s, hz = Math.abs(c - a) >= Math.abs(d - b), yc = (b + d) / 2, xc = (a + c) / 2; return hz ? [a - w, yc - w, c + w, yc + w] : [xc - w, b - w, xc + w, d + w]; };
+  const strips = P.beams.map((s) => wide(s, 0.6)).sort((a, b) => isoDepth((a[0] + a[2]) / 2, (a[1] + a[3]) / 2) - isoDepth((b[0] + b[2]) / 2, (b[1] + b[3]) / 2)), { mode, z0, z1 } = e;
+  if (mode !== "plan" && mode !== "unk") for (const s of P.beams.map((q) => wide(q, 0.7))) isoBox(g, s[0], s[1], z0 - 0.1, s[2], s[3], z0, "lean");
+  for (const [x0, y0, x1, y1] of strips) {
+    if (mode === "plan" || mode === "unk") { isoGhost(g, x0, y0, z0, x1, y1, z1, mode, true); continue; }
+    if (mode === "conc" || mode === "fresh") { isoBox(g, x0, y0, z0, x1, y1, z1, e.bitum && mode === "conc" ? "bitum" : mode); continue; }
+    if (mode === "rebar") { isoMesh(g, x0, y0, x1, y1, z0 + 0.08); continue; }
+    if (pour && fill > 0) isoBox(g, x0 + 0.03, y0 + 0.03, z0, x1 - 0.03, y1 - 0.03, z0 + (z1 - z0) * fill + 0.001, "fresh");
+    if (fop > 0.01) isoBox(g, x0 - 0.04, y0 - 0.04, z0, x1 + 0.04, y1 + 0.04, z1, "ply", fop * 0.85);
+    if (!pour) isoMesh(g, x0, y0, x1, y1, z1 + 0.01);
+  }
+}
+// a ribbed slab as it is built: the plywood deck on props and joists → rows of blocks with the ribs and the hidden-beam bands between them,
+// the steel in the ribs and the top mesh → the conduits → concrete, with the drop beams under the edge
+function isoRibbed(g, e, r, pour, fill, fop) {
+  const P = isoPlan(), { mode, z0, z1 } = e, [bx0, by0, bx1, by1] = isoBBox(r);
+  if (mode === "plan" || mode === "unk") { isoGhostPoly(g, r, z0, z1, mode); return; }
+  const edge = (zA, zB, mat, t = 0.2) => { const pcs = []; for (let i = 0; i < r.length; i++) { const a = r[i], b = r[(i + 1) % r.length]; pcs.push(...isoWallPieces([a[0], a[1], b[0], b[1], t, []], zA, zB)); }
+    for (const pc of pcs.sort((u, v) => u.d - v.d)) isoPrism(g, pc.ring, pc.z0, pc.z1, mat); };
+  if (mode === "conc" || mode === "fresh") { edge(z0 - 0.28, z0, mode); isoPrism(g, r, z0, z1, mode); return; } // drop beams under the edge, then the slab
+  // formwork: props on a 1.2 m grid with joists, the plywood deck, edge boards
+  if (!pour) { isoPropsPoly(g, r, z0 - (P.fh - 0.35), z0 - 0.12);
+    for (let y = by0 + 0.6; y < by1; y += 1.2) for (const [a, b] of isoCut(r, y, 0)) isoLine(g, isoP(a + 0.1, y, z0 - 0.1), isoP(b - 0.1, y, z0 - 0.1), "#9C6B32", 2); }
+  isoPrism(g, r, z0 - 0.05, z0, "ply");
+  if (mode === "form" && !pour) { edge(z0, z1, "ply", 0.04); return; }
+  // the blocks: rows 40 cm wide with 15 cm ribs, interrupted by the hidden beams (a band along every beam line between columns)
+  const bands = P.beams.map(([a, b, c, d]) => { const hz = Math.abs(c - a) >= Math.abs(d - b), yc = (b + d) / 2, xc = (a + c) / 2; return hz ? { hz, at: yc, lo: Math.min(a, c), hi: Math.max(a, c) } : { hz, at: xc, lo: Math.min(b, d), hi: Math.max(b, d) }; });
+  const rows = [];
+  for (let y = by0 + 0.35; y + 0.4 < by1 - 0.2; y += 0.55) {
+    if (bands.some((b) => b.hz && Math.abs(y + 0.2 - b.at) < 0.55)) continue;
+    for (const [a, b] of isoCut(r, y + 0.2, 0)) {
+      let pieces = [[a + 0.25, b - 0.25]];
+      for (const bd of bands) if (!bd.hz && y + 0.2 >= bd.lo - 0.3 && y + 0.2 <= bd.hi + 0.3) pieces = pieces.flatMap(([p, q]) => (bd.at - 0.35 > p && bd.at + 0.35 < q ? [[p, bd.at - 0.35], [bd.at + 0.35, q]] : bd.at + 0.35 <= p || bd.at - 0.35 >= q ? [[p, q]] : bd.at - 0.35 <= p ? [[Math.max(p, bd.at + 0.35), q]] : [[p, Math.min(q, bd.at - 0.35)]]));
+      for (const [p, q] of pieces) if (q - p > 0.3 && isoIn(r, (p + q) / 2, y + 0.2)) rows.push([p, y, q, y + 0.4]);
+    }
+  }
+  const showBlocks = !pour || fill < 0.5;
+  if (showBlocks) for (const [x0, y0, x1, y1] of rows.sort((u, v) => isoDepth((u[0] + u[2]) / 2, (u[1] + u[3]) / 2) - isoDepth((v[0] + v[2]) / 2, (v[1] + v[3]) / 2))) {
+    isoBox(g, x0, y0, z0, x1, y1, z0 + 0.25, "hourdi");
+    let d = ""; for (let x = x0 + 0.4; x < x1 - 0.05; x += 0.4) { const p0 = isoP(x, y0, z0 + 0.25), p1 = isoP(x, y1, z0 + 0.25); d += `M${p0[0].toFixed(3)} ${p0[1].toFixed(3)}L${p1[0].toFixed(3)} ${p1[1].toFixed(3)}`; }
+    if (d) isoEl("path", { d, fill: "none", stroke: "#B9B6AC", "stroke-width": "0.5", "vector-effect": "non-scaling-stroke" }, g);
+    // two bars in the rib beside the row
+    isoLine(g, isoP(x0, y1 + 0.075, z0 + 0.05), isoP(x1, y1 + 0.075, z0 + 0.05), "#6A3A22", 1.2); isoLine(g, isoP(x0, y1 + 0.075, z0 + 0.27), isoP(x1, y1 + 0.075, z0 + 0.27), "#6A3A22", 1.2);
+  }
+  edge(z0, z1, "ply", 0.04);
+  if (pour && fill > 0) isoPrism(g, r, z0, z0 + (z1 - z0) * fill + 0.001, "fresh");
+  if (!pour || fill < 0.4) isoMeshPoly(g, r, z1 + 0.02, pour ? 1 - fill / 0.4 : 1);
+  if (mode === "mep") isoMepOn(g, r, z1 + 0.04);
+}
+// the stairs in a stairwell (A-02): two flights of 12 risers and a landing, poured with the floor's slab, in that slab's state
+function isoStairs(g, e) {
+  const P = isoPlan(), { mode, z0, z1 } = e, H = z1 - z0, rise = H / 24, pieces = [];
+  for (const [x0, y0, x1, y1] of P.stairs) {
+    const long = x1 - x0 >= y1 - y0, L = long ? x1 - x0 : y1 - y0, Wd = long ? y1 - y0 : x1 - x0, w = Wd / 2 - 0.05, land = Math.min(1.3, L * 0.3), run = (L - land) / 12;
+    const B = (s0, s1, t0, t1, za, zb) => pieces.push(long ? [x0 + s0, y0 + t0, x0 + s1, y0 + t1, za, zb] : [x0 + t0, y0 + s0, x0 + t1, y0 + s1, za, zb]);
+    for (let i = 0; i < 12; i++) B(L - (i + 1) * run, L - i * run, 0, w, z0 + Math.max(0, i * rise - 0.2), z0 + (i + 1) * rise);
+    B(0, land, 0, Wd, z0 + 12 * rise - 0.18, z0 + 12 * rise);
+    for (let i = 0; i < 12; i++) B(land + i * run, land + (i + 1) * run, Wd - w, Wd, z0 + 12 * rise + Math.max(0, i * rise - 0.2), z0 + 12 * rise + (i + 1) * rise);
+  }
+  for (const [x0, y0, x1, y1, za, zb] of pieces.sort((a, b) => isoDepth((a[0] + a[2]) / 2, (a[1] + a[3]) / 2) - isoDepth((b[0] + b[2]) / 2, (b[1] + b[3]) / 2) || a[4] - b[4])) {
+    if (mode === "plan" || mode === "unk") isoGhost(g, x0, y0, za, x1, y1, zb, mode, true); else isoBox(g, x0, y0, za, x1, y1, zb, mode === "conc" || mode === "fresh" ? mode : "ply");
+  }
+}
 function isoTrucks(g, e) {
   const t = isoTruckBoxes(e);
   for (const b of t.boxes.sort((a, c) => a.d - c.d)) isoPrism(g, b.ring, b.z0, b.z1, b.c);
@@ -3702,7 +3768,7 @@ const ISO_ICON = {
   red: '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="currentColor"/><path d="M8 4.2v4.6" stroke="#fff" stroke-width="1.9" stroke-linecap="round"/><circle cx="8" cy="11.4" r="1.1" fill="#fff"/></svg>',
   grey: '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="2.2 1.8"/><path d="M6.3 6.2a1.8 1.8 0 1 1 2.4 1.7c-.5.2-.7.6-.7 1.1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="11.4" r=".95" fill="currentColor"/></svg>',
 };
-const ISO_MAT = { brand: ["#C62026", "#A81B20", "#8E171B"], render: ["#E7DFD0", "#D6CCB9", "#C4B9A4"], tsheet: ["#DCE2E7", "#C2CBD3", "#AAB4BE"], board: ["#2A3445", "#1D2533", "#151B26"], truck: ["#F3C64F", "#DDB03C", "#C49A2E"], cab: ["#E9ECEF", "#CDD2D7", "#B4BAC1"], earth: ["#DCCDAE", "#C9B794", "#B5A27C"], blk: ["#EFEAE1", "#DCD4C6", "#C9C0B0"], conc: ["#E1E4E6", "url(#iso-conc-l)", "url(#iso-conc-r)"], fresh: ["#BFC6CC", "url(#iso-fresh-l)", "url(#iso-fresh-r)"], ply: ["#EBC07E", "url(#iso-ply-l)", "url(#iso-ply-r)"] };
+const ISO_MAT = { bitum: ["#3B3D40", "#2C2E31", "#1F2123"], lean: ["#D9DCDF", "#C6CACE", "#B3B8BD"], hourdi: ["#F4F3EF", "#DEDCD5", "#CBC8BF"], brand: ["#C62026", "#A81B20", "#8E171B"], render: ["#E7DFD0", "#D6CCB9", "#C4B9A4"], tsheet: ["#DCE2E7", "#C2CBD3", "#AAB4BE"], board: ["#2A3445", "#1D2533", "#151B26"], truck: ["#F3C64F", "#DDB03C", "#C49A2E"], cab: ["#E9ECEF", "#CDD2D7", "#B4BAC1"], earth: ["#DCCDAE", "#C9B794", "#B5A27C"], blk: ["#EFEAE1", "#DCD4C6", "#C9C0B0"], conc: ["#E1E4E6", "url(#iso-conc-l)", "url(#iso-conc-r)"], fresh: ["#BFC6CC", "url(#iso-fresh-l)", "url(#iso-fresh-r)"], ply: ["#EBC07E", "url(#iso-ply-l)", "url(#iso-ply-r)"] };
 const ISO_DEFS = `<filter id="iso-soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="0.9"/></filter>` +
   [["conc-l", "#D2D6DA", "#BBC1C6"], ["conc-r", "#B4BAC0", "#9AA2A9"], ["fresh-l", "#AEB6BD", "#99A2AA"], ["fresh-r", "#959EA6", "#7E8891"], ["ply-l", "#DDA962", "#CB944C"], ["ply-r", "#C08A43", "#A97536"]]
     .map(([id, a, b]) => `<linearGradient id="iso-${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>`).join("");
@@ -3802,7 +3868,7 @@ function isoMode(p, L, part) {
 // the building's stages in the order of work, each with its recorded state: earthworks, footings, ground beams, backfill, ground slab, then per
 // floor its columns, its slab and its blockwork, the boundary wall last. One step = the building as it stands up to that stage.
 const ISO_STEPK = { pad: "foot", neck: "foot", beam: "beam", pit: "dig", fill: "fill", gslab: "gslab", fence: "fence", parapet: "parapet", tfence: "tfence", sign: "sign" };
-const isoStepOf = (e) => ISO_STEPK[e.kind] || e.L.key + "|" + (e.kind === "walls" ? "blk" : e.kind);
+const isoStepOf = (e) => e.sk || ISO_STEPK[e.kind] || e.L.key + "|" + (e.kind === "walls" ? "blk" : e.kind);
 // a contractor phase drawn on an element: columns / necks / footings take their steel first (rebar, then formwork); slabs, beams and the
 // ground slab their formwork first (formwork, then rebar); the second phase is formwork with rebar, the third the concrete
 const isoPhaseMode = (kind, ph) => (ph === 1 ? (["pad", "neck", "cols"].includes(kind) ? "rebar" : "form") : ph === 3 ? "mep" : "site");
@@ -3887,6 +3953,9 @@ function isoStack(p, all) {
   if (dig === "done" || dig === "work") out.unshift({ L: gL("dig", "الحفر"), part: { k: "dig", st: dig }, mode: repl === "done" ? "gravel" : dig === "work" ? "unk" : "earth", key: "dig|dig", kind: "pit", z0: 0, z1: 0.02, hidden: fill === "done" });
   if (gs) { const j = out.findIndex((e) => !["fill", "pit", "pad", "neck", "beam", "fence"].includes(e.kind)), e = { L: gL("gslab", "صبة الأرضية"), part: { k: "gslab", st: gs }, mode: gs === "done" ? "conc" : gs === "none" ? "plan" : "unk", key: "gslab|gslab", kind: "gslab", z0: 1.15, z1: 1.3 };
     if (j >= 0) out.splice(j, 0, e); else out.push(e); }
+  if (PL.real) { if (isoSt(p, "fill") === "done") for (const e of out) if (["pad", "neck", "beam"].includes(e.kind)) e.bitum = true; // coated before backfilling
+    if (PL.stairs.length) for (const L of lv) { if (["foot", "beam", "roof"].includes(L.key)) continue; const sl = out.find((x) => x.kind === "slab" && x.L.key === L.key), c = tops.get(L.key); if (!sl || !c) continue;
+      out.splice(out.indexOf(sl) + 1, 0, { L, part: sl.part, mode: sl.mode, key: L.key + "|stairs", kind: "stairs", sk: L.key + "|slab", z0: c.z0, z1: sl.z1 }); } }
   // lintels and shoulders per floor (the audit's lnt*), after that floor's walls
   const LNT = { gf: "lntg", ff: "lntf", xf: "lntx", roof: "lntr" };
   if (!PL.std) for (const L of lv) { const st = isoSt(p, LNT[L.key]), c = tops.get(L.key); if (!st || !c || !(PL.walls[L.key] || []).length) continue;
@@ -3909,6 +3978,7 @@ function isoStack(p, all) {
   if (cut) { const S = isoSteps(p).map((x) => x.key), ci = S.indexOf(cut), base = cut.split("@")[0], ph = cut.includes("@") ? +cut.split("@")[1] : 0;
     if (ci >= 0) { const open = /\|(blk|lnt)$/.test(base) ? base.split("|")[0] + "|slab" : null;
       if (S.indexOf("repl") > ci) for (const e of out) if (e.kind === "pit" && e.mode === "gravel") e.mode = "earth"; // before the replacement layer: bare excavation
+      if (S.indexOf("beam") > ci) for (const e of out) e.bitum = false; // the coating goes on after the ground beams, before the backfill
       if (S.indexOf("fill") > ci) for (const e of out) { if (e.kind === "pad" || e.kind === "pit") e.hidden = false; if (e.zo != null) e.z0 = e.zo; } // before the backfill: footings in the open excavation
       return out.filter((e) => { const k = isoStepOf(e); if (k === open) return false;
         if (k === base) { if (ph && !["plan", "unk"].includes(e.mode)) e.mode = isoPhaseMode(e.kind, ph); return true; } // the element in the chosen contractor phase
@@ -3940,9 +4010,10 @@ function isoPart(g, e, t) {
   const fill = pour ? isoEase(t / 0.65) : 0, fop = pour ? (t < 0.65 ? 1 - 0.8 * (t / 0.65) : 0.2 * (1 - (t - 0.65) / 0.35)) : 1;
   if (e.kind === "pad" || e.kind === "neck" || e.kind === "cols") {
     const h = e.kind === "pad" ? 0.85 : 0.25, pts = e.kind === "cols" ? isoCols(e.roof) : isoCols(false), kx = isoKx(), ky = isoKy();
-    for (const [x, y] of pts) {
-      const hx = h * kx, hy = h * ky; // the section in metres whatever the plan's stretch
-      if (mode === "conc" || mode === "fresh") { conc(x - hx, y - hy, z0, x + hx, y + hy, z1); if (e.barsUp) isoCage(g, x, y, z1 - 0.02, z1 + 1.05); continue; }
+    if (e.kind === "pad" && isoPlan().real && isoPlan().found === "strip") { isoStrips(g, e, pour, fill, fop); return; } // strip footings under the grade beams
+    for (const q of pts) {
+      const [x, y] = q, hx = q.length >= 4 && e.kind !== "pad" ? q[2] / 2 : h * kx, hy = q.length >= 4 && e.kind !== "pad" ? q[3] / 2 : h * ky; // the section in metres (the schedule's own where known)
+      if (mode === "conc" || mode === "fresh") { if (e.bitum && mode === "conc") isoBox(g, x - hx, y - hy, z0, x + hx, y + hy, z1, "bitum"); else conc(x - hx, y - hy, z0, x + hx, y + hy, z1); if (e.barsUp) isoCage(g, x, y, z1 - 0.02, z1 + 1.05); continue; }
       if (mode === "plan" || mode === "unk") { isoGhost(g, x - hx, y - hy, z0, x + hx, y + hy, z1, mode, e.kind !== "pad"); continue; }
       if (mode === "rebar") { if (e.kind === "pad") isoMesh(g, x - hx, y - hy, x + hx, y + hy, z0 + 0.08); else isoCage(g, x, y, z0, z1 + 1.05); continue; }
       if (mode === "mep" && e.kind === "cols") isoLine(g, isoP(x + hx + 0.12, y, z0 + 0.3), isoP(x + hx + 0.12, y, z1), "#E07A1F", 2.2);
@@ -3957,6 +4028,8 @@ function isoPart(g, e, t) {
   }
   // horizontal on the drawings' own shape: the slab on its real outline (the annex's on the roof), beams between the real columns
   const P = isoPlan();
+  if (e.kind === "stairs") { isoStairs(g, e); return; }
+  if (!P.std && e.kind === "slab" && P.real && P.slabT === "ribbed") { isoRibbed(g, e, e.roof ? P.annex || P.ring : P.ring, pour, fill, fop); return; }
   if (!P.std && e.kind === "slab") {
     const r = e.roof ? P.annex || P.ring : P.ring;
     if (mode === "conc" || mode === "fresh") { isoPrism(g, r, z0, z1, mode); return; }
@@ -3973,7 +4046,9 @@ function isoPart(g, e, t) {
   const segs = !P.std && e.kind === "beam" ? P.beams.slice().sort((a, b) => isoDepth((a[0] + a[2]) / 2, (a[1] + a[3]) / 2) - isoDepth((b[0] + b[2]) / 2, (b[1] + b[3]) / 2)) : e.kind === "beam"
     ? [...ISO_YS.flatMap((y) => [0, 1, 2].map((i) => [ISO_XS[i], y - 0.15 * isoKy(), ISO_XS[i + 1], y + 0.15 * isoKy()])), ...ISO_XS.flatMap((x) => [0, 1].map((i) => [x - 0.15 * isoKx(), ISO_YS[i], x + 0.15 * isoKx(), ISO_YS[i + 1]]))].sort((a, b) => isoDepth((a[0] + a[2]) / 2, (a[1] + a[3]) / 2) - isoDepth((b[0] + b[2]) / 2, (b[1] + b[3]) / 2))
     : [e.roof ? [10.2, 0.2, 15.8, 6.3] : [-0.15, -0.15, 16.15, 12.15]];
-  for (const [x0, y0, x1, y1] of segs) {
+  const thin = (s) => { const [a, b, c, d] = s, hz = Math.abs(c - a) >= Math.abs(d - b); return hz ? [a, (b + d) / 2 - 0.1, c, (b + d) / 2 + 0.1] : [(a + c) / 2 - 0.1, b, (a + c) / 2 + 0.1, d]; };
+  for (const [x0, y0, x1, y1] of e.kind === "beam" && P.real ? segs.map(thin) : segs) {
+    if (e.bitum && mode === "conc" && e.kind === "beam") { isoBox(g, x0, y0, z0, x1, y1, z1, "bitum"); continue; } // grade beams coated before the backfill
     if (mode === "conc" || mode === "fresh") {
       if (e.kind === "slab") { conc(x0, y1 - 0.3, z0 - 0.45, x1, y1, z0); conc(x1 - 0.3, y0, z0 - 0.45, x1, y1, z0); }
       conc(x0, y0, z0, x1, y1, z1); continue;
@@ -4195,7 +4270,7 @@ function isoRender() {
     if (!detail || sc > 1 || (ISO.sel && ISO.sel !== id) || (!ISO.sel && vis.size > 1)) continue;
     const stack = isoStack(p), seenL = new Set(), pb = isoPlanOf(p).bb;
     for (const e of stack) {
-      if (seenL.has(e.L.key) || ["slab", "pad", "beam", "walls", "fence", "fill", "pit", "gslab", "tfence", "sign", "trucks", "parapet", "lnt"].includes(e.kind)) continue; seenL.add(e.L.key);
+      if (seenL.has(e.L.key) || ["slab", "pad", "beam", "walls", "fence", "fill", "pit", "gslab", "tfence", "sign", "trucks", "parapet", "lnt", "stairs"].includes(e.kind)) continue; seenL.add(e.L.key);
       const [lx, ly] = isoScrL(p, a, pb[0] - 0.4, pb[3] + 0.4, (e.z0 + e.z1) / 2), d = el("div", "mlvl2"); d.append(el("b", "", e.L.t));
       d.style.transform = `translate(${lx}px,${ly}px) translate(-100%,-50%) translateX(-14px)`; ISO.ov.append(d);
     }
@@ -4299,7 +4374,7 @@ function mapGeoMarkers(G) {
 }
 // ---- the building in 3D ON the map (owner, 15 Nov 2026: «in the direction it is really built»): from MAP3D_Z the drawing marker gives way to
 // extruded geometry at the true place, orientation and size — the same recorded stages as the drawing (concrete, fresh, formwork, rebar, planned)
-const MAP3D_Z = 16.5, M3C = { brand: "#C62026", render: "#D6CCB9", tsheet: "#C2CBD3", board: "#1D2533", missing: "#B42318", truck: "#E8B93E", cab: "#C9CED3", earth: "#CDBB97", blk: "#D9D1C3", conc: "#C9CED3", fresh: "#98A1A9", ply: "#D29C52", steel: "#6A3A22", plan: "#B4BBC3", unk: "#97A0AA" };
+const MAP3D_Z = 16.5, M3C = { bitum: "#2C2E31", lean: "#C6CACE", brand: "#C62026", render: "#D6CCB9", tsheet: "#C2CBD3", board: "#1D2533", missing: "#B42318", truck: "#E8B93E", cab: "#C9CED3", earth: "#CDBB97", blk: "#D9D1C3", conc: "#C9CED3", fresh: "#98A1A9", ply: "#D29C52", steel: "#6A3A22", plan: "#B4BBC3", unk: "#97A0AA" };
 function isoSolids(p) {
   const P0 = ISO_PL; ISO_PL = isoPlanOf(p);
   try { return isoSolidsIn(p, ISO_PL); } finally { ISO_PL = P0; }
@@ -4311,16 +4386,18 @@ function isoSolidsIn(p, P) {
     if (e.hidden) continue;
     if (e.kind === "fill" || e.kind === "gslab") { out.push({ ring: e.kind === "gslab" ? isoBase(P) : isoGrow(isoBase(P), 0.8), z0, z1, c: solid }); continue; }
     if (e.kind === "pit") continue; // the excavation floor is a drawing mark only
+    if (e.kind === "stairs") { for (const [x0, y0, x1, y1] of P.stairs) box(x0, y0, x1, y1, e.z0, e.z1 - 0.2, solid); continue; }
     if (e.kind === "tfence" || e.kind === "sign") { if (e.mode !== "missing") for (const pc of isoSetupPieces(e)) out.push({ ring: pc.ring, z0: pc.z0, z1: pc.z1, c: pc.c }); continue; }
     if (e.kind === "trucks") { for (const bx of isoTruckBoxes(e).boxes) out.push({ ring: bx.ring, z0: bx.z0, z1: bx.z1, c: bx.c }); continue; }
     if (e.kind === "parapet") { const r = e.ring; for (let i = 0; i < r.length; i++) { const a = r[i], b = r[(i + 1) % r.length]; for (const pc of isoWallPieces([a[0], a[1], b[0], b[1], 0.2, []], e.z0, e.z1)) out.push({ ring: pc.ring, z0: pc.z0, z1: pc.z1, c: e.mode }); } continue; }
     if (e.kind === "lnt") { for (const w of P.walls[e.L.key] || []) for (const pc of isoLintels(w, e.z0, e.z1)) out.push({ ring: pc.ring, z0: pc.z0, z1: pc.z1, c: solid }); continue; }
     if (e.kind === "walls" || e.kind === "fence") { for (const w of (e.kind === "fence" ? P.fence : P.walls[e.L.key]) || []) for (const pc of isoWallPieces(w, e.z0, e.z1)) out.push({ ring: pc.ring, z0: pc.z0, z1: pc.z1, c: solid }); continue; }
     if (e.kind === "pad" || e.kind === "neck" || e.kind === "cols") {
-      const h = e.kind === "pad" ? 0.85 : 0.25, hx = h * kx, hy = h * ky;
-      for (const [x, y] of isoCols(e.kind === "cols" && e.roof)) {
-        const f = mode === "site" ? 0.06 : 0;
-        box(x - hx - f * kx, y - hy - f * ky, x + hx + f * kx, y + hy + f * ky, z0, z1, solid);
+      const h = e.kind === "pad" ? 0.85 : 0.25;
+      if (e.kind === "pad" && P.real && P.found === "strip") { for (const [a, b, c, d] of P.beams) { const hz = Math.abs(c - a) >= Math.abs(d - b), yc = (b + d) / 2, xc = (a + c) / 2; const [x0, y0, x1, y1] = hz ? [a - 0.6, yc - 0.6, c + 0.6, yc + 0.6] : [xc - 0.6, b - 0.6, xc + 0.6, d + 0.6]; box(x0, y0, x1, y1, z0, z1, e.bitum && solid === "conc" ? "bitum" : solid); } continue; }
+      for (const q of isoCols(e.kind === "cols" && e.roof)) {
+        const [x, y] = q, hx = q.length >= 4 && e.kind !== "pad" ? q[2] / 2 : h * kx, hy = q.length >= 4 && e.kind !== "pad" ? q[3] / 2 : h * ky, f = mode === "site" ? 0.06 : 0;
+        box(x - hx - f * kx, y - hy - f * ky, x + hx + f * kx, y + hy + f * ky, z0, z1, e.bitum && solid === "conc" ? "bitum" : solid);
         if (e.kind !== "pad" && (mode === "site" || ((mode === "conc" || mode === "fresh") && e.barsUp))) box(x - 0.17 * kx, y - 0.17 * ky, x + 0.17 * kx, y + 0.17 * ky, z1, z1 + 1.05, "steel");
       }
       continue;
