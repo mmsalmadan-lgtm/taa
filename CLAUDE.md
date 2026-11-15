@@ -344,3 +344,7 @@ Known good totals (2026-11-09): contracts 14,259,433.75 · collected 7,751,477.4
   front edge (local y = 12) is the façade. Mapbox from `MAP3D_Z` (16.5): the same recorded structure as fill-extrusion layers (`isoSolids`, `mapGeo3D`,
   `isoLngLat`) at the true place, angle and size; selecting tilts to 55°. Tool «ضبط اتجاه المبنى» (`orientDialog`, panel, admin): satellite-streets view,
   fixed outline with the façade edge, angle / length / width, the corrected centre (≤ 300 m), PIN. Without Mapbox: angle on a turning preview.
+  SHAPE: `p.geo.shape` (bot `map.shape`) replaces the standard 16 × 12 plan with the drawings own outline, columns, annex, plot and floor height
+  (`isoPlanOf` → `ISO_PL`: centred on (8, 6), turned half a turn so the façade street is the front; beams between neighbouring columns on a grid line).
+  Slabs on any outline: `isoPrism`/`isoGhostPoly`/`isoMeshPoly`/`isoPropsPoly`; Mapbox solids carry `ring`. Paste dialog «شكل المبنى من المخططات»
+  (`shapeDialog`, admin, preview first, PIN, clear). The orient tool shows the real outline and hides length/width for a shaped project.
