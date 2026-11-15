@@ -691,6 +691,9 @@ button.mrow{cursor:pointer}.mrow .small{flex:1 1 140px;color:var(--muted)}
 .mph{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
 .mcolour{border-radius:var(--r-s);padding:8px 10px;background:var(--sunk);border:1px solid var(--line)}.mcolour ul{margin:4px 0 0;padding-inline-start:18px;font-size:13px}
 .mcolour.red{background:var(--crit1);color:var(--crit)}.mcolour.yellow{background:var(--warn1);color:var(--warn)}.mcolour.green{background:var(--acc1);color:var(--acc9)}
+.mas .mrow{padding:6px 0;border-top:1px solid var(--line)}.mas .mrow:first-of-type{border-top:0}.mas .crit{border-inline-start:3px solid var(--crit);padding-inline-start:8px;background:var(--crit1)}
+.mas .stp{display:inline-block;font-size:12px;padding:1px 7px;border-radius:9px;margin-inline-end:6px;background:var(--line);color:var(--ink)}.mas .stp.missing,.mas .stp.conflict{background:var(--crit1);color:var(--crit)}.mas .stp.stale,.mas .stp.reported{background:var(--warn1);color:var(--warn)}.mas .stp.inaccessible{background:var(--eng1,var(--line));color:var(--eng9)}.mas .stp.verified{background:var(--acc1);color:var(--acc9)}
+.mas pre{white-space:pre-wrap;font:12.5px/1.6 var(--f-body,inherit);background:var(--bg2,var(--line));padding:8px;border-radius:6px;margin:4px 0}
 .msec h4{margin:6px 0 4px;font:600 13.5px var(--f-disp)}.msec p{margin:0 0 4px;font-size:13.5px}
 .mlvr{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline;font-size:12.5px;padding:3px 0;border-top:1px solid var(--line)}
 .mst{color:var(--muted)}.mst.done{color:var(--acc9)}.mst.ready{color:var(--acc6);font-weight:600}.mst.pouring,.mst.approvals,.mst.supply{color:var(--eng9)}.mst.stale{color:var(--warn)}
@@ -4890,11 +4893,57 @@ function shapeDialog(M, p) {
   if (clr) clr.onclick = () => send({ clear: true }, "c");
   $("dlg").showModal(); ta.focus();
 }
+// «مساعد المشروع» (bot core/passist.ts): what is known and verified, what is missing / stale / disputed and what it holds up, who was
+// asked and when, what is due next, and the decisions for the human project manager. The score shows its applicable requirements and how
+// it is computed; critical gaps come first whatever the score. Actions are the bot's own (passist.review / takeover / resume / activate).
+const MAS_ST = { verified: "متحقق", reported: "مُبلّغ غير متحقق", missing: "ناقص", stale: "قديم", conflict: "متعارض", na: "لا ينطبق", inaccessible: "غير متاح" };
+function masAct(act, rowId, pre) {
+  const A = D.cmd && D.cmd.assist && D.cmd.assist.acts, d = A && (A.data.acts || []).find((x) => x.id === act); if (!d) return toast("الإجراء غير متاح لك");
+  const row = (A.data.rows || []).find((r) => r.id === rowId) || { id: rowId || "" }; actForm(A, d, { ...row, data: pre || {} });
+}
+function assistBlock(a) {
+  const box = el("div", "msec mas"); box.append(el("h4", "", "مساعد المشروع — اكتمال المعلومات"));
+  const sc = a.score; box.append(el("p", "", `${sc.verified} متحقق من ${sc.applicable} متطلباً ينطبق`), el("div", "small muted", sc.calc));
+  const cnt = el("div", "small"); for (const k of ["missing", "conflict", "stale", "reported", "inaccessible"]) if (sc[k]) cnt.append(el("span", "stp " + k, MAS_ST[k] + " " + sc[k])); box.append(cnt);
+  const gapRow = (g) => { const r = el("div", "mrow" + (g.critical ? " crit" : "")), t = el("div"); t.append(el("span", "stp " + g.st, g.stT), el("b", "", g.t)); r.append(t);
+    if (g.why) r.append(el("div", "small", g.why)); if (g.conflict) r.append(el("div", "small neg", "المصدران: " + g.conflict.a + " ↔ " + g.conflict.b));
+    r.append(el("div", "small muted", `يؤثر على: ${g.decision} · ${g.priT}`));
+    r.append(el("div", "small", (g.to ? `المسؤول: ${g.to.name} (${g.to.basis})` : g.assignGap ? "⚠ " + g.assignGap : "") + ` · ${g.followT}` + (g.due ? " · المهلة " + dmy(g.due) : "")));
+    if (g.next) r.append(el("div", "small muted", "التالي: " + g.next));
+    for (const x of g.replies || []) r.append(el("div", "small", `↩ ${x.name} ${dmy(x.at)}: «${String(x.text || "").slice(0, 120)}»${x.media ? " 📎" : " — بلا مرفق"}${x.eff ? " · تاريخ الحدوث " + dmy(x.eff) : ""}${x.reviewed ? " · رُوجع" : " · غير متحقق"}`));
+    const row = (((((D.cmd || {}).assist || {}).acts || {}).data || {}).rows || []).find((x) => x.id === g.id);
+    for (const k of (row && row.acts) || []) { const b = el("button", "lnk", k === "review" ? (g.st === "conflict" ? "حسم التعارض" : "التحقق من الرد") : k === "takeover" ? "أستلمه بنفسي" : "إعادته للمساعد"); b.type = "button"; b.onclick = () => masAct(k, g.id); r.append(b); }
+    return r; };
+  const crit = a.gaps.filter((g) => g.critical), rest = a.gaps.filter((g) => !g.critical);
+  if (crit.length) { box.append(el("h4", "", "حرج — يُعرض أولاً مهما كانت النسبة")); for (const g of crit) box.append(gapRow(g)); }
+  if (rest.length) { const det = el("details"); det.append(el("summary", "", `ناقص أو قديم أو متعارض أو غير متاح (${rest.length})`)); for (const g of rest) det.append(gapRow(g)); box.append(det); }
+  if ((a.consequences || []).length) { box.append(el("h4", "", "الأثر التشغيلي")); for (const c of a.consequences) box.append(el("div", "small", "• " + c)); }
+  if (a.known.length) { const k = el("details"); k.append(el("summary", "", `معروف ومتحقق (${a.known.length})`)); for (const x of a.known) k.append(el("div", "small", `✓ ${x.t}: ${x.val || "—"} · ${x.src}${x.at ? " · " + dmy(x.at) : ""}`)); box.append(k); }
+  box.append(el("h4", "", "من سُئل ومتى"));
+  if (!(a.asked || []).length) box.append(el("p", "small muted", "لم يُجهّز طلب بعد."));
+  for (const q of a.asked || []) box.append(el("div", "small", `${q.no} → ${q.to} (${q.items} بند): ${q.sent ? "أُرسل " + dmy(q.sent) + (q.follow ? ` · ${q.follow} تذكير` : "") : "مُعدّ — لم يُرسل"}${q.escalated ? " · صُعّد لعدم الرد" : ""}`));
+  if ((a.decisions || []).length) { box.append(el("h4", "", "قرارات مدير المشروع والإدارة")); for (const d of a.decisions) box.append(el("div", "small", `◆ ${d.t} — ${d.who}`)); }
+  if ((a.na || []).length) { const n = el("details"); n.append(el("summary", "", `لا ينطبق على هذا العقد (${a.na.length})`)); for (const x of a.na) n.append(el("div", "small muted", `${x.t}: ${x.why}`)); box.append(n); }
+  box.append(el("p", "small muted", a.pilot ? `التجربة مفعّلة (${a.pilot.by}) — المستلمون: ${a.pilot.recipients.length}` : "الإرسال غير مفعّل لهذا المشروع: الطلبات مُعدّة فقط."));
+  if (a.activation) { const ac = a.activation, det = el("details"); det.append(el("summary", "", "بطاقة تفعيل التجربة"));
+    det.append(el("b", "", "المستلمون المقترحون")); for (const r of ac.recipients) det.append(el("div", "small", `${r.name} — ${r.basis} · ${r.items} بند · ${r.inScope ? "داخل نطاق الإرسال المعتمد" : "خارج النطاق — لا يُرسل له"}`));
+    for (const x of ac.assignGaps) det.append(el("div", "small neg", "فجوة إسناد: " + x));
+    det.append(el("b", "", "الطلبات الأولى بنصها")); for (const r of ac.requests) { det.append(el("div", "small", "إلى " + r.to)); det.append(el("pre", "", String(r.text).split("*").join(""))); }
+    det.append(el("b", "", "لا يُسأل عنه")); for (const x of ac.notAsked) det.append(el("div", "small muted", `${x.t}: ${x.why}`));
+    det.append(el("b", "", "المسموح")); for (const x of ac.allowed) det.append(el("div", "small", "✓ " + x));
+    det.append(el("b", "", "غير المسموح")); for (const x of ac.notAllowed) det.append(el("div", "small", "✗ " + x));
+    det.append(el("b", "", "القرارات المطلوبة")); for (const x of ac.decisions) det.append(el("div", "small", "◆ " + x));
+    if (!a.pilot) { const b = el("button", "sbtn", "تفعيل التجربة على هذا المشروع"); b.type = "button"; b.onclick = () => masAct("activate", "", { pid: a.pid, recipients: ac.recipients.filter((r) => r.inScope).map((r) => r.id).join(",") }); det.append(b); }
+    else { const b = el("button", "lnk", "إيقاف التجربة"); b.type = "button"; b.onclick = () => masAct("stop", "", { pid: a.pid }); det.append(b); }
+    box.append(det); }
+  return box;
+}
 function mapPanel(p, M) {
   const box = el("div", "mpanel"), back = el("button", "lnk", "→ كل التنبيهات"); back.type = "button"; back.onclick = () => { MAPV.sel = null; draw(); };
   const h = el("div", "mph"); h.append(el("h3", "", p.name), el("span", "small muted", p.code || ""));
   const cb = el("div", "mcolour " + p.colour.k); cb.append(el("b", "", MCOL[p.colour.k][1] + " " + MCOL[p.colour.k][0])); const ul = el("ul"); for (const w of p.colour.why) ul.append(el("li", "", w)); cb.append(ul);
   box.append(back, h, cb);
+  if (p.assist) { const a = p.assist, n = a.critical.length; box.append(el("p", "small" + (n ? " neg" : ""), `مساعد المشروع: ${a.score.verified} متحقق من ${a.score.applicable}${n ? " · " + n + " حرج" : ""} — التفاصيل أسفل اللوحة`)); }
   if (M.canGeo && p.geo) { const ob = el("button", "sbtn", p.geo.bearing !== undefined ? "ضبط اتجاه المبنى (" + Math.round(p.geo.bearing) + "°)" : "ضبط اتجاه المبنى — غير مضبوط بعد"); ob.type = "button"; ob.onclick = () => orientDialog(M, p);
     const sb = el("button", "sbtn", p.geo.shape ? "شكل المبنى من المخططات ✓ — تغيير" : "شكل المبنى من المخططات"); sb.type = "button"; sb.onclick = () => shapeDialog(M, p); box.append(ob, sb); }
   if (p.geo && p.geo.shape) { const rb = el("button", "pbtn", "عرض واقعي ثلاثي الأبعاد"); rb.type = "button"; rb.onclick = () => real3d(M, p); box.append(rb); }
@@ -4963,6 +5012,7 @@ function mapPanel(p, M) {
   box.append(nx);
   if (p.next) { const pay = el("div", "msec"); pay.append(el("h4", "", "الدفعة القادمة"), el("p", "", p.next.label + (p.next.date ? " · " + dmy(p.next.date) : "") + (p.next.amount !== undefined && p.next.amount !== null ? " · " : "")));
     if (p.next.amount !== undefined && p.next.amount !== null) pay.lastChild.append(sar(fmt(p.next.amount))); if (p.next.stage) pay.append(el("div", "small muted", "شرطها حسب العقد: " + p.next.stage)); box.append(pay); }
+  if (p.assist) box.append(assistBlock(p.assist));
   return box;
 }
 function mapPour(x, M) {
@@ -5092,6 +5142,7 @@ function cprojDlg(p, money) {
   body.append(dsec("الجاهزية", ["طلبات مواد مفتوحة: " + r.materialsOpen + (r.ownerItems ? " (منها " + r.ownerItems + " توريد المالك)" : ""), "تصاريح البدء: " + r.permits.active + " سارية · " + r.permits.suspended + " موقوفة",
     "فحوصات مفتوحة: " + r.inspectionsOpen, "البرنامج: " + (r.planned ? "مُدخل" : "غير مُدخل")]));
   body.append(dsec("التمويل", [p.funding.t]));
+  { const av = (((D.cmd || {}).assist || {}).views || []).find((v) => String(v.pid) === String(p.id)); if (av) body.append(assistBlock(av)); }
   body.append(dsec("التحصيل التالي", p.next ? [String(p.next.label) + (p.next.date ? " · متوقع " + dmy(p.next.date) : "") + (money && p.next.amount !== undefined ? " · " + fmt(p.next.amount) : "")] : [], "لا تحصيل مجدول في التوقع"));
   const bar = el("div", "dbar"), close = el("button", "sbtn", "إغلاق"); close.type = "button"; close.onclick = () => $("dlg").close(); bar.append(close); body.append(bar);
   $("dlg").showModal();
@@ -5164,6 +5215,7 @@ const WSEMPTY = { today: "لا شيء يحتاجك الآن في السجلات"
 function wsAct(a, x, btn) {
   if (a.t === "chat") return openChat(a.id, x.title);
   if (a.t === "doc") return openDoc({ open: { t: "file", id: a.id } }, btn);
+  if (a.t === "act" && a.sec === "passist") return masAct(a.act, a.row);
   if (a.t === "act") { const KA = (D.cmd && D.cmd.coord && D.cmd.coord.acts) || null, d = KA && (KA.data.acts || []).find((q) => q.id === a.act), row = KA && (KA.data.rows || []).find((r) => r.id === a.row); return d && row ? actForm(KA, d, row) : toast("الإجراء غير متاح لك على هذا البند"); }
   if (a.v === "site" && a.sub) ST = a.sub; if (a.v === "cmd" && a.sub) CT = a.sub;
   if (a.v === "cmd" && a.sub === "map" && a.pid) { MAPV.sel = a.pid; MAPV.pour = a.pour || null; } // a map card opens its project and pour
