@@ -3529,7 +3529,7 @@ const ISO_C = Math.cos(Math.PI / 6), ISO_S = 0.5, isoPr = (x, y, z = 0) => [(x -
 // 16 × 12 m plan scaled to the recorded length × width and turned by the recorded angle (clockwise from north; x = east, y = south), about the
 // plan centre (8, 6) — so the project's point stays the building's centre. No record → the standard drawing.
 let ISO_XF = null;
-const isoXfOf = (p) => { const o = (p && p.geo) || {}, th = ((+o.bearing || 0) * Math.PI) / 180, own = !!(o.shape && o.shape.ring); return { sx: own ? 1 : (+o.len || 16) / 16, sy: own ? 1 : (+o.wid || 12) / 12, c: Math.cos(th), s: Math.sin(th) }; }; // a shape from the drawings is drawn at its own size
+const isoXfOf = (p) => { const o = (p && p.geo) || {}, th = ((+o.bearing || 0) * Math.PI) / 180, own = !isoPlanOf(p).std; return { sx: own ? 1 : (+o.len || 16) / 16, sy: own ? 1 : (+o.wid || 12) / 12, c: Math.cos(th), s: Math.sin(th) }; }; // a shape from the drawings is drawn at its own size
 const isoXY = (x, y, T = ISO_XF) => { if (!T) return [x, y]; const dx = (x - 8) * T.sx, dy = (y - 6) * T.sy; return [8 + dx * T.c - dy * T.s, 6 + dx * T.s + dy * T.c]; };
 const isoP = (x, y, z = 0) => { const q = isoXY(x, y); return isoPr(q[0], q[1], z); };
 const isoDepth = (x, y) => { const q = isoXY(x, y); return q[0] + q[1]; }; // nearer to the viewer = larger
@@ -3542,7 +3542,8 @@ const ISO_PSTD = { std: true, bb: [0, 0, 16, 12], fh: 3.65 };
 const isoIn = (r, x, y) => { let c = false; for (let i = 0, j = r.length - 1; i < r.length; j = i++) { const [xi, yi] = r[i], [xj, yj] = r[j]; if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) c = !c; } return c; };
 const isoNear = (r, x, y, d) => isoIn(r, x, y) || r.some((a, i) => { const b = r[(i + 1) % r.length], dx = b[0] - a[0], dy = b[1] - a[1], L = dx * dx + dy * dy || 1, t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (y - a[1]) * dy) / L)); return Math.hypot(a[0] + t * dx - x, a[1] + t * dy - y) <= d; });
 const isoBBox = (r) => [Math.min(...r.map((q) => q[0])), Math.min(...r.map((q) => q[1])), Math.max(...r.map((q) => q[0])), Math.max(...r.map((q) => q[1]))];
-const ISO_PLC = new WeakMap();
+const ISO_PLC = new WeakMap(), ISO_SHS = new WeakMap();
+const isoShapeSig = (sh) => { if (!sh || typeof sh !== "object") return null; if (!ISO_SHS.has(sh)) ISO_SHS.set(sh, JSON.stringify(sh)); return ISO_SHS.get(sh); };
 function isoPlanOf(p) {
   const sh = p && p.geo && p.geo.shape; if (!sh || !Array.isArray(sh.ring) || sh.ring.length < 3) return ISO_PSTD;
   if (ISO_PLC.has(sh)) return ISO_PLC.get(sh);
@@ -3556,8 +3557,8 @@ function isoPlanOf(p) {
     for (const pts of lines.values()) {
       pts.sort((a, b) => a[ax] - b[ax]);
       for (let i = 1; i < pts.length; i++) {
-        const a = pts[i - 1], b = pts[i], mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
-        if (Math.abs(b[ax] - a[ax]) < 0.3 || Math.abs(b[ax] - a[ax]) > 9 || !isoNear(ring, mx, my, 0.2)) continue;
+        const a = pts[i - 1], b = pts[i];
+        if (Math.abs(b[ax] - a[ax]) < 0.3 || Math.abs(b[ax] - a[ax]) > 9 || ![0.1, 0.3, 0.5, 0.7, 0.9].every((t) => isoNear(ring, a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, 0.2))) continue; // the whole span on the building, never across a recess
         beams.push(ax === 0 ? [a[0], a[1] - 0.15, b[0], a[1] + 0.15] : [a[0] - 0.15, a[1], a[0] + 0.15, b[1]]);
       }
     }
@@ -3919,7 +3920,7 @@ function isoRender() {
     const a = ISO.at.get(p.id), s = isoScr(a[0] + 8, a[1] + 6), on = s[0] > -400 && s[0] < W + 400 && s[1] > -400 && s[1] < H + 400;
     const model = on;
     if (model) vis.add(p.id);
-    const sig = JSON.stringify([p.levels, p.colour.k, p.active, (p.pours || []).map((x) => [x.id, x.stage, x.level, x.part, x.cureLeft]), p.geo && [p.geo.bearing, p.geo.len, p.geo.wid, p.geo.shape || null]]);
+    const sig = JSON.stringify([p.levels, p.colour.k, p.active, (p.pours || []).map((x) => [x.id, x.stage, x.level, x.part, x.cureLeft]), p.geo && [p.geo.bearing, p.geo.len, p.geo.wid, isoShapeSig(p.geo.shape)]]);
     let ch = ISO.cache.get(p.id);
     if (model && (!ch || ch.sig !== sig)) { const g = isoModel(p, a); if (ch) ch.g.replaceWith(g); else ISO.models.append(g); ch = { sig, g }; ISO.cache.set(p.id, ch); }
     if (ch) { ch.g.classList.toggle("off", !model); const o = isoP(a[0], a[1]); ch.g.setAttribute("transform", `translate(${o[0] + cc[0]},${o[1] + cc[1]}) scale(${sc}) translate(${-cc[0]},${-cc[1]})`); ch.g.dataset.pid = p.id; ch.depth = a[0] + a[1]; }
@@ -3970,7 +3971,7 @@ function isoRender() {
 // a still picture of one project's model (the panel, when the Mapbox base map draws the projects as beacons)
 function isoThumb(p) {
   const s = document.createElementNS(ISO_NS, "svg"), g = isoModel(p, [0, 0]), top = isoStack(p).reduce((m, e) => Math.max(m, e.z1), 4) + 1.4, T = isoXfOf(p);
-  const P = isoPlanOf(p), [b0, b1, b2, b3] = P.bb, cs = (P.plot || [[b0 - 5, b1 - 4], [b2 + 5, b1 - 4], [b2 + 5, b3 + 4.5], [b0 - 5, b3 + 4.5]]).map(([x, y]) => isoXY(x, y, T)), lo = cs.map((q) => isoPr(q[0], q[1])), hi = cs.map((q) => isoPr(q[0], q[1], top));
+  const P = isoPlanOf(p), [b0, b1, b2, b3] = P.bb, cs = (P.plot ? [...P.plot, ...P.ring] : [[b0 - 5, b1 - 4], [b2 + 5, b1 - 4], [b2 + 5, b3 + 4.5], [b0 - 5, b3 + 4.5]]).map(([x, y]) => isoXY(x, y, T)), lo = cs.map((q) => isoPr(q[0], q[1])), hi = cs.map((q) => isoPr(q[0], q[1], top));
   const xs = [Math.min(...lo.map((q) => q[0])), Math.max(...lo.map((q) => q[0]))], ys = [Math.min(...hi.map((q) => q[1])), Math.max(...lo.map((q) => q[1]))];
   s._vb = [xs[0] - 1, ys[0] - 1, xs[1] - xs[0] + 2, ys[1] - ys[0] + 2];
   s.setAttribute("viewBox", s._vb.join(" ")); s.setAttribute("class", "mthumb"); s.setAttribute("aria-hidden", "true");
@@ -4260,8 +4261,12 @@ function shapeDialog(M, p) {
     parsed = null; view.replaceChildren(); info.className = "small shinfo"; info.textContent = ""; const t = ta.value.trim(); if (!t) return;
     let o; try { o = JSON.parse(t); } catch { info.className = "small shinfo bad"; info.textContent = "الرمز غير مقروء — انسخه كاملاً كما أُرسل."; return; }
     if (!o || !pts(o.ring) || o.ring.length < 3 || (o.cols != null && !pts(o.cols)) || (o.annex != null && !pts(o.annex)) || (o.plot != null && !pts(o.plot))) { info.className = "small shinfo bad"; info.textContent = "الرمز لا يحمل مسقطاً صالحاً (نقاط بالأمتار)."; return; }
+    const ar = (r) => Math.abs(r.reduce((s, q, i) => { const n = r[(i + 1) % r.length]; return s + q[0] * n[1] - n[0] * q[1]; }, 0) / 2), area = Math.round(ar(o.ring)), big = (r) => r && r.some((q) => Math.abs(q[0]) > 150 || Math.abs(q[1]) > 150);
+    const why = o.ring.length > 81 ? "المسقط أكثر من 80 نقطة" : ar(o.ring) < 16 || ar(o.ring) > 5000 ? "مساحة المسقط بين 16 و5000 م²" : (o.cols || []).length > 400 ? "الأعمدة أكثر من 400"
+      : o.annex && (o.annex.length < 3 || ar(o.annex) < 4) ? "الملحق أقل من 4 م²" : o.plot && (o.plot.length < 3 || ar(o.plot) < 4) ? "حدود الأرض غير صالحة" : [o.ring, o.annex, o.plot, o.cols].some(big) ? "إحداثيات أبعد من 150 م"
+      : o.fh != null && !(num(o.fh) && o.fh >= 2.5 && o.fh <= 6) ? "ارتفاع الدور بين 2.5 و6 م" : o.bearing != null && !(num(o.bearing) && o.bearing >= 0 && o.bearing < 360) ? "الاتجاه بين 0 و359°" : null;
+    if (why) { info.className = "small shinfo bad"; info.textContent = "لن يُقبل: " + why + "."; return; }
     parsed = o;
-    const area = Math.round(Math.abs(o.ring.reduce((s, q, i) => { const r = o.ring[(i + 1) % o.ring.length]; return s + q[0] * r[1] - r[0] * q[1]; }, 0) / 2));
     const mv = num(o.lat) && num(o.lng) && p.geo ? Math.round(Math.hypot((o.lat - p.geo.lat) * 111320, (o.lng - p.geo.lng) * 111320 * Math.cos((p.geo.lat * Math.PI) / 180))) : null;
     info.textContent = [`المسقط ≈ ${area} م²`, `${(o.cols || []).length} عمود`, o.annex ? "ملحق علوي" : "بلا ملحق", o.fh ? `ارتفاع الدور ${o.fh} م` : null, num(o.bearing) ? `الاتجاه ${o.bearing}°` : "الاتجاه كما هو", mv != null ? `تصحيح الموقع ${mv} م` : null].filter(Boolean).join(" · ");
     const q = { ...p, geo: { ...p.geo, shape: o, ...(num(o.bearing) ? { bearing: o.bearing } : {}) } }, th = isoThumb(q); th.classList.add("orprev"); view.append(th);
