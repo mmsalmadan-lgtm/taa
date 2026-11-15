@@ -315,3 +315,26 @@ Known good totals (2026-11-09): contracts 14,259,433.75 · collected 7,751,477.4
 - Custody fee %: set by management from the data-completion list (no fee until then); VAT on custody purchases (ask Amr).
 - 8 projects have no contract date (year 2025 assumed for their numbers).
 - Ahmed Zaki (S-25-003): see the reconciliation item in «اكتمال البيانات» (audit 600k vs Qoyod 450k).
+
+## «الخريطة» — first tab of «مركز القيادة» (owner's brief 15 Nov 2026; server: taa-bot core/sitemap.ts)
+- `cmdMap(m, M, wall)` draws `D.cmd.map` (or `D.display.map` on the wall) through ONE persistent site model (`ISO`, `isoMount`/`isoUpdate`/`isoRender`; a
+  refresh updates it in place, the camera keeps its place). Isometric, metres; projects at their documented coordinates (`mapPlane`). Far out: lit
+  beacons `.mk.mproj` (code, name, status colour AND drawn icon; overlapping plates collapse by priority red > yellow > grey > green). From
+  `ISO_KM` px/m or on selection: each project's structure from its RECORDED stages (`isoStack`/`isoMode`): concrete (done), fresh concrete (a
+  poured pour still curing), plywood formwork with protruding rebar (pour stages), blue dashed = planned (none), grey dashed = the audit says the
+  floor is in progress but not which part (unk/work), red dashed outline = violation. Starter bars stay above poured columns until their slab is
+  concrete. No machinery, nothing moves at rest; the ONLY stage animation is a recorded change formwork → concrete arriving with fresh data
+  (`ISO.prev` vs now, 1.5 s: concrete rises, formwork goes). Reduced motion: no camera flight, no rise. Zoom: Ctrl/⌘ + wheel, two fingers,
+  buttons, double-click (a plain wheel / one finger keep scrolling the page). Wall: beacons only, no controls. Phone (≤760 px): the details open
+  in a bottom sheet (`isoSheet`, peek 42vh ↔ full). With Mapbox the markers are the same beacons and the panel shows `isoThumb` of the model.
+  The model is a representation of the stage on a standard footprint, said on the page; not the drawings.
+- Side: the alert list (red, yellow, grey) synchronised with the map, then «يحتاج تحديد الموقع» (admin: «تحديد الموقع» → `map.geo`). A chosen
+  project replaces the side with `mapPanel` (colour reasons, progress only with an approved method — reported vs verified, levels with source,
+  today's recorded work, pours with `mapPour`: readiness, conflict, the three inspection cards with their notes, the next action, obstacles, the next
+  payment for money roles). Buttons = the server's `acts` for this person, through `actForm` (`mapAct`), PIN where required; the bot's own steps
+  (signed forms, fix photos, «تمت الصبة») open the pour in «المساعد». Hover = tooltip (mouse only); tap/Enter opens; phones scroll to the panel.
+- `wsAct` opens a map card's project and pour (`a.pid`, `a.pour`). The map tab hides the field-sync bar (the map has its own data time).
+- ONE HEALTH: the wall's and the page's counters (`cmd.counts`) and the map colours are the same server value (`applyHealth`).
+- Every map action row carries the pour version (`<pid>@<ver>~…`); a 409 (changed meanwhile) reloads the page. Violation box `.mviol`
+  shows the lifecycle (open → ack → assigned → assessed → closed) with its history; no «لا ينطبق» anywhere.
+- Admin «إعداد الخريطة الجغرافية» → `map.base` (public pk. token + style, PIN).

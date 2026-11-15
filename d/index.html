@@ -594,6 +594,88 @@ body.chatonly footer{display:none}
 .syncb .sy span{color:var(--muted)}.syncb .sy b{font-weight:600;font-variant-numeric:tabular-nums}
 .syncb .sy em{font-style:normal;font-size:11.5px;font-weight:600;color:var(--warn);background:var(--warn1);border-radius:999px;padding:0 8px}
 .syncb .sy.old{border-color:color-mix(in srgb,var(--warn6) 45%,var(--line))}
+/* «الخريطة»: light engineering grid, buildings drawn in line (concrete grey, timber formwork, rebar), the colour on the base plate with
+   its glyph; the map keeps its place when a project is opened (the side switches to the panel) */
+.mstat{font-size:12.5px;color:var(--muted);margin:-4px 0 8px}.mstat.old{color:var(--warn)}.mstat b{color:var(--crit)}
+.mwrap{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:14px;align-items:start}
+@media (max-width:980px){.mwrap{grid-template-columns:1fr}}
+/* the site model (visual brief 15 Nov 2026): lit beacons far out, the structure close in; materials apart from the status colours */
+.mstage{position:relative;height:min(68vh,600px);min-height:360px;background:radial-gradient(120% 90% at 50% 40%,#FAFBF9 0%,#F4F5F2 60%,#ECEFEC 100%);border:1px solid var(--line);border-radius:var(--r-l);overflow:hidden}
+.miso{position:absolute;inset:0;touch-action:pan-y;user-select:none;-webkit-user-select:none;cursor:grab}.miso.drag{cursor:grabbing}.miso.wall{cursor:default}
+.msvg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.mmodel{transition:opacity .28s var(--spring)}.mmodel.off{opacity:0}
+.mov{position:absolute;inset:0;pointer-events:none}
+.mk{position:absolute;left:0;top:0;pointer-events:auto;border:0;background:none;padding:0;margin:0;display:flex;flex-direction:column;align-items:center;transition:opacity .28s var(--spring);will-change:transform;font:inherit;color:inherit;cursor:pointer}
+.mk.off{opacity:0;pointer-events:none}
+.mgeo .mk{position:static;will-change:auto}
+.mk-plate{display:flex;flex-direction:column;align-items:flex-start;gap:1px;background:var(--surface);border-radius:12px;padding:6px 11px;box-shadow:0 12px 26px -16px rgb(29 37 51/.55),0 2px 4px -2px rgb(29 37 51/.18);text-align:start;white-space:nowrap;transition:transform .2s var(--spring),box-shadow .2s var(--spring),opacity .2s var(--spring)}
+.mk-plate b{font:600 13px/1.25 var(--f-disp);font-variant-numeric:tabular-nums}
+.mk-plate .nm{font-size:12px;color:var(--muted);line-height:1.35;max-width:190px;overflow:hidden;text-overflow:ellipsis}
+.mk:hover .mk-plate,.mk:focus-visible .mk-plate{transform:translateY(-3px);box-shadow:0 18px 32px -16px rgb(29 37 51/.6),0 2px 4px -2px rgb(29 37 51/.2)}
+.mk:focus-visible{outline:none}.mk:focus-visible .mk-plate{box-shadow:0 0 0 2px var(--ui),0 18px 32px -16px rgb(29 37 51/.6)}
+.mk.sel .mk-plate{box-shadow:0 0 0 2px var(--ink),0 18px 32px -16px rgb(29 37 51/.6)}
+.mk.mini .mk-plate{opacity:0;pointer-events:none}.mk.mini:hover .mk-plate,.mk.mini:focus-visible .mk-plate{opacity:1}
+.msts{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;line-height:1.2;margin-top:3px;border-radius:999px;padding:2px 8px 2px 7px;width:max-content}
+.msts svg{width:13px;height:13px;flex:none}
+.msts.green{background:var(--acc1);color:var(--acc9)}.msts.yellow{background:var(--warn1);color:var(--warn)}.msts.red{background:var(--crit1);color:var(--crit)}.msts.grey{background:var(--ui-1);color:var(--muted)}
+.mk-stem{width:2px;height:16px;background:linear-gradient(var(--line-2),rgb(29 37 51/.45))}
+.mk-dot{width:16px;height:16px;border-radius:50%;margin-top:-1px;position:relative;background:radial-gradient(circle at 35% 30%,#fff 0 14%,var(--c) 42%,color-mix(in srgb,var(--c) 70%,#000) 100%);box-shadow:0 0 0 5px color-mix(in srgb,var(--c) 22%,transparent),0 0 18px 3px color-mix(in srgb,var(--c) 45%,transparent),0 6px 10px -2px rgb(29 37 51/.35)}
+.mk-dot::after{content:"";position:absolute;left:50%;top:100%;width:26px;height:8px;margin:-2px 0 0 -13px;border-radius:50%;background:radial-gradient(closest-side,rgb(29 37 51/.28),transparent)}
+.st-green{--c:var(--acc6)}.st-yellow{--c:var(--warn6)}.st-red{--c:var(--crit)}.st-grey{--c:#6B7584}
+.mtag2{position:absolute;left:0;top:0;pointer-events:auto;border:0;margin:0;background:rgb(255 255 255/.97);border-radius:10px;padding:4px 10px;display:flex;gap:8px;align-items:center;box-shadow:0 10px 24px -14px rgb(29 37 51/.4);font:inherit;font-size:12px;color:inherit;white-space:nowrap;cursor:pointer}
+.mtag2 b{font:600 12.5px var(--f-disp)}.mtag2 .msts{margin:0}
+.mlvl2{position:absolute;left:0;top:0;font-size:11.5px;color:var(--muted);white-space:nowrap;display:flex;align-items:center;gap:6px;pointer-events:none}
+.mlvl2::after{content:"";width:22px;height:1px;background:var(--line-2)}.mlvl2 b{font-weight:600;color:var(--ink)}
+.mcall2{position:absolute;left:0;top:0;pointer-events:none;direction:ltr;color:var(--ink)}.mcall2.bad{color:var(--crit)}
+.mcall2 svg{position:absolute;left:0;top:0;overflow:visible}.mcall2.flip svg{transform:scaleX(-1)}.mcall2.flip .mcb{left:auto;right:34px}
+.mcb{position:absolute;left:34px;bottom:26px;direction:rtl;width:max-content;max-width:250px;background:var(--ink);color:#fff;border-radius:10px;padding:7px 11px;font-size:12px;line-height:1.45;box-shadow:var(--sh-pop);display:flex;flex-direction:column}
+.mcall2.bad .mcb{background:var(--crit)}.mcb b{font:600 13px var(--f-disp)}.mcb small{color:#D5DBE3;font-size:11.5px}
+.mctl2{position:absolute;top:12px;inset-inline-end:12px;display:flex;flex-direction:column;gap:6px;z-index:3}
+.mz{width:40px;height:40px;border-radius:10px;border:0;margin:0;background:var(--surface);box-shadow:0 8px 20px -10px rgb(29 37 51/.45),0 1px 2px rgb(29 37 51/.12);display:grid;place-items:center;padding:0}
+.mz:hover{background:var(--sunk)}.mz svg{width:18px;height:18px;stroke:var(--ink);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+@media (pointer:coarse){.mz{width:44px;height:44px}}
+.miso.wall .mctl2,.miso.wall .mhint{display:none}
+.mnorth{position:absolute;top:14px;inset-inline-start:14px;width:38px;height:38px;border-radius:50%;background:rgb(255 255 255/.92);display:grid;place-items:center;box-shadow:0 4px 12px -8px rgb(29 37 51/.4);pointer-events:none}.mnorth svg{width:26px;height:26px}
+.mscale2{position:absolute;bottom:12px;inset-inline-start:12px;display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);background:rgb(255 255 255/.92);border-radius:999px;padding:3px 10px;pointer-events:none;font-variant-numeric:tabular-nums}
+.mscale2 i{display:block;height:6px;border:1.5px solid var(--muted);border-top:0}
+.mhint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgb(29 37 51/.84);color:#fff;border-radius:10px;padding:8px 14px;font-size:13px;pointer-events:none;z-index:4}
+.mthumb{width:100%;height:auto;max-height:220px;display:block;background:#F4F5F2;border-radius:var(--r-m)}
+@media (prefers-reduced-motion:reduce){.mk,.mk-plate,.mmodel,.mtag2,.mside.msheet{transition-property:opacity!important;transition-duration:.12s!important}}
+/* phone: the map keeps the full width; the chosen project's details open in a bottom sheet (peek ↔ full, by tap or drag) */
+@media (max-width:760px){
+ .mside.msheet{position:fixed;inset-inline:0;bottom:0;z-index:40;height:84vh;background:var(--surface);border-radius:18px 18px 0 0;box-shadow:0 -18px 40px -22px rgb(29 37 51/.55);transform:translateY(calc(100% - 42vh));transition:transform .36s var(--spring);display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,0px)}
+ .mside.msheet.full{transform:translateY(0)}
+ .mside.msheet.dragging{transition:none}
+ .msheet>.mhandle{flex:none;height:30px;border:0;margin:0;background:none;width:100%;display:flex;justify-content:center;align-items:center;touch-action:none;padding:0}
+ .msheet>.mhandle::before{content:"";width:44px;height:5px;border-radius:99px;background:var(--line-2)}
+ .msheet>.mhandle~*{border:0;border-radius:0;overflow:auto;flex:1;min-height:0}
+}
+
+.mtip{position:absolute;max-width:280px;background:var(--ink);color:#fff;font-size:12.5px;line-height:1.6;padding:8px 10px;border-radius:var(--r-s);pointer-events:none;box-shadow:var(--sh-pop);z-index:4}
+.mside{min-width:0}.malist,.mpanel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.malist h3,.mpanel h3{margin:4px 0 0;font:600 15px var(--f-disp)}
+.mrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;text-align:start;border:1px solid var(--line);border-radius:var(--r-s);background:var(--sunk);padding:8px 10px;font:inherit;color:inherit;min-height:44px;width:100%}
+button.mrow{cursor:pointer}.mrow .small{flex:1 1 140px;color:var(--muted)}
+.mg{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;color:#fff;font-weight:700;font-size:12px;background:var(--muted)}
+.mg.red{background:var(--crit)}.mg.yellow{background:var(--warn6)}.mg.green{background:var(--acc6)}
+.mph{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.mcolour{border-radius:var(--r-s);padding:8px 10px;background:var(--sunk);border:1px solid var(--line)}.mcolour ul{margin:4px 0 0;padding-inline-start:18px;font-size:13px}
+.mcolour.red{background:var(--crit1);color:var(--crit)}.mcolour.yellow{background:var(--warn1);color:var(--warn)}.mcolour.green{background:var(--acc1);color:var(--acc9)}
+.msec h4{margin:6px 0 4px;font:600 13.5px var(--f-disp)}.msec p{margin:0 0 4px;font-size:13.5px}
+.mlvr{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline;font-size:12.5px;padding:3px 0;border-top:1px solid var(--line)}
+.mst{color:var(--muted)}.mst.done{color:var(--acc9)}.mst.ready{color:var(--acc6);font-weight:600}.mst.pouring,.mst.approvals,.mst.supply{color:var(--eng9)}.mst.stale{color:var(--warn)}
+.mpour{border:1px solid var(--line);border-radius:var(--r-m);padding:10px;display:flex;flex-direction:column;gap:8px}
+.mpt{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.mready{font-size:13px;padding:6px 8px;border-radius:var(--r-s);background:var(--warn1);color:var(--warn)}.mready.ok{background:var(--acc1);color:var(--acc9)}
+.mrx{display:grid;grid-template-columns:1fr;gap:8px}
+.mrxc{border:1px solid var(--line);border-radius:var(--r-s);padding:8px;display:flex;flex-direction:column;gap:4px;border-inline-start:3px solid var(--field)}
+.mrxc.ok{border-inline-start-color:var(--acc6)}.mrxc.bad{border-inline-start-color:var(--crit)}.mrxc.warn{border-inline-start-color:var(--warn6)}
+.mfind{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;font-size:12.5px;padding:4px 6px;border-radius:6px;background:var(--warn1)}.mfind.bad{background:var(--crit1)}
+.mwrap.wall .mstage{height:min(78vh,760px)}
+.mgl{position:absolute;inset:0}.mmk{display:flex;flex-direction:column;align-items:center;cursor:pointer;outline:none}.mmk:focus-visible .mb-plate,.mmk.sel .mb-plate{stroke:var(--ink);stroke-width:2.5}
+.mlab2{font:600 11px var(--f-disp);background:rgb(255 255 255/.92);border-radius:6px;padding:0 5px;margin-top:-2px;white-space:nowrap}.mlab2.red{color:var(--crit)}.mlab2.yellow{color:var(--warn)}.mlab2.green{color:var(--acc9)}.mlab2.grey{color:var(--muted)}
+.mviol{border:1px solid var(--crit);background:var(--crit1);color:var(--crit);border-radius:var(--r-s);padding:8px 10px;display:flex;flex-direction:column;gap:4px}.mviol.closed{border-color:var(--line);background:var(--sunk);color:var(--ink)}
+.mvh{margin:2px 0 0;padding-inline-start:18px;font-size:12px;color:var(--muted)}
 .stt{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;line-height:1.5}
 .stt i{font-style:normal;display:inline-grid;place-items:center;width:18px;height:18px;border-radius:5px;font-size:11px;font-weight:700;color:#fff;background:var(--muted)}
 .stt.bad{color:var(--crit)}.stt.bad i{background:var(--crit)}
@@ -3314,7 +3396,7 @@ function actForm(s, d, row) {
     try {
       const { status, j } = await api({ op: "act", sec: s.id, act: d.id, row: row ? row.id : "", data, opId, ...(pin.i.value ? { pin: pin.i.value } : {}) });
       if (status === 428 && j.pin) { pin.box.hidden = false; res.className = "res bad"; res.textContent = j.error || "اكتب رمزك السري"; pin.i.focus(); return; }
-      if (status !== 200) { res.className = "res bad"; res.textContent = j.error || "تعذّر التنفيذ"; if (j.badPin) pin.i.value = ""; return; }
+      if (status !== 200) { res.className = "res bad"; res.textContent = j.error || "تعذّر التنفيذ"; if (j.badPin) pin.i.value = ""; if (status === 409) load(true); return; } // 409 = the record changed: reload it
       $("dlg").close(); toast(j.msg || "تم ✅"); load(true);
     } catch { res.className = "res bad"; res.textContent = "تعذّر الاتصال ولا نعرف هل وصل — أعد المحاولة: لن يُنفَّذ مرتين."; }
     finally { go.disabled = close.disabled = false; }
@@ -3382,7 +3464,7 @@ function subcView(m) {
 // the ladder are the bot's; amounts arrive only for money roles (the bot leaves them out for everyone else and for the wall display).
 const QTYPE = { missing: "ناقص", duplicate: "مكرر", conflict: "متعارض", stale: "يحتاج تحديثاً", unsupported: "بلا دليل", mislinked: "ربط خاطئ" };
 const CTABS = [{ k: "now", t: "العمليات الآن" }, { k: "week", t: "خطة الأسبوع" }, { k: "starts", t: "بدء المشاريع" }, { k: "coll", t: "التنفيذ والتحصيل" }, { k: "review", t: "اجتماع الإدارة" }];
-let CT = "now", RT = "req";
+let CT = "map", RT = "req"; // «الخريطة» first when the server sends it (else «العمليات الآن»)
 const CST = { critical: ["حرج", "!", "bad"], attention: ["يحتاج متابعة", "▲", "warn"], unknown: ["غير متحقق", "?", "unk"], normal: ["لا مشكلة مسجلة", "✓", "ok"] };
 const FRESH = { fresh: "محدّث", aging: "تحديث قديم", stale: "متوقف التحديث", none: "لا تحديث ميداني" };
 const FUND = { covered: "مغطى في التوقع", short: "عجز متوقع", unknown: "غير معروف" };
@@ -3405,12 +3487,598 @@ const ivSec = () => ({ id: "cmdiv", data: D.cmd.iv || { acts: [], rows: [] } });
 const ivDef = (id) => (ivSec().data.acts || []).find((d) => d.id === id);
 const pName = (id) => { const f = (ivDef("assign") || { fields: [] }).fields.find((x) => x.key === "owner"); const o = f && (f.options || []).find((x) => x.v === id); return o ? o.t : id; };
 const ownerId = (name) => { const f = (ivDef("new") || { fields: [] }).fields.find((x) => x.key === "owner"); const o = f && (f.options || []).find((x) => x.t === name); return o ? o.v : ""; };
+// ===== «الخريطة» (bot core/sitemap.ts, owner's brief 15 Nov 2026): projects at their DOCUMENTED locations as small buildings built from
+// the recorded stages; each pour with its three inspections; the colour (plan/risk/delay/unknown) apart from the pour stage. The page
+// draws what the server sent — the actions offered on a pour are the server's list for this person; every one is re-checked there.
+// No base map tiles are loaded (the provider is the owner's decision): a light engineering grid with scale and north, real proportions.
+const MCOL = { green: ["حسب الخطة", "✓"], yellow: ["خطر موثق", "▲"], red: ["متعطّل أو متأخر", "!"], grey: ["بيانات غير كافية", "?"] };
+const MPART = { done: "منفّذ — خرسانة", approvals: "الحديد والشدّة — الاستلامات", supply: "اكتملت الاستلامات — تحضير التوريد", ready: "جاهز للصب", pouring: "صب جارٍ",
+  stale: "بدأ الصب — يحتاج تأكيداً", violation: "صب دون إفراج — مخالفة موثقة", work: "جاري حسب التدقيق", unk: "الدور جارٍ — هذا الجزء غير محدد", none: "لم يبدأ" };
+const MV_T = { open: "مفتوحة — بانتظار اطلاع الإدارة", ack: "اطلعت الإدارة — بانتظار التكليف بإجراء تصحيحي", assigned: "إجراء تصحيحي مكلّف به — بانتظار التقييم الفني", assessed: "قُيّمت فنياً — بانتظار التحقق والإغلاق", closed: "أُغلقت بقرار مخوّل" };
+const RXC = { approved: "ok", notes: "bad", awaiting: "warn", scheduled: "warn", requested: "warn", none: "unk" };
+let MAPV = { k: 1, cx: null, cy: null, sel: null, pour: null, fit: true }, MAPWALL = false;
+const motionOK = () => !matchMedia("(prefers-reduced-motion: reduce)").matches;
+// lat/lng → km on a local plane (equirectangular around the projects' centre) — enough for a city-scale site map
+function mapPlane(ps) {
+  const lat0 = ps.reduce((t, p) => t + p.geo.lat, 0) / ps.length, lng0 = ps.reduce((t, p) => t + p.geo.lng, 0) / ps.length, kx = 111.32 * Math.cos((lat0 * Math.PI) / 180);
+  return (g) => [(g.lng - lng0) * kx, -(g.lat - lat0) * 110.57];
+}
+// ===== the site model (owner's visual brief 15 Nov 2026, direction approved on the S-99-001 prototype): an isometric engineering site
+// in metres. Far out: lit beacons with name and status (colour AND a drawn icon). Close in, or on selection: each project's structure
+// from its RECORDED stages — completed concrete, fresh concrete (still curing), formwork with protruding rebar (the pour stages), planned
+// work as blue outlines, a floor the records say is in progress without saying which part as grey outlines. Nothing moves at rest; the
+// only stage animation is a recorded pour arriving with fresh data. One instance for the session: a refresh updates it in place.
+const ISO_C = Math.cos(Math.PI / 6), ISO_S = 0.5, isoP = (x, y, z = 0) => [(x - y) * ISO_C, (x + y) * ISO_S - z];
+const ISO_KM = 5.2, ISO_KD = 11, ISO_XS = [0.5, 5.5, 10.5, 15.5], ISO_YS = [0.5, 6, 11.5], ISO_NS = "http://www.w3.org/2000/svg";
+const ISO_SITE = ["approvals", "supply", "ready", "pouring", "stale", "violation"];
+const ISO_ICON = {
+  green: '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="currentColor" opacity=".16"/><path d="M4.6 8.3l2.2 2.2 4.6-4.8" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  yellow: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.8l6.6 11.6H1.4z" fill="currentColor" opacity=".18" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M8 6v3.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="8" cy="11.6" r="1" fill="currentColor"/></svg>',
+  red: '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="currentColor"/><path d="M8 4.2v4.6" stroke="#fff" stroke-width="1.9" stroke-linecap="round"/><circle cx="8" cy="11.4" r="1.1" fill="#fff"/></svg>',
+  grey: '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="2.2 1.8"/><path d="M6.3 6.2a1.8 1.8 0 1 1 2.4 1.7c-.5.2-.7.6-.7 1.1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="11.4" r=".95" fill="currentColor"/></svg>',
+};
+const ISO_MAT = { conc: ["#E1E4E6", "url(#iso-conc-l)", "url(#iso-conc-r)"], fresh: ["#BFC6CC", "url(#iso-fresh-l)", "url(#iso-fresh-r)"], ply: ["#EBC07E", "url(#iso-ply-l)", "url(#iso-ply-r)"] };
+const ISO_DEFS = `<filter id="iso-soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="0.9"/></filter>` +
+  [["conc-l", "#D2D6DA", "#BBC1C6"], ["conc-r", "#B4BAC0", "#9AA2A9"], ["fresh-l", "#AEB6BD", "#99A2AA"], ["fresh-r", "#959EA6", "#7E8891"], ["ply-l", "#DDA962", "#CB944C"], ["ply-r", "#C08A43", "#A97536"]]
+    .map(([id, a, b]) => `<linearGradient id="iso-${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>`).join("");
+const ISO = { el: null, cam: { px: 0, py: 0, k: 1 }, tgt: { px: 0, py: 0, k: 1 }, raf: 0, tau: 140, last: 0, W: 1, H: 1, M: null, ps: [], at: new Map(), wall: false,
+  fitted: false, sel: null, home: null, prev: null, anim: new Map(), cache: new Map(), marks: new Map(), tip: null, animRaf: 0 };
+const isoReduce = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+function isoEl(t, a, parent) { const e = document.createElementNS(ISO_NS, t); for (const k in a) e.setAttribute(k, a[k]); if (parent) parent.append(e); return e; }
+const isoPts = (a) => a.map((q) => q[0].toFixed(3) + "," + q[1].toFixed(3)).join(" ");
+const isoEase = (x) => 1 - Math.pow(1 - Math.min(1, Math.max(0, x)), 3);
+const ISO_EDGE = { "vector-effect": "non-scaling-stroke", stroke: "rgb(29 37 51/.22)", "stroke-width": "0.8", "stroke-linejoin": "round" };
+function isoBox(g, x0, y0, z0, x1, y1, z1, mat, op = 1) {
+  const m = ISO_MAT[mat];
+  isoEl("polygon", { points: isoPts([isoP(x0, y1, z0), isoP(x1, y1, z0), isoP(x1, y1, z1), isoP(x0, y1, z1)]), fill: m[1], "fill-opacity": op, ...ISO_EDGE, "stroke-opacity": op }, g);
+  isoEl("polygon", { points: isoPts([isoP(x1, y0, z0), isoP(x1, y1, z0), isoP(x1, y1, z1), isoP(x1, y0, z1)]), fill: m[2], "fill-opacity": op, ...ISO_EDGE, "stroke-opacity": op }, g);
+  isoEl("polygon", { points: isoPts([isoP(x0, y0, z1), isoP(x1, y0, z1), isoP(x1, y1, z1), isoP(x0, y1, z1)]), fill: m[0], "fill-opacity": op, ...ISO_EDGE, "stroke-opacity": op }, g);
+}
+// planned (blue) or recorded as in progress without saying which part (grey): outlines only — never drawn as work being done
+function isoGhost(g, x0, y0, z0, x1, y1, z1, kind, faint) {
+  const c = kind === "plan" ? "#2F6FCB" : "#7A8494", o = faint ? 0.35 : 0.6;
+  const a = { fill: kind === "plan" ? "rgb(47 111 203/.05)" : "rgb(122 132 148/.07)", stroke: c, "stroke-opacity": o, "stroke-width": "1", "stroke-dasharray": kind === "plan" ? "4 3" : "2 3", "vector-effect": "non-scaling-stroke", "stroke-linejoin": "round" };
+  isoEl("polygon", { points: isoPts([isoP(x0, y1, z0), isoP(x1, y1, z0), isoP(x1, y0, z0), isoP(x1, y0, z1), isoP(x0, y0, z1), isoP(x0, y1, z1)]), ...a }, g);
+  isoEl("polyline", { points: isoPts([isoP(x0, y1, z1), isoP(x1, y1, z1), isoP(x1, y0, z1)]), fill: "none", stroke: c, "stroke-opacity": o * 0.75, "stroke-width": "1", "stroke-dasharray": a["stroke-dasharray"], "vector-effect": "non-scaling-stroke" }, g);
+  const f0 = isoP(x1, y1, z0), f1 = isoP(x1, y1, z1);
+  isoEl("line", { x1: f0[0], y1: f0[1], x2: f1[0], y2: f1[1], stroke: c, "stroke-opacity": o * 0.75, "stroke-width": "1", "stroke-dasharray": a["stroke-dasharray"], "vector-effect": "non-scaling-stroke" }, g);
+}
+function isoLine(g, a, b, stroke, w, extra = {}) { isoEl("line", { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke, "stroke-width": w, "vector-effect": "non-scaling-stroke", "stroke-linecap": "round", ...extra }, g); }
+function isoSeams(g, x0, y0, z0, x1, y1, z1, op) { // plywood joints and clamps on the two visible faces
+  for (let z = z0 + 0.7; z < z1 - 0.2; z += 0.85) { isoLine(g, isoP(x0, y1, z), isoP(x1, y1, z), "#8A5A22", 1.1, { "stroke-opacity": 0.55 * op }); isoLine(g, isoP(x1, y0, z), isoP(x1, y1, z), "#8A5A22", 1.1, { "stroke-opacity": 0.55 * op }); }
+}
+function isoCage(g, cx, cy, zFrom, zTop, op = 1) { // a column cage: 8 bars and ties, shown where it stands out of the formwork / concrete
+  const r = 0.17, bars = [[-r, -r], [0, -r], [r, -r], [r, 0], [r, r], [0, r], [-r, r], [-r, 0]], st = { "stroke-opacity": op };
+  for (const [dx, dy] of bars.filter(([a, b]) => a + b < 0)) isoLine(g, isoP(cx + dx, cy + dy, zFrom), isoP(cx + dx, cy + dy, zTop), "#6A3A22", 1.7, st);
+  for (let z = zFrom + 0.2; z < zTop - 0.05; z += 0.24) isoEl("polygon", { points: isoPts([isoP(cx - r, cy - r, z), isoP(cx + r, cy - r, z), isoP(cx + r, cy + r, z), isoP(cx - r, cy + r, z)]), fill: "none", stroke: "#6A3A22", "stroke-width": "1", "stroke-opacity": 0.8 * op, "vector-effect": "non-scaling-stroke" }, g);
+  for (const [dx, dy] of bars.filter(([a, b]) => a + b >= 0)) isoLine(g, isoP(cx + dx, cy + dy, zFrom), isoP(cx + dx, cy + dy, zTop), "#6A3A22", 1.7, st);
+}
+function isoMesh(g, x0, y0, x1, y1, z, op = 1) { // the reinforcement on a slab / footing top
+  const st = { "stroke-opacity": 0.75 * op };
+  for (let x = x0 + 0.4; x < x1; x += 0.8) isoLine(g, isoP(x, y0 + 0.1, z), isoP(x, y1 - 0.1, z), "#6A3A22", 1, st);
+  for (let y = y0 + 0.4; y < y1; y += 0.8) isoLine(g, isoP(x0 + 0.1, y, z), isoP(x1 - 0.1, y, z), "#6A3A22", 1, st);
+}
+function isoProps(g, x0, y0, x1, y1, zb, zt) { // shoring under a slab's formwork deck
+  for (let x = x0 + 1.2; x < x1; x += 2.4) for (let y = y0 + 1.2; y < y1; y += 2.4) isoLine(g, isoP(x, y, zb), isoP(x, y, zt), "#7C858F", 1, { "stroke-opacity": 0.7 });
+}
+// a part's look from its RECORDED state
+function isoMode(p, L, part) {
+  const st = part.st;
+  if (st === "done") return (p.pours || []).some((x) => x.level === L.key && x.part === part.k && x.poured && x.cureLeft > 0) ? "fresh" : "conc";
+  if (st === "none") return "plan";
+  if (ISO_SITE.includes(st)) return "site";
+  return "unk"; // «unk» / «work»: the floor is in progress per the audit, which part is not recorded
+}
+// the structure, bottom up, in metres: foundations, then each recorded floor (columns + slab), the annex on part of the roof
+function isoStack(p) {
+  const out = [], lv = p.levels || [];
+  const has = (k) => lv.some((L) => L.key === k), upper = lv.some((L) => !["foot", "beam"].includes(L.key));
+  const implied = (key, t, k) => ({ L: { key, t }, part: { k, st: "unk" }, mode: "unk", key: key + "|" + k, implied: true });
+  if (!has("foot") && upper) out.push({ ...implied("foot", "القواعد والرقاب", "foot"), kind: "pad", z0: 0, z1: 0.45 }, { ...implied("foot", "القواعد والرقاب", "neck"), kind: "neck", z0: 0.45, z1: 1.3 });
+  if (!has("beam") && upper) out.push({ ...implied("beam", "الميدات", "beam"), kind: "beam", z0: 0.95, z1: 1.3 });
+  let top = 1.3;
+  for (const L of lv) {
+    for (const part of L.parts) {
+      const mode = isoMode(p, L, part), key = L.key + "|" + part.k;
+      if (L.key === "foot") out.push({ L, part, mode, key, kind: part.k === "foot" ? "pad" : "neck", z0: part.k === "foot" ? 0 : 0.45, z1: part.k === "foot" ? 0.45 : 1.3 });
+      else if (L.key === "beam") out.push({ L, part, mode, key, kind: "beam", z0: 0.95, z1: 1.3 });
+      else if (part.k === "cols") out.push({ L, part, mode, key, kind: "cols", roof: L.key === "roof", z0: top, z1: top + 3.3 });
+      else if (part.k === "slab") out.push({ L, part, mode, key, kind: "slab", roof: L.key === "roof", z0: top + 3.3, z1: top + 3.65 });
+    }
+    if (!["foot", "beam"].includes(L.key)) top += 3.65;
+  }
+  for (const e of out) if (e.kind === "cols") { const sl = out.find((x) => x.kind === "slab" && x.L.key === e.L.key); e.barsUp = !sl || !["conc", "fresh"].includes(sl.mode); }
+  return out;
+}
+function isoCols(roof) {
+  const xs = roof ? [ISO_XS[2], ISO_XS[3]] : ISO_XS, ys = roof ? [ISO_YS[1], ISO_YS[2]] : ISO_YS, c = [];
+  for (const y of ys) for (const x of xs) c.push([x, y]);
+  return c.sort((a, b) => a[0] + a[1] - (b[0] + b[1]));
+}
+// one element in its mode; `t` = progress of a recorded pour arriving (concrete rises inside the formwork, then the formwork goes)
+function isoPart(g, e, t) {
+  const pour = t != null, { mode, z0, z1 } = e;
+  const conc = (x0, y0, a, x1, y1, b) => (mode === "fresh" ? isoBox(g, x0, y0, a, x1, y1, b, "fresh") : isoBox(g, x0, y0, a, x1, y1, b, "conc"));
+  const fill = pour ? isoEase(t / 0.65) : 0, fop = pour ? (t < 0.65 ? 1 - 0.8 * (t / 0.65) : 0.2 * (1 - (t - 0.65) / 0.35)) : 1;
+  if (e.kind === "pad" || e.kind === "neck" || e.kind === "cols") {
+    const h = e.kind === "pad" ? 0.85 : 0.25, pts = e.kind === "cols" ? isoCols(e.roof) : isoCols(false);
+    for (const [x, y] of pts) {
+      if (mode === "conc" || mode === "fresh") { conc(x - h, y - h, z0, x + h, y + h, z1); if (e.barsUp) isoCage(g, x, y, z1 - 0.02, z1 + 1.05); continue; }
+      if (mode === "plan" || mode === "unk") { isoGhost(g, x - h, y - h, z0, x + h, y + h, z1, mode, e.kind !== "pad"); continue; }
+      const f = h + (e.kind === "pad" ? 0.06 : 0.06); // site: formwork around the reinforcement
+      if (pour && fill > 0) isoBox(g, x - h + 0.02, y - h + 0.02, z0, x + h - 0.02, y + h - 0.02, z0 + (z1 - z0) * fill + 0.001, "fresh");
+      if (fop > 0.01) { isoBox(g, x - f, y - f, z0, x + f, y + f, z1, "ply", fop); isoSeams(g, x - f, y - f, z0, x + f, y + f, z1, Math.max(fop, pour ? fop : 0.75)); }
+      if (e.kind === "pad") { if (!pour) isoMesh(g, x - h, y - h, x + h, y + h, z1 + 0.01); }
+      else isoCage(g, x, y, z1 - 0.02, z1 + 1.05);
+      if (e.flag === "violation" && !pour) isoEl("polygon", { points: isoPts([isoP(x - f - 0.15, y + f + 0.15, z0), isoP(x + f + 0.15, y + f + 0.15, z0), isoP(x + f + 0.15, y - f - 0.15, z0), isoP(x + f + 0.15, y - f - 0.15, z1 + 1.1), isoP(x - f - 0.15, y - f - 0.15, z1 + 1.1), isoP(x - f - 0.15, y + f + 0.15, z1 + 1.1)]), fill: "none", stroke: "#B42318", "stroke-width": "1.6", "stroke-dasharray": "5 3", "vector-effect": "non-scaling-stroke" }, g);
+    }
+    return;
+  }
+  // horizontal: tie beams (segments) or a slab (whole floor / the annex) — the slab's front edge beams with it
+  const segs = e.kind === "beam"
+    ? [...ISO_YS.flatMap((y) => [0, 1, 2].map((i) => [ISO_XS[i], y - 0.15, ISO_XS[i + 1], y + 0.15])), ...ISO_XS.flatMap((x) => [0, 1].map((i) => [x - 0.15, ISO_YS[i], x + 0.15, ISO_YS[i + 1]]))].sort((a, b) => a[0] + a[1] - (b[0] + b[1]))
+    : [e.roof ? [10.2, 5.7, 15.8, 11.8] : [-0.15, -0.15, 16.15, 12.15]];
+  for (const [x0, y0, x1, y1] of segs) {
+    if (mode === "conc" || mode === "fresh") {
+      if (e.kind === "slab") { conc(x0, y1 - 0.3, z0 - 0.45, x1, y1, z0); conc(x1 - 0.3, y0, z0 - 0.45, x1, y1, z0); }
+      conc(x0, y0, z0, x1, y1, z1); continue;
+    }
+    if (mode === "plan" || mode === "unk") { isoGhost(g, x0, y0, z0, x1, y1, z1, mode); continue; }
+    if (e.kind === "slab" && !pour) isoProps(g, x0, y0, x1, y1, z0 - 3.3, z0);
+    if (pour && fill > 0) isoBox(g, x0 + 0.03, y0 + 0.03, z0, x1 - 0.03, y1 - 0.03, z0 + (z1 - z0) * fill + 0.001, "fresh");
+    if (fop > 0.01) isoBox(g, x0 - 0.05, y0 - 0.05, z0 - (e.kind === "slab" ? 0.1 : 0), x1 + 0.05, y1 + 0.05, z1, "ply", e.kind === "slab" ? Math.min(fop, pour ? fop : 1) : fop);
+    if (!pour || fill < 0.4) isoMesh(g, x0, y0, x1, y1, z1 + 0.02, pour ? 1 - fill / 0.4 : 1);
+    if (e.flag === "violation" && !pour) isoEl("polygon", { points: isoPts([isoP(x0 - 0.3, y1 + 0.3, z0), isoP(x1 + 0.3, y1 + 0.3, z0), isoP(x1 + 0.3, y0 - 0.3, z0), isoP(x1 + 0.3, y0 - 0.3, z1 + 0.3), isoP(x0 - 0.3, y0 - 0.3, z1 + 0.3), isoP(x0 - 0.3, y1 + 0.3, z1 + 0.3)]), fill: "none", stroke: "#B42318", "stroke-width": "1.6", "stroke-dasharray": "5 3", "vector-effect": "non-scaling-stroke" }, g);
+  }
+}
+const ISO_STC = { green: "#1D8456", yellow: "#D08A12", red: "#B42318", grey: "#6B7584" };
+function isoModel(p, at) {
+  const g = isoEl("g", { class: "mmodel", transform: `translate(${isoP(at[0], at[1])[0]},${isoP(at[0], at[1])[1]})` });
+  isoEl("polygon", { points: isoPts([isoP(-5, -4), isoP(21, -4), isoP(21, 16.5), isoP(-5, 16.5)]), fill: "#EEE8DC", stroke: "#D9CFBC", "stroke-width": "1", "vector-effect": "non-scaling-stroke" }, g);
+  isoEl("polygon", { points: isoPts([isoP(-4.2, -3.2), isoP(20.2, -3.2), isoP(20.2, 15.7), isoP(-4.2, 15.7)]), fill: "none", stroke: ISO_STC[p.colour.k], "stroke-width": "1.6", "stroke-opacity": ".75", "stroke-dasharray": "10 5", "vector-effect": "non-scaling-stroke" }, g);
+  const stack = isoStack(p);
+  if (stack.length) isoEl("polygon", { points: isoPts([isoP(1.2, 0.8), isoP(19.5, 0.8), isoP(19.5, 15.2), isoP(1.2, 15.2)]), fill: "rgb(29 37 51/.18)", filter: "url(#iso-soft)" }, g);
+  // the active pour's flag (a violation is outlined in red on the element)
+  const act = (p.pours || []).find((x) => x.id === p.active);
+  for (const e of stack) {
+    if (act && act.level === e.L.key && act.part === e.part.k && act.stage === "violation") e.flag = "violation";
+    const a = ISO.anim.get(p.id + "|" + e.key);
+    isoPart(g, e, a ? a.t : null);
+  }
+  return g;
+}
+
+// ---------------- the instance: built once, re-attached on every draw ----------------
+function isoMount(stage, M, ps, wall, tip) {
+  if (!ISO.el) isoCreate();
+  ISO.tip = tip; ISO.wall = !!wall; ISO.el.classList.toggle("wall", !!wall);
+  stage.append(ISO.el);
+  isoUpdate(M, ps);
+}
+function isoCreate() {
+  const root = el("div", "miso");
+  root.innerHTML = `<svg class="msvg" aria-hidden="true"><defs>${ISO_DEFS}</defs><g class="mworld"><g class="mgrid"></g><g class="mplots"></g><g class="mmodels"></g></g></svg><div class="mov"></div>
+    <div class="mnorth" aria-hidden="true"><svg viewBox="-13 -13 26 26"><g><path d="M0 -10 L4 4 L0 1.5 L-4 4 Z" fill="#1D2533"/><text x="0" y="11" text-anchor="middle" font-size="7" fill="#5B6474">ش</text></g></svg></div>
+    <div class="mctl2"><button type="button" class="mz" data-z="in" aria-label="تكبير"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button><button type="button" class="mz" data-z="out" aria-label="تصغير"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button><button type="button" class="mz" data-z="fit" aria-label="ملاءمة كل المشاريع"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button></div>
+    <div class="mscale2" aria-hidden="true"><i></i><span></span></div><div class="mhint" hidden>للتكبير: Ctrl + العجلة، أو بإصبعين</div>`;
+  ISO.el = root; ISO.svg = root.querySelector(".msvg"); ISO.world = root.querySelector(".mworld"); ISO.gridG = root.querySelector(".mgrid"); ISO.plots = root.querySelector(".mplots"); ISO.models = root.querySelector(".mmodels"); ISO.ov = root.querySelector(".mov");
+  const v = [ISO_C, -ISO_S]; root.querySelector(".mnorth g").setAttribute("transform", `rotate(${(Math.atan2(v[0], -v[1]) * 180) / Math.PI})`);
+  root.querySelectorAll(".mz").forEach((b) => b.addEventListener("click", () => { const z = b.dataset.z; if (z === "fit") { if (MAPV.sel) { MAPV.sel = null; draw(); } else isoFit(170); } else isoZoom(z === "in" ? 1.8 : 1 / 1.8); }));
+  // input: Ctrl/⌘ + wheel or two fingers zoom (a plain wheel and one finger keep scrolling the page); a mouse drag pans
+  root.addEventListener("wheel", (e) => {
+    if (ISO.wall) return;
+    if (!e.ctrlKey && !e.metaKey) { const h = root.querySelector(".mhint"); h.hidden = false; clearTimeout(ISO.hintT); ISO.hintT = setTimeout(() => (h.hidden = true), 1600); return; }
+    e.preventDefault(); const r = root.getBoundingClientRect(); isoZoom(Math.exp(-e.deltaY * 0.0016), e.clientX - r.left, e.clientY - r.top);
+  }, { passive: false });
+  const ptr = new Map(); let pinch = null, drag = null;
+  root.addEventListener("pointerdown", (e) => {
+    if (ISO.wall || e.target.closest(".mk,.mtag2,.mctl2,button")) return;
+    ptr.set(e.pointerId, [e.clientX, e.clientY]);
+    if (ptr.size === 2) { const [a, b] = [...ptr.values()]; pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]), k: ISO.tgt.k }; drag = null; root.setPointerCapture(e.pointerId); }
+    else if (e.pointerType !== "touch") { drag = { x: e.clientX, y: e.clientY }; root.setPointerCapture(e.pointerId); root.classList.add("drag"); }
+  });
+  root.addEventListener("pointermove", (e) => {
+    if (!ptr.has(e.pointerId)) return; ptr.set(e.pointerId, [e.clientX, e.clientY]);
+    if (pinch && ptr.size === 2) { const [a, b] = [...ptr.values()], r = root.getBoundingClientRect(); isoZoom((pinch.k * Math.hypot(a[0] - b[0], a[1] - b[1])) / pinch.d / ISO.tgt.k, (a[0] + b[0]) / 2 - r.left, (a[1] + b[1]) / 2 - r.top, 0); return; }
+    if (!drag) return;
+    ISO.cam.px -= (e.clientX - drag.x) / ISO.cam.k; ISO.cam.py -= (e.clientY - drag.y) / ISO.cam.k; drag.x = e.clientX; drag.y = e.clientY;
+    Object.assign(ISO.tgt, ISO.cam); isoRender();
+  });
+  const up = (e) => { ptr.delete(e.pointerId); if (ptr.size < 2) pinch = null; if (!ptr.size) { drag = null; root.classList.remove("drag"); } };
+  root.addEventListener("pointerup", up); root.addEventListener("pointercancel", up);
+  root.addEventListener("dblclick", (e) => { if (ISO.wall || e.target.closest(".mk,.mtag2,button")) return; const r = root.getBoundingClientRect(); isoZoom(2, e.clientX - r.left, e.clientY - r.top); });
+  new ResizeObserver(() => { if (!ISO.el.isConnected) return; const r = ISO.el.getBoundingClientRect(); if (r.width < 40 || r.height < 40) return; ISO.W = r.width; ISO.H = r.height; if (!ISO.fitted && ISO.ps.length) { ISO.fitted = true; isoFit(0); if (MAPV.sel) isoFly(); } else isoRender(); }).observe(root);
+}
+function isoUpdate(M, ps) {
+  ISO.M = M; ISO.ps = ps;
+  const plane = ps.length ? mapPlane(ps) : null;
+  ISO.at = new Map(ps.map((p) => { const km = plane(p.geo); return [p.id, [km[0] * 1000, km[1] * 1000]]; }));
+  // a RECORDED pour arriving with fresh data: formwork-and-rebar before, concrete now → animate that part once (never on first load)
+  const now = new Map();
+  for (const p of ps) for (const e of isoStack(p)) now.set(p.id + "|" + e.key, e.mode);
+  if (ISO.prev && !isoReduce()) for (const [k, m] of now) if ((m === "conc" || m === "fresh") && ISO.prev.get(k) === "site") ISO.anim.set(k, { t: 0, t0: performance.now() });
+  ISO.prev = now;
+  if (ISO.anim.size) isoAnimate();
+  // beacons: one per project, reused across refreshes
+  const seen = new Set();
+  for (const p of ps) {
+    seen.add(p.id); let b = ISO.marks.get(p.id);
+    const sig = p.colour.k + "|" + (p.code || "") + "|" + p.name;
+    if (!b || b.dataset.sig !== sig) { const nb = isoBeacon(p, ISO.wall); nb.dataset.sig = sig; if (b) b.replaceWith(nb); else ISO.ov.append(nb); b = nb; ISO.marks.set(p.id, b); }
+  }
+  for (const [id, b] of ISO.marks) if (!seen.has(id)) { b.remove(); ISO.marks.delete(id); ISO.cache.delete(id); }
+  isoPlots();
+  if (ISO.W > 40 && !ISO.fitted && ps.length) { ISO.fitted = true; isoFit(0); }
+  if (MAPV.sel !== ISO.sel) isoFly(); else isoRender();
+}
+function isoBeacon(p, wall) {
+  const b = el(wall ? "div" : "button", "mk mproj st-" + p.colour.k); b.dataset.pid = p.id;
+  b.setAttribute("aria-label", `${p.name}${p.code ? " " + p.code : ""}: ${MCOL[p.colour.k][0]}`);
+  const plate = el("span", "mk-plate"); plate.append(el("b", "", p.code || p.name)); if (p.code) plate.append(el("span", "nm", p.name));
+  const s = el("span", "msts " + p.colour.k); s.innerHTML = ISO_ICON[p.colour.k]; s.append(MCOL[p.colour.k][0]); plate.append(s);
+  b.append(plate, el("span", "mk-stem"), el("span", "mk-dot"));
+  if (!wall) {
+    b.type = "button";
+    const open = () => { MAPV.sel = p.id; MAPV.pour = p.active; MAPV.scroll = true; if (ISO.tip) ISO.tip.hidden = true; draw(); };
+    b.addEventListener("click", (e) => { e.stopPropagation(); open(); });
+    b.addEventListener("pointerenter", (e) => { if (e.pointerType !== "mouse" || !ISO.tip || !ISO.el || !ISO.el.isConnected || !ISO.el.contains(b)) return; const q = ISO.M.projects.find((x) => x.id === p.id) || p; ISO.tip.replaceChildren(...mapTip(q).map((s, i) => el(i ? "div" : "b", "", s))); ISO.tip.hidden = false; const r = ISO.el.getBoundingClientRect(); ISO.tip.style.left = Math.min(r.width - 290, Math.max(8, e.clientX - r.left + 16)) + "px"; ISO.tip.style.top = Math.max(8, e.clientY - r.top + 16) + "px"; });
+    b.addEventListener("pointerleave", () => { if (ISO.tip) ISO.tip.hidden = true; });
+  }
+  return b;
+}
+function isoPlots() {
+  ISO.plots.replaceChildren();
+  for (const p of ISO.ps) { const [x, y] = ISO.at.get(p.id); isoEl("polygon", { points: isoPts([isoP(x - 5, y - 4), isoP(x + 21, y - 4), isoP(x + 21, y + 16.5), isoP(x - 5, y + 16.5)]), fill: "#EEE8DC", stroke: "#D9CFBC", "stroke-width": 1, "vector-effect": "non-scaling-stroke" }, ISO.plots); }
+}
+// ---------------- camera: one exponential ease for zoom, pan and selection; none under reduced motion ----------------
+function isoTarget(t, ms = 140) { Object.assign(ISO.tgt, t); ISO.tau = isoReduce() ? 0 : ms; if (!ISO.raf) { ISO.last = performance.now(); ISO.raf = requestAnimationFrame(isoStep); } }
+function isoStep(now) {
+  const dt = Math.min(64, now - ISO.last); ISO.last = now;
+  const a = ISO.tau ? 1 - Math.exp(-dt / ISO.tau) : 1, c = ISO.cam, t = ISO.tgt;
+  c.px += (t.px - c.px) * a; c.py += (t.py - c.py) * a; c.k = Math.exp(Math.log(c.k) + (Math.log(t.k) - Math.log(c.k)) * a);
+  const done = Math.abs(t.px - c.px) * c.k < 0.3 && Math.abs(t.py - c.py) * c.k < 0.3 && Math.abs(t.k / c.k - 1) < 0.002;
+  if (done) Object.assign(c, t);
+  isoRender(); ISO.raf = done ? 0 : requestAnimationFrame(isoStep);
+}
+function isoFit(ms) {
+  if (!ISO.ps.length) return;
+  const q = ISO.ps.map((p) => { const a = ISO.at.get(p.id); return isoP(a[0] + 8, a[1] + 6); });
+  const x0 = Math.min(...q.map((v) => v[0])), x1 = Math.max(...q.map((v) => v[0])), y0 = Math.min(...q.map((v) => v[1])), y1 = Math.max(...q.map((v) => v[1]));
+  const padT = 120, padB = 50, padX = 120;
+  const k = Math.min(18, Math.max(0.02, Math.min((ISO.W - padX * 2) / Math.max(1, x1 - x0), (ISO.H - padT - padB) / Math.max(1, y1 - y0))));
+  const t = { k, px: (x0 + x1) / 2, py: (y0 + y1) / 2 - (padT - padB) / 2 / k };
+  if (ms === 0) { Object.assign(ISO.cam, t); Object.assign(ISO.tgt, t); isoRender(); } else isoTarget(t, ms);
+}
+function isoFly() {
+  const id = MAPV.sel, p = ISO.ps.find((x) => x.id === id);
+  if (id && !ISO.sel) ISO.home = { ...ISO.tgt };
+  ISO.sel = id;
+  if (!p) { if (!id) { if (ISO.home) isoTarget(ISO.home, 170); else isoFit(170); ISO.home = null; } isoRender(); return; }
+  const a = ISO.at.get(p.id), c = isoP(a[0] + 8, a[1] + 6, 5.2), top = isoStack(p).reduce((m, e) => Math.max(m, e.z1), 4);
+  const k = Math.min((ISO.W * 0.62) / 26, (ISO.H * 0.6) / (14 + top));
+  const sheet = matchMedia("(max-width:760px)").matches ? (ISO.H * 0.2) / k : 0;
+  isoTarget({ k, px: c[0], py: c[1] - (top - 8) / 2 + sheet }, 170);
+}
+function isoZoom(f, sx = ISO.W / 2, sy = ISO.H / 2, ms = 110) {
+  const k = Math.min(60, Math.max(0.02, ISO.tgt.k * f)), wx = (sx - ISO.W / 2) / ISO.tgt.k + ISO.tgt.px, wy = (sy - ISO.H / 2) / ISO.tgt.k + ISO.tgt.py;
+  isoTarget({ k, px: wx - (sx - ISO.W / 2) / k, py: wy - (sy - ISO.H / 2) / k }, ms);
+}
+function isoAnimate() {
+  if (ISO.animRaf) return;
+  const f = (now) => {
+    const ids = new Set();
+    for (const [k, a] of ISO.anim) { a.t = Math.min(1, (now - a.t0) / 1500); ids.add(k.split("|")[0]); if (a.t >= 1) ISO.anim.delete(k); }
+    for (const id of ids) { const ch = ISO.cache.get(id); if (ch) ch.sig = ""; } // rebuilt this frame; the last frame draws the final state
+    isoRender(); ISO.animRaf = ISO.anim.size ? requestAnimationFrame(f) : 0;
+  };
+  ISO.animRaf = requestAnimationFrame(f);
+}
+const isoScr = (x, y, z = 0) => { const q = isoP(x, y, z), c = ISO.cam; return [(q[0] - c.px) * c.k + ISO.W / 2, (q[1] - c.py) * c.k + ISO.H / 2]; };
+function isoRender() {
+  if (!ISO.el || !ISO.el.isConnected) return;
+  const c = ISO.cam, W = ISO.W, H = ISO.H;
+  ISO.world.setAttribute("transform", `translate(${W / 2},${H / 2}) scale(${c.k}) translate(${-c.px},${-c.py})`);
+  // the ground grid: a «nice» step that keeps lines ≥ 34 px apart, drawn for what is on screen
+  const inv = (sx, sy) => { const X = (sx - W / 2) / c.k + c.px, Y = (sy - H / 2) / c.k + c.py; return [(X / ISO_C + Y / ISO_S) / 2, (Y / ISO_S - X / ISO_C) / 2]; };
+  const cs = [inv(0, 0), inv(W, 0), inv(0, H), inv(W, H)], gx0 = Math.min(...cs.map((v) => v[0])), gx1 = Math.max(...cs.map((v) => v[0])), gy0 = Math.min(...cs.map((v) => v[1])), gy1 = Math.max(...cs.map((v) => v[1]));
+  const step = [5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000].find((s) => s * c.k * 0.87 >= 34) || 10000;
+  ISO.gridG.replaceChildren();
+  for (let v = Math.floor(gx0 / step) * step; v <= gx1; v += step) { const a = isoP(v, gy0), b = isoP(v, gy1); isoEl("line", { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: v % (step * 5) === 0 ? "#CDD4DB" : "#DCE1E6", "stroke-width": 0.8, "vector-effect": "non-scaling-stroke" }, ISO.gridG); }
+  for (let v = Math.floor(gy0 / step) * step; v <= gy1; v += step) { const a = isoP(gx0, v), b = isoP(gx1, v); isoEl("line", { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: v % (step * 5) === 0 ? "#CDD4DB" : "#DCE1E6", "stroke-width": 0.8, "vector-effect": "non-scaling-stroke" }, ISO.gridG); }
+  // models: drawn lazily for what is on screen, at model zoom or when selected; cached until its data or a recorded pour changes
+  const showAll = c.k >= ISO_KM, vis = new Set();
+  for (const p of ISO.ps) {
+    const a = ISO.at.get(p.id), s = isoScr(a[0] + 8, a[1] + 6), on = s[0] > -400 && s[0] < W + 400 && s[1] > -400 && s[1] < H + 400;
+    const model = (showAll || ISO.sel === p.id) && on && !ISO.wall;
+    if (model) vis.add(p.id);
+    const sig = JSON.stringify([p.levels, p.colour.k, p.active, (p.pours || []).map((x) => [x.id, x.stage, x.level, x.part, x.cureLeft])]);
+    let ch = ISO.cache.get(p.id);
+    if (model && (!ch || ch.sig !== sig)) { const g = isoModel(p, a); if (ch) ch.g.replaceWith(g); else ISO.models.append(g); ch = { sig, g }; ISO.cache.set(p.id, ch); }
+    if (ch) ch.g.classList.toggle("off", !model);
+  }
+  // overlay: beacons (decluttered by priority), then each visible model's tag, the chosen project's floors and its pour callout
+  const order = [...ISO.ps].sort((a, b) => (a.id === ISO.sel ? -1 : b.id === ISO.sel ? 1 : 0) || ({ red: 0, yellow: 1, grey: 2, green: 3 }[a.colour.k] - { red: 0, yellow: 1, grey: 2, green: 3 }[b.colour.k]));
+  const boxes = [];
+  for (const p of order) {
+    const b = ISO.marks.get(p.id); if (!b) continue;
+    const a = ISO.at.get(p.id), [x, y] = isoScr(a[0] + 8, a[1] + 6);
+    const off = vis.has(p.id) || x < -200 || x > W + 200 || y < -100 || y > H + 240;
+    b.classList.toggle("off", off); b.classList.toggle("sel", ISO.sel === p.id);
+    b.style.transform = `translate(${x}px,${y}px) translate(-50%,calc(-100% + 8px))`;
+    if (off) continue;
+    const w = b._w || (b._w = b.offsetWidth || 150), h = b._h || (b._h = b.offsetHeight || 80), r = [x - w / 2, y - h, x + w / 2, y - 10];
+    const hit = boxes.some((q) => r[0] < q[2] && r[2] > q[0] && r[1] < q[3] && r[3] > q[1]);
+    b.classList.toggle("mini", hit); if (!hit) boxes.push(r);
+    b.style.zIndex = String((hit ? 0 : 5000) + Math.max(0, Math.round(y)));
+  }
+  for (const n of ISO.ov.querySelectorAll(".mtag2,.mlvl2,.mcall2")) n.remove();
+  const detail = c.k >= ISO_KD && !ISO.wall;
+  for (const id of vis) {
+    const p = ISO.ps.find((x) => x.id === id), a = ISO.at.get(id);
+    const tg = el(ISO.wall ? "div" : "button", "mtag2"); tg.append(el("b", "", p.code || p.name)); const s = el("span", "msts " + p.colour.k); s.innerHTML = ISO_ICON[p.colour.k]; s.append(MCOL[p.colour.k][0]); tg.append(s);
+    if (!ISO.wall) { tg.type = "button"; tg.setAttribute("aria-label", `${p.name}: ${MCOL[p.colour.k][0]}`); tg.addEventListener("click", (e) => { e.stopPropagation(); MAPV.sel = p.id; MAPV.pour = p.active; MAPV.scroll = true; draw(); }); }
+    const [tx, ty] = isoScr(a[0] + 21, a[1] + 16.5); tg.style.transform = `translate(${Math.min(W - 180, Math.max(8, tx))}px,${Math.min(H - 84, ty)}px) translate(-10%,10px)`; ISO.ov.append(tg);
+    if (!detail || (ISO.sel && ISO.sel !== id) || (!ISO.sel && vis.size > 1)) continue;
+    const stack = isoStack(p), seenL = new Set();
+    for (const e of stack) {
+      if (seenL.has(e.L.key) || e.kind === "slab" || e.kind === "pad" || e.kind === "beam") continue; seenL.add(e.L.key);
+      const [lx, ly] = isoScr(a[0] - 0.4, a[1] + 12.4, (e.z0 + e.z1) / 2), d = el("div", "mlvl2"); d.append(el("b", "", e.L.t));
+      d.style.transform = `translate(${lx}px,${ly}px) translate(-100%,-50%) translateX(-14px)`; ISO.ov.append(d);
+    }
+    const act = (p.pours || []).find((x) => x.id === p.active), at = act && stack.find((e) => e.L.key === act.level && e.part.k === act.part);
+    if (act && at) {
+      const [cx, cy] = isoScr(a[0] + (at.roof ? 15.5 : 15.5), a[1] + (at.roof ? 6 : 0.5), at.z1 + (at.kind === "slab" ? 0.1 : 1));
+      const box = el("div", "mcall2" + (act.stage === "violation" ? " bad" : "")), inner = el("div", "mcb");
+      const nOk = (act.rx || []).filter((r) => r.st === "approved").length;
+      inner.append(el("b", "", act.el), el("span", "", act.stageT), el("small", "", `الاستلامات ${nOk} من 3` + (act.ready ? " · جاهز للصب" : "")));
+      box.innerHTML = '<svg width="1" height="1" aria-hidden="true"><circle r="3.2" fill="currentColor"/><circle r="6.5" fill="none" stroke="currentColor" stroke-opacity=".25"/><path d="M0 0 L34 -26" stroke="currentColor" stroke-width="1.5"/></svg>';
+      box.append(inner); box.style.transform = `translate(${cx}px,${cy}px)`; ISO.ov.append(box);
+      if (cx + 34 + inner.offsetWidth > W - 8) box.classList.add("flip"); // no room on the right: the callout goes to the left of its leader
+    }
+  }
+  // scale: a round length near 90 px along the ground
+  const m = 90 / (c.k * ISO_C), nice = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000].find((v) => v >= m * 0.6) || 10000;
+  const sb = ISO.el.querySelector(".mscale2"); sb.querySelector("i").style.width = Math.round(nice * c.k * ISO_C) + "px"; sb.querySelector("span").textContent = nice >= 1000 ? nice / 1000 + " كم" : nice + " م";
+}
+// a still picture of one project's model (the panel, when the Mapbox base map draws the projects as beacons)
+function isoThumb(p) {
+  const s = document.createElementNS(ISO_NS, "svg"), g = isoModel(p, [0, 0]), top = isoStack(p).reduce((m, e) => Math.max(m, e.z1), 4) + 1.4;
+  const xs = [isoP(-5, 16.5)[0], isoP(21, -4)[0]], ys = [isoP(-5, -4, top)[1], isoP(21, 16.5)[1]];
+  s.setAttribute("viewBox", `${xs[0] - 1} ${ys[0] - 1} ${xs[1] - xs[0] + 2} ${ys[1] - ys[0] + 2}`); s.setAttribute("class", "mthumb"); s.setAttribute("aria-hidden", "true");
+  s.innerHTML = `<defs>${ISO_DEFS}</defs>`; s.append(g); return s;
+}
+
+// who moves an inspection next, by its state (the party itself while a visit or a result is awaited)
+const RX_NEXT = { none: () => "يطلبه طالب الصبة (مهندس الموقع)", requested: () => "يتابع طالب الصبة حجز الزيارة", scheduled: (r) => "بانتظار زيارة " + r.t, awaiting: (r) => "بانتظار نتيجة " + r.t,
+  notes: () => "الإصلاح على طالب الصبة، والإغلاق للجهة التي أصدرت الملاحظة" };
+const pctOr = (v) => (v == null ? "— (لم يُدخل)" : Math.round(v * 100) + "%"); // an unknown plan is never 0%
+let MAPRO = null, MAPRAF = 0; // one resize watcher for the map at a time; one repaint per frame
+function cmdMapPaint(fn) { if (MAPRAF) return; MAPRAF = requestAnimationFrame(() => { MAPRAF = 0; fn(); }); }
+function mapTip(p) {
+  const act = (p.pours || []).find((x) => x.id === p.active), lvl = act ? (p.levels.find((l) => l.key === act.level) || {}).t : null;
+  const L = [p.name + (p.code ? " · " + p.code : ""), act ? `${act.el}${lvl ? " · " + lvl : ""}${act.zone ? " · " + act.zone : " · المنطقة غير محددة"} — ${act.stageT}` : "لا صبة مفتوحة"];
+  L.push(p.progress && p.progress.actual != null ? `الإنجاز ${Math.round(p.progress.actual * 100)}% (${p.progress.src === "verified" ? "متحقق" : "مبلّغ عنه"}) مقابل المخطط ${pctOr(p.progress.planned)}` : "الإنجاز مقابل المخطط: لا طريقة حساب معتمدة لهذا المشروع");
+  L.push(`${MCOL[p.colour.k][1]} ${MCOL[p.colour.k][0]} — ${p.colour.why[0] || ""}`);
+  L.push(p.fieldAt ? "آخر تحديث ميداني " + ageT(daysSince(p.fieldAt)) + " (" + dmy(p.fieldAt) + ")" : "لا تحديث ميداني مسجّل");
+  return L;
+}
+// ---- Mapbox: ONE map instance for the session, re-attached on every redraw (a data refresh never recreates it); markers updated in
+// place. Provider settings come from the server (settings/mapbase — apart from the operational records); a public, URL-restricted
+// token; Arabic labels (language «ar» + the RTL text plugin); Mapbox's attribution stays on; two-finger / Ctrl gestures (no scroll trap).
+let MAPGL = null;
+const MB_V = "3.8.0";
+function loadMapbox() {
+  if (window.mapboxgl) return Promise.resolve(window.mapboxgl);
+  if (loadMapbox.p) return loadMapbox.p;
+  loadMapbox.p = new Promise((res, rej) => {
+    const l = document.createElement("link"); l.rel = "stylesheet"; l.href = `https://api.mapbox.com/mapbox-gl-js/v${MB_V}/mapbox-gl.css`; document.head.append(l);
+    const sc = document.createElement("script"); sc.src = `https://api.mapbox.com/mapbox-gl-js/v${MB_V}/mapbox-gl.js`;
+    sc.onload = () => (window.mapboxgl ? res(window.mapboxgl) : rej(new Error("مكتبة Mapbox غير متاحة")));
+    sc.onerror = () => { loadMapbox.p = null; rej(new Error("تعذّر تحميل مكتبة Mapbox")); };
+    setTimeout(() => { if (!window.mapboxgl) { loadMapbox.p = null; rej(new Error("لا وصول إلى Mapbox")); } }, 10000); // an unreachable provider never leaves an empty map
+    document.head.append(sc);
+  });
+  return loadMapbox.p;
+}
+function mapGeo(stage, M, ps, wall, tip) {
+  const base = M.base;
+  if (MAPGL && (MAPGL.token !== base.token || MAPGL.style !== base.style)) { try { if (MAPGL.map) MAPGL.map.remove(); } catch (e) {} MAPGL = null; }
+  if (!MAPGL) { const e0 = document.createElement("div"); e0.className = "mgl"; MAPGL = { el: e0, token: base.token, style: base.style, markers: new Map(), map: null, failed: null }; }
+  const G = MAPGL; G.ps = ps; G.wall = !!wall; G.tip = tip; stage.append(G.el);
+  if (G.map) { requestAnimationFrame(() => { G.map.resize(); mapGeoMarkers(G); }); return; }
+  loadMapbox().then((mb) => {
+    if (G !== MAPGL || G.map) return;
+    mb.accessToken = base.token;
+    try { if (mb.getRTLTextPluginStatus() === "unavailable") mb.setRTLTextPlugin("https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.3/mapbox-gl-rtl-text.js", null, true); } catch (e) {}
+    const lats = ps.map((p) => p.geo.lat), lngs = ps.map((p) => p.geo.lng), pad = 0.004;
+    G.map = new mb.Map({ container: G.el, style: base.style, language: "ar", bounds: [[Math.min(...lngs) - pad, Math.min(...lats) - pad], [Math.max(...lngs) + pad, Math.max(...lats) + pad]],
+      fitBoundsOptions: { padding: 70, maxZoom: 15 }, cooperativeGestures: !wall, interactive: !wall, attributionControl: true });
+    if (!wall) G.map.addControl(new mb.NavigationControl({ visualizePitch: false }), "top-left");
+    G.map.addControl(new mb.ScaleControl({ unit: "metric" }), "bottom-left");
+    G.map.on("error", (e) => {
+      const er = (e && e.error) || {}, code = er.status || 0;
+      if ([401, 403].includes(code) || /access token|Unauthorized|Forbidden/i.test(String(er.message || ""))) { if (!G.failed) { G.failed = "الرمز مرفوض " + (code || ""); draw(); } }
+    });
+    G.map.on("load", () => mapGeoMarkers(G));
+  }).catch((e) => { G.failed = e.message; draw(); });
+}
+function mapGeoMarkers(G) {
+  const mb = window.mapboxgl; if (!G.map || !mb) return;
+  const seen = new Set();
+  for (const p of G.ps) {
+    seen.add(p.id); let mk = G.markers.get(p.id);
+    const wrap = mk ? mk.getElement() : document.createElement("div"); wrap.className = "mgeo";
+    const b = isoBeacon(p, G.wall); b.classList.toggle("sel", MAPV.sel === p.id); wrap.replaceChildren(b);
+    if (!mk) { mk = new mb.Marker({ element: wrap, anchor: "bottom" }).setLngLat([p.geo.lng, p.geo.lat]).addTo(G.map); G.markers.set(p.id, mk); } else mk.setLngLat([p.geo.lng, p.geo.lat]);
+  }
+  for (const [id, mk] of G.markers) if (!seen.has(id)) { mk.remove(); G.markers.delete(id); }
+}
+function cmdMap(m, M, wall) {
+  MAPWALL = !!wall;
+  const ps = M.projects, all = [...ps, ...(M.noGeo || [])];
+  const wrap = el("div", "mwrap" + (wall ? " wall" : "")), stage = el("div", "mstage"), side = el("div", "mside");
+  // data time and connection: an old picture says so
+  const t0 = Date.parse(M.at), age = Number.isFinite(t0) ? Math.max(0, Math.round((Date.now() - t0) / 60000)) : null, st = el("div", "mstat" + (age === null || age > 15 || !navigator.onLine ? " old" : ""));
+  st.append(el("span", "", "بيانات الخريطة: " + (age === null ? "وقت التحديث غير معروف" : age < 1 ? "الآن" : "قبل " + age + " دقيقة")), ...(navigator.onLine ? [] : [el("b", "", " · لا اتصال — آخر صورة محفوظة")]));
+if (!wall) st.append(el("span", "small muted", " · المجسم تمثيل للمرحلة وليس نموذجاً مطابقاً للمخططات"));
+  // the geographic base map (Mapbox) when configured — the same buildings as overlays. The engineering grid is the LABELLED fallback.
+  const useGeo = !!(M.base && M.base.provider === "mapbox" && M.base.token && ps.length && !(MAPGL && MAPGL.failed && MAPGL.token === M.base.token));
+  if (!useGeo && ps.length) st.append(el("span", "pill", M.base ? "تعذّرت الخريطة الجغرافية (" + ((MAPGL && MAPGL.failed) || "") + ") — شبكة هندسية بديلة" : "شبكة هندسية بديلة — الخريطة الجغرافية غير مُعدّة"));
+  if (!wall && M.canGeo) { const b = el("button", "lnk", "إعداد الخريطة الجغرافية"); b.type = "button"; b.onclick = () => mapAct(M, "base", ""); st.append(b); }
+  m.append(st);
+  if (!ps.length) stage.append(el("div", "empty", "لا مشروع بموقع موثّق بعد — حدّد المواقع من «يحتاج تحديد الموقع»."));
+  const tip = el("div", "mtip"); tip.hidden = true; tip.setAttribute("role", "tooltip");
+  if (ps.length) stage.append(tip);
+  // the side: the synchronized alert list (so a stalled project is never lost under another or off-screen), then the unplaced ones;
+  // a chosen project replaces the list with its panel — the map stays
+  const sel = all.find((p) => p.id === MAPV.sel);
+  if (sel && !wall) side.append(mapPanel(sel, M)); else side.append(mapList(M, all, wall));
+  wrap.append(stage, side); m.append(wrap);
+  if (ps.length && !useGeo) isoMount(stage, M, ps, wall, tip);
+  if (useGeo) mapGeo(stage, M, ps, wall, tip);
+  // with the Mapbox base map the projects are beacons: the chosen one's model is shown at the top of its panel
+  if (useGeo && sel && sel.levels && side.firstChild) side.firstChild.prepend(isoThumb(sel));
+  // phone: a full-width map and the details in a bottom sheet; a tablet keeps them under the map
+  if (sel && !wall && matchMedia("(max-width:760px)").matches) { isoSheet(side, MAPV.scroll); if (MAPV.scroll) requestAnimationFrame(() => stage.scrollIntoView({ block: "start", behavior: smoothB() })); }
+  else if (MAPV.scroll && sel && matchMedia("(max-width:980px)").matches) requestAnimationFrame(() => side.scrollIntoView({ block: "start", behavior: smoothB() }));
+  MAPV.scroll = false;
+}
+function isoSheet(side, fresh) {
+  if (fresh) MAPV.sheet = "peek";
+  side.classList.add("msheet"); side.classList.toggle("full", MAPV.sheet === "full");
+  const h = el("button", "mhandle"); h.type = "button"; h.setAttribute("aria-label", "توسيع التفاصيل أو طيّها"); side.prepend(h);
+  const set = (v) => { MAPV.sheet = v; side.classList.toggle("full", v === "full"); };
+  h.onclick = () => set(side.classList.contains("full") ? "peek" : "full");
+  let y0 = null, base = 0, H = 0;
+  h.addEventListener("pointerdown", (e) => { y0 = e.clientY; H = side.getBoundingClientRect().height; base = side.classList.contains("full") ? 0 : H - innerHeight * 0.42; side.classList.add("dragging"); h.setPointerCapture(e.pointerId); });
+  h.addEventListener("pointermove", (e) => { if (y0 == null) return; side.style.transform = `translateY(${Math.min(H - 120, Math.max(0, base + e.clientY - y0))}px)`; });
+  h.addEventListener("pointerup", (e) => { if (y0 == null) return; const d = e.clientY - y0; side.classList.remove("dragging"); side.style.transform = ""; if (Math.abs(d) > 24) set(d < 0 ? "full" : "peek"); y0 = null; });
+}
+function mapList(M, all, wall) {
+  const box = el("div", "malist");
+  const al = (M.alerts || []);
+  box.append(el("h3", "", "تنبيهات المشاريع (" + al.length + ")"));
+  if (!al.length) box.append(el("p", "small muted", "لا مشروع أحمر أو أصفر أو رمادي."));
+  for (const a of al) {
+    const p = all.find((x) => x.id === a.id); if (!p) continue;
+    const b = el(wall ? "div" : "button", "mrow " + a.k); if (!wall) { b.type = "button"; b.onclick = () => { MAPV.sel = p.id; MAPV.pour = p.active; MAPV.scroll = true; draw(); }; }
+    b.append(el("span", "mg " + a.k, MCOL[a.k][1]), el("b", "", p.code || p.name), el("span", "small", a.why || MCOL[a.k][0]), ...(p.geo ? [] : [el("span", "pill", "بلا موقع")]));
+    box.append(b);
+  }
+  if ((M.noGeo || []).length) {
+    box.append(el("h3", "", "يحتاج تحديد الموقع (" + M.noGeo.length + ")"));
+    box.append(el("p", "small muted", "لا يُوضع مشروع على الخريطة دون إحداثيات موثقة."));
+    for (const p of M.noGeo) {
+      const r = el("div", "mrow grey"); r.append(el("b", "", p.code || p.name), el("span", "small", p.name));
+      if (M.canGeo && !wall) { const b = el("button", "sbtn", "تحديد الموقع"); b.type = "button"; b.onclick = () => mapAct(M, "geo", "", { pid: p.id }); r.append(b); }
+      if (!wall) { const o = el("button", "sbtn", "التفاصيل"); o.type = "button"; o.onclick = () => { MAPV.sel = p.id; MAPV.pour = p.active; MAPV.scroll = true; draw(); }; r.append(o); }
+      box.append(r);
+    }
+  }
+  return box;
+}
+// an action from the server's list on this pour, through the page's own action form (fields, PIN, opId, errors)
+function mapAct(M, act, row, pre) {
+  const d = (M.defs || []).find((x) => x.id === act); if (!d) return;
+  actForm({ id: "map" }, d, { id: row, data: pre || {} });
+}
+function mapPanel(p, M) {
+  const box = el("div", "mpanel"), back = el("button", "lnk", "→ كل التنبيهات"); back.type = "button"; back.onclick = () => { MAPV.sel = null; draw(); };
+  const h = el("div", "mph"); h.append(el("h3", "", p.name), el("span", "small muted", p.code || ""));
+  const cb = el("div", "mcolour " + p.colour.k); cb.append(el("b", "", MCOL[p.colour.k][1] + " " + MCOL[p.colour.k][0])); const ul = el("ul"); for (const w of p.colour.why) ul.append(el("li", "", w)); cb.append(ul);
+  box.append(back, h, cb);
+  // progress: planned vs achieved only with an approved method; reported and verified kept apart
+  const pr = el("div", "msec"); pr.append(el("h4", "", "التقدم ومصدره"));
+  if (p.progress && p.progress.actual != null) pr.append(el("p", "", `الإنجاز ${Math.round(p.progress.actual * 100)}% — ${p.progress.src === "verified" ? "متحقق بدليل حديث" : "مبلّغ عنه (غير متحقق)"} · المخطط ${pctOr(p.progress.planned)}`));
+  else pr.append(el("p", "small muted", "لا طريقة حساب معتمدة للإنجاز مقابل المخطط لهذا المشروع — لا تُعرض نسبة."));
+  const lv = el("div", "mlv"); for (const L of p.levels) { const r = el("div", "mlvr"); r.append(el("b", "", L.t)); for (const x of L.parts) r.append(el("span", "mst " + x.st, x.t + ": " + (MPART[x.st] || x.st) + (x.src === "audit" ? " (التدقيق)" : x.src === "pour" ? " (الصبة)" : ""))); lv.append(r); }
+  pr.append(lv); box.append(pr);
+  if ((p.work || []).length) { const w = el("div", "msec"); w.append(el("h4", "", "أعمال اليوم المسجّلة")); for (const x of p.work) w.append(el("div", "small", (x.k === "rebar" ? "حدادة" : x.k === "form" ? "نجارة" : "عمل") + ": " + x.t + (x.area ? " · " + x.area : "") + (x.status ? " · " + x.status : ""))); box.append(w); }
+  // pours: the chosen one in full, the others named (several activities at once are normal)
+  const pours = (p.pours || []).filter((x) => x.stage !== "cancelled" || (x.violation && x.violation.status !== "closed"));
+  const pw = el("div", "msec"); pw.append(el("h4", "", "الصبات (" + pours.length + ")"));
+  if (!pours.length) pw.append(el("p", "small muted", "لا صبة مسجّلة لهذا المشروع."));
+  const cur = pours.find((x) => x.id === MAPV.pour) || pours.find((x) => x.id === p.active) || pours[pours.length - 1];
+  if (pours.length > 1) { const tabs = el("div", "sub-tabs"); for (const x of pours) { const b = el("button", "", x.el + " · " + x.stageT); b.type = "button"; b.setAttribute("aria-current", String(x === cur)); b.onclick = () => { MAPV.pour = x.id; draw(); }; tabs.append(b); } pw.append(tabs); }
+  if (cur) pw.append(mapPour(cur, M));
+  box.append(pw);
+  // next action: the first open inspection or obstacle, with who and when; then the obstacles; then the next payment (money roles)
+  const nx = el("div", "msec"); nx.append(el("h4", "", "الإجراء التالي"));
+  const firstRx = cur && cur.rx.find((r) => r.st !== "approved");
+  if (cur && cur.violation && cur.violation.status !== "closed") nx.append(el("p", "neg", "⛔ مخالفة صب: " + (MV_T[cur.violation.status] || "") + " — التفاصيل في بطاقة الصبة"));
+  else if (firstRx) nx.append(el("p", "", `${firstRx.t}: ${firstRx.stT} — ${RX_NEXT[firstRx.st] ? RX_NEXT[firstRx.st](firstRx) : ""} · المهلة ${firstRx.due ? dmy(firstRx.due) : "غير محددة"}${firstRx.late ? " · فات موعدها" : ""}`));
+  else if (cur && !cur.ready && !["poured", "pouring", "stale"].includes(cur.stage)) nx.append(el("p", "", (cur.notReady || []).join(" · ")));
+  else nx.append(el("p", "small muted", cur ? "لا إجراء مطلوب على هذه الصبة الآن." : "—"));
+  for (const b of p.blockers || []) nx.append(el("div", "small" + (b.overdue ? " neg" : ""), `عائق ${b.no || ""}: ${b.what} — ${b.resp || "بلا مسؤول محدد"}${b.due ? " · " + dmy(b.due) : ""}`));
+  box.append(nx);
+  if (p.next) { const pay = el("div", "msec"); pay.append(el("h4", "", "الدفعة القادمة"), el("p", "", p.next.label + (p.next.date ? " · " + dmy(p.next.date) : "") + (p.next.amount !== undefined && p.next.amount !== null ? " · " : "")));
+    if (p.next.amount !== undefined && p.next.amount !== null) pay.lastChild.append(sar(fmt(p.next.amount))); if (p.next.stage) pay.append(el("div", "small muted", "شرطها حسب العقد: " + p.next.stage)); box.append(pay); }
+  return box;
+}
+function mapPour(x, M) {
+  // every action carries the version of the pour this page showed: changed meanwhile → refused, reloaded, re-checked (never overwritten)
+  const box = el("div", "mpour"), act = new Set(x.acts || []), rid = x.id + (x.ver ? "@" + x.ver : "");
+  const top = el("div", "mpt"); top.append(el("b", "", x.el), el("span", "pill", x.stageT), el("span", "small muted", (x.zone ? "المنطقة " + x.zone : "المنطقة غير محددة") + (x.date ? " · موعد الصبة " + dmy(x.date) : "")));
+  if (x.startVoid) pw.append(el("div", "notice warn", "بدء صب مسجّل في " + dmy(String(x.startVoid.at).slice(0, 10)) + (x.startVoid.date ? " لموعد " + dmy(x.startVoid.date) : "") + " — " + x.startVoid.now + ". يبقى في سجل الصبة؛ يُسجّل بدء جديد بعد إفراج البوت."));
+  box.append(top);
+  if (x.conflict) box.append(el("div", "banner bad", x.conflict));
+  // readiness is a question before the pour; once poured (or started) the record speaks instead
+  if (!["poured", "pouring", "stale"].includes(x.stage)) box.append(el("div", x.ready ? "mready ok" : "mready", x.ready ? "✓ جاهز للصب: الاستلامات الثلاثة معتمدة، لا ملاحظة مانعة، والصبة مُفرج عنها" : "غير جاهز للصب: " + (x.notReady || []).join(" · ")));
+  if (x.started) box.append(el("div", "small", "بدء الصب مسجّل " + new Date(x.started.at).toLocaleTimeString("ar-SA-u-nu-latn", { hour: "2-digit", minute: "2-digit" }) + (x.stage === "stale" ? " — لا تحديث منذ مدة، يحتاج تأكيداً" : "")));
+  const nv = (v, f) => (v == null ? "—" : f(v)); // an unrecorded value is «—», never a value
+  if (x.poured) box.append(el("div", "small", `تم الصب ${dmy(x.poured.date)} · ${nv(x.poured.m3, (v) => v + " م³")} · المعالجة: ${nv(x.cureLeft, (v) => (v ? "باقي " + v + " أيام" : "انتهت مدتها"))}${x.cubes ? " · مكعبات " + nv(x.cubes.n, String) + " · 7 أيام " + nv(x.cubes.r7, (v) => v + " MPa") + " · 28 يوماً " + nv(x.cubes.r28, (v) => v + " MPa") : ""}`));
+  // the three inspections — each its own record for THIS pour only
+  const g = el("div", "mrx");
+  for (const r of x.rx) {
+    const c = el("div", "mrxc " + (RXC[r.st] || "unk")); c.append(el("b", "", r.t), glyph(r.stT, r.st === "approved" ? "✓" : r.st === "notes" ? "!" : r.st === "none" ? "○" : "…", RXC[r.st] || "unk"));
+    const kv = el("div", "small");
+    if (r.visit) kv.append(el("div", "", "الزيارة " + dmy(r.visit.on)));
+    if (r.visited) kv.append(el("div", "", "زار: " + (r.visited.who || "—")));
+    if (r.rec) kv.append(el("div", "", r.rec.legacy ? "اعتُمد في مسار البوت (قبل تسجيل تاريخه)" : "اعتُمد " + dmy(r.rec.on) + (r.rec.form ? " · النموذج الموقّع مرفق" : "")));
+    if (r.late) kv.append(el("div", "neg", "متأخر عن مهلة " + dmy(r.due)));
+    c.append(kv);
+    for (const f of r.findings) {
+      const fr = el("div", "mfind " + (f.blocking ? "bad" : "warn")); fr.append(el("span", "", (f.blocking ? "مانعة · " : "شرط · ") + (f.text || "")), el("span", "small muted", ({ open: "عند المسؤول", fixed: "أُصلحت — بانتظار الجهة", verified: "تحقق داخلياً" })[f.status] || f.status));
+      if (act.has(`verify~${r.party}~${f.id}`)) { const b = el("button", "sbtn", "تحقق وأغلق الشرط"); b.type = "button"; b.onclick = () => mapAct(M, "verify", `${rid}~${r.party}~${f.id}`); fr.append(b); }
+      c.append(fr);
+    }
+    const bar = el("div", "cacts");
+    for (const a of ["req", "visit", "visited", "note"]) if (act.has(`${a}~${r.party}`)) { const d = (M.defs || []).find((q) => q.id === a); if (!d) continue; bar.append(ebtn(d.label, () => mapAct(M, a, `${rid}~${r.party}`), "sbtn ebtn")); }
+    if (bar.children.length) c.append(bar);
+    g.append(c);
+  }
+  box.append(g);
+  const bar = el("div", "cacts");
+  // a released pour: «بدء الصب»; not released: the button only DOCUMENTS a pour that happened anyway (violation) — the bot's chain is untouched
+  if (act.has("start")) bar.append(ebtn(x.status === "ready" ? "بدء الصب" : "توثيق صب تم دون إفراج", () => mapAct(M, "start", rid), "sbtn ebtn" + (x.ready ? " pri" : "")));
+  if (act.has("alive")) bar.append(ebtn("ما زال الصب جارياً", () => mapAct(M, "alive", rid), "sbtn ebtn pri"));
+  // what the bot already does (signed forms, fix photos, «تمت الصبة») stays in «المساعد» on the same pour record
+  if (x.chat) bar.append(ebtn("افتح الصبة في المساعد", () => openChat(x.chat, x.el), "sbtn ebtn"));
+  if (bar.children.length) box.append(bar);
+  if (!x.ready && act.has("start")) box.append(el("div", "small muted", x.status === "ready" ? "بدء الصب الآن يُسجّل كمخالفة ويُرفع للإدارة — لا يُعتبر معتمداً." : "الصبة غير مُفرج عنها في مسار البوت: التوثيق يُسجّل مخالفة ويُرفع للإدارة، ولا يغيّر مسار البوت."));
+  // the violation: the event stays; its lifecycle (acknowledged → corrective action → technical assessment → authorised closure) is
+  // shown step by step — acknowledging it never resolves it, closing it never approves a missing inspection
+  if (x.violation) {
+    const v = x.violation, closed = v.status === "closed", vb = el("div", "mviol" + (closed ? " closed" : ""));
+    vb.append(el("b", "", (closed ? "مخالفة صب مغلقة" : "⛔ مخالفة صب") + (v.unreleased ? " — صب دون إفراج الصبة" : " — بدء دون استيفاء المتطلبات")),
+      el("div", "small", "الحالة: " + (MV_T[v.status] || v.status)), el("div", "small", "الناقص وقتها: " + (v.why || []).join(" · ")));
+    if (v.assign) vb.append(el("div", "small", `الإجراء التصحيحي: ${v.assign.action} — ${v.assign.toName || ""} · ${dmy(v.assign.due)}`));
+    if (v.assess) vb.append(el("div", "small", `التقييم الفني: ${v.assess.t || v.assess.disposition} — ${v.assess.note}`));
+    if (v.close) vb.append(el("div", "small", `الإغلاق: ${v.close.evidence} · ${dmy(v.close.at)}`));
+    const h = el("ol", "mvh"); for (const x2 of v.history || []) h.append(el("li", "", (MV_T[x2.step] || x2.step) + " · " + dmy(x2.at))); if ((v.history || []).length) vb.append(h);
+    const vbar = el("div", "cacts");
+    for (const [a, t] of [["vack", "اطلعت على المخالفة"], ["vassign", "تكليف بإجراء تصحيحي"], ["vassess", "التقييم الفني"], ["vclose", "التحقق والإغلاق"]]) if (act.has(a)) vbar.append(ebtn(t, () => mapAct(M, a, rid), "sbtn ebtn" + (a === "vclose" ? " pri" : "")));
+    if (vbar.children.length) vb.append(vbar);
+    box.append(vb);
+  }
+  return box;
+}
 function cmdView(m) {
   const C = D.cmd, money = !!(C.cash && C.cash.protection && C.cash.protection.floor !== undefined);
   m.append(page("", "مركز القيادة", "كل المشاريع معاً: ما يجري اليوم، ما يعيقه، ما يحتاج تدخلاً، وما يلزم للوصول إلى كل تحصيل. يقترح النظام، والقرار للمخوّلين.", "var(--eng6)"));
-  m.append(syncBar(C));
+  if (!(CT === "map" && C.map)) m.append(syncBar(C)); // the map carries its own data time and each project's field freshness
   const st = el("div", "sub-tabs mtabs");
-  const tabs = [...CTABS.slice(0, 1), ...(C.coord ? [{ k: "coord", t: "المنسّق" }, { k: "risk", t: "مخاطر قادمة" }] : []), ...(D.ws && D.ws.team ? [{ k: "team", t: "متابعة الفريق" }] : []), ...(C.agents ? [{ k: "agents", t: "فريق المساعدين" }] : []), ...CTABS.slice(1), ...(D.quality ? [{ k: "dq", t: "جودة البيانات" }] : [])]; if (!tabs.some((x) => x.k === CT)) CT = "now";
+  const tabs = [...(C.map ? [{ k: "map", t: "الخريطة" }] : []), ...CTABS.slice(0, 1), ...(C.coord ? [{ k: "coord", t: "المنسّق" }, { k: "risk", t: "مخاطر قادمة" }] : []), ...(D.ws && D.ws.team ? [{ k: "team", t: "متابعة الفريق" }] : []), ...(C.agents ? [{ k: "agents", t: "فريق المساعدين" }] : []), ...CTABS.slice(1), ...(D.quality ? [{ k: "dq", t: "جودة البيانات" }] : [])]; if (!tabs.some((x) => x.k === CT)) CT = "now";
   for (const x of tabs) { const b = el("button", "", x.t); b.type = "button"; b.setAttribute("aria-current", String(CT === x.k)); b.onclick = () => { CT = x.k; draw(); }; st.append(b); }
   m.append(st);
   if (CT === "dq") return cmdQuality(m, D.quality);
@@ -3418,6 +4086,7 @@ function cmdView(m) {
   if (CT === "coord") return cmdCoord(m, C.coord);
   if (CT === "agents") return cmdAgents(m, C.agents);
   if (CT === "risk") return cmdRisks(m, C.coord, money);
+  if (CT === "map") return cmdMap(m, C.map, false);
   if (CT === "now") return cmdNow(m, C, money);
   if (CT === "week") return cmdWeek(m, C);
   if (CT === "starts") return cmdStarts(m, C);
@@ -3547,6 +4216,7 @@ function wsAct(a, x, btn) {
   if (a.t === "doc") return openDoc({ open: { t: "file", id: a.id } }, btn);
   if (a.t === "act") { const KA = (D.cmd && D.cmd.coord && D.cmd.coord.acts) || null, d = KA && (KA.data.acts || []).find((q) => q.id === a.act), row = KA && (KA.data.rows || []).find((r) => r.id === a.row); return d && row ? actForm(KA, d, row) : toast("الإجراء غير متاح لك على هذا البند"); }
   if (a.v === "site" && a.sub) ST = a.sub; if (a.v === "cmd" && a.sub) CT = a.sub;
+  if (a.v === "cmd" && a.sub === "map" && a.pid) { MAPV.sel = a.pid; MAPV.pour = a.pour || null; } // a map card opens its project and pour
   go(a.v);
 }
 function wsCard(x) {
@@ -4066,6 +4736,8 @@ async function wallRefresh() {
 }
 function wallPanels(X) {
   const ps = X.projects || [], P = [];
+  // the map first: read-only (no panel, no actions); the server already stripped names, notes, forms and amounts
+  if (X.map && (X.map.projects.length || (X.map.noGeo || []).length)) P.push(["خريطة المشاريع", (b) => cmdMap(b, X.map, true)]);
   for (let i = 0; i < Math.max(1, ps.length); i += 20) P.push(["المشاريع" + (ps.length > 20 ? " (" + (i / 20 + 1) + "/" + Math.ceil(ps.length / 20) + ")" : ""), (b) => {
     const g = el("div", "wgrid");
     for (const p of ps.slice(i, i + 20)) {
