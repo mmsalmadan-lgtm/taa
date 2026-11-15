@@ -612,6 +612,10 @@ body.chatonly footer{display:none}
 /* compact plates over the buildings: code + status always; the name on hover, focus or when chosen (the building stays visible) */
 .miso .mk:not(.sel):not(:hover):not(:focus-visible) .nm,.mgeo .mk:not(.sel):not(:hover):not(:focus-visible) .nm{display:none}
 .miso .mk-plate,.mgeo .mk-plate{padding:4px 9px;border-radius:10px}
+.ormap{position:relative;height:min(52vh,460px);border-radius:var(--r-m);overflow:hidden;background:#20262E;margin:6px 0 10px;display:grid;place-items:center}
+.ormap .orprev{width:100%;height:100%;background:#F4F5F2}
+.ormap::after{content:"";position:absolute;left:50%;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border:2px solid #fff;border-radius:50%;box-shadow:0 0 0 1px rgb(0 0 0/.4);pointer-events:none}
+.orrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:6px 0}.orrow input[type=range]{flex:1 1 160px;min-width:120px}.ornum{width:4.6em;text-align:center}
 .mgb{position:relative;line-height:0}.mgsvg{display:block;overflow:visible;cursor:pointer;filter:drop-shadow(0 6px 8px rgb(29 37 51/.18))}
 .mmodel{cursor:pointer}.miso.wall .mmodel{cursor:default}
 .mk-plate{display:flex;flex-direction:column;align-items:flex-start;gap:1px;background:var(--surface);border-radius:12px;padding:6px 11px;box-shadow:0 12px 26px -16px rgb(29 37 51/.55),0 2px 4px -2px rgb(29 37 51/.18);text-align:start;white-space:nowrap;transition:transform .2s var(--spring),box-shadow .2s var(--spring),opacity .2s var(--spring)}
@@ -3515,7 +3519,16 @@ function mapPlane(ps) {
 // from its RECORDED stages — completed concrete, fresh concrete (still curing), formwork with protruding rebar (the pour stages), planned
 // work as blue outlines, a floor the records say is in progress without saying which part as grey outlines. Nothing moves at rest; the
 // only stage animation is a recorded pour arriving with fresh data. One instance for the session: a refresh updates it in place.
-const ISO_C = Math.cos(Math.PI / 6), ISO_S = 0.5, isoP = (x, y, z = 0) => [(x - y) * ISO_C, (x + y) * ISO_S - z];
+const ISO_C = Math.cos(Math.PI / 6), ISO_S = 0.5, isoPr = (x, y, z = 0) => [(x - y) * ISO_C, (x + y) * ISO_S - z];
+// the building's plan transform while ITS model is drawn (owner, 15 Nov 2026: «each building in the direction it is really built»): the standard
+// 16 × 12 m plan scaled to the recorded length × width and turned by the recorded angle (clockwise from north; x = east, y = south), about the
+// plan centre (8, 6) — so the project's point stays the building's centre. No record → the standard drawing.
+let ISO_XF = null;
+const isoXfOf = (p) => { const o = (p && p.geo) || {}, th = ((+o.bearing || 0) * Math.PI) / 180; return { sx: (+o.len || 16) / 16, sy: (+o.wid || 12) / 12, c: Math.cos(th), s: Math.sin(th) }; };
+const isoXY = (x, y, T = ISO_XF) => { if (!T) return [x, y]; const dx = (x - 8) * T.sx, dy = (y - 6) * T.sy; return [8 + dx * T.c - dy * T.s, 6 + dx * T.s + dy * T.c]; };
+const isoP = (x, y, z = 0) => { const q = isoXY(x, y); return isoPr(q[0], q[1], z); };
+const isoDepth = (x, y) => { const q = isoXY(x, y); return q[0] + q[1]; }; // nearer to the viewer = larger
+const isoKx = () => (ISO_XF ? 1 / ISO_XF.sx : 1), isoKy = () => (ISO_XF ? 1 / ISO_XF.sy : 1); // a section keeps its real size when the plan is stretched
 const ISO_KM = 5.2, ISO_KD = 11, ISO_XS = [0.5, 5.5, 10.5, 15.5], ISO_YS = [0.5, 6, 11.5], ISO_NS = "http://www.w3.org/2000/svg";
 const ISO_SITE = ["approvals", "supply", "ready", "pouring", "stale", "violation"];
 const ISO_ICON = {
@@ -3535,30 +3548,36 @@ function isoEl(t, a, parent) { const e = document.createElementNS(ISO_NS, t); fo
 const isoPts = (a) => a.map((q) => q[0].toFixed(3) + "," + q[1].toFixed(3)).join(" ");
 const isoEase = (x) => 1 - Math.pow(1 - Math.min(1, Math.max(0, x)), 3);
 const ISO_EDGE = { "vector-effect": "non-scaling-stroke", stroke: "rgb(29 37 51/.22)", "stroke-width": "0.8", "stroke-linejoin": "round" };
+// the side faces of a plan rectangle that face the viewer (from +x +y), in world coordinates, each with its shade (1 = the lit side, 2 = the darker)
+function isoFaces(x0, y0, x1, y1) {
+  const W = [[x0, y0], [x1, y0], [x1, y1], [x0, y1]].map(([x, y]) => isoXY(x, y)), cx = (W[0][0] + W[2][0]) / 2, cy = (W[0][1] + W[2][1]) / 2, out = [];
+  for (let i = 0; i < 4; i++) { const a = W[i], b = W[(i + 1) % 4], mx = (a[0] + b[0]) / 2 - cx, my = (a[1] + b[1]) / 2 - cy; if (mx + my > 1e-6) out.push({ a, b, shade: my >= mx ? 1 : 2 }); }
+  return { W, faces: out };
+}
 function isoBox(g, x0, y0, z0, x1, y1, z1, mat, op = 1) {
-  const m = ISO_MAT[mat];
-  isoEl("polygon", { points: isoPts([isoP(x0, y1, z0), isoP(x1, y1, z0), isoP(x1, y1, z1), isoP(x0, y1, z1)]), fill: m[1], "fill-opacity": op, ...ISO_EDGE, "stroke-opacity": op }, g);
-  isoEl("polygon", { points: isoPts([isoP(x1, y0, z0), isoP(x1, y1, z0), isoP(x1, y1, z1), isoP(x1, y0, z1)]), fill: m[2], "fill-opacity": op, ...ISO_EDGE, "stroke-opacity": op }, g);
-  isoEl("polygon", { points: isoPts([isoP(x0, y0, z1), isoP(x1, y0, z1), isoP(x1, y1, z1), isoP(x0, y1, z1)]), fill: m[0], "fill-opacity": op, ...ISO_EDGE, "stroke-opacity": op }, g);
+  const m = ISO_MAT[mat], { W, faces } = isoFaces(x0, y0, x1, y1);
+  for (const f of faces) isoEl("polygon", { points: isoPts([isoPr(f.a[0], f.a[1], z0), isoPr(f.b[0], f.b[1], z0), isoPr(f.b[0], f.b[1], z1), isoPr(f.a[0], f.a[1], z1)]), fill: m[f.shade], "fill-opacity": op, ...ISO_EDGE, "stroke-opacity": op }, g);
+  isoEl("polygon", { points: isoPts(W.map((q) => isoPr(q[0], q[1], z1))), fill: m[0], "fill-opacity": op, ...ISO_EDGE, "stroke-opacity": op }, g);
 }
 // planned (blue) or recorded as in progress without saying which part (grey): outlines only — never drawn as work being done
 function isoGhost(g, x0, y0, z0, x1, y1, z1, kind, faint) {
   const c = kind === "plan" ? "#2F6FCB" : "#7A8494", o = faint ? 0.35 : 0.6;
   const a = { fill: kind === "plan" ? "rgb(47 111 203/.05)" : "rgb(122 132 148/.07)", stroke: c, "stroke-opacity": o, "stroke-width": "1", "stroke-dasharray": kind === "plan" ? "4 3" : "2 3", "vector-effect": "non-scaling-stroke", "stroke-linejoin": "round" };
-  isoEl("polygon", { points: isoPts([isoP(x0, y1, z0), isoP(x1, y1, z0), isoP(x1, y0, z0), isoP(x1, y0, z1), isoP(x0, y0, z1), isoP(x0, y1, z1)]), ...a }, g);
-  isoEl("polyline", { points: isoPts([isoP(x0, y1, z1), isoP(x1, y1, z1), isoP(x1, y0, z1)]), fill: "none", stroke: c, "stroke-opacity": o * 0.75, "stroke-width": "1", "stroke-dasharray": a["stroke-dasharray"], "vector-effect": "non-scaling-stroke" }, g);
-  const f0 = isoP(x1, y1, z0), f1 = isoP(x1, y1, z1);
-  isoEl("line", { x1: f0[0], y1: f0[1], x2: f1[0], y2: f1[1], stroke: c, "stroke-opacity": o * 0.75, "stroke-width": "1", "stroke-dasharray": a["stroke-dasharray"], "vector-effect": "non-scaling-stroke" }, g);
+  const { W, faces } = isoFaces(x0, y0, x1, y1);
+  for (const f of faces) isoEl("polygon", { points: isoPts([isoPr(f.a[0], f.a[1], z0), isoPr(f.b[0], f.b[1], z0), isoPr(f.b[0], f.b[1], z1), isoPr(f.a[0], f.a[1], z1)]), ...a, "stroke-opacity": o * 0.75 }, g);
+  isoEl("polygon", { points: isoPts(W.map((q) => isoPr(q[0], q[1], z1))), ...a }, g);
 }
 function isoLine(g, a, b, stroke, w, extra = {}) { isoEl("line", { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke, "stroke-width": w, "vector-effect": "non-scaling-stroke", "stroke-linecap": "round", ...extra }, g); }
 function isoSeams(g, x0, y0, z0, x1, y1, z1, op) { // plywood joints and clamps on the two visible faces
-  for (let z = z0 + 0.7; z < z1 - 0.2; z += 0.85) { isoLine(g, isoP(x0, y1, z), isoP(x1, y1, z), "#8A5A22", 1.1, { "stroke-opacity": 0.55 * op }); isoLine(g, isoP(x1, y0, z), isoP(x1, y1, z), "#8A5A22", 1.1, { "stroke-opacity": 0.55 * op }); }
+  const { faces } = isoFaces(x0, y0, x1, y1);
+  for (let z = z0 + 0.7; z < z1 - 0.2; z += 0.85) for (const f of faces) isoLine(g, isoPr(f.a[0], f.a[1], z), isoPr(f.b[0], f.b[1], z), "#8A5A22", 1.1, { "stroke-opacity": 0.55 * op });
 }
 function isoCage(g, cx, cy, zFrom, zTop, op = 1) { // a column cage: 8 bars and ties, shown where it stands out of the formwork / concrete
-  const r = 0.17, bars = [[-r, -r], [0, -r], [r, -r], [r, 0], [r, r], [0, r], [-r, r], [-r, 0]], st = { "stroke-opacity": op };
-  for (const [dx, dy] of bars.filter(([a, b]) => a + b < 0)) isoLine(g, isoP(cx + dx, cy + dy, zFrom), isoP(cx + dx, cy + dy, zTop), "#6A3A22", 1.7, st);
-  for (let z = zFrom + 0.2; z < zTop - 0.05; z += 0.24) isoEl("polygon", { points: isoPts([isoP(cx - r, cy - r, z), isoP(cx + r, cy - r, z), isoP(cx + r, cy + r, z), isoP(cx - r, cy + r, z)]), fill: "none", stroke: "#6A3A22", "stroke-width": "1", "stroke-opacity": 0.8 * op, "vector-effect": "non-scaling-stroke" }, g);
-  for (const [dx, dy] of bars.filter(([a, b]) => a + b >= 0)) isoLine(g, isoP(cx + dx, cy + dy, zFrom), isoP(cx + dx, cy + dy, zTop), "#6A3A22", 1.7, st);
+  const rx = 0.17 * isoKx(), ry = 0.17 * isoKy(), bars = [[-rx, -ry], [0, -ry], [rx, -ry], [rx, 0], [rx, ry], [0, ry], [-rx, ry], [-rx, 0]], st = { "stroke-opacity": op };
+  const d0 = isoDepth(cx, cy), back = bars.filter(([a, b]) => isoDepth(cx + a, cy + b) < d0), front = bars.filter(([a, b]) => isoDepth(cx + a, cy + b) >= d0);
+  for (const [dx, dy] of back) isoLine(g, isoP(cx + dx, cy + dy, zFrom), isoP(cx + dx, cy + dy, zTop), "#6A3A22", 1.7, st);
+  for (let z = zFrom + 0.2; z < zTop - 0.05; z += 0.24) isoEl("polygon", { points: isoPts([isoP(cx - rx, cy - ry, z), isoP(cx + rx, cy - ry, z), isoP(cx + rx, cy + ry, z), isoP(cx - rx, cy + ry, z)]), fill: "none", stroke: "#6A3A22", "stroke-width": "1", "stroke-opacity": 0.8 * op, "vector-effect": "non-scaling-stroke" }, g);
+  for (const [dx, dy] of front) isoLine(g, isoP(cx + dx, cy + dy, zFrom), isoP(cx + dx, cy + dy, zTop), "#6A3A22", 1.7, st);
 }
 function isoMesh(g, x0, y0, x1, y1, z, op = 1) { // the reinforcement on a slab / footing top
   const st = { "stroke-opacity": 0.75 * op };
@@ -3598,9 +3617,9 @@ function isoStack(p) {
   return out;
 }
 function isoCols(roof) {
-  const xs = roof ? [ISO_XS[2], ISO_XS[3]] : ISO_XS, ys = roof ? [ISO_YS[1], ISO_YS[2]] : ISO_YS, c = [];
+  const xs = roof ? [ISO_XS[2], ISO_XS[3]] : ISO_XS, ys = roof ? [ISO_YS[0], ISO_YS[1]] : ISO_YS, c = []; // the annex stands at the back; the front edge (y = 12) is the façade
   for (const y of ys) for (const x of xs) c.push([x, y]);
-  return c.sort((a, b) => a[0] + a[1] - (b[0] + b[1]));
+  return c.sort((a, b) => isoDepth(a[0], a[1]) - isoDepth(b[0], b[1]));
 }
 // one element in its mode; `t` = progress of a recorded pour arriving (concrete rises inside the formwork, then the formwork goes)
 function isoPart(g, e, t) {
@@ -3608,14 +3627,15 @@ function isoPart(g, e, t) {
   const conc = (x0, y0, a, x1, y1, b) => (mode === "fresh" ? isoBox(g, x0, y0, a, x1, y1, b, "fresh") : isoBox(g, x0, y0, a, x1, y1, b, "conc"));
   const fill = pour ? isoEase(t / 0.65) : 0, fop = pour ? (t < 0.65 ? 1 - 0.8 * (t / 0.65) : 0.2 * (1 - (t - 0.65) / 0.35)) : 1;
   if (e.kind === "pad" || e.kind === "neck" || e.kind === "cols") {
-    const h = e.kind === "pad" ? 0.85 : 0.25, pts = e.kind === "cols" ? isoCols(e.roof) : isoCols(false);
+    const h = e.kind === "pad" ? 0.85 : 0.25, pts = e.kind === "cols" ? isoCols(e.roof) : isoCols(false), kx = isoKx(), ky = isoKy();
     for (const [x, y] of pts) {
-      if (mode === "conc" || mode === "fresh") { conc(x - h, y - h, z0, x + h, y + h, z1); if (e.barsUp) isoCage(g, x, y, z1 - 0.02, z1 + 1.05); continue; }
-      if (mode === "plan" || mode === "unk") { isoGhost(g, x - h, y - h, z0, x + h, y + h, z1, mode, e.kind !== "pad"); continue; }
-      const f = h + (e.kind === "pad" ? 0.06 : 0.06); // site: formwork around the reinforcement
-      if (pour && fill > 0) isoBox(g, x - h + 0.02, y - h + 0.02, z0, x + h - 0.02, y + h - 0.02, z0 + (z1 - z0) * fill + 0.001, "fresh");
-      if (fop > 0.01) { isoBox(g, x - f, y - f, z0, x + f, y + f, z1, "ply", fop); isoSeams(g, x - f, y - f, z0, x + f, y + f, z1, Math.max(fop, pour ? fop : 0.75)); }
-      if (e.kind === "pad") { if (!pour) isoMesh(g, x - h, y - h, x + h, y + h, z1 + 0.01); }
+      const hx = h * kx, hy = h * ky; // the section in metres whatever the plan's stretch
+      if (mode === "conc" || mode === "fresh") { conc(x - hx, y - hy, z0, x + hx, y + hy, z1); if (e.barsUp) isoCage(g, x, y, z1 - 0.02, z1 + 1.05); continue; }
+      if (mode === "plan" || mode === "unk") { isoGhost(g, x - hx, y - hy, z0, x + hx, y + hy, z1, mode, e.kind !== "pad"); continue; }
+      const fx = hx + 0.06 * kx, fy = hy + 0.06 * ky, f = h + 0.06; // site: formwork around the reinforcement
+      if (pour && fill > 0) isoBox(g, x - hx + 0.02, y - hy + 0.02, z0, x + hx - 0.02, y + hy - 0.02, z0 + (z1 - z0) * fill + 0.001, "fresh");
+      if (fop > 0.01) { isoBox(g, x - fx, y - fy, z0, x + fx, y + fy, z1, "ply", fop); isoSeams(g, x - fx, y - fy, z0, x + fx, y + fy, z1, Math.max(fop, pour ? fop : 0.75)); }
+      if (e.kind === "pad") { if (!pour) isoMesh(g, x - hx, y - hy, x + hx, y + hy, z1 + 0.01); }
       else isoCage(g, x, y, z1 - 0.02, z1 + 1.05);
       if (e.flag === "violation" && !pour) isoEl("polygon", { points: isoPts([isoP(x - f - 0.15, y + f + 0.15, z0), isoP(x + f + 0.15, y + f + 0.15, z0), isoP(x + f + 0.15, y - f - 0.15, z0), isoP(x + f + 0.15, y - f - 0.15, z1 + 1.1), isoP(x - f - 0.15, y - f - 0.15, z1 + 1.1), isoP(x - f - 0.15, y + f + 0.15, z1 + 1.1)]), fill: "none", stroke: "#B42318", "stroke-width": "1.6", "stroke-dasharray": "5 3", "vector-effect": "non-scaling-stroke" }, g);
     }
@@ -3623,8 +3643,8 @@ function isoPart(g, e, t) {
   }
   // horizontal: tie beams (segments) or a slab (whole floor / the annex) — the slab's front edge beams with it
   const segs = e.kind === "beam"
-    ? [...ISO_YS.flatMap((y) => [0, 1, 2].map((i) => [ISO_XS[i], y - 0.15, ISO_XS[i + 1], y + 0.15])), ...ISO_XS.flatMap((x) => [0, 1].map((i) => [x - 0.15, ISO_YS[i], x + 0.15, ISO_YS[i + 1]]))].sort((a, b) => a[0] + a[1] - (b[0] + b[1]))
-    : [e.roof ? [10.2, 5.7, 15.8, 11.8] : [-0.15, -0.15, 16.15, 12.15]];
+    ? [...ISO_YS.flatMap((y) => [0, 1, 2].map((i) => [ISO_XS[i], y - 0.15 * isoKy(), ISO_XS[i + 1], y + 0.15 * isoKy()])), ...ISO_XS.flatMap((x) => [0, 1].map((i) => [x - 0.15 * isoKx(), ISO_YS[i], x + 0.15 * isoKx(), ISO_YS[i + 1]]))].sort((a, b) => isoDepth((a[0] + a[2]) / 2, (a[1] + a[3]) / 2) - isoDepth((b[0] + b[2]) / 2, (b[1] + b[3]) / 2))
+    : [e.roof ? [10.2, 0.2, 15.8, 6.3] : [-0.15, -0.15, 16.15, 12.15]];
   for (const [x0, y0, x1, y1] of segs) {
     if (mode === "conc" || mode === "fresh") {
       if (e.kind === "slab") { conc(x0, y1 - 0.3, z0 - 0.45, x1, y1, z0); conc(x1 - 0.3, y0, z0 - 0.45, x1, y1, z0); }
@@ -3640,11 +3660,15 @@ function isoPart(g, e, t) {
 }
 const ISO_STC = { green: "#1D8456", yellow: "#D08A12", red: "#B42318", grey: "#6B7584" };
 function isoModel(p, at) {
-  const g = isoEl("g", { class: "mmodel", transform: `translate(${isoP(at[0], at[1])[0]},${isoP(at[0], at[1])[1]})` });
+  const T0 = ISO_XF; ISO_XF = isoXfOf(p);
+  try { return isoModelIn(p, at); } finally { ISO_XF = T0; }
+}
+function isoModelIn(p, at) {
+  const g = isoEl("g", { class: "mmodel", transform: `translate(${isoPr(at[0], at[1])[0]},${isoPr(at[0], at[1])[1]})` });
   isoEl("polygon", { points: isoPts([isoP(-5, -4), isoP(21, -4), isoP(21, 16.5), isoP(-5, 16.5)]), fill: "#EEE8DC", stroke: "#D9CFBC", "stroke-width": "1", "vector-effect": "non-scaling-stroke" }, g);
   isoEl("polygon", { points: isoPts([isoP(-4.2, -3.2), isoP(20.2, -3.2), isoP(20.2, 15.7), isoP(-4.2, 15.7)]), fill: "none", stroke: ISO_STC[p.colour.k], "stroke-width": "1.6", "stroke-opacity": ".75", "stroke-dasharray": "10 5", "vector-effect": "non-scaling-stroke" }, g);
   const stack = isoStack(p);
-  if (stack.length) isoEl("polygon", { points: isoPts([isoP(1.2, 0.8), isoP(19.5, 0.8), isoP(19.5, 15.2), isoP(1.2, 15.2)]), fill: "rgb(29 37 51/.18)", filter: "url(#iso-soft)" }, g);
+  if (stack.length) isoEl("polygon", { points: isoPts([[-0.2, -0.2], [16.2, -0.2], [16.2, 12.2], [-0.2, 12.2]].map(([x, y]) => { const q = isoXY(x, y); return isoPr(q[0] + 2.2, q[1] + 1.6); })), fill: "rgb(29 37 51/.18)", filter: "url(#iso-soft)" }, g);
   // the active pour's flag (a violation is outlined in red on the element)
   const act = (p.pours || []).find((x) => x.id === p.active);
   for (const e of stack) {
@@ -3790,6 +3814,7 @@ function isoAnimate() {
 }
 // far out a building is drawn at least ISO_MINPX wide (its plan is ~24 m across in this projection)
 const ISO_MINPX = 92, isoMinPx = () => Math.max(56, Math.min(ISO_MINPX, (ISO.W || 600) / 6)), isoScale = () => Math.max(1, isoMinPx() / (24.2 * ISO.cam.k)); // smaller on a phone so close sites do not pile up
+const isoScrL = (p, a, x, y, z = 0) => { const q = isoXY(x, y, isoXfOf(p)); return isoScr(a[0] + q[0], a[1] + q[1], z); }; // a point of a project's own plan
 const isoScr = (x, y, z = 0) => { const q = isoP(x, y, z), c = ISO.cam; return [(q[0] - c.px) * c.k + ISO.W / 2, (q[1] - c.py) * c.k + ISO.H / 2]; };
 function isoRender() {
   if (!ISO.el || !ISO.el.isConnected) return;
@@ -3839,12 +3864,12 @@ function isoRender() {
     const stack = isoStack(p), seenL = new Set();
     for (const e of stack) {
       if (seenL.has(e.L.key) || e.kind === "slab" || e.kind === "pad" || e.kind === "beam") continue; seenL.add(e.L.key);
-      const [lx, ly] = isoScr(a[0] - 0.4, a[1] + 12.4, (e.z0 + e.z1) / 2), d = el("div", "mlvl2"); d.append(el("b", "", e.L.t));
+      const [lx, ly] = isoScrL(p, a, -0.4, 12.4, (e.z0 + e.z1) / 2), d = el("div", "mlvl2"); d.append(el("b", "", e.L.t));
       d.style.transform = `translate(${lx}px,${ly}px) translate(-100%,-50%) translateX(-14px)`; ISO.ov.append(d);
     }
     const act = (p.pours || []).find((x) => x.id === p.active), at = act && stack.find((e) => e.L.key === act.level && e.part.k === act.part);
     if (act && at) {
-      const [cx, cy] = isoScr(a[0] + (at.roof ? 15.5 : 15.5), a[1] + (at.roof ? 6 : 0.5), at.z1 + (at.kind === "slab" ? 0.1 : 1));
+      const [cx, cy] = isoScrL(p, a, 15.5, 0.5, at.z1 + (at.kind === "slab" ? 0.1 : 1));
       const box = el("div", "mcall2" + (act.stage === "violation" ? " bad" : "")), inner = el("div", "mcb");
       const nOk = (act.rx || []).filter((r) => r.st === "approved").length;
       inner.append(el("b", "", act.el), el("span", "", act.stageT), el("small", "", `الاستلامات ${nOk} من 3` + (act.ready ? " · جاهز للصب" : "")));
@@ -3859,8 +3884,9 @@ function isoRender() {
 }
 // a still picture of one project's model (the panel, when the Mapbox base map draws the projects as beacons)
 function isoThumb(p) {
-  const s = document.createElementNS(ISO_NS, "svg"), g = isoModel(p, [0, 0]), top = isoStack(p).reduce((m, e) => Math.max(m, e.z1), 4) + 1.4;
-  const xs = [isoP(-5, 16.5)[0], isoP(21, -4)[0]], ys = [isoP(-5, -4, top)[1], isoP(21, 16.5)[1]];
+  const s = document.createElementNS(ISO_NS, "svg"), g = isoModel(p, [0, 0]), top = isoStack(p).reduce((m, e) => Math.max(m, e.z1), 4) + 1.4, T = isoXfOf(p);
+  const cs = [[-5, -4], [21, -4], [21, 16.5], [-5, 16.5]].map(([x, y]) => isoXY(x, y, T)), lo = cs.map((q) => isoPr(q[0], q[1])), hi = cs.map((q) => isoPr(q[0], q[1], top));
+  const xs = [Math.min(...lo.map((q) => q[0])), Math.max(...lo.map((q) => q[0]))], ys = [Math.min(...hi.map((q) => q[1])), Math.max(...lo.map((q) => q[1]))];
   s._vb = [xs[0] - 1, ys[0] - 1, xs[1] - xs[0] + 2, ys[1] - ys[0] + 2];
   s.setAttribute("viewBox", s._vb.join(" ")); s.setAttribute("class", "mthumb"); s.setAttribute("aria-hidden", "true");
   s.innerHTML = `<defs>${ISO_DEFS}</defs>`; s.append(g); return s;
@@ -3934,8 +3960,44 @@ function mapGeoMarkers(G) {
   }
   for (const [id, mk] of G.markers) if (!seen.has(id)) { mk.remove(); G.markers.delete(id); }
   mapGeoSize(G);
+  try { mapGeo3D(G); } catch (e) { console.error("map 3d", e); }
   if (!G.zoomHooked) { G.zoomHooked = true; G.map.on("zoom", () => mapGeoSize(G)); }
   mapGeoFocus(G);
+}
+// ---- the building in 3D ON the map (owner, 15 Nov 2026: «in the direction it is really built»): from MAP3D_Z the drawing marker gives way to
+// extruded geometry at the true place, orientation and size — the same recorded stages as the drawing (concrete, fresh, formwork, rebar, planned)
+const MAP3D_Z = 16.5, M3C = { conc: "#C9CED3", fresh: "#98A1A9", ply: "#D29C52", steel: "#6A3A22", plan: "#2F6FCB", unk: "#7A8494" };
+function isoSolids(p) {
+  const out = [], kx = 16 / ((p.geo && +p.geo.len) || 16), ky = 12 / ((p.geo && +p.geo.wid) || 12), box = (x0, y0, x1, y1, z0, z1, c) => out.push({ x0, y0, x1, y1, z0, z1, c });
+  for (const e of isoStack(p)) {
+    const { mode, z0, z1 } = e, solid = mode === "conc" || mode === "fresh" ? mode : mode === "site" ? "ply" : mode;
+    if (e.kind === "pad" || e.kind === "neck" || e.kind === "cols") {
+      const h = e.kind === "pad" ? 0.85 : 0.25, hx = h * kx, hy = h * ky;
+      for (const [x, y] of isoCols(e.kind === "cols" && e.roof)) {
+        const f = mode === "site" ? 0.06 : 0;
+        box(x - hx - f * kx, y - hy - f * ky, x + hx + f * kx, y + hy + f * ky, z0, z1, solid);
+        if (e.kind !== "pad" && (mode === "site" || ((mode === "conc" || mode === "fresh") && e.barsUp))) box(x - 0.17 * kx, y - 0.17 * ky, x + 0.17 * kx, y + 0.17 * ky, z1, z1 + 1.05, "steel");
+      }
+      continue;
+    }
+    const segs = e.kind === "beam"
+      ? [...ISO_YS.flatMap((y) => [0, 1, 2].map((i) => [ISO_XS[i], y - 0.15 * ky, ISO_XS[i + 1], y + 0.15 * ky])), ...ISO_XS.flatMap((x) => [0, 1].map((i) => [x - 0.15 * kx, ISO_YS[i], x + 0.15 * kx, ISO_YS[i + 1]]))]
+      : [e.roof ? [10.2, 0.2, 15.8, 6.3] : [-0.15, -0.15, 16.15, 12.15]];
+    for (const [x0, y0, x1, y1] of segs) box(x0, y0, x1, y1, z0, z1, solid);
+  }
+  return out;
+}
+// a point of a project's plan → [lng, lat] (x east, y south, metres from the plan centre after the project's own turn and size)
+function isoLngLat(p, x, y) { const q = isoXY(x, y, isoXfOf(p)), e = q[0] - 8, n = -(q[1] - 6), la = p.geo.lat; return [p.geo.lng + e / (111320 * Math.cos((la * Math.PI) / 180)), la + n / 111320]; }
+function mapGeo3D(G) {
+  const feats = [];
+  for (const p of G.ps) for (const b of isoSolids(p)) feats.push({ type: "Feature", properties: { c: M3C[b.c] || M3C.conc, b: b.z0, h: b.z1, g: b.c === "plan" || b.c === "unk" ? 1 : 0 },
+    geometry: { type: "Polygon", coordinates: [[[b.x0, b.y0], [b.x1, b.y0], [b.x1, b.y1], [b.x0, b.y1], [b.x0, b.y0]].map(([x, y]) => isoLngLat(p, x, y))] } });
+  const data = { type: "FeatureCollection", features: feats }, m = G.map;
+  if (m.getSource("taa3d")) { m.getSource("taa3d").setData(data); return; }
+  m.addSource("taa3d", { type: "geojson", data });
+  m.addLayer({ id: "taa3d-solid", type: "fill-extrusion", source: "taa3d", minzoom: MAP3D_Z - 0.5, filter: ["==", ["get", "g"], 0], paint: { "fill-extrusion-color": ["get", "c"], "fill-extrusion-base": ["get", "b"], "fill-extrusion-height": ["get", "h"], "fill-extrusion-opacity": ["interpolate", ["linear"], ["zoom"], MAP3D_Z - 0.5, 0, MAP3D_Z, 0.95] } });
+  m.addLayer({ id: "taa3d-ghost", type: "fill-extrusion", source: "taa3d", minzoom: MAP3D_Z - 0.5, filter: ["==", ["get", "g"], 1], paint: { "fill-extrusion-color": ["get", "c"], "fill-extrusion-base": ["get", "b"], "fill-extrusion-height": ["get", "h"], "fill-extrusion-opacity": ["interpolate", ["linear"], ["zoom"], MAP3D_Z - 0.5, 0, MAP3D_Z, 0.22] } });
 }
 // the building at the map's true scale (metres per pixel at the project's latitude), never smaller than ISO_MINPX across; the ground
 // centre of the plan (local 8, 6) is placed exactly on the project's point
@@ -3945,15 +4007,16 @@ function mapGeoSize(G) {
     const w = mk.getElement(), vb = w._vb; if (!vb) continue;
     const mpp = (40075016.686 * Math.cos((w._lat * Math.PI) / 180)) / (512 * Math.pow(2, z));
     const k = Math.min(600 / vb[2], Math.max(1 / mpp, ISO_MINPX / 24.2));
+    const three = z >= MAP3D_Z; w._svg.style.display = three ? "none" : ""; // close in, the 3D building on the map replaces the drawing
     w._svg.setAttribute("width", String(Math.round(vb[2] * k))); w._svg.setAttribute("height", String(Math.round(vb[3] * k)));
-    mk.setOffset([-(c[0] - vb[0]) * k, -(c[1] - vb[1]) * k]);
+    mk.setOffset(three ? [0, -Math.min(220, 40 / mpp)] : [-(c[0] - vb[0]) * k, -(c[1] - vb[1]) * k]);
   }
 }
 // the chosen project comes into view (once per choice); on a phone the bottom sheet's part of the map is left as padding
 function mapGeoFocus(G) {
   const id = MAPV.sel; if (!G.map || id === G.focus) return; G.focus = id;
   const p = id && G.ps.find((x) => x.id === id); if (!p) return;
-  const o = { center: [p.geo.lng, p.geo.lat], zoom: Math.max(G.map.getZoom(), 15.5), padding: { top: 40, left: 20, right: 20, bottom: matchMedia("(max-width:760px)").matches ? Math.round(innerHeight * 0.42) : 40 } };
+  const o = { center: [p.geo.lng, p.geo.lat], zoom: Math.max(G.map.getZoom(), 18.8), pitch: 55, padding: { top: 40, left: 20, right: 20, bottom: matchMedia("(max-width:760px)").matches ? Math.round(innerHeight * 0.42) : 40 } };
   if (isoReduce()) G.map.jumpTo(o); else G.map.easeTo({ ...o, duration: 700 });
 }
 function cmdMap(m, M, wall) {
@@ -4025,11 +4088,73 @@ function mapAct(M, act, row, pre) {
   const d = (M.defs || []).find((x) => x.id === act); if (!d) return;
   actForm({ id: "map" }, d, { id: row, data: pre || {} });
 }
+// «ضبط اتجاه المبنى» (admin): move the satellite picture under the fixed outline until it sits on the plot, turn it until the façade
+// (the thick edge) faces the street, set length × width; saved with the PIN (act map.orient: angle, size and the corrected centre)
+function orientDialog(M, p) {
+  const g0 = p.geo || {}, st = { b: +g0.bearing || 0, len: +g0.len || 16, wid: +g0.wid || 12, lat: g0.lat, lng: g0.lng };
+  const body = $("dlgBody"); body.replaceChildren(el("h3", "", "ضبط اتجاه المبنى — " + (p.code || p.name)));
+  const geoOk = !!(M.base && M.base.provider === "mapbox" && M.base.token);
+  body.append(el("p", "small muted", geoOk ? "حرّك الصورة الجوية حتى يقع المخطط على أرض المشروع، ثم دوّره حتى تكون الواجهة (الضلع العريض) على الشارع." : "الصورة الجوية تحتاج إعداد الخريطة الجغرافية — اضبط الزاوية من المعاينة."));
+  const view = el("div", "ormap"); body.append(view);
+  const row = el("div", "orrow"), ang = el("input"); ang.type = "range"; ang.min = "0"; ang.max = "359"; ang.step = "1"; ang.value = String(Math.round(st.b)); ang.setAttribute("aria-label", "الزاوية من الشمال");
+  const angN = el("input"); angN.type = "text"; angN.inputMode = "decimal"; angN.dir = "ltr"; angN.value = String(st.b); angN.setAttribute("aria-label", "الزاوية بالدرجات"); angN.className = "ornum";
+  const nb = (t, d) => { const b = el("button", "sbtn", t); b.type = "button"; b.onclick = () => setB(st.b + d); return b; };
+  row.append(el("span", "small", "الزاوية"), nb("−15°", -15), nb("−1°", -1), ang, nb("+1°", 1), nb("+15°", 15), angN, el("span", "small", "°")); body.append(row);
+  const dims = el("div", "orrow"), L = el("input"), Wd = el("input"); for (const [i, v, t] of [[L, st.len, "الطول (م)"], [Wd, st.wid, "العرض (م)"]]) { i.type = "text"; i.inputMode = "decimal"; i.dir = "ltr"; i.value = String(v); i.className = "ornum"; i.setAttribute("aria-label", t); }
+  dims.append(el("span", "small", "الطول"), L, el("span", "small", "م × العرض"), Wd, el("span", "small", "م (الضلع العريض = الواجهة)")); body.append(dims);
+  const pin = field("رمزك السري للتأكيد", "password", "current-password", "يُسجَّل باسمك مع الاتجاه السابق"); body.append(pin.box);
+  const res = el("div", "res"); res.setAttribute("role", "status");
+  const bar = el("div", "dbar"), go = el("button", "pbtn", "حفظ الاتجاه"), close = el("button", "sbtn", "إغلاق"); go.type = close.type = "button"; bar.append(go, close); body.append(res, bar);
+  let gmap = null, prev = null;
+  const geom = () => { const q = { ...p, geo: { lat: st.lat, lng: st.lng, bearing: st.b, len: st.len, wid: st.wid } }; return { q, ring: [[0, 0], [16, 0], [16, 12], [0, 12], [0, 0]].map(([x, y]) => isoLngLat(q, x, y)), front: [[0, 12], [16, 12]].map(([x, y]) => isoLngLat(q, x, y)) }; };
+  const paint = () => {
+    if (gmap && gmap.getSource("or")) { const { ring, front } = geom(); gmap.getSource("or").setData({ type: "FeatureCollection", features: [{ type: "Feature", properties: { k: "plan" }, geometry: { type: "Polygon", coordinates: [ring] } }, { type: "Feature", properties: { k: "front" }, geometry: { type: "LineString", coordinates: front } }] }); }
+    if (!gmap) { const { q } = geom(), t = isoThumb(q); t.classList.add("orprev"); if (prev) prev.replaceWith(t); else view.append(t); prev = t; }
+  };
+  const setB = (v) => { v = ((Math.round(+v * 10) / 10) % 360 + 360) % 360; if (!Number.isFinite(v)) return; st.b = v; ang.value = String(Math.round(v)); angN.value = String(v); paint(); };
+  ang.oninput = () => setB(ang.value); angN.onchange = () => setB(angN.value);
+  const dim = () => { const l = +L.value, w = +Wd.value; if (l >= 4 && l <= 120) st.len = l; if (w >= 4 && w <= 120) st.wid = w; paint(); };
+  L.onchange = dim; Wd.onchange = dim;
+  if (geoOk) loadMapbox().then((mb) => {
+    mb.accessToken = M.base.token;
+    gmap = new mb.Map({ container: view, style: "mapbox://styles/mapbox/satellite-streets-v12", center: [st.lng, st.lat], zoom: 19, language: "ar", dragRotate: false, pitchWithRotate: false, touchPitch: false, attributionControl: true });
+    gmap.touchZoomRotate.disableRotation();
+    gmap.addControl(new mb.NavigationControl({ showCompass: false }), "top-left");
+    gmap.on("load", () => {
+      gmap.addSource("or", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+      gmap.addLayer({ id: "or-fill", type: "fill", source: "or", filter: ["==", ["get", "k"], "plan"], paint: { "fill-color": "#FFFFFF", "fill-opacity": 0.12 } });
+      gmap.addLayer({ id: "or-line", type: "line", source: "or", filter: ["==", ["get", "k"], "plan"], paint: { "line-color": "#FFFFFF", "line-width": 2, "line-dasharray": [2, 1.5] } });
+      gmap.addLayer({ id: "or-front", type: "line", source: "or", filter: ["==", ["get", "k"], "front"], paint: { "line-color": "#F5B83D", "line-width": 6 } });
+      paint();
+    });
+    gmap.on("move", () => { const c = gmap.getCenter(); st.lat = c.lat; st.lng = c.lng; paint(); });
+  }).catch(() => { gmap = null; paint(); });
+  else paint();
+  const cleanup = () => { try { if (gmap) gmap.remove(); } catch (e) {} gmap = null; };
+  $("dlg").addEventListener("close", cleanup, { once: true });
+  close.onclick = () => $("dlg").close();
+  const opId = (Math.random().toString(36).slice(2, 10) + Date.now().toString(36)).slice(0, 20);
+  go.onclick = async () => {
+    if (!pin.i.value.trim()) { res.className = "res bad"; res.textContent = "اكتب رمزك السري"; pin.i.focus(); return; }
+    go.disabled = close.disabled = true; res.className = "res"; res.textContent = "";
+    try {
+      const moved = gmap && (Math.abs(st.lat - g0.lat) > 1e-7 || Math.abs(st.lng - g0.lng) > 1e-7);
+      const { status, j } = await api({ op: "act", sec: "map", act: "orient", row: "", data: { pid: p.id, bearing: st.b, len: st.len, wid: st.wid, ...(moved ? { lat: st.lat, lng: st.lng } : {}) }, opId, pin: pin.i.value });
+      if (status === 428 && j.pin) { res.className = "res bad"; res.textContent = j.error || "اكتب رمزك السري"; pin.i.focus(); return; }
+      if (status !== 200) { res.className = "res bad"; res.textContent = j.error || "تعذّر الحفظ"; if (j.badPin) pin.i.value = ""; return; }
+      $("dlg").close(); toast(j.msg || "تم ✅"); load(true);
+    } catch { res.className = "res bad"; res.textContent = "تعذّر الاتصال ولا نعرف هل وصل — أعد المحاولة: لن يُنفَّذ مرتين."; }
+    finally { go.disabled = close.disabled = false; }
+  };
+  $("dlg").showModal();
+}
 function mapPanel(p, M) {
   const box = el("div", "mpanel"), back = el("button", "lnk", "→ كل التنبيهات"); back.type = "button"; back.onclick = () => { MAPV.sel = null; draw(); };
   const h = el("div", "mph"); h.append(el("h3", "", p.name), el("span", "small muted", p.code || ""));
   const cb = el("div", "mcolour " + p.colour.k); cb.append(el("b", "", MCOL[p.colour.k][1] + " " + MCOL[p.colour.k][0])); const ul = el("ul"); for (const w of p.colour.why) ul.append(el("li", "", w)); cb.append(ul);
   box.append(back, h, cb);
+  if (M.canGeo && p.geo) { const ob = el("button", "sbtn", p.geo.bearing !== undefined ? "ضبط اتجاه المبنى (" + Math.round(p.geo.bearing) + "°)" : "ضبط اتجاه المبنى — غير مضبوط بعد"); ob.type = "button"; ob.onclick = () => orientDialog(M, p); box.append(ob); }
+  else if (p.geo && p.geo.bearing === undefined) box.append(el("p", "small muted", "اتجاه المبنى وأبعاده غير مسجّلة — يُرسم بالاتجاه والمقاس القياسي."));
   // progress: planned vs achieved only with an approved method; reported and verified kept apart
   const pr = el("div", "msec"); pr.append(el("h4", "", "التقدم ومصدره"));
   if (p.progress && p.progress.actual != null) pr.append(el("p", "", `الإنجاز ${Math.round(p.progress.actual * 100)}% — ${p.progress.src === "verified" ? "متحقق بدليل حديث" : "مبلّغ عنه (غير متحقق)"} · المخطط ${pctOr(p.progress.planned)}`));
