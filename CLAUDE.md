@@ -371,3 +371,12 @@ Known good totals (2026-11-09): contracts 14,259,433.75 · collected 7,751,477.4
   «الدفان» done → an earth platform (`isoGrow` of the base outline, 0–1.0 m) that buries the footings (`hidden`), necks and beams rise out of it;
   «صبة الأرضية» (`gslab`, new audit element, weight 2, optional — `EL_OPT` mirrors audit.html OPT_EL; the edit form shows a missing optional stage as
   «غير مشمول», never «لم يبدأ») = a slab on the backfill. The panel levels list carries every stage in the order of work: earthworks, footings, beams, backfill + ground slab, floors, boundary wall.
+
+## «مساعد المشروع» in the map panel (owner's requirement 16 Nov 2026; server: taa-bot core/passist.ts)
+- `mapPanel` shows `assistBlock(p.assist)` under the colour: the score WITH its calculation, counts per state, critical gaps first (red edge), the rest
+  folded, each gap with its reason, sources of a conflict, the decision it affects, the person and the basis (or the assignment gap), follow-up state,
+  due, replies (always «غير متحقق» until reviewed); known-and-verified folded; who was asked and when; decisions for the project manager / management;
+  what does not apply. Admin: «بطاقة تفعيل التجربة» (recipients, exact first requests, not asked and why, allowed / not allowed, decisions) and the
+  activate / stop buttons. Actions through `masAct` → `actForm` with `D.cmd.assist.acts` (sec `passist`); `wsAct` routes `a.sec === "passist"` there.
+- Checked on the local end-to-end bot (`tools/taa-browse/localbot`, `/_tick` added, `PORT` env): block rendered, activation refused for a recipient
+  outside the approved scope, 375 px without horizontal scroll. Strings are Arabic only (not yet in `EN`).
