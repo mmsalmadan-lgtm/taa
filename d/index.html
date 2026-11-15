@@ -3598,10 +3598,15 @@ function isoWallPieces(w, z0, z1) {
 // the walls of one floor (or the boundary wall) in their recorded state: blockwork done = blocks, otherwise outlined as planned / in progress
 function isoWalls(g, e) {
   const P = isoPlan(), list = e.kind === "fence" ? P.fence : (P.walls || {})[e.L.key]; if (!list || !list.length) return;
-  for (const pc of list.flatMap((w) => isoWallPieces(w, e.z0, e.z1)).sort((a, b) => a.d - b.d)) { if (e.mode === "blk") isoPrism(g, pc.ring, pc.z0, pc.z1, "blk"); else isoGhostPoly(g, pc.ring, pc.z0, pc.z1, e.mode); }
+  if (e.mode !== "blk") { // not built: the layout on the floor only, so the frame and its stages stay readable
+    const a = { fill: e.mode === "plan" ? "rgb(47 111 203/.10)" : "rgb(122 132 148/.12)", stroke: e.mode === "plan" ? "#2F6FCB" : "#7A8494", "stroke-opacity": ".55", "stroke-width": "0.8", "stroke-dasharray": e.mode === "plan" ? "4 3" : "2 3", "vector-effect": "non-scaling-stroke" };
+    for (const w of list) for (const pc of isoWallPieces([w[0], w[1], w[2], w[3], w[4], []], e.z0, e.z0 + 0.05)) isoEl("polygon", { points: isoPts(pc.ring.map(([x, y]) => isoP(x, y, e.z0 + 0.02))), ...a }, g);
+    return;
+  }
+  for (const pc of list.flatMap((w) => isoWallPieces(w, e.z0, e.z1)).sort((a, b) => a.d - b.d)) isoPrism(g, pc.ring, pc.z0, pc.z1, "blk");
 }
 const isoWallMode = (st) => (st === "done" ? "blk" : st === "none" ? "plan" : "unk");
-const isoCutOf = (p) => (MAPV.cut && p && MAPV.cut.pid === p.id ? MAPV.cut.key : null);
+const isoCutOf = (p) => (MAPV.cut && p && MAPV.cut.pid === p.id && MAPV.sel === p.id && p.geo && p.geo.shape ? MAPV.cut.key : null); // only while that shaped project is the one chosen (its panel holds the buttons)
 const ISO_KM = 5.2, ISO_KD = 11, ISO_XS = [0.5, 5.5, 10.5, 15.5], ISO_YS = [0.5, 6, 11.5], ISO_NS = "http://www.w3.org/2000/svg";
 const ISO_SITE = ["approvals", "supply", "ready", "pouring", "stale", "violation"];
 const ISO_ICON = {
