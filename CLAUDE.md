@@ -358,7 +358,13 @@ Known good totals (2026-11-09): contracts 14,259,433.75 · collected 7,751,477.4
   to the element ONLY while a pour is «pouring» (`isoTrucks`, static); SITE SET-UP: steps start with «السور المؤقت» / «لوحة المشروع» (p.setup from
   the bot); drawn as sheet panels on the plot edge (until the permanent wall) and the signboard as a long dark banner along the street frontage on the fence line (red mark + picture panel, as on the company's sites), or RED DASHED where the bot flags one missing
   (`isoSetupPieces`); panel «تجهيز الموقع» with «تأكيد / تحديث» → act map.setup (`mapAct`). MEP: slabs, beams and columns get a third phase
-  «سباكة وكهرباء» (`isoMepOn`: conduits + sleeves; a conduit up each column); every phase's state comes from the element's own pour checks (`chk`) when one exists; `MAPV.cut {pid, key: step}` shows the building up to that step
+  «سباكة وكهرباء» (`isoMepOn`: conduits + sleeves; a conduit up each column); every phase's state comes from the element's own pour checks (`chk`) when one exists;
+  REALISM (shape with column sections): columns at their schedule section, strip footings on lean concrete under the grade beams (`isoStrips`),
+  bitumen on footings/necks/beams once the backfill is recorded (from the ground-beam step), ribbed slab phases (`isoRibbed`: deck on props and joists →
+  block rows, ribs, hidden-beam bands, rib steel, top mesh → conduits → concrete with edge drop beams), stairs in each stairwell (`isoStairs`).
+  REALISTIC 3D VIEW «عرض واقعي ثلاثي الأبعاد» (`real3d`, panel button for shaped projects): three.js r128 + OrbitControls (pinned, loaded on demand,
+  `load3d`), `r3Build` turns the same `isoStack(p)` (stage cut included) into meshes — procedural textures (`r3Tex`: concrete, plywood, block courses,
+  sand, corrugated sheet, hollow blocks), sunlight with shadows, ACES tone mapping, render on demand; previous / next through the same steps. `MAPV.cut {pid, key: step}` shows the building up to that step
   (`isoStepOf`), a blockwork step opens its floor (slab hidden), steps before the backfill show the footings in the open excavation. Earlier: FLOOR CUT `MAPV.cut {pid, key}` hid that floor's
   slab and everything above in `isoStack` — the drawing, the panel picture and the Mapbox solids alike.
   STAGES: `p.el` (the audit's states) drives the earthworks: dug and not backfilled → excavation floor (`pit`, gravel once «الإحلال» is done);
