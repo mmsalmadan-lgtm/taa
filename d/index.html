@@ -620,7 +620,12 @@ body.chatonly footer{display:none}
 .shprev .orprev{width:100%;height:100%}
 .shinfo{margin:6px 0}.shinfo.bad{color:#B42318}
 .mcut{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0}
-.mcut .sbtn.on{background:var(--ui);color:#fff;border-color:var(--ui)}
+.mcut .sbtn.on,.mstep .sbtn.on{background:var(--ui);color:#fff;border-color:var(--ui)}
+.mstep{display:flex;gap:6px;margin:6px 0}.mstep .sbtn{flex:1}
+.mstepn{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:4px 0 2px}
+.mcut .mchip{font-size:12px;padding:4px 9px;min-height:32px;border-inline-start:4px solid #B4BBC3}
+.mcut .mchip.done{border-inline-start-color:#1D8456}.mcut .mchip.work{border-inline-start-color:#D08A12}
+@media (pointer:coarse){.mcut .mchip{min-height:44px}}
 .ormap::after{content:"";position:absolute;left:50%;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border:2px solid #fff;border-radius:50%;box-shadow:0 0 0 1px rgb(0 0 0/.4);pointer-events:none}
 .orrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:6px 0}.orrow input[type=range]{flex:1 1 160px;min-width:120px}.ornum{width:4.6em;text-align:center}
 .mgb{position:relative;line-height:0}.mgsvg{display:block;overflow:visible;cursor:pointer;filter:drop-shadow(0 6px 8px rgb(29 37 51/.18))}
@@ -821,6 +826,11 @@ const pct = (f) => Math.round((f || 0) * 100) + "%";
 const LK = "taa.dash.lang";
 let LANG = (() => { try { return localStorage.getItem(LK) === "en" ? "en" : "ar"; } catch { return "ar"; } })();
 const EN = {
+"مراحل البناء": "Construction stages",
+"→ السابقة": "← Previous",
+"التالية ←": "Next →",
+"المبنى كاملاً — كل المراحل": "Whole building — every stage",
+"يظهر المبنى حتى المرحلة المختارة: المنجز بلونه الحقيقي، وغير المنجز باهت في مكانه.": "The building up to the chosen stage: done in its real colour, not done faded in its place.",
 "المنجز بلونه الحقيقي، وغير المنجز يظهر باهتاً في مكانه.": "Done in its real colour; not done shown faded in its place.",
 "صبة الأرضية": "Ground slab",
 "داخل المبنى:": "Inside the building:",
@@ -3712,7 +3722,27 @@ function isoMode(p, L, part) {
   return "unk"; // «unk» / «work»: the floor is in progress per the audit, which part is not recorded
 }
 // the structure, bottom up, in metres: foundations, then each recorded floor (columns + slab), the annex on part of the roof
-function isoStack(p) {
+// the building's stages in the order of work, each with its recorded state: earthworks, footings, ground beams, backfill, ground slab, then per
+// floor its columns, its slab and its blockwork, the boundary wall last. One step = the building as it stands up to that stage.
+const ISO_STEPK = { pad: "foot", neck: "foot", beam: "beam", pit: "dig", fill: "fill", gslab: "gslab", fence: "fence" };
+const isoStepOf = (e) => ISO_STEPK[e.kind] || e.L.key + "|" + (e.kind === "walls" ? "blk" : e.kind);
+function isoSteps(p) {
+  const lv = (p.levels || []).filter((L) => !["foot", "beam"].includes(L.key)), li = (k) => lv.findIndex((L) => L.key === k);
+  const rank = (k) => ({ dig: 0, repl: 1, foot: 2, beam: 3, fill: 4, gslab: 5, fence: 9999 })[k] ?? 10 + li(k.split("|")[0]) * 3 + { cols: 0, slab: 1, blk: 2 }[k.split("|")[1]];
+  const keys = new Set(isoStack(p, true).map(isoStepOf)); if (isoSt(p, "repl") && keys.has("dig")) keys.add("repl");
+  const elT = (k) => { const E = ELEMENTS["عظم"].find((x) => x[0] === k); return E ? E[1] : k; }, raw = (k) => (p.el || {})[k];
+  const part = (L, k) => (L.parts || []).find((x) => x.k === k), cls = (st) => (st === "done" ? "done" : st === "none" || st === "plan" ? "none" : "work");
+  return [...keys].sort((a, b) => rank(a) - rank(b)).map((k) => {
+    if (!k.includes("|")) { const L = (p.levels || []).find((x) => x.key === k), pt = L && L.parts[0];
+      if (L && pt) return { key: k, t: L.t, s: MPART[pt.st] || pt.st, c: cls(pt.st) };
+      if (k === "fence") return { key: k, t: "السور", s: raw("fence") || MBLK[p.fence] || "", c: cls(p.fence) };
+      return { key: k, t: elT(k), s: raw(k) || "", c: cls(isoSt(p, k)) }; }
+    const [lk, pk] = k.split("|"), L = lv[li(lk)], pt = L && part(L, pk);
+    const BK = { bslab: "bwall", gf: "blkg", ff: "blkf", xf: "blkx", roof: "blkr" };
+    return { key: k, t: pk === "blk" && BK[lk] ? elT(BK[lk]) : pt ? pt.t : k, s: pt ? (pk === "blk" ? MBLK[pt.st] || pt.st : MPART[pt.st] || pt.st) : "", c: cls(pt && pt.st) };
+  });
+}
+function isoStack(p, all) {
   const out = [], lv = p.levels || [], fh = isoPlanOf(p).fh, ch = fh - 0.35; // floor to floor (3.65 standard, or the drawings' own)
   const has = (k) => lv.some((L) => L.key === k), upper = lv.some((L) => !["foot", "beam"].includes(L.key));
   const implied = (key, t, k) => ({ L: { key, t }, part: { k, st: "unk" }, mode: "unk", key: key + "|" + k, implied: true });
@@ -3741,16 +3771,19 @@ function isoStack(p) {
   // dug and not yet backfilled (gravel once the replacement layer is done), the backfill up to just under the ground beams (the footings are then
   // buried: not drawn, necks and beams rise out of it), the ground slab on top. Only from recorded states; nothing when the stage is not recorded.
   const fill = isoSt(p, "fill"), dig = isoSt(p, "dig"), repl = isoSt(p, "repl"), gs = isoSt(p, "gslab"), gL = (k, t) => ({ key: k, t });
-  if (fill === "done") { for (const e of out) { if (e.kind === "pad") e.hidden = true; if (e.kind === "neck" || e.kind === "beam") e.z0 = Math.max(e.z0, 1.0); }
+  if (fill === "done") { for (const e of out) { if (e.kind === "pad") e.hidden = true; if (e.kind === "neck" || e.kind === "beam") { e.zo = e.z0; e.z0 = Math.max(e.z0, 1.0); } }
     out.unshift({ L: gL("fill", "الدفان"), part: { k: "fill", st: "done" }, mode: "earth", key: "fill|fill", kind: "fill", z0: 0, z1: 1.0 }); }
-  else { if (fill === "work" || fill === "none") out.unshift({ L: gL("fill", "الدفان"), part: { k: "fill", st: fill }, mode: fill === "none" ? "plan" : "unk", key: "fill|fill", kind: "fill", z0: 0, z1: 1.0 });
-    if (dig === "done" || dig === "work") out.unshift({ L: gL("dig", "الحفر"), part: { k: "dig", st: dig }, mode: repl === "done" ? "gravel" : dig === "work" ? "unk" : "earth", key: "dig|dig", kind: "pit", z0: 0, z1: 0.02 }); }
+  else if (fill === "work" || fill === "none") out.unshift({ L: gL("fill", "الدفان"), part: { k: "fill", st: fill }, mode: fill === "none" ? "plan" : "unk", key: "fill|fill", kind: "fill", z0: 0, z1: 1.0 });
+  if (dig === "done" || dig === "work") out.unshift({ L: gL("dig", "الحفر"), part: { k: "dig", st: dig }, mode: repl === "done" ? "gravel" : dig === "work" ? "unk" : "earth", key: "dig|dig", kind: "pit", z0: 0, z1: 0.02, hidden: fill === "done" });
   if (gs) { const j = out.findIndex((e) => !["fill", "pit", "pad", "neck", "beam", "fence"].includes(e.kind)), e = { L: gL("gslab", "صبة الأرضية"), part: { k: "gslab", st: gs }, mode: gs === "done" ? "conc" : gs === "none" ? "plan" : "unk", key: "gslab|gslab", kind: "gslab", z0: 1.15, z1: 1.3 };
     if (j >= 0) out.splice(j, 0, e); else out.push(e); }
   if (!PL.std && PL.fence.length && p.fence) out.unshift({ L: { key: "fence", t: "السور" }, part: { k: "fence", st: p.fence }, mode: isoWallMode(p.fence), key: "fence|fence", kind: "fence", z0: 0, z1: 2.5 });
-  const cut = isoCutOf(p);
-  if (cut) { const ord = lv.map((L) => L.key).filter((k) => !["foot", "beam"].includes(k)), ci = ord.indexOf(cut);
-    if (ci >= 0) return out.filter((e) => { const i = ord.indexOf(e.L.key); return i < 0 || i < ci || (i === ci && e.kind !== "slab"); }); }
+  const cut = all ? null : isoCutOf(p);
+  if (cut) { const S = isoSteps(p).map((x) => x.key), ci = S.indexOf(cut);
+    if (ci >= 0) { const open = cut.endsWith("|blk") ? cut.split("|")[0] + "|slab" : null;
+      if (S.indexOf("repl") > ci) for (const e of out) if (e.kind === "pit" && e.mode === "gravel") e.mode = "earth"; // before the replacement layer: bare excavation
+      if (S.indexOf("fill") > ci) for (const e of out) { if (e.kind === "pad" || e.kind === "pit") e.hidden = false; if (e.zo != null) e.z0 = e.zo; } // before the backfill: footings in the open excavation
+      return out.filter((e) => { const k = isoStepOf(e), i = S.indexOf(k); return k !== open && i >= 0 && i <= ci; }); } }
   return out;
 }
 function isoCols(roof) {
@@ -4378,13 +4411,22 @@ function mapPanel(p, M) {
     const sb = el("button", "sbtn", p.geo.shape ? "شكل المبنى من المخططات ✓ — تغيير" : "شكل المبنى من المخططات"); sb.type = "button"; sb.onclick = () => shapeDialog(M, p); box.append(ob, sb); }
   else if (p.geo && p.geo.bearing === undefined) box.append(el("p", "small muted", "اتجاه المبنى وأبعاده غير مسجّلة — يُرسم بالاتجاه والمقاس القياسي."));
   if (p.geo && p.geo.shape) box.append(el("p", "small muted", "الشكل والأعمدة من مخططات المشروع؛ المراحل والألوان من السجلات."));
-  // inside the building (owner 15 Nov 2026): one floor without its slab, everything above it hidden — on the drawing, the panel picture and the 3D map
-  const fl = p.geo && p.geo.shape ? (p.levels || []).filter((L) => !["foot", "beam"].includes(L.key)) : [];
-  if (fl.length) {
-    const cur = isoCutOf(p), row = el("div", "mcut"); row.setAttribute("role", "group"); row.setAttribute("aria-label", "داخل المبنى"); row.append(el("span", "small", "داخل المبنى:"));
-    const mk = (k, t) => { const b = el("button", "sbtn" + (cur === k ? " on" : ""), t); b.type = "button"; b.setAttribute("aria-pressed", String(cur === k)); b.onclick = () => { MAPV.cut = k ? { pid: p.id, key: k } : null; draw(); }; return b; };
-    row.append(mk(null, "المبنى كاملاً"), ...fl.map((L) => mk(L.key, L.t))); box.append(row, el("p", "small muted", "المنجز بلونه الحقيقي، وغير المنجز يظهر باهتاً في مكانه."));
-    if (cur) box.append(el("p", "small muted", "يظهر الدور بلا سقفه وما فوقه مخفي — الجدران من المخططات، وحالتها من سجل «المباني» في التدقيق."));
+  // stage by stage (owner 15 Nov 2026: «more detailed, by each stage»): the building as it stands up to the chosen stage — on the drawing, the panel
+  // picture and the 3D map; a floor's blockwork step opens that floor so its walls are seen from above
+  const steps = p.geo && p.geo.shape ? isoSteps(p) : [];
+  if (steps.length) {
+    const cur = isoCutOf(p), ci = cur ? steps.findIndex((x) => x.key === cur) : -1, n = steps.length;
+    const goTo = (i) => { MAPV.cut = i < 0 || i >= n ? null : { pid: p.id, key: steps[i].key }; draw(); };
+    const head = el("div", "mstep"), prev = el("button", "sbtn", "→ السابقة"), next = el("button", "sbtn", "التالية ←"), whole = el("button", "sbtn" + (ci < 0 ? " on" : ""), "المبنى كاملاً");
+    for (const b of [prev, next, whole]) b.type = "button";
+    prev.onclick = () => goTo(ci < 0 ? n - 1 : Math.max(0, ci - 1)); next.onclick = () => goTo(ci < 0 ? 0 : ci + 1); whole.onclick = () => goTo(-1); whole.setAttribute("aria-pressed", String(ci < 0));
+    prev.disabled = ci === 0;
+    const now = el("div", "mstepn"); now.setAttribute("role", "status");
+    if (ci >= 0) now.append(el("b", "", `${ci + 1} من ${n}: ${steps[ci].t}`), el("span", "mst " + steps[ci].c, steps[ci].s || "—")); else now.append(el("b", "", "المبنى كاملاً — كل المراحل"));
+    head.append(prev, whole, next); box.append(el("h4", "", "مراحل البناء"), now, head);
+    const row = el("div", "mcut"); row.setAttribute("role", "group"); row.setAttribute("aria-label", "مراحل البناء");
+    steps.forEach((x, i) => { const b = el("button", "sbtn mchip " + x.c + (i === ci ? " on" : ""), x.t); b.type = "button"; b.title = x.s; b.setAttribute("aria-pressed", String(i === ci)); b.onclick = () => goTo(i); row.append(b); });
+    box.append(row, el("p", "small muted", "يظهر المبنى حتى المرحلة المختارة: المنجز بلونه الحقيقي، وغير المنجز باهت في مكانه." + (cur && cur.endsWith("|blk") ? " مرحلة الطابوق تُظهر الدور بلا سقفه لرؤية الجدران." : "")));
   }
   // progress: planned vs achieved only with an approved method; reported and verified kept apart
   const pr = el("div", "msec"); pr.append(el("h4", "", "التقدم ومصدره"));

@@ -350,7 +350,9 @@ Known good totals (2026-11-09): contracts 14,259,433.75 · collected 7,751,477.4
   (`shapeDialog`, admin, preview first, PIN, clear). The orient tool shows the real outline and hides length/width for a shaped project.
   WALLS: with `shape.walls[level]` and that floor's blockwork part (`blk`, from the audit) each floor gets its walls (`isoWallPieces`: solid between openings,
   under/over windows 0.9/2.2 m, over doors 2.1 m; `isoWalls`) — blockwork done = blocks (`ISO_MAT.blk`), otherwise dashed; `shape.fence` + `p.fence` = the
-  boundary wall (2.5 m, gates open). No record → nothing drawn. FLOOR CUT «داخل المبنى» (panel, shaped projects): `MAPV.cut {pid, key}` hides that floor's
+  boundary wall (2.5 m, gates open). No record → nothing drawn. STAGE STEPS «مراحل البناء» (panel, shaped projects; owner: «more detailed, by each stage»): `isoSteps(p)` = the stages in the order of work
+  (dig, repl, foot, beam, fill, gslab, per floor cols / slab / blk, fence) with states; `MAPV.cut {pid, key: step}` shows the building up to that step
+  (`isoStepOf`), a blockwork step opens its floor (slab hidden), steps before the backfill show the footings in the open excavation. Earlier: FLOOR CUT `MAPV.cut {pid, key}` hid that floor's
   slab and everything above in `isoStack` — the drawing, the panel picture and the Mapbox solids alike.
   STAGES: `p.el` (the audit's states) drives the earthworks: dug and not backfilled → excavation floor (`pit`, gravel once «الإحلال» is done);
   «الدفان» done → an earth platform (`isoGrow` of the base outline, 0–1.0 m) that buries the footings (`hidden`), necks and beams rise out of it;
