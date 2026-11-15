@@ -607,7 +607,13 @@ body.chatonly footer{display:none}
 .mov{position:absolute;inset:0;pointer-events:none}
 .mk{position:absolute;left:0;top:0;pointer-events:auto;border:0;background:none;padding:0;margin:0;display:flex;flex-direction:column;align-items:center;transition:opacity .28s var(--spring);will-change:transform;font:inherit;color:inherit;cursor:pointer}
 .mk.off{opacity:0;pointer-events:none}
-.mgeo .mk{position:static;will-change:auto}
+.mgeo .mk{position:absolute;left:50%;bottom:100%;transform:translateX(-50%);will-change:auto}
+.miso .mk-stem,.miso .mk-dot,.mgeo .mk-stem,.mgeo .mk-dot{display:none}
+/* compact plates over the buildings: code + status always; the name on hover, focus or when chosen (the building stays visible) */
+.miso .mk:not(.sel):not(:hover):not(:focus-visible) .nm,.mgeo .mk:not(.sel):not(:hover):not(:focus-visible) .nm{display:none}
+.miso .mk-plate,.mgeo .mk-plate{padding:4px 9px;border-radius:10px}
+.mgb{position:relative;line-height:0}.mgsvg{display:block;overflow:visible;cursor:pointer;filter:drop-shadow(0 6px 8px rgb(29 37 51/.18))}
+.mmodel{cursor:pointer}.miso.wall .mmodel{cursor:default}
 .mk-plate{display:flex;flex-direction:column;align-items:flex-start;gap:1px;background:var(--surface);border-radius:12px;padding:6px 11px;box-shadow:0 12px 26px -16px rgb(29 37 51/.55),0 2px 4px -2px rgb(29 37 51/.18);text-align:start;white-space:nowrap;transition:transform .2s var(--spring),box-shadow .2s var(--spring),opacity .2s var(--spring)}
 .mk-plate b{font:600 13px/1.25 var(--f-disp);font-variant-numeric:tabular-nums}
 .mk-plate .nm{font-size:12px;color:var(--muted);line-height:1.35;max-width:190px;overflow:hidden;text-overflow:ellipsis}
@@ -3523,7 +3529,7 @@ const ISO_DEFS = `<filter id="iso-soft" x="-50%" y="-50%" width="200%" height="2
   [["conc-l", "#D2D6DA", "#BBC1C6"], ["conc-r", "#B4BAC0", "#9AA2A9"], ["fresh-l", "#AEB6BD", "#99A2AA"], ["fresh-r", "#959EA6", "#7E8891"], ["ply-l", "#DDA962", "#CB944C"], ["ply-r", "#C08A43", "#A97536"]]
     .map(([id, a, b]) => `<linearGradient id="iso-${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>`).join("");
 const ISO = { el: null, cam: { px: 0, py: 0, k: 1 }, tgt: { px: 0, py: 0, k: 1 }, raf: 0, tau: 140, last: 0, W: 1, H: 1, M: null, ps: [], at: new Map(), wall: false,
-  fitted: false, sel: null, home: null, prev: null, anim: new Map(), cache: new Map(), marks: new Map(), tip: null, animRaf: 0 };
+  fitted: false, top: new Map(), moved: 0, sel: null, home: null, prev: null, anim: new Map(), cache: new Map(), marks: new Map(), tip: null, animRaf: 0 };
 const isoReduce = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 function isoEl(t, a, parent) { const e = document.createElementNS(ISO_NS, t); for (const k in a) e.setAttribute(k, a[k]); if (parent) parent.append(e); return e; }
 const isoPts = (a) => a.map((q) => q[0].toFixed(3) + "," + q[1].toFixed(3)).join(" ");
@@ -3677,6 +3683,13 @@ function isoCreate() {
     ptr.set(e.pointerId, [e.clientX, e.clientY]);
     if (ptr.size === 2) { const [a, b] = [...ptr.values()]; pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]), k: ISO.tgt.k }; drag = null; root.setPointerCapture(e.pointerId); }
     else if (e.pointerType !== "touch") { drag = { x: e.clientX, y: e.clientY }; root.setPointerCapture(e.pointerId); root.classList.add("drag"); }
+    ISO.moved = 0; ISO.downAt = [e.clientX, e.clientY];
+  });
+  root.addEventListener("click", (e) => {
+    if (ISO.wall) return; const g = e.target.closest && e.target.closest(".mmodel"); if (!g || !g.dataset.pid) return;
+    if (ISO.downAt && Math.hypot(e.clientX - ISO.downAt[0], e.clientY - ISO.downAt[1]) > 6) return; // that was a drag
+    const p = ISO.ps.find((x) => x.id === g.dataset.pid); if (!p) return;
+    MAPV.sel = p.id; MAPV.pour = p.active; MAPV.scroll = true; if (ISO.tip) ISO.tip.hidden = true; draw();
   });
   root.addEventListener("pointermove", (e) => {
     if (!ptr.has(e.pointerId)) return; ptr.set(e.pointerId, [e.clientX, e.clientY]);
@@ -3699,6 +3712,7 @@ function isoUpdate(M, ps) {
   for (const p of ps) for (const e of isoStack(p)) now.set(p.id + "|" + e.key, e.mode);
   if (ISO.prev && !isoReduce()) for (const [k, m] of now) if ((m === "conc" || m === "fresh") && ISO.prev.get(k) === "site") ISO.anim.set(k, { t: 0, t0: performance.now() });
   ISO.prev = now;
+  ISO.top = new Map(ps.map((p) => [p.id, isoStack(p).reduce((m, e) => Math.max(m, e.z1), 4)]));
   if (ISO.anim.size) isoAnimate();
   // beacons: one per project, reused across refreshes
   const seen = new Set();
@@ -3774,6 +3788,8 @@ function isoAnimate() {
   };
   ISO.animRaf = requestAnimationFrame(f);
 }
+// far out a building is drawn at least ISO_MINPX wide (its plan is ~24 m across in this projection)
+const ISO_MINPX = 92, isoMinPx = () => Math.max(56, Math.min(ISO_MINPX, (ISO.W || 600) / 6)), isoScale = () => Math.max(1, isoMinPx() / (24.2 * ISO.cam.k)); // smaller on a phone so close sites do not pile up
 const isoScr = (x, y, z = 0) => { const q = isoP(x, y, z), c = ISO.cam; return [(q[0] - c.px) * c.k + ISO.W / 2, (q[1] - c.py) * c.k + ISO.H / 2]; };
 function isoRender() {
   if (!ISO.el || !ISO.el.isConnected) return;
@@ -3786,28 +3802,31 @@ function isoRender() {
   ISO.gridG.replaceChildren();
   for (let v = Math.floor(gx0 / step) * step; v <= gx1; v += step) { const a = isoP(v, gy0), b = isoP(v, gy1); isoEl("line", { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: v % (step * 5) === 0 ? "#CDD4DB" : "#DCE1E6", "stroke-width": 0.8, "vector-effect": "non-scaling-stroke" }, ISO.gridG); }
   for (let v = Math.floor(gy0 / step) * step; v <= gy1; v += step) { const a = isoP(gx0, v), b = isoP(gx1, v); isoEl("line", { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: v % (step * 5) === 0 ? "#CDD4DB" : "#DCE1E6", "stroke-width": 0.8, "vector-effect": "non-scaling-stroke" }, ISO.gridG); }
-  // models: drawn lazily for what is on screen, at model zoom or when selected; cached until its data or a recorded pour changes
-  const showAll = c.k >= ISO_KM, vis = new Set();
+  // every project is drawn as its BUILDING (owner, 15 Nov 2026: «no dot — show the building, even when the information is not exact»):
+  // far out it is enlarged around its own centre to stay readable (ISO_MINPX), close in it is at true scale; cached until its data changes
+  const sc = isoScale(), vis = new Set(), cc = isoP(8, 6);
   for (const p of ISO.ps) {
     const a = ISO.at.get(p.id), s = isoScr(a[0] + 8, a[1] + 6), on = s[0] > -400 && s[0] < W + 400 && s[1] > -400 && s[1] < H + 400;
-    const model = (showAll || ISO.sel === p.id) && on && !ISO.wall;
+    const model = on;
     if (model) vis.add(p.id);
     const sig = JSON.stringify([p.levels, p.colour.k, p.active, (p.pours || []).map((x) => [x.id, x.stage, x.level, x.part, x.cureLeft])]);
     let ch = ISO.cache.get(p.id);
     if (model && (!ch || ch.sig !== sig)) { const g = isoModel(p, a); if (ch) ch.g.replaceWith(g); else ISO.models.append(g); ch = { sig, g }; ISO.cache.set(p.id, ch); }
-    if (ch) ch.g.classList.toggle("off", !model);
+    if (ch) { ch.g.classList.toggle("off", !model); const o = isoP(a[0], a[1]); ch.g.setAttribute("transform", `translate(${o[0] + cc[0]},${o[1] + cc[1]}) scale(${sc}) translate(${-cc[0]},${-cc[1]})`); ch.g.dataset.pid = p.id; ch.depth = a[0] + a[1]; }
   }
+  const byDepth = [...ISO.cache.values()].filter((x) => x.g.isConnected).sort((x, y) => x.depth - y.depth);
+  if (byDepth.some((x, i) => ISO.models.children[i] !== x.g)) ISO.models.append(...byDepth.map((x) => x.g));
   // overlay: beacons (decluttered by priority), then each visible model's tag, the chosen project's floors and its pour callout
   const order = [...ISO.ps].sort((a, b) => (a.id === ISO.sel ? -1 : b.id === ISO.sel ? 1 : 0) || ({ red: 0, yellow: 1, grey: 2, green: 3 }[a.colour.k] - { red: 0, yellow: 1, grey: 2, green: 3 }[b.colour.k]));
   const boxes = [];
   for (const p of order) {
     const b = ISO.marks.get(p.id); if (!b) continue;
-    const a = ISO.at.get(p.id), [x, y] = isoScr(a[0] + 8, a[1] + 6);
-    const off = vis.has(p.id) || x < -200 || x > W + 200 || y < -100 || y > H + 240;
+    const a = ISO.at.get(p.id), [x, y0] = isoScr(a[0] + 8, a[1] + 6), y = y0 - (7 + (ISO.top.get(p.id) || 4)) * c.k * sc - 6;
+    const off = x < -200 || x > W + 200 || y < -100 || y > H + 240;
     b.classList.toggle("off", off); b.classList.toggle("sel", ISO.sel === p.id);
-    b.style.transform = `translate(${x}px,${y}px) translate(-50%,calc(-100% + 8px))`;
+    b.style.transform = `translate(${x}px,${y}px) translate(-50%,-100%)`;
     if (off) continue;
-    const w = b._w || (b._w = b.offsetWidth || 150), h = b._h || (b._h = b.offsetHeight || 80), r = [x - w / 2, y - h, x + w / 2, y - 10];
+    const w = b._w || (b._w = b.offsetWidth || 150), h = b._h || (b._h = b.offsetHeight || 60), r = [x - w / 2, y - h, x + w / 2, y];
     const hit = boxes.some((q) => r[0] < q[2] && r[2] > q[0] && r[1] < q[3] && r[3] > q[1]);
     b.classList.toggle("mini", hit); if (!hit) boxes.push(r);
     b.style.zIndex = String((hit ? 0 : 5000) + Math.max(0, Math.round(y)));
@@ -3816,10 +3835,7 @@ function isoRender() {
   const detail = c.k >= ISO_KD && !ISO.wall;
   for (const id of vis) {
     const p = ISO.ps.find((x) => x.id === id), a = ISO.at.get(id);
-    const tg = el(ISO.wall ? "div" : "button", "mtag2"); tg.append(el("b", "", p.code || p.name)); const s = el("span", "msts " + p.colour.k); s.innerHTML = ISO_ICON[p.colour.k]; s.append(MCOL[p.colour.k][0]); tg.append(s);
-    if (!ISO.wall) { tg.type = "button"; tg.setAttribute("aria-label", `${p.name}: ${MCOL[p.colour.k][0]}`); tg.addEventListener("click", (e) => { e.stopPropagation(); MAPV.sel = p.id; MAPV.pour = p.active; MAPV.scroll = true; draw(); }); }
-    const [tx, ty] = isoScr(a[0] + 21, a[1] + 16.5); tg.style.transform = `translate(${Math.min(W - 180, Math.max(8, tx))}px,${Math.min(H - 84, ty)}px) translate(-10%,10px)`; ISO.ov.append(tg);
-    if (!detail || (ISO.sel && ISO.sel !== id) || (!ISO.sel && vis.size > 1)) continue;
+    if (!detail || sc > 1 || (ISO.sel && ISO.sel !== id) || (!ISO.sel && vis.size > 1)) continue;
     const stack = isoStack(p), seenL = new Set();
     for (const e of stack) {
       if (seenL.has(e.L.key) || e.kind === "slab" || e.kind === "pad" || e.kind === "beam") continue; seenL.add(e.L.key);
@@ -3845,7 +3861,8 @@ function isoRender() {
 function isoThumb(p) {
   const s = document.createElementNS(ISO_NS, "svg"), g = isoModel(p, [0, 0]), top = isoStack(p).reduce((m, e) => Math.max(m, e.z1), 4) + 1.4;
   const xs = [isoP(-5, 16.5)[0], isoP(21, -4)[0]], ys = [isoP(-5, -4, top)[1], isoP(21, 16.5)[1]];
-  s.setAttribute("viewBox", `${xs[0] - 1} ${ys[0] - 1} ${xs[1] - xs[0] + 2} ${ys[1] - ys[0] + 2}`); s.setAttribute("class", "mthumb"); s.setAttribute("aria-hidden", "true");
+  s._vb = [xs[0] - 1, ys[0] - 1, xs[1] - xs[0] + 2, ys[1] - ys[0] + 2];
+  s.setAttribute("viewBox", s._vb.join(" ")); s.setAttribute("class", "mthumb"); s.setAttribute("aria-hidden", "true");
   s.innerHTML = `<defs>${ISO_DEFS}</defs>`; s.append(g); return s;
 }
 
@@ -3909,11 +3926,28 @@ function mapGeoMarkers(G) {
   for (const p of G.ps) {
     seen.add(p.id); let mk = G.markers.get(p.id);
     const wrap = mk ? mk.getElement() : document.createElement("div"); wrap.classList.add("mgeo"); // ADD, never replace: Mapbox keeps its own mapboxgl-marker / anchor classes on this element — replacing them on a refresh unpinned every marker (production 15 Nov 2026)
-    const b = isoBeacon(p, G.wall); b.classList.toggle("sel", MAPV.sel === p.id); wrap.replaceChildren(b);
-    if (!mk) { mk = new mb.Marker({ element: wrap, anchor: "bottom" }).setLngLat([p.geo.lng, p.geo.lat]).addTo(G.map); G.markers.set(p.id, mk); } else mk.setLngLat([p.geo.lng, p.geo.lat]);
+    const b = isoBeacon(p, G.wall); b.classList.toggle("sel", MAPV.sel === p.id);
+    const svg = isoThumb(p); svg.setAttribute("class", "mgsvg"); const box = el("div", "mgb"); box.append(svg, b);
+    if (!G.wall) svg.addEventListener("click", (e) => { e.stopPropagation(); b.click(); });
+    wrap.replaceChildren(box); wrap._vb = svg._vb; wrap._svg = svg; wrap._lat = p.geo.lat;
+    if (!mk) { mk = new mb.Marker({ element: wrap, anchor: "top-left" }).setLngLat([p.geo.lng, p.geo.lat]).addTo(G.map); G.markers.set(p.id, mk); } else mk.setLngLat([p.geo.lng, p.geo.lat]);
   }
   for (const [id, mk] of G.markers) if (!seen.has(id)) { mk.remove(); G.markers.delete(id); }
+  mapGeoSize(G);
+  if (!G.zoomHooked) { G.zoomHooked = true; G.map.on("zoom", () => mapGeoSize(G)); }
   mapGeoFocus(G);
+}
+// the building at the map's true scale (metres per pixel at the project's latitude), never smaller than ISO_MINPX across; the ground
+// centre of the plan (local 8, 6) is placed exactly on the project's point
+function mapGeoSize(G) {
+  const z = G.map.getZoom(), c = isoP(8, 6);
+  for (const mk of G.markers.values()) {
+    const w = mk.getElement(), vb = w._vb; if (!vb) continue;
+    const mpp = (40075016.686 * Math.cos((w._lat * Math.PI) / 180)) / (512 * Math.pow(2, z));
+    const k = Math.min(600 / vb[2], Math.max(1 / mpp, ISO_MINPX / 24.2));
+    w._svg.setAttribute("width", String(Math.round(vb[2] * k))); w._svg.setAttribute("height", String(Math.round(vb[3] * k)));
+    mk.setOffset([-(c[0] - vb[0]) * k, -(c[1] - vb[1]) * k]);
+  }
 }
 // the chosen project comes into view (once per choice); on a phone the bottom sheet's part of the map is left as padding
 function mapGeoFocus(G) {
