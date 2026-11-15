@@ -3625,6 +3625,41 @@ function isoPlanOf(p) {
   ISO_PLC.set(sh, P); return P;
 }
 const isoPlan = () => ISO_PL || ISO_PSTD;
+const isoRect = (x0, y0, x1, y1) => [[x0, y0], [x1, y0], [x1, y1], [x0, y1]];
+const isoRectD = (q) => isoDepth((q[0] + q[2]) / 2, (q[1] + q[3]) / 2), byRectDepth = (a, b) => isoRectD(a) - isoRectD(b);
+// a beam segment (a thin rectangle along a grid line) as a band w each side of its line, ext beyond its ends: strip footings (0.6), their lean bed
+// (0.7), grade beams at 20 cm (0.1, 0)
+const isoSegRect = ([a, b, c, d], w, ext = w) => (Math.abs(c - a) >= Math.abs(d - b) ? [a - ext, (b + d) / 2 - w, c + ext, (b + d) / 2 + w] : [(a + c) / 2 - w, b - ext, (a + c) / 2 + w, d + ext]);
+// an outline's edges as wall tuples (slab edge forms, drop beams, the parapet, the temporary fence)
+const isoEdges = (r, t) => r.map((a, i) => { const b = r[(i + 1) % r.length]; return [a[0], a[1], b[0], b[1], t, []]; });
+// the floor → audit element of its blockwork and of its lintels and shoulders
+const ISO_BLK = { bslab: "bwall", gf: "blkg", ff: "blkf", xf: "blkx", roof: "blkr" }, ISO_LNT = { gf: "lntg", ff: "lntf", xf: "lntx", roof: "lntr" };
+// the rows of hollow blocks of a ribbed slab: 40 cm rows, 15 cm ribs, no blocks in a hidden-beam band along each beam line
+function isoRibRows(r, beams) {
+  const [, by0, , by1] = isoBBox(r), rows = [];
+  const bands = beams.map(([a, b, c, d]) => { const hz = Math.abs(c - a) >= Math.abs(d - b); return hz ? { hz, at: (b + d) / 2, lo: Math.min(a, c), hi: Math.max(a, c) } : { hz, at: (a + c) / 2, lo: Math.min(b, d), hi: Math.max(b, d) }; });
+  for (let y = by0 + 0.35; y + 0.4 < by1 - 0.2; y += 0.55) {
+    if (bands.some((bd) => bd.hz && Math.abs(y + 0.2 - bd.at) < 0.55)) continue;
+    for (const [a, b] of isoCut(r, y + 0.2, 0)) {
+      let pieces = [[a + 0.25, b - 0.25]];
+      for (const bd of bands) if (!bd.hz && y + 0.2 >= bd.lo - 0.3 && y + 0.2 <= bd.hi + 0.3) pieces = pieces.flatMap(([p, q]) => (bd.at - 0.35 > p && bd.at + 0.35 < q ? [[p, bd.at - 0.35], [bd.at + 0.35, q]] : bd.at + 0.35 <= p || bd.at - 0.35 >= q ? [[p, q]] : bd.at - 0.35 <= p ? [[Math.max(p, bd.at + 0.35), q]] : [[p, Math.min(q, bd.at - 0.35)]]));
+      for (const [p, q] of pieces) if (q - p > 0.3 && isoIn(r, (p + q) / 2, y + 0.2)) rows.push([p, y, q, y + 0.4]);
+    }
+  }
+  return rows;
+}
+// the stairs of each stairwell: two flights of 12 risers and a landing, as boxes [x0, y0, x1, y1, z0, z1]
+function isoStairBoxes(stairs, z0, z1) {
+  const rise = (z1 - z0) / 24, out = [];
+  for (const [x0, y0, x1, y1] of stairs) {
+    const long = x1 - x0 >= y1 - y0, L = long ? x1 - x0 : y1 - y0, Wd = long ? y1 - y0 : x1 - x0, w = Wd / 2 - 0.05, land = Math.min(1.3, L * 0.3), run = (L - land) / 12;
+    const B = (s0, s1, t0, t1, za, zb) => out.push(long ? [x0 + s0, y0 + t0, x0 + s1, y0 + t1, za, zb] : [x0 + t0, y0 + s0, x0 + t1, y0 + s1, za, zb]);
+    for (let i = 0; i < 12; i++) B(L - (i + 1) * run, L - i * run, 0, w, z0 + Math.max(0, i * rise - 0.2), z0 + (i + 1) * rise);
+    B(0, land, 0, Wd, z0 + 12 * rise - 0.18, z0 + 12 * rise);
+    for (let i = 0; i < 12; i++) B(land + i * run, land + (i + 1) * run, Wd - w, Wd, z0 + 12 * rise + Math.max(0, i * rise - 0.2), z0 + 12 * rise + (i + 1) * rise);
+  }
+  return out;
+}
 // a wall [x1, y1, x2, y2, t, openings] → its solid pieces: full height between openings, under / over a window (0.9 / 2.2 m), over a door (2.1 m)
 function isoWallPieces(w, z0, z1) {
   const [x1, y1, x2, y2, t, ops] = w, L = Math.hypot(x2 - x1, y2 - y1) || 1, ux = (x2 - x1) / L, uy = (y2 - y1) / L, nx = (-uy * t) / 2, ny = (ux * t) / 2, out = [];
@@ -3671,7 +3706,7 @@ function isoTruckBoxes(e) {
 // the temporary fence panels on the plot edge; the signboard (two posts, a board) inside the plot at the façade street
 function isoSetupPieces(e) {
   const P = isoPlan(), plot = P.plot || isoGrow(isoBase(P), 4), out = [];
-  if (e.kind === "tfence") { for (let i = 0; i < plot.length; i++) { const a = plot[i], b = plot[(i + 1) % plot.length]; for (const pc of isoWallPieces([a[0], a[1], b[0], b[1], 0.06, []], 0, 2.0)) out.push({ ...pc, c: "tsheet" }); } return out; }
+  if (e.kind === "tfence") return isoEdges(plot, 0.06).flatMap((w) => isoWallPieces(w, 0, 2.0)).map((pc) => ({ ...pc, c: "tsheet" }));
   // the street frontage = the plot edge furthest to the front (the façade street); the banner runs along most of it, just inside the fence line
   const n = plot.length, fi = [...Array(n).keys()].sort((i, j) => (plot[j][1] + plot[(j + 1) % n][1]) - (plot[i][1] + plot[(i + 1) % n][1]))[0], a = plot[fi], b = plot[(fi + 1) % n];
   const L = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1, ux = (b[0] - a[0]) / L, uy = (b[1] - a[1]) / L, cx = (P.bb[0] + P.bb[2]) / 2, cy = (P.bb[1] + P.bb[3]) / 2;
@@ -3682,9 +3717,8 @@ function isoSetupPieces(e) {
 }
 // strip footings (S-1): a 1.20 m strip under every grade beam on a 10 cm lean-concrete bed; steel, formwork and concrete as recorded
 function isoStrips(g, e, pour, fill, fop) {
-  const P = isoPlan(), wide = (s, w) => { const [a, b, c, d] = s, hz = Math.abs(c - a) >= Math.abs(d - b), yc = (b + d) / 2, xc = (a + c) / 2; return hz ? [a - w, yc - w, c + w, yc + w] : [xc - w, b - w, xc + w, d + w]; };
-  const strips = P.beams.map((s) => wide(s, 0.6)).sort((a, b) => isoDepth((a[0] + a[2]) / 2, (a[1] + a[3]) / 2) - isoDepth((b[0] + b[2]) / 2, (b[1] + b[3]) / 2)), { mode, z0, z1 } = e;
-  if (mode !== "plan" && mode !== "unk") for (const s of P.beams.map((q) => wide(q, 0.7))) isoBox(g, s[0], s[1], z0 - 0.1, s[2], s[3], z0, "lean");
+  const P = isoPlan(), strips = P.beams.map((q) => isoSegRect(q, 0.6)).sort(byRectDepth), { mode, z0, z1 } = e;
+  if (mode !== "plan" && mode !== "unk") for (const q of P.beams.map((b) => isoSegRect(b, 0.7))) isoBox(g, q[0], q[1], z0 - 0.1, q[2], q[3], z0, "lean");
   for (const [x0, y0, x1, y1] of strips) {
     if (mode === "plan" || mode === "unk") { isoGhost(g, x0, y0, z0, x1, y1, z1, mode, true); continue; }
     if (mode === "conc" || mode === "fresh") { isoBox(g, x0, y0, z0, x1, y1, z1, e.bitum && mode === "conc" ? "bitum" : mode); continue; }
@@ -3697,10 +3731,9 @@ function isoStrips(g, e, pour, fill, fop) {
 // a ribbed slab as it is built: the plywood deck on props and joists → rows of blocks with the ribs and the hidden-beam bands between them,
 // the steel in the ribs and the top mesh → the conduits → concrete, with the drop beams under the edge
 function isoRibbed(g, e, r, pour, fill, fop) {
-  const P = isoPlan(), { mode, z0, z1 } = e, [bx0, by0, bx1, by1] = isoBBox(r);
+  const P = isoPlan(), { mode, z0, z1 } = e, [, by0, , by1] = isoBBox(r);
   if (mode === "plan" || mode === "unk") { isoGhostPoly(g, r, z0, z1, mode); return; }
-  const edge = (zA, zB, mat, t = 0.2) => { const pcs = []; for (let i = 0; i < r.length; i++) { const a = r[i], b = r[(i + 1) % r.length]; pcs.push(...isoWallPieces([a[0], a[1], b[0], b[1], t, []], zA, zB)); }
-    for (const pc of pcs.sort((u, v) => u.d - v.d)) isoPrism(g, pc.ring, pc.z0, pc.z1, mat); };
+  const edge = (zA, zB, mat, t = 0.2) => { for (const pc of isoEdges(r, t).flatMap((w) => isoWallPieces(w, zA, zB)).sort((u, v) => u.d - v.d)) isoPrism(g, pc.ring, pc.z0, pc.z1, mat); };
   if (mode === "conc" || mode === "fresh") { edge(z0 - 0.28, z0, mode); isoPrism(g, r, z0, z1, mode); return; } // drop beams under the edge, then the slab
   // formwork: props on a 1.2 m grid with joists, the plywood deck, edge boards
   if (!pour) { isoPropsPoly(g, r, z0 - (P.fh - 0.35), z0 - 0.12);
@@ -3708,18 +3741,7 @@ function isoRibbed(g, e, r, pour, fill, fop) {
   isoPrism(g, r, z0 - 0.05, z0, "ply");
   if (mode === "form" && !pour) { edge(z0, z1, "ply", 0.04); return; }
   // the blocks: rows 40 cm wide with 15 cm ribs, interrupted by the hidden beams (a band along every beam line between columns)
-  const bands = P.beams.map(([a, b, c, d]) => { const hz = Math.abs(c - a) >= Math.abs(d - b), yc = (b + d) / 2, xc = (a + c) / 2; return hz ? { hz, at: yc, lo: Math.min(a, c), hi: Math.max(a, c) } : { hz, at: xc, lo: Math.min(b, d), hi: Math.max(b, d) }; });
-  const rows = [];
-  for (let y = by0 + 0.35; y + 0.4 < by1 - 0.2; y += 0.55) {
-    if (bands.some((b) => b.hz && Math.abs(y + 0.2 - b.at) < 0.55)) continue;
-    for (const [a, b] of isoCut(r, y + 0.2, 0)) {
-      let pieces = [[a + 0.25, b - 0.25]];
-      for (const bd of bands) if (!bd.hz && y + 0.2 >= bd.lo - 0.3 && y + 0.2 <= bd.hi + 0.3) pieces = pieces.flatMap(([p, q]) => (bd.at - 0.35 > p && bd.at + 0.35 < q ? [[p, bd.at - 0.35], [bd.at + 0.35, q]] : bd.at + 0.35 <= p || bd.at - 0.35 >= q ? [[p, q]] : bd.at - 0.35 <= p ? [[Math.max(p, bd.at + 0.35), q]] : [[p, Math.min(q, bd.at - 0.35)]]));
-      for (const [p, q] of pieces) if (q - p > 0.3 && isoIn(r, (p + q) / 2, y + 0.2)) rows.push([p, y, q, y + 0.4]);
-    }
-  }
-  const showBlocks = !pour || fill < 0.5;
-  if (showBlocks) for (const [x0, y0, x1, y1] of rows.sort((u, v) => isoDepth((u[0] + u[2]) / 2, (u[1] + u[3]) / 2) - isoDepth((v[0] + v[2]) / 2, (v[1] + v[3]) / 2))) {
+  if (!pour || fill < 0.5) for (const [x0, y0, x1, y1] of isoRibRows(r, P.beams).sort(byRectDepth)) {
     isoBox(g, x0, y0, z0, x1, y1, z0 + 0.25, "hourdi");
     let d = ""; for (let x = x0 + 0.4; x < x1 - 0.05; x += 0.4) { const p0 = isoP(x, y0, z0 + 0.25), p1 = isoP(x, y1, z0 + 0.25); d += `M${p0[0].toFixed(3)} ${p0[1].toFixed(3)}L${p1[0].toFixed(3)} ${p1[1].toFixed(3)}`; }
     if (d) isoEl("path", { d, fill: "none", stroke: "#B9B6AC", "stroke-width": "0.5", "vector-effect": "non-scaling-stroke" }, g);
@@ -3733,15 +3755,8 @@ function isoRibbed(g, e, r, pour, fill, fop) {
 }
 // the stairs in a stairwell (A-02): two flights of 12 risers and a landing, poured with the floor's slab, in that slab's state
 function isoStairs(g, e) {
-  const P = isoPlan(), { mode, z0, z1 } = e, H = z1 - z0, rise = H / 24, pieces = [];
-  for (const [x0, y0, x1, y1] of P.stairs) {
-    const long = x1 - x0 >= y1 - y0, L = long ? x1 - x0 : y1 - y0, Wd = long ? y1 - y0 : x1 - x0, w = Wd / 2 - 0.05, land = Math.min(1.3, L * 0.3), run = (L - land) / 12;
-    const B = (s0, s1, t0, t1, za, zb) => pieces.push(long ? [x0 + s0, y0 + t0, x0 + s1, y0 + t1, za, zb] : [x0 + t0, y0 + s0, x0 + t1, y0 + s1, za, zb]);
-    for (let i = 0; i < 12; i++) B(L - (i + 1) * run, L - i * run, 0, w, z0 + Math.max(0, i * rise - 0.2), z0 + (i + 1) * rise);
-    B(0, land, 0, Wd, z0 + 12 * rise - 0.18, z0 + 12 * rise);
-    for (let i = 0; i < 12; i++) B(land + i * run, land + (i + 1) * run, Wd - w, Wd, z0 + 12 * rise + Math.max(0, i * rise - 0.2), z0 + 12 * rise + (i + 1) * rise);
-  }
-  for (const [x0, y0, x1, y1, za, zb] of pieces.sort((a, b) => isoDepth((a[0] + a[2]) / 2, (a[1] + a[3]) / 2) - isoDepth((b[0] + b[2]) / 2, (b[1] + b[3]) / 2) || a[4] - b[4])) {
+  const P = isoPlan(), { mode, z0, z1 } = e;
+  for (const [x0, y0, x1, y1, za, zb] of isoStairBoxes(P.stairs, z0, z1).sort((a, b) => byRectDepth(a, b) || a[4] - b[4])) {
     if (mode === "plan" || mode === "unk") isoGhost(g, x0, y0, za, x1, y1, zb, mode, true); else isoBox(g, x0, y0, za, x1, y1, zb, mode === "conc" || mode === "fresh" ? mode : "ply");
   }
 }
@@ -3796,18 +3811,18 @@ function r3Build(p, scene, MAT) {
     const ghostOf = (mode) => (mode === "unk" ? MAT.ghostu : MAT.ghost);
     const matOf = (k) => MAT[k] || MAT.conc;
     // an axis-aligned box in plan metres
-    const box = (x0, y0, z0, x1, y1, z1, mat, rep) => { if (x1 - x0 < 0.005 || y1 - y0 < 0.005 || z1 - z0 < 0.005) return; const g = new T.BoxGeometry(x1 - x0, z1 - z0, y1 - y0); const m = add(g, mat); m.position.set((x0 + x1) / 2, (z0 + z1) / 2, -(y0 + y1) / 2); if (rep && mat.map) m.material = tiled(mat, rep[0], rep[1]); return m; };
+    const unitBox = new T.BoxGeometry(1, 1, 1), cyl = new Map(), unitCyl = (r) => cyl.get(r) || (cyl.set(r, new T.CylinderGeometry(r, r, 1, 5)), cyl.get(r));
+    const box = (x0, y0, z0, x1, y1, z1, mat, rep) => { if (x1 - x0 < 0.005 || y1 - y0 < 0.005 || z1 - z0 < 0.005) return; const m = add(unitBox, mat); m.scale.set(x1 - x0, z1 - z0, y1 - y0); m.position.set((x0 + x1) / 2, (z0 + z1) / 2, -(y0 + y1) / 2); if (rep && mat.map) m.material = tiled(mat, rep[0], rep[1]); return m; };
     // a rotated rectangle given as a 4-point ring (wall pieces, lintels, fence, banner)
     const rbox = (ring, z0, z1, mat, tile) => { const [a, b, c] = ring, L = Math.hypot(b[0] - a[0], b[1] - a[1]), t = Math.hypot(c[0] - b[0], c[1] - b[1]); if (L < 0.005 || t < 0.005 || z1 - z0 < 0.005) return;
-      const g = new T.BoxGeometry(L, z1 - z0, t), m = add(g, mat), cx = (a[0] + c[0]) / 2, cy = (a[1] + c[1]) / 2; m.position.set(cx, (z0 + z1) / 2, -cy); m.rotation.y = Math.atan2(b[1] - a[1], b[0] - a[0]);
+      const m = add(unitBox, mat); m.scale.set(L, z1 - z0, t); const cx = (a[0] + c[0]) / 2, cy = (a[1] + c[1]) / 2; m.position.set(cx, (z0 + z1) / 2, -cy); m.rotation.y = Math.atan2(b[1] - a[1], b[0] - a[0]);
       if (tile && mat.map) m.material = tiled(mat, L / tile[0], (z1 - z0) / tile[1]); return m; };
     // an extruded outline (slabs, backfill, ground slab)
     const prism = (ring, z0, z1, mat) => { if (z1 - z0 < 0.005) return; const sh = new T.Shape(ring.map(([x, y]) => new T.Vector2(x, y))); const g = new T.ExtrudeGeometry(sh, { depth: z1 - z0, bevelEnabled: false }); g.rotateX(-Math.PI / 2); g.translate(0, z0, 0); return add(g, mat.map ? tiled(mat, 0.5, 0.5) : mat); };
-    const bar = (x0, y0, z0, x1, y1, z1, r = 0.012, mat = MAT.steel) => { const a = new T.Vector3(x0, z0, -y0), b = new T.Vector3(x1, z1, -y1), L = a.distanceTo(b); if (L < 0.01) return; const g = new T.CylinderGeometry(r, r, L, 5); const m = add(g, mat, false); m.position.copy(a).add(b).multiplyScalar(0.5); m.quaternion.setFromUnitVectors(new T.Vector3(0, 1, 0), b.clone().sub(a).normalize()); };
+    const bar = (x0, y0, z0, x1, y1, z1, r = 0.012, mat = MAT.steel) => { const a = new T.Vector3(x0, z0, -y0), b = new T.Vector3(x1, z1, -y1), L = a.distanceTo(b); if (L < 0.01) return; const m = add(unitCyl(r), mat, false); m.scale.y = L; m.position.copy(a).add(b).multiplyScalar(0.5); m.quaternion.setFromUnitVectors(new T.Vector3(0, 1, 0), b.clone().sub(a).normalize()); };
     const cage = (x, y, hx, hy, z0, z1) => { const ix = Math.max(0.03, hx - 0.04), iy = Math.max(0.03, hy - 0.04); for (const [dx, dy] of [[-ix, -iy], [ix, -iy], [ix, iy], [-ix, iy], [0, -iy], [0, iy]]) bar(x + dx, y + dy, z0, x + dx, y + dy, z1);
       for (let z = z0 + 0.15; z < z1; z += 0.2) { bar(x - ix, y - iy, z, x + ix, y - iy, z, 0.006); bar(x + ix, y - iy, z, x + ix, y + iy, z, 0.006); bar(x + ix, y + iy, z, x - ix, y + iy, z, 0.006); bar(x - ix, y + iy, z, x - ix, y - iy, z, 0.006); } };
     const mesh = (r, z, step = 0.25) => { const [x0, y0, x1, y1] = isoBBox(r); for (let y = y0 + step / 2; y < y1; y += step) for (const [a, b] of isoCut(r, y, 0)) if (b - a > 0.1) bar(a + 0.04, y, z, b - 0.04, y, z, 0.007); for (let x = x0 + step / 2; x < x1; x += step) for (const [a, b] of isoCut(r, x, 1)) if (b - a > 0.1) bar(x, a + 0.04, z, x, b - 0.04, z, 0.007); };
-    const rect = (x0, y0, x1, y1) => [[x0, y0], [x1, y0], [x1, y1], [x0, y1]];
     const props = (r, zb, zt) => { const [x0, y0, x1, y1] = isoBBox(r); for (let x = x0 + 0.6; x < x1; x += 1.2) for (let y = y0 + 0.6; y < y1; y += 1.2) if (isoIn(r, x, y)) bar(x, y, zb, x, y, zt, 0.03, MAT.prop);
       for (let y = y0 + 0.6; y < y1; y += 1.2) for (const [a, b] of isoCut(r, y, 0)) if (b - a > 0.3) box(a + 0.05, y - 0.05, zt, b - 0.05, y + 0.05, zt + 0.1, MAT.joist); };
     // the plot, the ground around it
@@ -3817,7 +3832,7 @@ function r3Build(p, scene, MAT) {
     for (const e of isoStack(p)) {
       if (e.hidden) continue; const { mode, z0, z1 } = e, ghost = mode === "plan" || mode === "unk";
       if (e.kind === "walls" || e.kind === "fence" || e.kind === "parapet") {
-        const list = e.kind === "parapet" ? e.ring.map((a, i) => { const b = e.ring[(i + 1) % e.ring.length]; return [a[0], a[1], b[0], b[1], 0.2, []]; }) : e.kind === "fence" ? P.fence : (P.walls || {})[e.L.key] || [];
+        const list = e.kind === "parapet" ? isoEdges(e.ring, 0.2) : e.kind === "fence" ? P.fence : (P.walls || {})[e.L.key] || [];
         for (const w of list) for (const pc of isoWallPieces(w, z0, z1)) rbox(pc.ring, pc.z0, pc.z1, ghost ? ghostOf(mode) : mode === "blk" ? MAT.blk : ghostOf("unk"), mode === "blk" ? [0.8, 0.4] : null);
         continue;
       }
@@ -3827,15 +3842,11 @@ function r3Build(p, scene, MAT) {
       if (e.kind === "fill") { prism(isoGrow(isoBase(P), 0.8), z0, z1, ghost ? ghostOf(mode) : MAT.earth); continue; }
       if (e.kind === "pit") { prism(isoGrow(isoBase(P), 1.2), -0.01, 0.02, mode === "gravel" ? MAT.gravel : MAT.earth); continue; }
       if (e.kind === "gslab") { prism(isoBase(P), z0, z1, ghost ? ghostOf(mode) : MAT.conc); continue; }
-      if (e.kind === "stairs") { for (const [x0, y0, x1, y1] of P.stairs) { const long = x1 - x0 >= y1 - y0, L = long ? x1 - x0 : y1 - y0, Wd = long ? y1 - y0 : x1 - x0, w = Wd / 2 - 0.05, land = Math.min(1.3, L * 0.3), run = (L - land) / 12, rise = (z1 - z0) / 24;
-          const B = (s0, s1, t0, t1, za, zb) => (long ? box(x0 + s0, y0 + t0, za, x0 + s1, y0 + t1, zb, ghost ? ghostOf(mode) : mode === "conc" || mode === "fresh" ? MAT[mode] : MAT.ply) : box(x0 + t0, y0 + s0, za, x0 + t1, y0 + s1, zb, ghost ? ghostOf(mode) : mode === "conc" || mode === "fresh" ? MAT[mode] : MAT.ply));
-          for (let i = 0; i < 12; i++) B(L - (i + 1) * run, L - i * run, 0, w, z0 + Math.max(0, i * rise - 0.2), z0 + (i + 1) * rise);
-          B(0, land, 0, Wd, z0 + 12 * rise - 0.18, z0 + 12 * rise);
-          for (let i = 0; i < 12; i++) B(land + i * run, land + (i + 1) * run, Wd - w, Wd, z0 + 12 * rise + Math.max(0, i * rise - 0.2), z0 + 12 * rise + (i + 1) * rise); } continue; }
+      if (e.kind === "stairs") { const mat = ghost ? ghostOf(mode) : mode === "conc" || mode === "fresh" ? MAT[mode] : MAT.ply; for (const [x0, y0, x1, y1, za, zb] of isoStairBoxes(P.stairs, z0, z1)) box(x0, y0, za, x1, y1, zb, mat); continue; }
       if (e.kind === "pad" && P.real && P.found === "strip") {
-        for (const [a, b, c, d] of P.beams) { const hz = Math.abs(c - a) >= Math.abs(d - b), yc = (b + d) / 2, xc = (a + c) / 2, w = 0.6, [x0, y0, x1, y1] = hz ? [a - w, yc - w, c + w, yc + w] : [xc - w, b - w, xc + w, d + w];
+        for (const sg of P.beams) { const [x0, y0, x1, y1] = isoSegRect(sg, 0.6);
           if (!ghost) box(x0 - 0.1, y0 - 0.1, z0 - 0.1, x1 + 0.1, y1 + 0.1, z0, MAT.lean);
-          if (ghost) box(x0, y0, z0, x1, y1, z1, ghostOf(mode)); else if (mode === "conc" || mode === "fresh") box(x0, y0, z0, x1, y1, z1, e.bitum && mode === "conc" ? MAT.bitum : MAT[mode]); else if (mode === "rebar") mesh(rect(x0, y0, x1, y1), z0 + 0.08, 0.2); else { box(x0 - 0.03, y0 - 0.03, z0, x1 + 0.03, y1 + 0.03, z1, MAT.ply); mesh(rect(x0, y0, x1, y1), z1 + 0.02, 0.2); } }
+          if (ghost) box(x0, y0, z0, x1, y1, z1, ghostOf(mode)); else if (mode === "conc" || mode === "fresh") box(x0, y0, z0, x1, y1, z1, e.bitum && mode === "conc" ? MAT.bitum : MAT[mode]); else if (mode === "rebar") mesh(isoRect(x0, y0, x1, y1), z0 + 0.08, 0.2); else { box(x0 - 0.03, y0 - 0.03, z0, x1 + 0.03, y1 + 0.03, z1, MAT.ply); mesh(isoRect(x0, y0, x1, y1), z1 + 0.02, 0.2); } }
         continue;
       }
       if (e.kind === "pad" || e.kind === "neck" || e.kind === "cols") {
@@ -3843,29 +3854,25 @@ function r3Build(p, scene, MAT) {
         for (const q of isoCols(e.kind === "cols" && e.roof)) { const [x, y] = q, hx = q.length >= 4 && e.kind !== "pad" ? q[2] / 2 : h, hy = q.length >= 4 && e.kind !== "pad" ? q[3] / 2 : h;
           if (ghost) { box(x - hx, y - hy, z0, x + hx, y + hy, z1, ghostOf(mode)); continue; }
           if (mode === "conc" || mode === "fresh") { box(x - hx, y - hy, z0, x + hx, y + hy, z1, e.bitum && mode === "conc" ? MAT.bitum : MAT[mode]); if (e.barsUp && e.kind === "cols") cage(x, y, hx, hy, z1, z1 + 1.0); continue; }
-          if (mode === "rebar") { if (e.kind === "pad") mesh(rect(x - hx, y - hy, x + hx, y + hy), z0 + 0.08, 0.2); else cage(x, y, hx, hy, z0, z1 + 1.0); continue; }
+          if (mode === "rebar") { if (e.kind === "pad") mesh(isoRect(x - hx, y - hy, x + hx, y + hy), z0 + 0.08, 0.2); else cage(x, y, hx, hy, z0, z1 + 1.0); continue; }
           box(x - hx - 0.03, y - hy - 0.03, z0, x + hx + 0.03, y + hy + 0.03, z1, MAT.ply); if (e.kind !== "pad") cage(x, y, hx, hy, z1, z1 + 1.0);
           if (mode === "mep" && e.kind === "cols") bar(x + hx + 0.06, y, z0 + 0.3, x + hx + 0.06, y, z1, 0.016, MAT.sleeve); }
         continue;
       }
       if (e.kind === "beam") {
-        for (const sg of P.std ? [] : P.beams) { const [a, b, c, d] = sg, hz = Math.abs(c - a) >= Math.abs(d - b), w = P.real ? 0.1 : 0.15, [x0, y0, x1, y1] = hz ? [a, (b + d) / 2 - w, c, (b + d) / 2 + w] : [(a + c) / 2 - w, b, (a + c) / 2 + w, d];
+        for (const sg of P.std ? [] : P.beams) { const [x0, y0, x1, y1] = isoSegRect(sg, P.real ? 0.1 : 0.15, 0);
           if (ghost) box(x0, y0, z0, x1, y1, z1, ghostOf(mode)); else if (mode === "conc" || mode === "fresh") box(x0, y0, z0, x1, y1, z1, e.bitum && mode === "conc" ? MAT.bitum : MAT[mode]); else box(x0 - 0.03, y0 - 0.03, z0, x1 + 0.03, y1 + 0.03, z1, MAT.ply); }
         continue;
       }
       if (e.kind === "slab") {
         const r = P.std ? isoBase(P) : e.roof ? P.annex || P.ring : P.ring;
         if (ghost) { prism(r, z0, z1, ghostOf(mode)); continue; }
-        const edge = (zA, zB, mat, t = 0.2) => { for (let i = 0; i < r.length; i++) { const a = r[i], b = r[(i + 1) % r.length]; for (const pc of isoWallPieces([a[0], a[1], b[0], b[1], t, []], zA, zB)) rbox(pc.ring, pc.z0, pc.z1, mat); } };
+        const edge = (zA, zB, mat, t = 0.2) => { for (const w of isoEdges(r, t)) for (const pc of isoWallPieces(w, zA, zB)) rbox(pc.ring, pc.z0, pc.z1, mat); };
         if (mode === "conc" || mode === "fresh") { prism(r, z0, z1, MAT[mode]); if (P.real && P.slabT === "ribbed") edge(z0 - 0.28, z0, MAT[mode]); continue; }
         props(r, z0 - (P.fh - 0.35) + 0.05, z0 - 0.15); prism(r, z0 - 0.05, z0, MAT.ply);
         if (mode === "form") { edge(z0, z1, MAT.ply, 0.04); continue; }
         if (P.real && P.slabT === "ribbed") {
-          const [bx0, by0, bx1, by1] = isoBBox(r), bands = P.beams.map(([a, b, c, d]) => { const hz = Math.abs(c - a) >= Math.abs(d - b); return hz ? { hz, at: (b + d) / 2, lo: Math.min(a, c), hi: Math.max(a, c) } : { hz, at: (a + c) / 2, lo: Math.min(b, d), hi: Math.max(b, d) }; });
-          for (let y = by0 + 0.35; y + 0.4 < by1 - 0.2; y += 0.55) { if (bands.some((bd) => bd.hz && Math.abs(y + 0.2 - bd.at) < 0.55)) continue;
-            for (const [a, b] of isoCut(r, y + 0.2, 0)) { let pcs = [[a + 0.25, b - 0.25]];
-              for (const bd of bands) if (!bd.hz && y + 0.2 >= bd.lo - 0.3 && y + 0.2 <= bd.hi + 0.3) pcs = pcs.flatMap(([u, v]) => (bd.at - 0.35 > u && bd.at + 0.35 < v ? [[u, bd.at - 0.35], [bd.at + 0.35, v]] : bd.at + 0.35 <= u || bd.at - 0.35 >= v ? [[u, v]] : bd.at - 0.35 <= u ? [[Math.max(u, bd.at + 0.35), v]] : [[u, Math.min(v, bd.at - 0.35)]]));
-              for (const [u, v] of pcs) if (v - u > 0.3 && isoIn(r, (u + v) / 2, y + 0.2)) { box(u, y, z0, v, y + 0.4, z0 + 0.25, MAT.hourdi, [(v - u) / 0.8, 1]); bar(u, y + 0.475, z0 + 0.05, v, y + 0.475, z0 + 0.05, 0.008); bar(u, y + 0.475, z0 + 0.27, v, y + 0.475, z0 + 0.27, 0.008); } } }
+          for (const [u, y, v] of isoRibRows(r, P.beams)) { box(u, y, z0, v, y + 0.4, z0 + 0.25, MAT.hourdi, [(v - u) / 0.8, 1]); bar(u, y + 0.475, z0 + 0.05, v, y + 0.475, z0 + 0.05, 0.008); bar(u, y + 0.475, z0 + 0.27, v, y + 0.475, z0 + 0.27, 0.008); }
         }
         edge(z0, z1, MAT.ply, 0.04); mesh(r, z1 - 0.03, 0.3);
         if (mode === "mep") { const [x0, y0, x1, y1] = isoBBox(r), dy = (y1 - y0) / 4; for (let k = 1; k < 4; k++) for (const [a, b] of isoCut(r, y0 + dy * k, 0)) if (b - a > 0.6) bar(a + 0.3, y0 + dy * k, z1 - 0.02, b - 0.3, y0 + dy * k, z1 - 0.02, 0.012, MAT.conduit);
@@ -3888,7 +3895,7 @@ function real3d(M, p) {
   const label = () => { const S = steps(), cur = isoCutOf(p), i = cur ? S.findIndex((x) => x.key === cur) : -1; st.textContent = i >= 0 ? `${i + 1} من ${S.length}: ${S[i].t} — ${S[i].s}` : "المبنى كاملاً — كل المراحل"; prev.disabled = i === 0; whole.classList.toggle("on", i < 0); return { S, i }; };
   const render = () => { if (!alive || !ren) return; raf = 0; ren.render(scene, cam); };
   const ask = () => { if (!raf) raf = requestAnimationFrame(render); };
-  const rebuild = () => { if (!scene) return; if (root) { scene.remove(root); root.traverse((o) => { if (o.geometry) o.geometry.dispose(); }); if (root.userData.dispose) root.userData.dispose(); } root = r3Build(p, scene, MAT); label(); ask(); };
+  const rebuild = () => { if (!scene) return; if (root) { scene.remove(root); const gs = new Set(); root.traverse((o) => { if (o.geometry) gs.add(o.geometry); }); for (const g of gs) g.dispose(); if (root.userData.dispose) root.userData.dispose(); } root = r3Build(p, scene, MAT); label(); ask(); };
   const go = (i) => { const S = steps(); MAPV.sel = p.id; MAPV.cut = i < 0 || i >= S.length ? null : { pid: p.id, key: S[i].key }; rebuild(); };
   prev.onclick = () => { const { S, i } = label(); go(i < 0 ? S.length - 1 : Math.max(0, i - 1)); }; next.onclick = () => { const { i } = label(); go(i < 0 ? 0 : i + 1); }; whole.onclick = () => go(-1);
   const stop = () => { alive = false; if (raf) cancelAnimationFrame(raf); if (ro) ro.disconnect(); if (root && root.userData.dispose) root.userData.dispose(); if (ctl) ctl.dispose(); try { if (ren) { ren.dispose(); ren.forceContextLoss(); } } catch {} dlg.classList.remove("wide3d"); draw(); };
@@ -4052,7 +4059,8 @@ const isoPhaseMode = (kind, ph) => (ph === 1 ? (["pad", "neck", "cols"].includes
 // floor (owner 15 Nov 2026: «sometimes the blockwork and the lintels come before the slab»): its columns, then its slab / blockwork / lintels in
 // the order the records show (done before in progress before not started; when all are done the usual order), the parapet, the boundary wall.
 // Concrete elements carry the contractor's phases (owner: «carpentry, rebar and the pour»): <key>@1, <key>@2, then <key> = the pour.
-function isoSteps(p) {
+function isoSteps(p) { return isoMemo(p, "steps", () => isoStepsIn(p)); }
+function isoStepsIn(p) {
   const keys = new Set(isoStack(p, true).map(isoStepOf)); if (isoSt(p, "repl") && keys.has("dig")) keys.add("repl");
   const elT = (k) => { const E = ELEMENTS["عظم"].find((x) => x[0] === k); return E ? E[1] : k; }, raw = (k) => (p.el || {})[k];
   const lvl = (k) => (p.levels || []).find((L) => L.key === k), part = (L, k) => L && (L.parts || []).find((x) => x.k === k);
@@ -4079,7 +4087,7 @@ function isoSteps(p) {
   const Bm = lvl("beam"), bp = part(Bm, "beam"); add("beam", Bm ? Bm.t : "الميدات", bp ? bp.st : "unk", bp ? MPART[bp.st] || bp.st : "", PH, pourOf("beam", "beam"));
   add("fill", elT("fill"), isoSt(p, "fill"), raw("fill"));
   const gs = isoSt(p, "gslab"); add("gslab", elT("gslab"), gs, raw("gslab"), ["نجارة", "حدادة"], null);
-  const BK = { bslab: "bwall", gf: "blkg", ff: "blkf", xf: "blkx", roof: "blkr" }, LN = { gf: "lntg", ff: "lntf", xf: "lntx", roof: "lntr" }, rk = (st) => (st === "done" ? 0 : st === "none" || !st ? 2 : 1);
+  const BK = ISO_BLK, LN = ISO_LNT, rk = (st) => (st === "done" ? 0 : st === "none" || !st ? 2 : 1);
   const lvs = (p.levels || []).filter((L) => !["foot", "beam"].includes(L.key)), top = [...lvs].reverse().find((L) => L.key !== "roof");
   for (const L of lvs) {
     const c = part(L, "cols"), sl = part(L, "slab"), bk = part(L, "blk"), ln = LN[L.key] && isoSt(p, LN[L.key]);
@@ -4094,7 +4102,16 @@ function isoSteps(p) {
   add("fence", "السور", p.fence, raw("fence") || MBLK[p.fence] || "");
   return out;
 }
-function isoStack(p, all) {
+// one build per project state and stage cut: the map, its picture, the labels, the 3D map and the realistic view all read the same stack.
+// A project object is replaced on every data refresh; the parts a stack depends on are compared by identity.
+const ISO_STKC = new WeakMap(), isoRefs = (p) => [p.levels, p.el, p.geo, p.setup, p.setupWhy, p.pours, p.fence];
+function isoMemo(p, key, make) {
+  const refs = isoRefs(p); let c = ISO_STKC.get(p);
+  if (!c || c.refs.some((r, i) => r !== refs[i])) { c = { refs, by: new Map() }; ISO_STKC.set(p, c); }
+  if (!c.by.has(key)) c.by.set(key, make()); return c.by.get(key);
+}
+function isoStack(p, all) { return isoMemo(p, all ? "*" : "c:" + (isoCutOf(p) || ""), () => isoStackIn(p, all)); }
+function isoStackIn(p, all) {
   const out = [], lv = p.levels || [], fh = isoPlanOf(p).fh, ch = fh - 0.35; // floor to floor (3.65 standard, or the drawings' own)
   const has = (k) => lv.some((L) => L.key === k), upper = lv.some((L) => !["foot", "beam"].includes(L.key));
   const implied = (key, t, k) => ({ L: { key, t }, part: { k, st: "unk" }, mode: "unk", key: key + "|" + k, implied: true });
@@ -4133,7 +4150,7 @@ function isoStack(p, all) {
     if (PL.stairs.length) for (const L of lv) { if (["foot", "beam", "roof"].includes(L.key)) continue; const sl = out.find((x) => x.kind === "slab" && x.L.key === L.key), c = tops.get(L.key); if (!sl || !c) continue;
       out.splice(out.indexOf(sl) + 1, 0, { L, part: sl.part, mode: sl.mode, key: L.key + "|stairs", kind: "stairs", sk: L.key + "|slab", z0: c.z0, z1: sl.z1 }); } }
   // lintels and shoulders per floor (the audit's lnt*), after that floor's walls
-  const LNT = { gf: "lntg", ff: "lntf", xf: "lntx", roof: "lntr" };
+  const LNT = ISO_LNT;
   if (!PL.std) for (const L of lv) { const st = isoSt(p, LNT[L.key]), c = tops.get(L.key); if (!st || !c || !(PL.walls[L.key] || []).length) continue;
     const w = out.findIndex((x) => x.kind === "walls" && x.L.key === L.key), e = { L, part: { k: "lnt", st }, mode: st === "done" ? "conc" : st === "none" ? "plan" : "unk", key: L.key + "|lnt", kind: "lnt", z0: c.z0, z1: c.z1 };
     if (w >= 0) out.splice(w + 1, 0, e); else out.push(e); }
@@ -4171,7 +4188,7 @@ function isoCols(roof) {
 function isoPart(g, e, t) {
   if (e.kind === "walls" || e.kind === "fence") { isoWalls(g, e); return; }
   if (e.hidden) return; // a footing buried by the recorded backfill
-  if (e.kind === "parapet") { const r = e.ring, n = r.length; for (let i = 0; i < n; i++) { const a = r[i], b = r[(i + 1) % n]; isoWalls(g, { ...e, kind: "parapet", list: [[a[0], a[1], b[0], b[1], 0.2, []]] }); } return; }
+  if (e.kind === "parapet") { for (const w of isoEdges(e.ring, 0.2)) isoWalls(g, { ...e, list: [w] }); return; }
   if (e.kind === "lnt") { const P = isoPlan(); for (const pc of (P.walls[e.L.key] || []).flatMap((w) => isoLintels(w, e.z0, e.z1)).sort((a, b) => a.d - b.d)) { if (e.mode === "conc") isoPrism(g, pc.ring, pc.z0, pc.z1, "conc"); else isoGhostPoly(g, pc.ring, pc.z0, pc.z1, e.mode); } return; }
   if (e.kind === "trucks") { isoTrucks(g, e); return; }
   if (e.kind === "tfence" || e.kind === "sign") { for (const pc of isoSetupPieces(e)) { if (e.mode === "missing") isoEl("polygon", { points: isoPts(pc.ring.map(([x, y]) => isoP(x, y, 0.03))), fill: "none", stroke: "#B42318", "stroke-width": "2", "stroke-dasharray": "6 4", "vector-effect": "non-scaling-stroke" }, g); else isoPrism(g, pc.ring, pc.z0, pc.z1, pc.c); } return; }
@@ -4222,8 +4239,7 @@ function isoPart(g, e, t) {
   const segs = !P.std && e.kind === "beam" ? P.beams.slice().sort((a, b) => isoDepth((a[0] + a[2]) / 2, (a[1] + a[3]) / 2) - isoDepth((b[0] + b[2]) / 2, (b[1] + b[3]) / 2)) : e.kind === "beam"
     ? [...ISO_YS.flatMap((y) => [0, 1, 2].map((i) => [ISO_XS[i], y - 0.15 * isoKy(), ISO_XS[i + 1], y + 0.15 * isoKy()])), ...ISO_XS.flatMap((x) => [0, 1].map((i) => [x - 0.15 * isoKx(), ISO_YS[i], x + 0.15 * isoKx(), ISO_YS[i + 1]]))].sort((a, b) => isoDepth((a[0] + a[2]) / 2, (a[1] + a[3]) / 2) - isoDepth((b[0] + b[2]) / 2, (b[1] + b[3]) / 2))
     : [e.roof ? [10.2, 0.2, 15.8, 6.3] : [-0.15, -0.15, 16.15, 12.15]];
-  const thin = (s) => { const [a, b, c, d] = s, hz = Math.abs(c - a) >= Math.abs(d - b); return hz ? [a, (b + d) / 2 - 0.1, c, (b + d) / 2 + 0.1] : [(a + c) / 2 - 0.1, b, (a + c) / 2 + 0.1, d]; };
-  for (const [x0, y0, x1, y1] of e.kind === "beam" && P.real ? segs.map(thin) : segs) {
+  for (const [x0, y0, x1, y1] of e.kind === "beam" && P.real ? segs.map((q) => isoSegRect(q, 0.1, 0)) : segs) {
     if (e.bitum && mode === "conc" && e.kind === "beam") { isoBox(g, x0, y0, z0, x1, y1, z1, "bitum"); continue; } // grade beams coated before the backfill
     if (mode === "conc" || mode === "fresh") {
       if (e.kind === "slab") { conc(x0, y1 - 0.3, z0 - 0.45, x1, y1, z0); conc(x1 - 0.3, y0, z0 - 0.45, x1, y1, z0); }
@@ -4309,12 +4325,15 @@ function isoCreate() {
   root.addEventListener("dblclick", (e) => { if (ISO.wall || e.target.closest(".mk,.mtag2,button")) return; const r = root.getBoundingClientRect(); isoZoom(2, e.clientX - r.left, e.clientY - r.top); });
   new ResizeObserver(() => { if (!ISO.el.isConnected) return; const r = ISO.el.getBoundingClientRect(); if (r.width < 40 || r.height < 40) return; ISO.W = r.width; ISO.H = r.height; if (!ISO.fitted && ISO.ps.length) { ISO.fitted = true; isoFit(0); if (MAPV.sel) isoFly(); } else isoRender(); }).observe(root);
 }
+// what a project's drawing depends on (its stage cut apart)
+const isoDataSig = (p) => JSON.stringify([p.levels, p.colour.k, p.active, (p.pours || []).map((x) => [x.id, x.stage, x.level, x.part, x.cureLeft]), p.geo && [p.geo.bearing, p.geo.len, p.geo.wid, isoShapeSig(p.geo.shape)], p.fence || null, p.el || null, p.setup || null, p.setupWhy || null]);
 function isoUpdate(M, ps) {
   ISO.M = M; ISO.ps = ps;
   const plane = ps.length ? mapPlane(ps) : null;
   ISO.at = new Map(ps.map((p) => { const km = plane(p.geo); return [p.id, [km[0] * 1000, km[1] * 1000]]; }));
   // a RECORDED pour arriving with fresh data: formwork-and-rebar before, concrete now → animate that part once (never on first load)
   const now = new Map();
+  ISO.dsig = new Map(ps.map((p) => [p.id, isoDataSig(p)]));
   for (const p of ps) for (const e of isoStack(p)) now.set(p.id + "|" + e.key, e.mode);
   if (ISO.prev && !isoReduce()) for (const [k, m] of now) if ((m === "conc" || m === "fresh") && ISO.prev.get(k) === "site") ISO.anim.set(k, { t: 0, t0: performance.now() });
   ISO.prev = now;
@@ -4348,9 +4367,7 @@ function isoBeacon(p, wall) {
   return b;
 }
 function isoPlots() {
-  ISO.plots.replaceChildren();
-  return; // every building draws its own (turned) plot now; the shared standard plots stayed unturned underneath
-  for (const p of ISO.ps) { const [x, y] = ISO.at.get(p.id); isoEl("polygon", { points: isoPts([isoP(x - 5, y - 4), isoP(x + 21, y - 4), isoP(x + 21, y + 16.5), isoP(x - 5, y + 16.5)]), fill: "#EEE8DC", stroke: "#D9CFBC", "stroke-width": 1, "vector-effect": "non-scaling-stroke" }, ISO.plots); }
+  ISO.plots.replaceChildren(); // every building draws its own (turned) plot now
 }
 // ---------------- camera: one exponential ease for zoom, pan and selection; none under reduced motion ----------------
 function isoTarget(t, ms = 140) { Object.assign(ISO.tgt, t); ISO.tau = isoReduce() ? 0 : ms; if (!ISO.raf) { ISO.last = performance.now(); ISO.raf = requestAnimationFrame(isoStep); } }
@@ -4417,7 +4434,7 @@ function isoRender() {
     const a = ISO.at.get(p.id), s = isoScr(a[0] + 8, a[1] + 6), on = s[0] > -400 && s[0] < W + 400 && s[1] > -400 && s[1] < H + 400;
     const model = on;
     if (model) vis.add(p.id);
-    const sig = JSON.stringify([p.levels, p.colour.k, p.active, (p.pours || []).map((x) => [x.id, x.stage, x.level, x.part, x.cureLeft]), p.geo && [p.geo.bearing, p.geo.len, p.geo.wid, isoShapeSig(p.geo.shape)], p.fence || null, isoCutOf(p), p.el || null]);
+    const sig = (ISO.dsig.get(p.id) || "") + "|" + (isoCutOf(p) || ""); // the data part is computed once per refresh, not per frame
     let ch = ISO.cache.get(p.id);
     if (model && (!ch || ch.sig !== sig)) { const g = isoModel(p, a); if (ch) ch.g.replaceWith(g); else ISO.models.append(g); ch = { sig, g }; ISO.cache.set(p.id, ch); }
     if (ch) { ch.g.classList.toggle("off", !model); const o = isoP(a[0], a[1]); ch.g.setAttribute("transform", `translate(${o[0] + cc[0]},${o[1] + cc[1]}) scale(${sc}) translate(${-cc[0]},${-cc[1]})`); ch.g.dataset.pid = p.id; ch.depth = a[0] + a[1]; }
@@ -4534,11 +4551,13 @@ function mapGeoMarkers(G) {
   const seen = new Set();
   for (const p of G.ps) {
     seen.add(p.id); let mk = G.markers.get(p.id);
-    const wrap = mk ? mk.getElement() : document.createElement("div"); wrap.classList.add("mgeo"); // ADD, never replace: Mapbox keeps its own mapboxgl-marker / anchor classes on this element — replacing them on a refresh unpinned every marker (production 15 Nov 2026)
+    const wrap = mk ? mk.getElement() : document.createElement("div"); wrap.classList.add("mgeo");
+    const sig = isoDataSig(p) + "|" + (isoCutOf(p) || "") + "|" + JSON.stringify([p.colour, p.name, p.code, G.wall]);
+    if (mk && wrap._sig === sig) { wrap._b.classList.toggle("sel", MAPV.sel === p.id); mk.setLngLat([p.geo.lng, p.geo.lat]); continue; } // nothing it shows changed // ADD, never replace: Mapbox keeps its own mapboxgl-marker / anchor classes on this element — replacing them on a refresh unpinned every marker (production 15 Nov 2026)
     const b = isoBeacon(p, G.wall); b.classList.toggle("sel", MAPV.sel === p.id);
     const svg = isoThumb(p); svg.setAttribute("class", "mgsvg"); const box = el("div", "mgb"); box.append(svg, b);
     if (!G.wall) svg.addEventListener("click", (e) => { e.stopPropagation(); b.click(); });
-    wrap.replaceChildren(box); wrap._vb = svg._vb; wrap._svg = svg; wrap._lat = p.geo.lat;
+    wrap.replaceChildren(box); wrap._vb = svg._vb; wrap._svg = svg; wrap._lat = p.geo.lat; wrap._sig = sig; wrap._b = b;
     if (!mk) { mk = new mb.Marker({ element: wrap, anchor: "top-left" }).setLngLat([p.geo.lng, p.geo.lat]).addTo(G.map); G.markers.set(p.id, mk); } else mk.setLngLat([p.geo.lng, p.geo.lat]);
   }
   for (const [id, mk] of G.markers) if (!seen.has(id)) { mk.remove(); G.markers.delete(id); }
@@ -4565,12 +4584,12 @@ function isoSolidsIn(p, P) {
     if (e.kind === "stairs") { for (const [x0, y0, x1, y1] of P.stairs) box(x0, y0, x1, y1, e.z0, e.z1 - 0.2, solid); continue; }
     if (e.kind === "tfence" || e.kind === "sign") { if (e.mode !== "missing") for (const pc of isoSetupPieces(e)) out.push({ ring: pc.ring, z0: pc.z0, z1: pc.z1, c: pc.c }); continue; }
     if (e.kind === "trucks") { for (const bx of isoTruckBoxes(e).boxes) out.push({ ring: bx.ring, z0: bx.z0, z1: bx.z1, c: bx.c }); continue; }
-    if (e.kind === "parapet") { const r = e.ring; for (let i = 0; i < r.length; i++) { const a = r[i], b = r[(i + 1) % r.length]; for (const pc of isoWallPieces([a[0], a[1], b[0], b[1], 0.2, []], e.z0, e.z1)) out.push({ ring: pc.ring, z0: pc.z0, z1: pc.z1, c: e.mode }); } continue; }
+    if (e.kind === "parapet") { for (const w of isoEdges(e.ring, 0.2)) for (const pc of isoWallPieces(w, e.z0, e.z1)) out.push({ ring: pc.ring, z0: pc.z0, z1: pc.z1, c: e.mode }); continue; }
     if (e.kind === "lnt") { for (const w of P.walls[e.L.key] || []) for (const pc of isoLintels(w, e.z0, e.z1)) out.push({ ring: pc.ring, z0: pc.z0, z1: pc.z1, c: solid }); continue; }
     if (e.kind === "walls" || e.kind === "fence") { for (const w of (e.kind === "fence" ? P.fence : P.walls[e.L.key]) || []) for (const pc of isoWallPieces(w, e.z0, e.z1)) out.push({ ring: pc.ring, z0: pc.z0, z1: pc.z1, c: solid }); continue; }
     if (e.kind === "pad" || e.kind === "neck" || e.kind === "cols") {
       const h = e.kind === "pad" ? 0.85 : 0.25;
-      if (e.kind === "pad" && P.real && P.found === "strip") { for (const [a, b, c, d] of P.beams) { const hz = Math.abs(c - a) >= Math.abs(d - b), yc = (b + d) / 2, xc = (a + c) / 2; const [x0, y0, x1, y1] = hz ? [a - 0.6, yc - 0.6, c + 0.6, yc + 0.6] : [xc - 0.6, b - 0.6, xc + 0.6, d + 0.6]; box(x0, y0, x1, y1, z0, z1, e.bitum && solid === "conc" ? "bitum" : solid); } continue; }
+      if (e.kind === "pad" && P.real && P.found === "strip") { for (const sg of P.beams) { const [x0, y0, x1, y1] = isoSegRect(sg, 0.6); box(x0, y0, x1, y1, z0, z1, e.bitum && solid === "conc" ? "bitum" : solid); } continue; }
       for (const q of isoCols(e.kind === "cols" && e.roof)) {
         const [x, y] = q, hx = q.length >= 4 && e.kind !== "pad" ? q[2] / 2 : h * kx, hy = q.length >= 4 && e.kind !== "pad" ? q[3] / 2 : h * ky, f = mode === "site" ? 0.06 : 0;
         box(x - hx - f * kx, y - hy - f * ky, x + hx + f * kx, y + hy + f * ky, z0, z1, e.bitum && solid === "conc" ? "bitum" : solid);
@@ -4589,6 +4608,8 @@ function isoSolidsIn(p, P) {
 // a point of a project's plan → [lng, lat] (x east, y south, metres from the plan centre after the project's own turn and size)
 function isoLngLat(p, x, y) { const q = isoXY(x, y, isoXfOf(p)), e = q[0] - 8, n = -(q[1] - 6), la = p.geo.lat; return [p.geo.lng + e / (111320 * Math.cos((la * Math.PI) / 180)), la + n / 111320]; }
 function mapGeo3D(G) {
+  const s3 = G.ps.map((p) => p.id + ":" + isoDataSig(p) + "|" + (isoCutOf(p) || "")).join("\n");
+  if (G.s3 === s3 && G.map.getSource("taa3d")) return; G.s3 = s3; // the extrusions are rebuilt only when a project's drawing data or cut changed
   const feats = [];
   for (const p of G.ps) for (const b of isoSolids(p)) feats.push({ type: "Feature", properties: { c: M3C[b.c] || M3C.conc, b: b.z0, h: b.z1, g: b.c === "plan" || b.c === "unk" ? 1 : 0 },
     geometry: { type: "Polygon", coordinates: [(b.ring ? [...b.ring, b.ring[0]] : [[b.x0, b.y0], [b.x1, b.y0], [b.x1, b.y1], [b.x0, b.y1], [b.x0, b.y0]]).map(([x, y]) => isoLngLat(p, x, y))] } });
