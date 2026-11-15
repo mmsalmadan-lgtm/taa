@@ -338,3 +338,9 @@ Known good totals (2026-11-09): contracts 14,259,433.75 · collected 7,751,477.4
 - Every map action row carries the pour version (`<pid>@<ver>~…`); a 409 (changed meanwhile) reloads the page. Violation box `.mviol`
   shows the lifecycle (open → ack → assigned → assessed → closed) with its history; no «لا ينطبق» anywhere.
 - Admin «إعداد الخريطة الجغرافية» → `map.base` (public pk. token + style, PIN).
+- Buildings everywhere (owner 15 Nov): no dots — each project is its building at every zoom (grid: enlarged far out, `isoMinPx`; Mapbox: the drawing
+  marker sized from metres per pixel). ORIENTATION: `p.geo.bearing` (clockwise from north) + `len` × `wid` (m) from settings/geo~ (bot `map.orient`, admin + PIN)
+  turn and size every drawing through `ISO_XF` (`isoXfOf`, `isoXY`; boxes draw the faces that face the viewer, `isoFaces`); the annex is at the back, the
+  front edge (local y = 12) is the façade. Mapbox from `MAP3D_Z` (16.5): the same recorded structure as fill-extrusion layers (`isoSolids`, `mapGeo3D`,
+  `isoLngLat`) at the true place, angle and size; selecting tilts to 55°. Tool «ضبط اتجاه المبنى» (`orientDialog`, panel, admin): satellite-streets view,
+  fixed outline with the façade edge, angle / length / width, the corrected centre (≤ 300 m), PIN. Without Mapbox: angle on a turning preview.
