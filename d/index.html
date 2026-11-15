@@ -3662,9 +3662,13 @@ function isoTruckBoxes(e) {
 function isoSetupPieces(e) {
   const P = isoPlan(), plot = P.plot || isoGrow(isoBase(P), 4), out = [];
   if (e.kind === "tfence") { for (let i = 0; i < plot.length; i++) { const a = plot[i], b = plot[(i + 1) % plot.length]; for (const pc of isoWallPieces([a[0], a[1], b[0], b[1], 0.06, []], 0, 2.0)) out.push({ ...pc, c: "tsheet" }); } return out; }
-  const fy = Math.max(...plot.map((q) => q[1])) - 0.6, cx = (P.bb[0] + P.bb[2]) / 2, B = (x0, y0, x1, y1, z0, z1, c) => ({ ring: [[x0, y0], [x1, y0], [x1, y1], [x0, y1]], z0, z1, c });
-  if (e.mode === "missing") return [B(cx - 1.6, fy - 0.3, cx + 1.6, fy + 0.3, 0, 0, "board")];
-  return [B(cx - 1.45, fy - 0.06, cx - 1.35, fy + 0.06, 0, 2.0, "cab"), B(cx + 1.35, fy - 0.06, cx + 1.45, fy + 0.06, 0, 2.0, "cab"), B(cx - 1.6, fy - 0.05, cx + 1.6, fy + 0.05, 2.0, 3.6, "board")];
+  // the street frontage = the plot edge furthest to the front (the façade street); the banner runs along most of it, just inside the fence line
+  const n = plot.length, fi = [...Array(n).keys()].sort((i, j) => (plot[j][1] + plot[(j + 1) % n][1]) - (plot[i][1] + plot[(i + 1) % n][1]))[0], a = plot[fi], b = plot[(fi + 1) % n];
+  const L = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1, ux = (b[0] - a[0]) / L, uy = (b[1] - a[1]) / L, cx = (P.bb[0] + P.bb[2]) / 2, cy = (P.bb[1] + P.bb[3]) / 2;
+  const inw = ((cx - a[0]) * -uy + (cy - a[1]) * ux) > 0 ? 1 : -1, ox = -uy * 0.14 * inw, oy = ux * 0.14 * inw;
+  const seg = (s0, s1, z0, z1, c, t = 0.08) => isoWallPieces([a[0] + ux * L * s0 + ox, a[1] + uy * L * s0 + oy, a[0] + ux * L * s1 + ox, a[1] + uy * L * s1 + oy, t, []], z0, z1).map((pc) => ({ ...pc, c }));
+  if (e.mode === "missing") return seg(0.1, 0.9, 0, 0.02, "board", 0.5);
+  return [...seg(0.1, 0.9, 0.3, 2.4, "board"), ...seg(0.6, 0.66, 0.9, 1.9, "brand", 0.1), ...seg(0.7, 0.86, 0.6, 2.1, "render", 0.1)];
 }
 function isoTrucks(g, e) {
   const t = isoTruckBoxes(e);
@@ -3698,7 +3702,7 @@ const ISO_ICON = {
   red: '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="currentColor"/><path d="M8 4.2v4.6" stroke="#fff" stroke-width="1.9" stroke-linecap="round"/><circle cx="8" cy="11.4" r="1.1" fill="#fff"/></svg>',
   grey: '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="2.2 1.8"/><path d="M6.3 6.2a1.8 1.8 0 1 1 2.4 1.7c-.5.2-.7.6-.7 1.1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="11.4" r=".95" fill="currentColor"/></svg>',
 };
-const ISO_MAT = { tsheet: ["#DCE2E7", "#C2CBD3", "#AAB4BE"], board: ["#2A3445", "#1D2533", "#151B26"], truck: ["#F3C64F", "#DDB03C", "#C49A2E"], cab: ["#E9ECEF", "#CDD2D7", "#B4BAC1"], earth: ["#DCCDAE", "#C9B794", "#B5A27C"], blk: ["#EFEAE1", "#DCD4C6", "#C9C0B0"], conc: ["#E1E4E6", "url(#iso-conc-l)", "url(#iso-conc-r)"], fresh: ["#BFC6CC", "url(#iso-fresh-l)", "url(#iso-fresh-r)"], ply: ["#EBC07E", "url(#iso-ply-l)", "url(#iso-ply-r)"] };
+const ISO_MAT = { brand: ["#C62026", "#A81B20", "#8E171B"], render: ["#E7DFD0", "#D6CCB9", "#C4B9A4"], tsheet: ["#DCE2E7", "#C2CBD3", "#AAB4BE"], board: ["#2A3445", "#1D2533", "#151B26"], truck: ["#F3C64F", "#DDB03C", "#C49A2E"], cab: ["#E9ECEF", "#CDD2D7", "#B4BAC1"], earth: ["#DCCDAE", "#C9B794", "#B5A27C"], blk: ["#EFEAE1", "#DCD4C6", "#C9C0B0"], conc: ["#E1E4E6", "url(#iso-conc-l)", "url(#iso-conc-r)"], fresh: ["#BFC6CC", "url(#iso-fresh-l)", "url(#iso-fresh-r)"], ply: ["#EBC07E", "url(#iso-ply-l)", "url(#iso-ply-r)"] };
 const ISO_DEFS = `<filter id="iso-soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="0.9"/></filter>` +
   [["conc-l", "#D2D6DA", "#BBC1C6"], ["conc-r", "#B4BAC0", "#9AA2A9"], ["fresh-l", "#AEB6BD", "#99A2AA"], ["fresh-r", "#959EA6", "#7E8891"], ["ply-l", "#DDA962", "#CB944C"], ["ply-r", "#C08A43", "#A97536"]]
     .map(([id, a, b]) => `<linearGradient id="iso-${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>`).join("");
@@ -4295,7 +4299,7 @@ function mapGeoMarkers(G) {
 }
 // ---- the building in 3D ON the map (owner, 15 Nov 2026: «in the direction it is really built»): from MAP3D_Z the drawing marker gives way to
 // extruded geometry at the true place, orientation and size — the same recorded stages as the drawing (concrete, fresh, formwork, rebar, planned)
-const MAP3D_Z = 16.5, M3C = { tsheet: "#C2CBD3", board: "#1D2533", missing: "#B42318", truck: "#E8B93E", cab: "#C9CED3", earth: "#CDBB97", blk: "#D9D1C3", conc: "#C9CED3", fresh: "#98A1A9", ply: "#D29C52", steel: "#6A3A22", plan: "#B4BBC3", unk: "#97A0AA" };
+const MAP3D_Z = 16.5, M3C = { brand: "#C62026", render: "#D6CCB9", tsheet: "#C2CBD3", board: "#1D2533", missing: "#B42318", truck: "#E8B93E", cab: "#C9CED3", earth: "#CDBB97", blk: "#D9D1C3", conc: "#C9CED3", fresh: "#98A1A9", ply: "#D29C52", steel: "#6A3A22", plan: "#B4BBC3", unk: "#97A0AA" };
 function isoSolids(p) {
   const P0 = ISO_PL; ISO_PL = isoPlanOf(p);
   try { return isoSolidsIn(p, ISO_PL); } finally { ISO_PL = P0; }
