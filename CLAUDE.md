@@ -321,7 +321,7 @@ Known good totals (2026-11-09): contracts 14,259,433.75 · collected 7,751,477.4
   refresh updates it in place, the camera keeps its place). Isometric, metres; projects at their documented coordinates (`mapPlane`). Far out: lit
   beacons `.mk.mproj` (code, name, status colour AND drawn icon; overlapping plates collapse by priority red > yellow > grey > green). From
   `ISO_KM` px/m or on selection: each project's structure from its RECORDED stages (`isoStack`/`isoMode`): concrete (done), fresh concrete (a
-  poured pour still curing), plywood formwork with protruding rebar (pour stages), blue dashed = planned (none), grey dashed = the audit says the
+  poured pour still curing), plywood formwork with protruding rebar (pour stages), faded grey = not done (owner 15 Nov: every stage shown, the ones not done faded — `isoFade`; plain = not started, fine dash = the audit says the
   floor is in progress but not which part (unk/work), red dashed outline = violation. Starter bars stay above poured columns until their slab is
   concrete. No machinery, nothing moves at rest; the ONLY stage animation is a recorded change formwork → concrete arriving with fresh data
   (`ISO.prev` vs now, 1.5 s: concrete rises, formwork goes). Reduced motion: no camera flight, no rise. Zoom: Ctrl/⌘ + wheel, two fingers,

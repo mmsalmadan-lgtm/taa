@@ -821,6 +821,7 @@ const pct = (f) => Math.round((f || 0) * 100) + "%";
 const LK = "taa.dash.lang";
 let LANG = (() => { try { return localStorage.getItem(LK) === "en" ? "en" : "ar"; } catch { return "ar"; } })();
 const EN = {
+"المنجز بلونه الحقيقي، وغير المنجز يظهر باهتاً في مكانه.": "Done in its real colour; not done shown faded in its place.",
 "صبة الأرضية": "Ground slab",
 "داخل المبنى:": "Inside the building:",
 "المبنى كاملاً": "Whole building",
@@ -3596,15 +3597,10 @@ function isoWallPieces(w, z0, z1) {
   }
   q(at, L, z0, z1); return out;
 }
-// the walls of one floor (or the boundary wall) in their recorded state: blockwork done = blocks, otherwise outlined as planned / in progress
+// the walls of one floor (or the boundary wall) in their recorded state: blockwork done = blocks, otherwise faded in their place
 function isoWalls(g, e) {
   const P = isoPlan(), list = e.kind === "fence" ? P.fence : (P.walls || {})[e.L.key]; if (!list || !list.length) return;
-  if (e.mode !== "blk") { // not built: the layout on the floor only, so the frame and its stages stay readable
-    const a = { fill: e.mode === "plan" ? "rgb(47 111 203/.10)" : "rgb(122 132 148/.12)", stroke: e.mode === "plan" ? "#2F6FCB" : "#7A8494", "stroke-opacity": ".55", "stroke-width": "0.8", "stroke-dasharray": e.mode === "plan" ? "4 3" : "2 3", "vector-effect": "non-scaling-stroke" };
-    for (const w of list) for (const pc of isoWallPieces([w[0], w[1], w[2], w[3], w[4], []], e.z0, e.z0 + 0.05)) isoEl("polygon", { points: isoPts(pc.ring.map(([x, y]) => isoP(x, y, e.z0 + 0.02))), ...a }, g);
-    return;
-  }
-  for (const pc of list.flatMap((w) => isoWallPieces(w, e.z0, e.z1)).sort((a, b) => a.d - b.d)) isoPrism(g, pc.ring, pc.z0, pc.z1, "blk");
+  for (const pc of list.flatMap((w) => isoWallPieces(w, e.z0, e.z1)).sort((a, b) => a.d - b.d)) { if (e.mode === "blk") isoPrism(g, pc.ring, pc.z0, pc.z1, "blk"); else isoGhostPoly(g, pc.ring, pc.z0, pc.z1, e.mode); } // not built: faded walls in their place
 }
 const isoWallMode = (st) => (st === "done" ? "blk" : st === "none" ? "plan" : "unk");
 // the audit's state of a stage (p.el from the bot): done | work | none | null (غير مشمول / not recorded)
@@ -3647,10 +3643,12 @@ function isoBox(g, x0, y0, z0, x1, y1, z1, mat, op = 1) {
   for (const f of faces) isoEl("polygon", { points: isoPts([isoPr(f.a[0], f.a[1], z0), isoPr(f.b[0], f.b[1], z0), isoPr(f.b[0], f.b[1], z1), isoPr(f.a[0], f.a[1], z1)]), fill: m[f.shade], "fill-opacity": op, ...ISO_EDGE, "stroke-opacity": op }, g);
   isoEl("polygon", { points: isoPts(W.map((q) => isoPr(q[0], q[1], z1))), fill: m[0], "fill-opacity": op, ...ISO_EDGE, "stroke-opacity": op }, g);
 }
-// planned (blue) or recorded as in progress without saying which part (grey): outlines only — never drawn as work being done
+// NOT DONE (owner 15 Nov 2026: «every stage shown — what is done, and what is not done faded»): the element in its place, faded grey; not started is
+// plain and paler, in progress without saying which part keeps a fine dash — never drawn as work being done
+const isoFade = (kind, faint) => ({ fill: kind === "plan" ? "rgb(150 158 168/.11)" : "rgb(122 132 148/.16)", stroke: kind === "plan" ? "#A7AFB8" : "#7A8494", "stroke-opacity": (kind === "plan" ? 0.5 : 0.65) * (faint ? 0.7 : 1),
+  "stroke-width": "0.8", "stroke-dasharray": kind === "plan" ? "" : "3 2", "vector-effect": "non-scaling-stroke", "stroke-linejoin": "round" });
 function isoGhost(g, x0, y0, z0, x1, y1, z1, kind, faint) {
-  const c = kind === "plan" ? "#2F6FCB" : "#7A8494", o = faint ? 0.35 : 0.6;
-  const a = { fill: kind === "plan" ? "rgb(47 111 203/.05)" : "rgb(122 132 148/.07)", stroke: c, "stroke-opacity": o, "stroke-width": "1", "stroke-dasharray": kind === "plan" ? "4 3" : "2 3", "vector-effect": "non-scaling-stroke", "stroke-linejoin": "round" };
+  const a = isoFade(kind, faint), o = +a["stroke-opacity"];
   const { W, faces } = isoFaces(x0, y0, x1, y1);
   for (const f of faces) isoEl("polygon", { points: isoPts([isoPr(f.a[0], f.a[1], z0), isoPr(f.b[0], f.b[1], z0), isoPr(f.b[0], f.b[1], z1), isoPr(f.a[0], f.a[1], z1)]), ...a, "stroke-opacity": o * 0.75 }, g);
   isoEl("polygon", { points: isoPts(W.map((q) => isoPr(q[0], q[1], z1))), ...a }, g);
@@ -3669,8 +3667,7 @@ function isoPrism(g, r, z0, z1, mat, op = 1) {
   isoEl("polygon", { points: isoPts(W.map((q) => isoPr(q[0], q[1], z1))), fill: m[0], "fill-opacity": op, ...ISO_EDGE, "stroke-opacity": op }, g);
 }
 function isoGhostPoly(g, r, z0, z1, kind) {
-  const c = kind === "plan" ? "#2F6FCB" : "#7A8494", o = 0.6, { W, faces } = isoPolyFaces(r);
-  const a = { fill: kind === "plan" ? "rgb(47 111 203/.05)" : "rgb(122 132 148/.07)", stroke: c, "stroke-opacity": o, "stroke-width": "1", "stroke-dasharray": kind === "plan" ? "4 3" : "2 3", "vector-effect": "non-scaling-stroke", "stroke-linejoin": "round" };
+  const a = isoFade(kind), o = +a["stroke-opacity"], { W, faces } = isoPolyFaces(r);
   for (const f of faces) isoEl("polygon", { points: isoPts([isoPr(f.a[0], f.a[1], z0), isoPr(f.b[0], f.b[1], z0), isoPr(f.b[0], f.b[1], z1), isoPr(f.a[0], f.a[1], z1)]), ...a, "stroke-opacity": o * 0.75 }, g);
   isoEl("polygon", { points: isoPts(W.map((q) => isoPr(q[0], q[1], z1))), ...a }, g);
 }
@@ -3746,9 +3743,9 @@ function isoStack(p) {
   const fill = isoSt(p, "fill"), dig = isoSt(p, "dig"), repl = isoSt(p, "repl"), gs = isoSt(p, "gslab"), gL = (k, t) => ({ key: k, t });
   if (fill === "done") { for (const e of out) { if (e.kind === "pad") e.hidden = true; if (e.kind === "neck" || e.kind === "beam") e.z0 = Math.max(e.z0, 1.0); }
     out.unshift({ L: gL("fill", "الدفان"), part: { k: "fill", st: "done" }, mode: "earth", key: "fill|fill", kind: "fill", z0: 0, z1: 1.0 }); }
-  else { if (fill === "work") out.unshift({ L: gL("fill", "الدفان"), part: { k: "fill", st: "work" }, mode: "unk", key: "fill|fill", kind: "fill", z0: 0, z1: 1.0 });
+  else { if (fill === "work" || fill === "none") out.unshift({ L: gL("fill", "الدفان"), part: { k: "fill", st: fill }, mode: fill === "none" ? "plan" : "unk", key: "fill|fill", kind: "fill", z0: 0, z1: 1.0 });
     if (dig === "done" || dig === "work") out.unshift({ L: gL("dig", "الحفر"), part: { k: "dig", st: dig }, mode: repl === "done" ? "gravel" : dig === "work" ? "unk" : "earth", key: "dig|dig", kind: "pit", z0: 0, z1: 0.02 }); }
-  if (gs && (gs !== "none" || fill === "done")) { const j = out.findIndex((e) => !["fill", "pit", "pad", "neck", "beam", "fence"].includes(e.kind)), e = { L: gL("gslab", "صبة الأرضية"), part: { k: "gslab", st: gs }, mode: gs === "done" ? "conc" : gs === "none" ? "plan" : "unk", key: "gslab|gslab", kind: "gslab", z0: 1.15, z1: 1.3 };
+  if (gs) { const j = out.findIndex((e) => !["fill", "pit", "pad", "neck", "beam", "fence"].includes(e.kind)), e = { L: gL("gslab", "صبة الأرضية"), part: { k: "gslab", st: gs }, mode: gs === "done" ? "conc" : gs === "none" ? "plan" : "unk", key: "gslab|gslab", kind: "gslab", z0: 1.15, z1: 1.3 };
     if (j >= 0) out.splice(j, 0, e); else out.push(e); }
   if (!PL.std && PL.fence.length && p.fence) out.unshift({ L: { key: "fence", t: "السور" }, part: { k: "fence", st: p.fence }, mode: isoWallMode(p.fence), key: "fence|fence", kind: "fence", z0: 0, z1: 2.5 });
   const cut = isoCutOf(p);
@@ -4132,7 +4129,7 @@ function mapGeoMarkers(G) {
 }
 // ---- the building in 3D ON the map (owner, 15 Nov 2026: «in the direction it is really built»): from MAP3D_Z the drawing marker gives way to
 // extruded geometry at the true place, orientation and size — the same recorded stages as the drawing (concrete, fresh, formwork, rebar, planned)
-const MAP3D_Z = 16.5, M3C = { earth: "#CDBB97", blk: "#D9D1C3", conc: "#C9CED3", fresh: "#98A1A9", ply: "#D29C52", steel: "#6A3A22", plan: "#2F6FCB", unk: "#7A8494" };
+const MAP3D_Z = 16.5, M3C = { earth: "#CDBB97", blk: "#D9D1C3", conc: "#C9CED3", fresh: "#98A1A9", ply: "#D29C52", steel: "#6A3A22", plan: "#B4BBC3", unk: "#97A0AA" };
 function isoSolids(p) {
   const P0 = ISO_PL; ISO_PL = isoPlanOf(p);
   try { return isoSolidsIn(p, ISO_PL); } finally { ISO_PL = P0; }
@@ -4386,7 +4383,7 @@ function mapPanel(p, M) {
   if (fl.length) {
     const cur = isoCutOf(p), row = el("div", "mcut"); row.setAttribute("role", "group"); row.setAttribute("aria-label", "داخل المبنى"); row.append(el("span", "small", "داخل المبنى:"));
     const mk = (k, t) => { const b = el("button", "sbtn" + (cur === k ? " on" : ""), t); b.type = "button"; b.setAttribute("aria-pressed", String(cur === k)); b.onclick = () => { MAPV.cut = k ? { pid: p.id, key: k } : null; draw(); }; return b; };
-    row.append(mk(null, "المبنى كاملاً"), ...fl.map((L) => mk(L.key, L.t))); box.append(row);
+    row.append(mk(null, "المبنى كاملاً"), ...fl.map((L) => mk(L.key, L.t))); box.append(row, el("p", "small muted", "المنجز بلونه الحقيقي، وغير المنجز يظهر باهتاً في مكانه."));
     if (cur) box.append(el("p", "small muted", "يظهر الدور بلا سقفه وما فوقه مخفي — الجدران من المخططات، وحالتها من سجل «المباني» في التدقيق."));
   }
   // progress: planned vs achieved only with an approved method; reported and verified kept apart
