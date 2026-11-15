@@ -348,3 +348,7 @@ Known good totals (2026-11-09): contracts 14,259,433.75 · collected 7,751,477.4
   (`isoPlanOf` → `ISO_PL`: centred on (8, 6), turned half a turn so the façade street is the front; beams between neighbouring columns on a grid line).
   Slabs on any outline: `isoPrism`/`isoGhostPoly`/`isoMeshPoly`/`isoPropsPoly`; Mapbox solids carry `ring`. Paste dialog «شكل المبنى من المخططات»
   (`shapeDialog`, admin, preview first, PIN, clear). The orient tool shows the real outline and hides length/width for a shaped project.
+  WALLS: with `shape.walls[level]` and that floor's blockwork part (`blk`, from the audit) each floor gets its walls (`isoWallPieces`: solid between openings,
+  under/over windows 0.9/2.2 m, over doors 2.1 m; `isoWalls`) — blockwork done = blocks (`ISO_MAT.blk`), otherwise dashed; `shape.fence` + `p.fence` = the
+  boundary wall (2.5 m, gates open). No record → nothing drawn. FLOOR CUT «داخل المبنى» (panel, shaped projects): `MAPV.cut {pid, key}` hides that floor's
+  slab and everything above in `isoStack` — the drawing, the panel picture and the Mapbox solids alike.
