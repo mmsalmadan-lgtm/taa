@@ -355,4 +355,4 @@ Known good totals (2026-11-09): contracts 14,259,433.75 · collected 7,751,477.4
   STAGES: `p.el` (the audit's states) drives the earthworks: dug and not backfilled → excavation floor (`pit`, gravel once «الإحلال» is done);
   «الدفان» done → an earth platform (`isoGrow` of the base outline, 0–1.0 m) that buries the footings (`hidden`), necks and beams rise out of it;
   «صبة الأرضية» (`gslab`, new audit element, weight 2, optional — `EL_OPT` mirrors audit.html OPT_EL; the edit form shows a missing optional stage as
-  «غير مشمول», never «لم يبدأ») = a slab on the backfill. Panel «جميع المراحل»: every stage of the project in construction order with its state.
+  «غير مشمول», never «لم يبدأ») = a slab on the backfill. The panel levels list carries every stage in the order of work: earthworks, footings, beams, backfill + ground slab, floors, boundary wall.

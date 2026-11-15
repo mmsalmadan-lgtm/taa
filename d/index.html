@@ -822,8 +822,6 @@ const LK = "taa.dash.lang";
 let LANG = (() => { try { return localStorage.getItem(LK) === "en" ? "en" : "ar"; } catch { return "ar"; } })();
 const EN = {
 "صبة الأرضية": "Ground slab",
-"جميع المراحل": "All stages",
-"كل مراحل المشروع كما في التدقيق": "Every stage of the project as the audit records it",
 "داخل المبنى:": "Inside the building:",
 "المبنى كاملاً": "Whole building",
 "المباني (البلوك)": "Blockwork",
@@ -3750,7 +3748,7 @@ function isoStack(p) {
     out.unshift({ L: gL("fill", "الدفان"), part: { k: "fill", st: "done" }, mode: "earth", key: "fill|fill", kind: "fill", z0: 0, z1: 1.0 }); }
   else { if (fill === "work") out.unshift({ L: gL("fill", "الدفان"), part: { k: "fill", st: "work" }, mode: "unk", key: "fill|fill", kind: "fill", z0: 0, z1: 1.0 });
     if (dig === "done" || dig === "work") out.unshift({ L: gL("dig", "الحفر"), part: { k: "dig", st: dig }, mode: repl === "done" ? "gravel" : dig === "work" ? "unk" : "earth", key: "dig|dig", kind: "pit", z0: 0, z1: 0.02 }); }
-  if (gs) { const j = out.findIndex((e) => !["fill", "pit", "pad", "neck", "beam", "fence"].includes(e.kind)), e = { L: gL("gslab", "صبة الأرضية"), part: { k: "gslab", st: gs }, mode: gs === "done" ? "conc" : gs === "none" ? "plan" : "unk", key: "gslab|gslab", kind: "gslab", z0: 1.15, z1: 1.3 };
+  if (gs && (gs !== "none" || fill === "done")) { const j = out.findIndex((e) => !["fill", "pit", "pad", "neck", "beam", "fence"].includes(e.kind)), e = { L: gL("gslab", "صبة الأرضية"), part: { k: "gslab", st: gs }, mode: gs === "done" ? "conc" : gs === "none" ? "plan" : "unk", key: "gslab|gslab", kind: "gslab", z0: 1.15, z1: 1.3 };
     if (j >= 0) out.splice(j, 0, e); else out.push(e); }
   if (!PL.std && PL.fence.length && p.fence) out.unshift({ L: { key: "fence", t: "السور" }, part: { k: "fence", st: p.fence }, mode: isoWallMode(p.fence), key: "fence|fence", kind: "fence", z0: 0, z1: 2.5 });
   const cut = isoCutOf(p);
@@ -4381,15 +4379,8 @@ function mapPanel(p, M) {
   box.append(back, h, cb);
   if (M.canGeo && p.geo) { const ob = el("button", "sbtn", p.geo.bearing !== undefined ? "ضبط اتجاه المبنى (" + Math.round(p.geo.bearing) + "°)" : "ضبط اتجاه المبنى — غير مضبوط بعد"); ob.type = "button"; ob.onclick = () => orientDialog(M, p);
     const sb = el("button", "sbtn", p.geo.shape ? "شكل المبنى من المخططات ✓ — تغيير" : "شكل المبنى من المخططات"); sb.type = "button"; sb.onclick = () => shapeDialog(M, p); box.append(ob, sb); }
+  else if (p.geo && p.geo.bearing === undefined) box.append(el("p", "small muted", "اتجاه المبنى وأبعاده غير مسجّلة — يُرسم بالاتجاه والمقاس القياسي."));
   if (p.geo && p.geo.shape) box.append(el("p", "small muted", "الشكل والأعمدة من مخططات المشروع؛ المراحل والألوان من السجلات."));
-  // every stage (owner 15 Nov 2026: «show all the stages»): the audit's own list in construction order, each with its recorded state
-  if (p.el && Object.keys(p.el).length) {
-    const kind = p.kind === "fin" || p.kind === "تشطيب" ? "تشطيب" : "عظم", oi = (k) => { const i = STG_ORDER.indexOf(k); return i < 0 ? 99 : i; };
-    const all = (ELEMENTS[kind] || []).filter(([k]) => p.el[k] !== "غير مشمول" && (p.el[k] || !EL_OPT.includes(k))).sort((a, b) => oi(a[0]) - oi(b[0]));
-    const d = el("details", "msec"), sm = el("summary", "", "جميع المراحل"); d.append(sm, el("p", "small muted", "كل مراحل المشروع كما في التدقيق"));
-    const ul = el("div", "mlv"); for (const [k, t] of all) { const v = p.el[k], st = isoSt(p, k) || "none"; const r = el("div", "mlvr"); r.append(el("b", "", t), el("span", "mst " + st, v || "لم يبدأ")); ul.append(r); }
-    d.append(ul); box.append(d);
-  }
   // inside the building (owner 15 Nov 2026): one floor without its slab, everything above it hidden — on the drawing, the panel picture and the 3D map
   const fl = p.geo && p.geo.shape ? (p.levels || []).filter((L) => !["foot", "beam"].includes(L.key)) : [];
   if (fl.length) {
@@ -4398,12 +4389,17 @@ function mapPanel(p, M) {
     row.append(mk(null, "المبنى كاملاً"), ...fl.map((L) => mk(L.key, L.t))); box.append(row);
     if (cur) box.append(el("p", "small muted", "يظهر الدور بلا سقفه وما فوقه مخفي — الجدران من المخططات، وحالتها من سجل «المباني» في التدقيق."));
   }
-  else if (p.geo && p.geo.bearing === undefined) box.append(el("p", "small muted", "اتجاه المبنى وأبعاده غير مسجّلة — يُرسم بالاتجاه والمقاس القياسي."));
   // progress: planned vs achieved only with an approved method; reported and verified kept apart
   const pr = el("div", "msec"); pr.append(el("h4", "", "التقدم ومصدره"));
   if (p.progress && p.progress.actual != null) pr.append(el("p", "", `الإنجاز ${Math.round(p.progress.actual * 100)}% — ${p.progress.src === "verified" ? "متحقق بدليل حديث" : "مبلّغ عنه (غير متحقق)"} · المخطط ${pctOr(p.progress.planned)}`));
   else pr.append(el("p", "small muted", "لا طريقة حساب معتمدة للإنجاز مقابل المخطط لهذا المشروع — لا تُعرض نسبة."));
-  const lv = el("div", "mlv"); for (const L of p.levels) { const r = el("div", "mlvr"); r.append(el("b", "", L.t)); for (const x of L.parts) r.append(el("span", "mst " + x.st, x.t + ": " + (x.k === "blk" ? MBLK[x.st] || x.st : MPART[x.st] || x.st) + (x.src === "audit" ? " (التدقيق)" : x.src === "pour" ? " (الصبة)" : ""))); lv.append(r); }
+  const lv = el("div", "mlv"), elRow = (keys) => { const kind = p.kind === "fin" || p.kind === "تشطيب" ? "تشطيب" : "عظم", E = ELEMENTS[kind] || [];
+    for (const k of keys) { const v = (p.el || {})[k], t = (E.find((x) => x[0] === k) || [])[1]; if (!t || v === "غير مشمول" || (!v && EL_OPT.includes(k)) || !p.el) continue;
+      const r = el("div", "mlvr"); r.append(el("b", "", t), el("span", "mst " + (isoSt(p, k) || "none"), (v || "لم يبدأ") + " (التدقيق)")); lv.append(r); } };
+  elRow(["dig", "repl", "dewat", "shor", "bdig", "bins"]); // in the order of work: earthworks, footings, ground beams, backfill + ground slab, floors
+  let gnd = false; for (const L of p.levels) { if (!gnd && !["foot", "beam"].includes(L.key)) { elRow(["fill", "gslab"]); gnd = true; } const r = el("div", "mlvr"); r.append(el("b", "", L.t)); for (const x of L.parts) r.append(el("span", "mst " + x.st, x.t + ": " + (x.k === "blk" ? MBLK[x.st] || x.st : MPART[x.st] || x.st) + (x.src === "audit" ? " (التدقيق)" : x.src === "pour" ? " (الصبة)" : ""))); lv.append(r); }
+  if (!gnd) elRow(["fill", "gslab"]);
+  elRow(["fence"]);
   pr.append(lv); box.append(pr);
   if ((p.work || []).length) { const w = el("div", "msec"); w.append(el("h4", "", "أعمال اليوم المسجّلة")); for (const x of p.work) w.append(el("div", "small", (x.k === "rebar" ? "حدادة" : x.k === "form" ? "نجارة" : "عمل") + ": " + x.t + (x.area ? " · " + x.area : "") + (x.status ? " · " + x.status : ""))); box.append(w); }
   // pours: the chosen one in full, the others named (several activities at once are normal)
