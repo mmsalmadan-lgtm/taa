@@ -3713,7 +3713,7 @@ function mapPanel(p, M) {
   pr.append(lv); box.append(pr);
   if ((p.work || []).length) { const w = el("div", "msec"); w.append(el("h4", "", "أعمال اليوم المسجّلة")); for (const x of p.work) w.append(el("div", "small", (x.k === "rebar" ? "حدادة" : x.k === "form" ? "نجارة" : "عمل") + ": " + x.t + (x.area ? " · " + x.area : "") + (x.status ? " · " + x.status : ""))); box.append(w); }
   // pours: the chosen one in full, the others named (several activities at once are normal)
-  const pours = (p.pours || []).filter((x) => x.stage !== "cancelled");
+  const pours = (p.pours || []).filter((x) => x.stage !== "cancelled" || (x.violation && x.violation.status !== "closed"));
   const pw = el("div", "msec"); pw.append(el("h4", "", "الصبات (" + pours.length + ")"));
   if (!pours.length) pw.append(el("p", "small muted", "لا صبة مسجّلة لهذا المشروع."));
   const cur = pours.find((x) => x.id === MAPV.pour) || pours.find((x) => x.id === p.active) || pours[pours.length - 1];
