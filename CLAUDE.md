@@ -373,7 +373,8 @@ Known good totals (2026-11-09): contracts 14,259,433.75 · collected 7,751,477.4
   «غير مشمول», never «لم يبدأ») = a slab on the backfill. The panel levels list carries every stage in the order of work: earthworks, footings, beams, backfill + ground slab, floors, boundary wall.
 
 ## «مساعد المشروع» in the map panel (owner's requirement 16 Nov 2026; server: taa-bot core/passist.ts)
-- `mapPanel` shows `assistBlock(p.assist)` under the colour: the score WITH its calculation, counts per state, critical gaps first (red edge), the rest
+- `mapPanel` shows a one-line summary under the colour (verified of applicable, critical count) and `assistBlock(p.assist)` at the end of the panel; the
+  Command Center project sheet `cprojDlg` shows the same block for EVERY project (finishing ones have no map). The block: the score WITH its calculation, counts per state, critical gaps first (red edge), the rest
   folded, each gap with its reason, sources of a conflict, the decision it affects, the person and the basis (or the assignment gap), follow-up state,
   due, replies (always «غير متحقق» until reviewed); known-and-verified folded; who was asked and when; decisions for the project manager / management;
   what does not apply. Admin: «بطاقة تفعيل التجربة» (recipients, exact first requests, not asked and why, allowed / not allowed, decisions) and the

@@ -4838,7 +4838,7 @@ function assistBlock(a) {
     r.append(el("div", "small", (g.to ? `المسؤول: ${g.to.name} (${g.to.basis})` : g.assignGap ? "⚠ " + g.assignGap : "") + ` · ${g.followT}` + (g.due ? " · المهلة " + dmy(g.due) : "")));
     if (g.next) r.append(el("div", "small muted", "التالي: " + g.next));
     for (const x of g.replies || []) r.append(el("div", "small", `↩ ${x.name} ${dmy(x.at)}: «${String(x.text || "").slice(0, 120)}»${x.media ? " 📎" : " — بلا مرفق"}${x.eff ? " · تاريخ الحدوث " + dmy(x.eff) : ""}${x.reviewed ? " · رُوجع" : " · غير متحقق"}`));
-    const row = ((D.cmd.assist.acts || {}).data.rows || []).find((x) => x.id === g.id);
+    const row = (((((D.cmd || {}).assist || {}).acts || {}).data || {}).rows || []).find((x) => x.id === g.id);
     for (const k of (row && row.acts) || []) { const b = el("button", "lnk", k === "review" ? (g.st === "conflict" ? "حسم التعارض" : "التحقق من الرد") : k === "takeover" ? "أستلمه بنفسي" : "إعادته للمساعد"); b.type = "button"; b.onclick = () => masAct(k, g.id); r.append(b); }
     return r; };
   const crit = a.gaps.filter((g) => g.critical), rest = a.gaps.filter((g) => !g.critical);
@@ -4855,7 +4855,7 @@ function assistBlock(a) {
   if (a.activation) { const ac = a.activation, det = el("details"); det.append(el("summary", "", "بطاقة تفعيل التجربة"));
     det.append(el("b", "", "المستلمون المقترحون")); for (const r of ac.recipients) det.append(el("div", "small", `${r.name} — ${r.basis} · ${r.items} بند · ${r.inScope ? "داخل نطاق الإرسال المعتمد" : "خارج النطاق — لا يُرسل له"}`));
     for (const x of ac.assignGaps) det.append(el("div", "small neg", "فجوة إسناد: " + x));
-    det.append(el("b", "", "الطلبات الأولى بنصها")); for (const r of ac.requests) { det.append(el("div", "small", "إلى " + r.to)); det.append(el("pre", "", r.text)); }
+    det.append(el("b", "", "الطلبات الأولى بنصها")); for (const r of ac.requests) { det.append(el("div", "small", "إلى " + r.to)); det.append(el("pre", "", String(r.text).split("*").join(""))); }
     det.append(el("b", "", "لا يُسأل عنه")); for (const x of ac.notAsked) det.append(el("div", "small muted", `${x.t}: ${x.why}`));
     det.append(el("b", "", "المسموح")); for (const x of ac.allowed) det.append(el("div", "small", "✓ " + x));
     det.append(el("b", "", "غير المسموح")); for (const x of ac.notAllowed) det.append(el("div", "small", "✗ " + x));
@@ -4870,7 +4870,7 @@ function mapPanel(p, M) {
   const h = el("div", "mph"); h.append(el("h3", "", p.name), el("span", "small muted", p.code || ""));
   const cb = el("div", "mcolour " + p.colour.k); cb.append(el("b", "", MCOL[p.colour.k][1] + " " + MCOL[p.colour.k][0])); const ul = el("ul"); for (const w of p.colour.why) ul.append(el("li", "", w)); cb.append(ul);
   box.append(back, h, cb);
-  if (p.assist) box.append(assistBlock(p.assist));
+  if (p.assist) { const a = p.assist, n = a.critical.length; box.append(el("p", "small" + (n ? " neg" : ""), `مساعد المشروع: ${a.score.verified} متحقق من ${a.score.applicable}${n ? " · " + n + " حرج" : ""} — التفاصيل أسفل اللوحة`)); }
   if (M.canGeo && p.geo) { const ob = el("button", "sbtn", p.geo.bearing !== undefined ? "ضبط اتجاه المبنى (" + Math.round(p.geo.bearing) + "°)" : "ضبط اتجاه المبنى — غير مضبوط بعد"); ob.type = "button"; ob.onclick = () => orientDialog(M, p);
     const sb = el("button", "sbtn", p.geo.shape ? "شكل المبنى من المخططات ✓ — تغيير" : "شكل المبنى من المخططات"); sb.type = "button"; sb.onclick = () => shapeDialog(M, p); box.append(ob, sb); }
   if (p.geo && p.geo.shape) { const rb = el("button", "pbtn", "عرض واقعي ثلاثي الأبعاد"); rb.type = "button"; rb.onclick = () => real3d(M, p); box.append(rb); }
@@ -4939,6 +4939,7 @@ function mapPanel(p, M) {
   box.append(nx);
   if (p.next) { const pay = el("div", "msec"); pay.append(el("h4", "", "الدفعة القادمة"), el("p", "", p.next.label + (p.next.date ? " · " + dmy(p.next.date) : "") + (p.next.amount !== undefined && p.next.amount !== null ? " · " : "")));
     if (p.next.amount !== undefined && p.next.amount !== null) pay.lastChild.append(sar(fmt(p.next.amount))); if (p.next.stage) pay.append(el("div", "small muted", "شرطها حسب العقد: " + p.next.stage)); box.append(pay); }
+  if (p.assist) box.append(assistBlock(p.assist));
   return box;
 }
 function mapPour(x, M) {
@@ -5068,6 +5069,7 @@ function cprojDlg(p, money) {
   body.append(dsec("الجاهزية", ["طلبات مواد مفتوحة: " + r.materialsOpen + (r.ownerItems ? " (منها " + r.ownerItems + " توريد المالك)" : ""), "تصاريح البدء: " + r.permits.active + " سارية · " + r.permits.suspended + " موقوفة",
     "فحوصات مفتوحة: " + r.inspectionsOpen, "البرنامج: " + (r.planned ? "مُدخل" : "غير مُدخل")]));
   body.append(dsec("التمويل", [p.funding.t]));
+  { const av = (((D.cmd || {}).assist || {}).views || []).find((v) => String(v.pid) === String(p.id)); if (av) body.append(assistBlock(av)); }
   body.append(dsec("التحصيل التالي", p.next ? [String(p.next.label) + (p.next.date ? " · متوقع " + dmy(p.next.date) : "") + (money && p.next.amount !== undefined ? " · " + fmt(p.next.amount) : "")] : [], "لا تحصيل مجدول في التوقع"));
   const bar = el("div", "dbar"), close = el("button", "sbtn", "إغلاق"); close.type = "button"; close.onclick = () => $("dlg").close(); bar.append(close); body.append(bar);
   $("dlg").showModal();
