@@ -121,7 +121,9 @@ async function load(first) {
     if (j.values) for (const k of ["cid", "floor", "trade", "variant"]) if (j.values[k] !== undefined) V[k] = j.values[k]; // the server settles dependent choices
     $("#title").textContent = S.title; $("#who").textContent = [S.name, S.sub].filter(Boolean).join(" — "); document.title = S.title + " — طاء الرائدة";
     render();
-  } catch (e) { fail(e && e.name === "AbortError" ? "الاتصال بطيء ولم يصل الرد — تأكد من الإنترنت ثم أعد المحاولة." : "تعذّر الاتصال — تأكد من الإنترنت ثم أعد المحاولة.", true); }
+  } catch (e) {
+    if (!first && S) { const err = $("#err"); err.textContent = "تعذّر تحديث النموذج — تأكد من الإنترنت ثم اختر مرة أخرى."; err.style.display = "block"; scrollTo(0, 0); return; } // keep the form the person is filling
+    fail(e && e.name === "AbortError" ? "الاتصال بطيء ولم يصل الرد — تأكد من الإنترنت ثم أعد المحاولة." : "تعذّر الاتصال — تأكد من الإنترنت ثم أعد المحاولة.", true); }
 }
 const shown = (f) => !f.show || V[f.show.key] === f.show.eq;
 const addDays = (iso, n) => { const d = new Date(iso + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
@@ -203,24 +205,25 @@ async function upload(key, file) {
   busy++; summary();
   try {
     const blob = await shrink(file), type = blob.type || file.type || "application/octet-stream";
-    const r = await fetch(`${API}/upload`, { method: "POST", headers: { "content-type": type, "x-form-token": T }, body: blob });
+    const ac = new AbortController(), tm = setTimeout(() => ac.abort(), 120000); // an upload that never answers must not keep «إرسال» disabled for ever
+    const r = await fetch(`${API}/upload`, { method: "POST", headers: { "content-type": type, "x-form-token": T }, body: blob, signal: ac.signal }).finally(() => clearTimeout(tm));
     const j = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(j.error || "تعذّر رفع الملف");
     (V[key] = V[key] || []).push(j.ref);
     if (type.startsWith("image/")) thumbs[j.ref] = URL.createObjectURL(blob);
-  } catch (e) { const err = $("#err"); err.textContent = e.message || "تعذّر رفع الملف"; err.style.display = "block"; }
+  } catch (e) { const err = $("#err"); err.textContent = e.name === "AbortError" ? "الاتصال بطيء — لم يكتمل رفع الملف، أعد إضافته." : e.message || "تعذّر رفع الملف"; err.style.display = "block"; }
   busy--; render();
 }
 
 $("#send").addEventListener("click", async () => {
   const err = $("#err"), btn = $("#send"); err.style.display = "none"; btn.disabled = true; btn.textContent = "جاري الإرسال…";
   try {
-    const [r, j] = await call({ op: "submit", v: V });
+    const [r, j] = await call({ op: "submit", v: V }, 120000); // the bot may take a while to record a form; the nonce makes a resend safe
     if (!r.ok) { err.textContent = j.error || "تعذّر الإرسال"; err.style.display = "block"; scrollTo(0, 0); summary(); return; }
     $("#bar").hidden = true;
     // pending: the bot parked the form and asks for a WhatsApp confirmation from the person's own number
     $("#app").innerHTML = `<div class="done"><div class="tick">${j.pending ? "🔐" : "✓"}</div><h2>${j.pending ? "بانتظار تأكيدك في واتساب" : "تم الإرسال"}</h2>${j.msg ? `<p>${esc(j.msg)}</p>` : ""}<a href="${BOT}">${j.pending ? "افتح واتساب للتأكيد" : "الرجوع للواتساب"}</a></div>`;
-  } catch (e) { err.textContent = "تعذّر الاتصال — حاول مرة أخرى"; err.style.display = "block"; summary(); }
+  } catch (e) { err.textContent = e.name === "AbortError" ? "لم يصل رد بعد — قد يكون وصل. انتظر رسالة البوت في واتساب قبل الإرسال مرة أخرى." : "تعذّر الاتصال — حاول مرة أخرى"; err.style.display = "block"; summary(); }
 });
 load(true);
 </script>
