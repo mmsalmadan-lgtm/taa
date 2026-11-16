@@ -2379,7 +2379,7 @@ const EN = {
 "المصدر": "Source", "Claude (جلسة التسعير)": "Claude (pricing session)",
 "السعر شامل الضريبة": "Price incl. VAT", "الهامش": "Margin", "فحص البنود": "Item checks",
 "{n} أخطاء": "{n} errors", "{n} مؤقت": "{n} provisional", "{n} ناقص": "{n} missing",
-"بانتظار مراجعة المهندس": "Awaiting the engineer's review", "معتمد": "Approved", "مسودة": "Draft", "حلّ محله إصدار أحدث": "Superseded by a newer version",
+"بانتظار مراجعة المهندس": "Awaiting the engineer's review", "معتمد": "Approved", "غير مطلوب — قرار الإدارة": "Not required — management decision", "مسودة": "Draft", "حلّ محله إصدار أحدث": "Superseded by a newer version",
 "مرفوض": "Rejected", "مقبول": "Accepted", "مُعاد للتعديل": "Returned for changes", "مُصعّد للإدارة": "Escalated to management",
 "عروض الأسعار والموافقة الإلكترونية": "Quotations and electronic acceptance",
 "يُرسل الإصدار المعتمد فقط. الموافقة برابط محكوم لنفس الإصدار ورمز تحقق لجوال العميل المسجل ونص موافقة معتمد. فتح الرابط أو تحميل العرض ليس موافقة؛ والموافقة ليست توقيع العقد ولا دفعة مقدمة ولا إذناً بالبدء.": "Only the approved version is sent. Acceptance is through a controlled link to that exact version, a code to the customer's phone on record and approved consent wording. Opening the link or downloading the quotation is not acceptance; acceptance is not signing the contract, an advance payment or permission to start.",
@@ -3650,7 +3650,7 @@ const MCOL = { green: ["حسب الخطة", "✓"], yellow: ["خطر موثق", 
 const MPART = { done: "منفّذ — خرسانة", approvals: "الحديد والشدّة — الاستلامات", supply: "اكتملت الاستلامات — تحضير التوريد", ready: "جاهز للصب", pouring: "صب جارٍ",
   stale: "بدأ الصب — يحتاج تأكيداً", violation: "صب دون إفراج — مخالفة موثقة", work: "جاري حسب التدقيق", unk: "الدور جارٍ — هذا الجزء غير محدد", none: "لم يبدأ" };
 const MV_T = { open: "مفتوحة — بانتظار اطلاع الإدارة", ack: "اطلعت الإدارة — بانتظار التكليف بإجراء تصحيحي", assigned: "إجراء تصحيحي مكلّف به — بانتظار التقييم الفني", assessed: "قُيّمت فنياً — بانتظار التحقق والإغلاق", closed: "أُغلقت بقرار مخوّل" };
-const RXC = { approved: "ok", notes: "bad", awaiting: "warn", scheduled: "warn", requested: "warn", none: "unk" };
+const RXC = { approved: "ok", waived: "ok", notes: "bad", awaiting: "warn", scheduled: "warn", requested: "warn", none: "unk" };
 let MAPV = { k: 1, cx: null, cy: null, sel: null, pour: null, fit: true, cut: null }, MAPWALL = false; // cut = {pid, key}: one floor of one project shown without what is above it
 const MBLK = { done: "منتهي", work: "جاري حسب التدقيق", none: "لم يبدأ" };
 const motionOK = () => !matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -4556,7 +4556,7 @@ function isoRender() {
     if (act && at) {
       const [cx, cy] = isoScrL(p, a, pb[2] - 0.5, pb[1] + 0.5, at.z1 + (at.kind === "slab" ? 0.1 : 1));
       const box = el("div", "mcall2" + (act.stage === "violation" ? " bad" : "")), inner = el("div", "mcb");
-      const nOk = (act.rx || []).filter((r) => r.st === "approved").length;
+      const nOk = (act.rx || []).filter((r) => r.st === "approved" || r.st === "waived").length; // waived: management decided this pour needs no such inspection
       inner.append(el("b", "", act.el), el("span", "", act.stageT), el("small", "", `الاستلامات ${nOk} من 3` + (act.ready ? " · جاهز للصب" : "")));
       box.innerHTML = '<svg width="1" height="1" aria-hidden="true"><circle r="3.2" fill="currentColor"/><circle r="6.5" fill="none" stroke="currentColor" stroke-opacity=".25"/><path d="M0 0 L34 -26" stroke="currentColor" stroke-width="1.5"/></svg>';
       box.append(inner); box.style.transform = `translate(${cx}px,${cy}px)`; ISO.ov.append(box);
@@ -5039,7 +5039,7 @@ function mapPour(x, M) {
   // the three inspections — each its own record for THIS pour only
   const g = el("div", "mrx");
   for (const r of x.rx) {
-    const c = el("div", "mrxc " + (RXC[r.st] || "unk")); c.append(el("b", "", r.t), glyph(r.stT, r.st === "approved" ? "✓" : r.st === "notes" ? "!" : r.st === "none" ? "○" : "…", RXC[r.st] || "unk"));
+    const c = el("div", "mrxc " + (RXC[r.st] || "unk")); c.append(el("b", "", r.t), glyph(r.stT, r.st === "approved" ? "✓" : r.st === "waived" ? "—" : r.st === "notes" ? "!" : r.st === "none" ? "○" : "…", RXC[r.st] || "unk"));
     const kv = el("div", "small");
     if (r.visit) kv.append(el("div", "", "الزيارة " + dmy(r.visit.on)));
     if (r.visited) kv.append(el("div", "", "زار: " + (r.visited.who || "—")));
