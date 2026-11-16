@@ -859,6 +859,7 @@ main>.kpis:not(.kpis~.kpis) :focus-visible{outline-color:var(--on-board)}
  .card{padding:12px}.box,.panel,.hsec{padding:16px}
  .hsh h2{font-size:18px}
 }
+.unl .unlr{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding-block:8px;border-top:1px solid var(--line)}.unl .unlr .grow{flex:1;min-width:0}
 </style>
 </head>
 <body>
@@ -7188,9 +7189,25 @@ const kindOf = (S, p) => (aProj(S, p) || {}).kind || (p.kind === "fin" ? "تشط
 const stageOpts = (kind) => [["", "بدون مرحلة (أحدد الاستحقاق يدوياً)"], ["sign", "توقيع العقد"], ...ELEMENTS[kind], ["handover", "التسليم / انتهاء الأعمال"]];
 const ebtn = (t, f, cls) => { const b = el("button", cls || "sbtn ebtn", t); b.type = "button"; b.onclick = (e) => { e.stopPropagation(); f(); }; return b; };
 
+// a project made in the bot that the audit does not have yet (`D.unlinked`): added LINKED to it (`link` = its id) — the bot gives
+// that project the audit id, never a second project. A name is never the link.
+const addSpec = (p) => ({ intro: "هذا المشروع غير موجود في التدقيق بعد. «حفظ» يضيفه إليه مربوطاً بهذا المشروع نفسه، ثم تُدخل عقده ودفعاته ومصروفه من صفحته.", fields: [
+  { key: "status", label: "الحالة", type: "select", opts: [["لم يبدأ", "لم يبدأ"], ["قائم", "قائم"], ["منتهي", "منتهي"]], value: "قائم" },
+  { key: "client", label: "العميل", type: "text", value: "" },
+], save: (v, S2) => { S2.proj.push({ id: rid(), link: p.id, name: p.name, client: v.client.trim(), kind: p.kind === "fin" || p.kind === "تشطيب" ? "تشطيب" : "عظم", status: v.status,
+  contract: "", received: "", dueNow: "", late: "", progress: "", remaining: "", budget: "", note: "", el: {}, exp: {}, contracts: [] }); } });
+function addToAudit(p) { editForm("إضافة إلى التدقيق — " + p.name, (S) => (S.proj.some((x) => x.link === p.id) ? (toast("أُضيف مسبقاً — حدّث الصفحة"), null) : addSpec(p))); }
+function unlinkedBox(m) { // projects made in the bot that no figure on this page covers yet
+  const U = D.unlinked || []; if (!U.length || !canEdit()) return;
+  const box = el("section", "panel unl"), h = el("div", "kh", "مشاريع غير مضافة إلى التدقيق (" + U.length + ")");
+  box.append(h, el("div", "hint", "أُنشئت في البوت ولا تدخل في أرقام هذه الصفحة ولا في التوقع حتى تُضاف."));
+  for (const p of U) { const r = el("div", "unlr"); const t = el("div", "grow"); if (p.code) t.append(el("span", "pcode", p.code)); t.append(document.createTextNode(p.name));
+    r.append(t, ebtn("إضافة إلى التدقيق", () => addToAudit(p))); box.append(r); }
+  m.append(box);
+}
 function editProject(p) {
   editForm("تعديل المشروع — " + p.name, (S) => {
-    const a = aProj(S, p); if (!a) { alert("المشروع غير موجود في التدقيق"); return null; }
+    const a = aProj(S, p); if (!a) return addSpec(p);
     return { fields: [
       { key: "status", label: "الحالة", type: "select", opts: [["لم يبدأ", "لم يبدأ"], ["قائم", "قائم"], ["منتهي", "منتهي"]], value: a.status || "قائم" },
       { key: "client", label: "العميل", type: "text", value: a.client || "" },
@@ -7984,6 +8001,7 @@ function projects(m) {
   m.append(kpiStrip([
     { label: "قيمة العقود", value: fmt(sum("contract")), f: "in" }, { label: "المحصّل", value: fmt(sum("collected")), sub: "باقي " + fmt(sum("toCollect")), f: "in" },
     { label: "مستحق الآن", value: fmt(sum("dueNow")), f: "in", tone: sum("dueNow") ? "warn" : "" }, { label: "المصروف", value: fmt(sum("spent")), f: "out" }]));
+  unlinkedBox(m);
   const fd = el("div", "finder"), sf = el("label", "sfield"), q = el("input");
   sf.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>';
   q.type = "search"; q.placeholder = "ابحث برقم المشروع أو اسمه أو العميل"; q.value = pf.q; q.setAttribute("aria-label", "بحث في المشاريع"); sf.append(q);
