@@ -7,7 +7,9 @@
 <title>نموذج — مؤسسة طاء الرائدة</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Readex+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- fonts never block the page: on a slow or filtered phone connection a blocking stylesheet kept the form blank (16 Nov 2026) -->
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Readex+Pro:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Readex+Pro:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
 <style>
   :root { --navy:#1d2533; --red:#c62026; --ink:#1d2533; --muted:#6b7280; --line:#e3e6eb; --bg:#f4f5f7; --card:#fff; --ok:#1a7f37; --soft:#fbeaea; --warn:#fff6e0; }
   * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -106,8 +108,9 @@ const arn = (s) => String(s ?? "").replace(/[٠-٩]/g, (d) => "٠١٢٣٤٥٦٧�
 const fmt = (n) => String(Math.round(n * 1000) / 1000);
 let S = null, V = {}, open = {}, busy = 0, thumbs = {};
 
-function fail(t) { $("#app").innerHTML = `<div class="msg">${esc(t)}<br><br><a href="${BOT}" style="color:#1d2533">الرجوع للواتساب</a></div>`; $("#bar").hidden = true; }
-async function call(body) { const r = await fetch(API, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ t: T, ...body }) }); return [r, await r.json().catch(() => ({}))]; }
+function fail(t, retry) { $("#app").innerHTML = `<div class="msg">${esc(t)}<br><br>${retry ? `<button type="button" class="chip" id="retry">إعادة المحاولة</button><br><br>` : ""}<a href="${BOT}" style="color:#1d2533">الرجوع للواتساب</a></div>`; $("#bar").hidden = true; if (retry) $("#retry").onclick = () => { $("#app").innerHTML = `<div class="msg">جاري التحميل…</div>`; load(true); }; }
+// a request that never answers (weak signal, filtered network) ends with a message and a retry, never a page that hangs
+async function call(body, ms = 25000) { const ac = new AbortController(), tm = setTimeout(() => ac.abort(), ms); try { const r = await fetch(API, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ t: T, ...body }), signal: ac.signal }); return [r, await r.json().catch(() => ({}))]; } finally { clearTimeout(tm); } }
 
 async function load(first) {
   if (!T) return fail("الرابط غير مكتمل — افتح النموذج من البوت.");
@@ -118,7 +121,9 @@ async function load(first) {
     if (j.values) for (const k of ["cid", "floor", "trade", "variant"]) if (j.values[k] !== undefined) V[k] = j.values[k]; // the server settles dependent choices
     $("#title").textContent = S.title; $("#who").textContent = [S.name, S.sub].filter(Boolean).join(" — "); document.title = S.title + " — طاء الرائدة";
     render();
-  } catch (e) { fail("تعذّر الاتصال — تأكد من الإنترنت وأعد فتح الرابط."); }
+  } catch (e) {
+    if (!first && S) { const err = $("#err"); err.textContent = "تعذّر تحديث النموذج — تأكد من الإنترنت ثم اختر مرة أخرى."; err.style.display = "block"; scrollTo(0, 0); return; } // keep the form the person is filling
+    fail(e && e.name === "AbortError" ? "الاتصال بطيء ولم يصل الرد — تأكد من الإنترنت ثم أعد المحاولة." : "تعذّر الاتصال — تأكد من الإنترنت ثم أعد المحاولة.", true); }
 }
 const shown = (f) => !f.show || V[f.show.key] === f.show.eq;
 const addDays = (iso, n) => { const d = new Date(iso + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
@@ -200,24 +205,25 @@ async function upload(key, file) {
   busy++; summary();
   try {
     const blob = await shrink(file), type = blob.type || file.type || "application/octet-stream";
-    const r = await fetch(`${API}/upload`, { method: "POST", headers: { "content-type": type, "x-form-token": T }, body: blob });
+    const ac = new AbortController(), tm = setTimeout(() => ac.abort(), 120000); // an upload that never answers must not keep «إرسال» disabled for ever
+    const r = await fetch(`${API}/upload`, { method: "POST", headers: { "content-type": type, "x-form-token": T }, body: blob, signal: ac.signal }).finally(() => clearTimeout(tm));
     const j = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(j.error || "تعذّر رفع الملف");
     (V[key] = V[key] || []).push(j.ref);
     if (type.startsWith("image/")) thumbs[j.ref] = URL.createObjectURL(blob);
-  } catch (e) { const err = $("#err"); err.textContent = e.message || "تعذّر رفع الملف"; err.style.display = "block"; }
+  } catch (e) { const err = $("#err"); err.textContent = e.name === "AbortError" ? "الاتصال بطيء — لم يكتمل رفع الملف، أعد إضافته." : e.message || "تعذّر رفع الملف"; err.style.display = "block"; }
   busy--; render();
 }
 
 $("#send").addEventListener("click", async () => {
   const err = $("#err"), btn = $("#send"); err.style.display = "none"; btn.disabled = true; btn.textContent = "جاري الإرسال…";
   try {
-    const [r, j] = await call({ op: "submit", v: V });
+    const [r, j] = await call({ op: "submit", v: V }, 120000); // the bot may take a while to record a form; the nonce makes a resend safe
     if (!r.ok) { err.textContent = j.error || "تعذّر الإرسال"; err.style.display = "block"; scrollTo(0, 0); summary(); return; }
     $("#bar").hidden = true;
     // pending: the bot parked the form and asks for a WhatsApp confirmation from the person's own number
     $("#app").innerHTML = `<div class="done"><div class="tick">${j.pending ? "🔐" : "✓"}</div><h2>${j.pending ? "بانتظار تأكيدك في واتساب" : "تم الإرسال"}</h2>${j.msg ? `<p>${esc(j.msg)}</p>` : ""}<a href="${BOT}">${j.pending ? "افتح واتساب للتأكيد" : "الرجوع للواتساب"}</a></div>`;
-  } catch (e) { err.textContent = "تعذّر الاتصال — حاول مرة أخرى"; err.style.display = "block"; summary(); }
+  } catch (e) { err.textContent = e.name === "AbortError" ? "لم يصل رد بعد — قد يكون وصل. انتظر رسالة البوت في واتساب قبل الإرسال مرة أخرى." : "تعذّر الاتصال — حاول مرة أخرى"; err.style.display = "block"; summary(); }
 });
 load(true);
 </script>
