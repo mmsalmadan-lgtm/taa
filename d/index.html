@@ -8512,8 +8512,13 @@ function leadCard(l) {
   return c;
 }
 
+let LOADING = 0; // loads in flight: the automatic refresh never starts a second one beside a manual one
 async function load(keep, quiet) { // quiet = the automatic refresh: a failed attempt leaves the page as it is
   if (!token) return signIn();
+  LOADING++;
+  try { return await load1(keep, quiet); } finally { LOADING--; }
+}
+async function load1(keep, quiet) {
   try {
     const r = await fetch(API, { headers: { "x-form-token": token } });
     if (quiet && r.status !== 401 && !r.ok) return;
@@ -8845,7 +8850,8 @@ boot();
 let AUTO_BUSY = false, AUTO_AT = Date.now();
 const waitIds = () => { const w = sec("wait"); return new Set(((w && w.data && w.data.ids) || []).map(String)); };
 async function autoRefresh(minAge) {
-  if (AUTO_BUSY || !token || !D || D.wall || document.visibilityState !== "visible" || view === "data" || document.querySelector("dialog[open]")) return;
+  if (AUTO_BUSY || LOADING || !token || !D || D.wall || document.visibilityState !== "visible" || view === "data" || document.querySelector("dialog[open]")) return;
+  const fo = document.activeElement; if (fo && (fo.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(fo.tagName))) return; // never under someone typing
   if (Date.now() - AUTO_AT < minAge) return;
   AUTO_BUSY = true; AUTO_AT = Date.now();
   const before = waitIds();

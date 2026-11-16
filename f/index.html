@@ -117,14 +117,19 @@ const EN = { "مؤسسة طاء الرائدة للمقاولات العامة":
   "على الأقل": "at least", "⛔ نقطة توقف · 📷 تحتاج صورة": "⛔ hold point · 📷 photo needed", "🎬 فيديو": "🎬 video", "+ إضافة": "+ Add", "الاسم": "Name", "الكمية": "Quantity", "الوحدة (كيس، حبة، م³…)": "Unit (bag, piece, m³…)",
   "جاري رفع": "Uploading", "ملف…": "file(s)…", "تعذّر رفع الملف": "The file could not be uploaded", "الاتصال بطيء — لم يكتمل رفع الملف، أعد إضافته.": "Slow connection — the upload did not finish, add the file again.",
   "جاري الإرسال…": "Sending…", "تعذّر الإرسال": "Could not send", "بانتظار تأكيدك في واتساب": "Waiting for your confirmation in WhatsApp", "تم الإرسال": "Sent", "افتح واتساب للتأكيد": "Open WhatsApp to confirm",
-  "لم يصل رد بعد — قد يكون وصل. انتظر رسالة البوت في واتساب قبل الإرسال مرة أخرى.": "No answer yet — it may have arrived. Wait for the bot's WhatsApp message before sending again.", "تعذّر الاتصال — حاول مرة أخرى": "Could not connect — try again" };
+  "لم يصل رد بعد — قد يكون وصل. انتظر رسالة البوت في واتساب قبل الإرسال مرة أخرى.": "No answer yet — it may have arrived. Wait for the bot's WhatsApp message before sending again.", "تعذّر الاتصال — حاول مرة أخرى": "Could not connect — try again",
+  // the bot's answers before it knows who is reading (bird-webhook formBot)
+  "انتهت صلاحية الرابط — افتح النموذج من البوت من جديد": "This link has expired — open the form again from the bot", "تم إرسال هذا النموذج مسبقاً — افتح نموذجاً جديداً من البوت": "This form was already sent — open a new one from the bot",
+  "النموذج قيد المعالجة — انتظر لحظة": "The form is being processed — wait a moment", "غير مصرح": "Not authorised", "الرابط غير مكتمل — افتح النموذج من البوت.": "The link is incomplete — open the form from the bot." };
 const L = (t) => (EN_ON && EN[t]) || t;
+// before the first screen the reader's language is unknown (and the page is marked notranslate): a known message is shown in both
+const L2 = (t) => (S || !EN[t] ? L(t) : `${t}\n${EN[t]}`);
 function setLang(en) {
   EN_ON = !!en; const h = document.documentElement; h.lang = en ? "en" : "ar"; h.dir = en ? "ltr" : "rtl";
   if (en) { $("header .co").textContent = L("مؤسسة طاء الرائدة للمقاولات العامة"); }
 }
 
-function fail(t, retry) { $("#app").innerHTML = `<div class="msg">${esc(L(t))}<br><br>${retry ? `<button type="button" class="chip" id="retry">${L("إعادة المحاولة")}</button><br><br>` : ""}<a href="${BOT}" style="color:#1d2533">${L("الرجوع للواتساب")}</a></div>`; $("#bar").hidden = true; if (retry) $("#retry").onclick = () => { $("#app").innerHTML = `<div class="msg">${L("جاري التحميل…")}</div>`; load(true); }; }
+function fail(t, retry) { $("#app").innerHTML = `<div class="msg" style="white-space:pre-line">${esc(L2(t))}<br><br>${retry ? `<button type="button" class="chip" id="retry">${L2("إعادة المحاولة").replace("\n", " · ")}</button><br><br>` : ""}<a href="${BOT}" style="color:#1d2533">${L2("الرجوع للواتساب").replace("\n", " · ")}</a></div>`; $("#bar").hidden = true; if (retry) $("#retry").onclick = () => { $("#app").innerHTML = `<div class="msg">${L("جاري التحميل…")}</div>`; load(true); }; }
 // a request that never answers (weak signal, filtered network) ends with a message and a retry, never a page that hangs
 async function call(body, ms = 25000) { const ac = new AbortController(), tm = setTimeout(() => ac.abort(), ms); try { const r = await fetch(API, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ t: T, ...body }), signal: ac.signal }); return [r, await r.json().catch(() => ({}))]; } finally { clearTimeout(tm); } }
 
