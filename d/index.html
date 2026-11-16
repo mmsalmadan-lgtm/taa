@@ -984,6 +984,8 @@ const EN = {
 "وصلتك هذه الرسالة من البوت": "The bot sent you this message",
 "وصلتك {n} رسائل من البوت": "The bot sent you {n} messages",
 "وصلتك رسالتان من البوت": "The bot sent you 2 messages",
+"وصل بند جديد بانتظارك": "A new item is waiting for you",
+"وصلت {n} بنود جديدة بانتظارك": "{n} new items are waiting for you",
 "التنبيهات غير مفعّلة على هذا الجوال": "Alerts are not on for this phone",
 "بيانات ناقصة أو غير مطابقة تؤثر على الأرقام": "Missing or unreconciled data behind the figures",
 "{n} منها عليك": "{n} of them are yours",
@@ -8510,10 +8512,16 @@ function leadCard(l) {
   return c;
 }
 
-async function load(keep) {
+let LOADING = 0; // loads in flight: the automatic refresh never starts a second one beside a manual one
+async function load(keep, quiet) { // quiet = the automatic refresh: a failed attempt leaves the page as it is
   if (!token) return signIn();
+  LOADING++;
+  try { return await load1(keep, quiet); } finally { LOADING--; }
+}
+async function load1(keep, quiet) {
   try {
     const r = await fetch(API, { headers: { "x-form-token": token } });
+    if (quiet && r.status !== 401 && !r.ok) return;
     const j = await r.json().catch(() => ({}));
     if (r.status === 401) {
       // a rejected token from the URL never costs a good saved session: drop the hash and use the saved one instead of signing out
@@ -8530,7 +8538,7 @@ async function load(keep) {
     if (!keep) view = D.ws && !D.ws.team ? "ws" : "home"; // management lands on the company overview; everyone else on his own workspace
     draw();
     if (!D.chatOnly && (!keep || !AUD)) refreshAud();
-  } catch (e) { fail("تعذّر الاتصال", "تحقق من الإنترنت ثم اضغط تحديث."); $("reload").hidden = false; }
+  } catch (e) { if (quiet) return; fail("تعذّر الاتصال", "تحقق من الإنترنت ثم اضغط تحديث."); $("reload").hidden = false; }
 }
 
 // ---- data panel (البيانات): master data, each department its own part ----
@@ -8835,7 +8843,25 @@ function boot() {
   }).catch(() => {});
 }
 boot();
-setInterval(() => { if (token && D && document.visibilityState === "visible" && view !== "data" && !$("dlg").open) load(true); }, 120000);
+// The page keeps itself current (owner, 16 Nov 2026: «why do I have to refresh every time? I only saw Wazir's pour request after
+// refreshing»): every 2 minutes while it is on screen, AT ONCE when the person comes back to it (phones pause a page in the background,
+// so the timer alone left it stale), never while a sheet is open or on «البيانات» (edits in progress), one load at a time.
+// New items waiting on him are announced.
+let AUTO_BUSY = false, AUTO_AT = Date.now();
+const waitIds = () => { const w = sec("wait"); return new Set(((w && w.data && w.data.ids) || []).map(String)); };
+async function autoRefresh(minAge) {
+  if (AUTO_BUSY || LOADING || !token || !D || D.wall || document.visibilityState !== "visible" || view === "data" || document.querySelector("dialog[open]")) return;
+  const fo = document.activeElement; if (fo && (fo.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(fo.tagName))) return; // never under someone typing
+  if (Date.now() - AUTO_AT < minAge) return;
+  AUTO_BUSY = true; AUTO_AT = Date.now();
+  const before = waitIds();
+  try { await load(true, true); } finally { AUTO_BUSY = false; AUTO_AT = Date.now(); }
+  const fresh = [...waitIds()].filter((id) => !before.has(id)).length;
+  if (fresh) toast(fresh === 1 ? "وصل بند جديد بانتظارك" : `وصلت ${fresh} بنود جديدة بانتظارك`);
+}
+setInterval(() => autoRefresh(110000), 30000);
+document.addEventListener("visibilitychange", () => autoRefresh(30000));
+window.addEventListener("focus", () => autoRefresh(30000));
 </script>
 </body>
 </html>

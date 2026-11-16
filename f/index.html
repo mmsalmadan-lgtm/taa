@@ -1,9 +1,10 @@
 <!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" translate="no">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
+<meta name="google" content="notranslate">
 <title>نموذج — مؤسسة طاء الرائدة</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -107,8 +108,28 @@ const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<
 const arn = (s) => String(s ?? "").replace(/[٠-٩]/g, (d) => "٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace("٫", ".").replace(",", ".");
 const fmt = (n) => String(Math.round(n * 1000) / 1000);
 let S = null, V = {}, open = {}, busy = 0, thumbs = {};
+// the page's own words in English when the bot says the reader reads English (S.lang); the form's words come translated from the bot.
+// Kept English after a failure too (EN_ON), so a retry or error message reads in his language.
+let EN_ON = false;
+const EN = { "مؤسسة طاء الرائدة للمقاولات العامة": "Taa Al-Raeda General Contracting", "نموذج": "Form", "جاري التحميل…": "Loading…", "إعادة المحاولة": "Try again", "الرجوع للواتساب": "Back to WhatsApp",
+  "تعذّر فتح النموذج": "The form could not be opened", "تعذّر تحديث النموذج — تأكد من الإنترنت ثم اختر مرة أخرى.": "The form could not be updated — check the internet and choose again.",
+  "الاتصال بطيء ولم يصل الرد — تأكد من الإنترنت ثم أعد المحاولة.": "The connection is slow and no answer arrived — check the internet, then try again.", "تعذّر الاتصال — تأكد من الإنترنت ثم أعد المحاولة.": "Could not connect — check the internet, then try again.",
+  "على الأقل": "at least", "⛔ نقطة توقف · 📷 تحتاج صورة": "⛔ hold point · 📷 photo needed", "🎬 فيديو": "🎬 video", "+ إضافة": "+ Add", "الاسم": "Name", "الكمية": "Quantity", "الوحدة (كيس، حبة، م³…)": "Unit (bag, piece, m³…)",
+  "جاري رفع": "Uploading", "ملف…": "file(s)…", "تعذّر رفع الملف": "The file could not be uploaded", "الاتصال بطيء — لم يكتمل رفع الملف، أعد إضافته.": "Slow connection — the upload did not finish, add the file again.",
+  "جاري الإرسال…": "Sending…", "تعذّر الإرسال": "Could not send", "بانتظار تأكيدك في واتساب": "Waiting for your confirmation in WhatsApp", "تم الإرسال": "Sent", "افتح واتساب للتأكيد": "Open WhatsApp to confirm",
+  "لم يصل رد بعد — قد يكون وصل. انتظر رسالة البوت في واتساب قبل الإرسال مرة أخرى.": "No answer yet — it may have arrived. Wait for the bot's WhatsApp message before sending again.", "تعذّر الاتصال — حاول مرة أخرى": "Could not connect — try again",
+  // the bot's answers before it knows who is reading (bird-webhook formBot)
+  "انتهت صلاحية الرابط — افتح النموذج من البوت من جديد": "This link has expired — open the form again from the bot", "تم إرسال هذا النموذج مسبقاً — افتح نموذجاً جديداً من البوت": "This form was already sent — open a new one from the bot",
+  "النموذج قيد المعالجة — انتظر لحظة": "The form is being processed — wait a moment", "غير مصرح": "Not authorised", "الرابط غير مكتمل — افتح النموذج من البوت.": "The link is incomplete — open the form from the bot." };
+const L = (t) => (EN_ON && EN[t]) || t;
+// before the first screen the reader's language is unknown (and the page is marked notranslate): a known message is shown in both
+const L2 = (t) => (S || !EN[t] ? L(t) : `${t}\n${EN[t]}`);
+function setLang(en) {
+  EN_ON = !!en; const h = document.documentElement; h.lang = en ? "en" : "ar"; h.dir = en ? "ltr" : "rtl";
+  if (en) { $("header .co").textContent = L("مؤسسة طاء الرائدة للمقاولات العامة"); }
+}
 
-function fail(t, retry) { $("#app").innerHTML = `<div class="msg">${esc(t)}<br><br>${retry ? `<button type="button" class="chip" id="retry">إعادة المحاولة</button><br><br>` : ""}<a href="${BOT}" style="color:#1d2533">الرجوع للواتساب</a></div>`; $("#bar").hidden = true; if (retry) $("#retry").onclick = () => { $("#app").innerHTML = `<div class="msg">جاري التحميل…</div>`; load(true); }; }
+function fail(t, retry) { $("#app").innerHTML = `<div class="msg" style="white-space:pre-line">${esc(L2(t))}<br><br>${retry ? `<button type="button" class="chip" id="retry">${L2("إعادة المحاولة").replace("\n", " · ")}</button><br><br>` : ""}<a href="${BOT}" style="color:#1d2533">${L2("الرجوع للواتساب").replace("\n", " · ")}</a></div>`; $("#bar").hidden = true; if (retry) $("#retry").onclick = () => { $("#app").innerHTML = `<div class="msg">${L("جاري التحميل…")}</div>`; load(true); }; }
 // a request that never answers (weak signal, filtered network) ends with a message and a retry, never a page that hangs
 async function call(body, ms = 25000) { const ac = new AbortController(), tm = setTimeout(() => ac.abort(), ms); try { const r = await fetch(API, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ t: T, ...body }), signal: ac.signal }); return [r, await r.json().catch(() => ({}))]; } finally { clearTimeout(tm); } }
 
@@ -117,12 +138,12 @@ async function load(first) {
   try {
     const [r, j] = await call({ op: "def", v: V });
     if (!r.ok) return fail(j.error || "تعذّر فتح النموذج");
-    S = j; if (first || j.values) V = { ...(j.values || {}), ...V };
+    S = j; setLang(j.lang === "en"); if (first || j.values) V = { ...(j.values || {}), ...V };
     if (j.values) for (const k of ["cid", "floor", "trade", "variant"]) if (j.values[k] !== undefined) V[k] = j.values[k]; // the server settles dependent choices
     $("#title").textContent = S.title; $("#who").textContent = [S.name, S.sub].filter(Boolean).join(" — "); document.title = S.title + " — طاء الرائدة";
     render();
   } catch (e) {
-    if (!first && S) { const err = $("#err"); err.textContent = "تعذّر تحديث النموذج — تأكد من الإنترنت ثم اختر مرة أخرى."; err.style.display = "block"; scrollTo(0, 0); return; } // keep the form the person is filling
+    if (!first && S) { const err = $("#err"); err.textContent = L("تعذّر تحديث النموذج — تأكد من الإنترنت ثم اختر مرة أخرى."); err.style.display = "block"; scrollTo(0, 0); return; } // keep the form the person is filling
     fail(e && e.name === "AbortError" ? "الاتصال بطيء ولم يصل الرد — تأكد من الإنترنت ثم أعد المحاولة." : "تعذّر الاتصال — تأكد من الإنترنت ثم أعد المحاولة.", true); }
 }
 const shown = (f) => !f.show || V[f.show.key] === f.show.eq;
@@ -140,11 +161,11 @@ function fieldHtml(f, i) {
     case "text": return `<div class="card"><div class="box">${lb}<input type="text" data-k="${f.key}" value="${esc(V[f.key] ?? "")}" placeholder="${esc(f.placeholder || "")}"></div></div>`;
     case "textarea": return `<div class="card"><div class="box">${lb}<textarea data-k="${f.key}" placeholder="${esc(f.placeholder || "")}">${esc(V[f.key] ?? "")}</textarea></div></div>`;
     case "date": { const t = f.min || today(); return `<div class="card"><div class="box">${lb}<div class="chips">${f.chips.map(([n, l]) => `<button type="button" class="chip${V[f.key] === addDays(t, n) ? " sel" : ""}" data-set="${f.key}" data-val="${addDays(t, n)}">${esc(l)}</button>`).join("")}</div><input type="date" data-k="${f.key}" value="${esc(V[f.key] || "")}" min="${t}"></div></div>`; }
-    case "check": return `<div class="card"><div class="box">${lb}<ul class="ck">${f.items.map((x, k) => `<li>${k + 1}. ${x.hold ? "⛔ " : ""}${x.photo ? "📷 " : ""}${esc(x.t)}${x.c ? `<small>↳ ${esc(x.c)}</small>` : ""}</li>`).join("")}</ul>${f.items.some((x) => x.hold || x.photo) ? `<div class="hint">⛔ نقطة توقف · 📷 تحتاج صورة</div>` : ""}<div class="two"><button type="button" class="chip okc${V[f.key] === "ok" ? " sel" : ""}" data-set="${f.key}" data-val="ok">${esc(f.ok)}</button>${f.no ? `<button type="button" class="chip noc${V[f.key] === "no" ? " sel" : ""}" data-set="${f.key}" data-val="no">${esc(f.no)}</button>` : ""}${f.na ? `<button type="button" class="chip${V[f.key] === "na" ? " sel" : ""}" data-set="${f.key}" data-val="na">${esc(f.na)}</button>` : ""}</div></div></div>`;
+    case "check": return `<div class="card"><div class="box">${lb}<ul class="ck">${f.items.map((x, k) => `<li>${k + 1}. ${x.hold ? "⛔ " : ""}${x.photo ? "📷 " : ""}${esc(x.t)}${x.c ? `<small>↳ ${esc(x.c)}</small>` : ""}</li>`).join("")}</ul>${f.items.some((x) => x.hold || x.photo) ? `<div class="hint">${L("⛔ نقطة توقف · 📷 تحتاج صورة")}</div>` : ""}<div class="two"><button type="button" class="chip okc${V[f.key] === "ok" ? " sel" : ""}" data-set="${f.key}" data-val="ok">${esc(f.ok)}</button>${f.no ? `<button type="button" class="chip noc${V[f.key] === "no" ? " sel" : ""}" data-set="${f.key}" data-val="no">${esc(f.no)}</button>` : ""}${f.na ? `<button type="button" class="chip${V[f.key] === "na" ? " sel" : ""}" data-set="${f.key}" data-val="na">${esc(f.na)}</button>` : ""}</div></div></div>`;
     case "photos": {
       const list = V[f.key] || [], acc = f.accept === "video" ? "video/*" : f.accept === "image" ? "image/*" : f.accept === "doc" ? "image/*,application/pdf" : "image/*,video/*";
-      const need = f.min ? ` (${f.min} على الأقل)` : "";
-      return `<div class="card"><div class="box"><label class="lb">${esc(f.label)}${need}</label>${f.hint ? `<div class="hint">${esc(f.hint)}</div>` : ""}<div class="ph">${list.map((ref, k) => `<div class="t" style="${thumbs[ref] ? `background-image:url(${thumbs[ref]})` : ""}">${thumbs[ref] ? "" : /\.(mp4|mov|3gp|webm)$/i.test(ref) ? "🎬 فيديو" : /\.pdf$/i.test(ref) ? "📄 PDF" : "✓"}<button type="button" class="x" data-del="${f.key}" data-i="${k}">×</button></div>`).join("")}${(f.max && list.length >= f.max) ? "" : `<label class="addp">+<input type="file" accept="${acc}" ${f.accept === "video" ? 'capture="environment"' : ""} multiple data-up="${f.key}"></label>`}</div></div></div>`;
+      const need = f.min ? (EN_ON ? ` (at least ${f.min})` : ` (${f.min} على الأقل)`) : "";
+      return `<div class="card"><div class="box"><label class="lb">${esc(f.label)}${need}</label>${f.hint ? `<div class="hint">${esc(f.hint)}</div>` : ""}<div class="ph">${list.map((ref, k) => `<div class="t" style="${thumbs[ref] ? `background-image:url(${thumbs[ref]})` : ""}">${thumbs[ref] ? "" : /\.(mp4|mov|3gp|webm)$/i.test(ref) ? L("🎬 فيديو") : /\.pdf$/i.test(ref) ? "📄 PDF" : "✓"}<button type="button" class="x" data-del="${f.key}" data-i="${k}">×</button></div>`).join("")}${(f.max && list.length >= f.max) ? "" : `<label class="addp">+<input type="file" accept="${acc}" ${f.accept === "video" ? 'capture="environment"' : ""} multiple data-up="${f.key}"></label>`}</div></div></div>`;
     }
     case "items": {
       const val = V[f.key] || {}, groups = []; for (const r of f.rows) { const g = r.group || ""; let G = groups.find((x) => x.g === g); if (!G) groups.push(G = { g, rows: [] }); G.rows.push(r); }
@@ -152,7 +173,7 @@ function fieldHtml(f, i) {
       const body = groups.length === 1 && !groups[0].g ? groups[0].rows.map(rowH).join("") : groups.map((G, gi) => { const id = f.key + ":" + gi, cnt = G.rows.filter((r) => +((val[r.id] || {}).qty) > 0).length; const op = open[id] ?? (gi === 0 || cnt > 0); return `<div class="grp${op ? " open" : ""}" data-grp="${id}"><div class="hd"><span>${esc(G.g)}</span><span>${cnt ? `<span class="cnt">${cnt}</span> ` : ""}▾</span></div><div class="bd">${G.rows.map(rowH).join("")}</div></div>`; }).join("");
       return `<div class="card"><div class="box" style="padding-bottom:8px"><label class="lb" style="margin:0">${esc(f.label)}</label></div>${body}</div>`;
     }
-    case "others": { const list = V[f.key] || []; return `<div class="card"><div class="box" style="padding-bottom:4px"><label class="lb" style="margin:0">${esc(f.label)}</label></div>${list.map((o, k) => `<div class="other"><input type="text" data-oth="${f.key}" data-i="${k}" data-f="name" value="${esc(o.name)}" placeholder="الاسم"><input type="text" inputmode="decimal" data-oth="${f.key}" data-i="${k}" data-f="qty" value="${esc(o.qty)}" placeholder="الكمية">${f.unit ? `<input type="text" data-oth="${f.key}" data-i="${k}" data-f="unit" value="${esc(o.unit)}" placeholder="الوحدة (كيس، حبة، م³…)" style="grid-column:1/-1">` : ""}</div>`).join("")}<button type="button" class="add" data-addo="${f.key}">+ إضافة</button></div>`; }
+    case "others": { const list = V[f.key] || []; return `<div class="card"><div class="box" style="padding-bottom:4px"><label class="lb" style="margin:0">${esc(f.label)}</label></div>${list.map((o, k) => `<div class="other"><input type="text" data-oth="${f.key}" data-i="${k}" data-f="name" value="${esc(o.name)}" placeholder="${L("الاسم")}"><input type="text" inputmode="decimal" data-oth="${f.key}" data-i="${k}" data-f="qty" value="${esc(o.qty)}" placeholder="${L("الكمية")}">${f.unit ? `<input type="text" data-oth="${f.key}" data-i="${k}" data-f="unit" value="${esc(o.unit)}" placeholder="${L("الوحدة (كيس، حبة، م³…)")}" style="grid-column:1/-1">` : ""}</div>`).join("")}<button type="button" class="add" data-addo="${f.key}">${L("+ إضافة")}</button></div>`; }
   }
   return "";
 }
@@ -164,7 +185,7 @@ function render() {
 }
 function summary() {
   const parts = []; for (const f of S.fields) if (f.type === "items" && shown(f)) for (const r of f.rows) { const q = ((V[f.key] || {})[r.id] || {}).qty; if (+q > 0) parts.push(`${r.name} ${q}`); }
-  $("#sum").textContent = busy ? `جاري رفع ${busy} ملف…` : parts.length ? parts.join("، ") : "";
+  $("#sum").textContent = busy ? (EN_ON ? `Uploading ${busy} file(s)…` : `جاري رفع ${busy} ملف…`) : parts.length ? parts.join(EN_ON ? ", " : "، ") : "";
   $("#send").disabled = !!busy; $("#send").textContent = S.submit;
 }
 const setQ = (k, id, q) => { V[k] = V[k] || {}; V[k][id] = { ...(V[k][id] || {}), qty: q }; };
@@ -208,22 +229,22 @@ async function upload(key, file) {
     const ac = new AbortController(), tm = setTimeout(() => ac.abort(), 120000); // an upload that never answers must not keep «إرسال» disabled for ever
     const r = await fetch(`${API}/upload`, { method: "POST", headers: { "content-type": type, "x-form-token": T }, body: blob, signal: ac.signal }).finally(() => clearTimeout(tm));
     const j = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error(j.error || "تعذّر رفع الملف");
+    if (!r.ok) throw new Error(j.error || L("تعذّر رفع الملف"));
     (V[key] = V[key] || []).push(j.ref);
     if (type.startsWith("image/")) thumbs[j.ref] = URL.createObjectURL(blob);
-  } catch (e) { const err = $("#err"); err.textContent = e.name === "AbortError" ? "الاتصال بطيء — لم يكتمل رفع الملف، أعد إضافته." : e.message || "تعذّر رفع الملف"; err.style.display = "block"; }
+  } catch (e) { const err = $("#err"); err.textContent = e.name === "AbortError" ? L("الاتصال بطيء — لم يكتمل رفع الملف، أعد إضافته.") : e.message || L("تعذّر رفع الملف"); err.style.display = "block"; }
   busy--; render();
 }
 
 $("#send").addEventListener("click", async () => {
-  const err = $("#err"), btn = $("#send"); err.style.display = "none"; btn.disabled = true; btn.textContent = "جاري الإرسال…";
+  const err = $("#err"), btn = $("#send"); err.style.display = "none"; btn.disabled = true; btn.textContent = L("جاري الإرسال…");
   try {
     const [r, j] = await call({ op: "submit", v: V }, 120000); // the bot may take a while to record a form; the nonce makes a resend safe
-    if (!r.ok) { err.textContent = j.error || "تعذّر الإرسال"; err.style.display = "block"; scrollTo(0, 0); summary(); return; }
+    if (!r.ok) { err.textContent = j.error || L("تعذّر الإرسال"); err.style.display = "block"; scrollTo(0, 0); summary(); return; }
     $("#bar").hidden = true;
     // pending: the bot parked the form and asks for a WhatsApp confirmation from the person's own number
-    $("#app").innerHTML = `<div class="done"><div class="tick">${j.pending ? "🔐" : "✓"}</div><h2>${j.pending ? "بانتظار تأكيدك في واتساب" : "تم الإرسال"}</h2>${j.msg ? `<p>${esc(j.msg)}</p>` : ""}<a href="${BOT}">${j.pending ? "افتح واتساب للتأكيد" : "الرجوع للواتساب"}</a></div>`;
-  } catch (e) { err.textContent = e.name === "AbortError" ? "لم يصل رد بعد — قد يكون وصل. انتظر رسالة البوت في واتساب قبل الإرسال مرة أخرى." : "تعذّر الاتصال — حاول مرة أخرى"; err.style.display = "block"; summary(); }
+    $("#app").innerHTML = `<div class="done"><div class="tick">${j.pending ? "🔐" : "✓"}</div><h2>${L(j.pending ? "بانتظار تأكيدك في واتساب" : "تم الإرسال")}</h2>${j.msg ? `<p>${esc(j.msg)}</p>` : ""}<a href="${BOT}">${L(j.pending ? "افتح واتساب للتأكيد" : "الرجوع للواتساب")}</a></div>`;
+  } catch (e) { err.textContent = L(e.name === "AbortError" ? "لم يصل رد بعد — قد يكون وصل. انتظر رسالة البوت في واتساب قبل الإرسال مرة أخرى." : "تعذّر الاتصال — حاول مرة أخرى"); err.style.display = "block"; summary(); }
 });
 load(true);
 </script>
